@@ -1,0 +1,29 @@
+#ifndef GEOMETRICPOINTREF_H
+#define GEOMETRICPOINTREF_H
+
+#include <scene/data/GeometricData.h>
+
+//#include <data_structures/references/PointRef.h>
+
+class GeometricPointRefVisitor;
+
+class GeometricPointRef// : public PointRef<GeometricData*, Eigen::Vector&>
+{
+public:
+    GeometricPointRef(GeometricData* geometricData);
+
+    virtual ~GeometricPointRef();
+
+    GeometricData* getGeometricData();
+
+    virtual Eigen::Vector getPoint() const = 0;
+
+    virtual GeometricPointRef* clone() = 0;
+
+    virtual void accept(GeometricPointRefVisitor& visitor) = 0;
+
+protected:
+    GeometricData* mGeometricData;
+};
+
+#endif // GEOMETRICPOINTREF_H
