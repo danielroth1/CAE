@@ -1,27 +1,28 @@
-# CAE
+CAE is a tool for the simulation of [Rigid Bodies](https://en.wikipedia.org/wiki/Rigid_body) and deformable objects.
+Geometric meshes can be imported and converted into a three-dimensional representation (consisting of tetrahedra). These can then be simulated using the Corotated Finite Element Method. Deformable and rigid bodies interact via collisions. Simple spring forces can be applied to vertices of simulated objects.
 
-CAE is a tool for the simulation of rigid bodies and deformable objects. Geometric meshes can be imported and transformed to a three dimensional representation (made up of tetrahedrons). Those can then be simulated with the Corotated Finite Element Method. Deformables and rigid bodies interact with each other via collisions. Simple spring forces can be applied to vertices of simulated objects.
-
-The main menu of CAE with "Example 2" loaded:
+####The main menu of CAE  with *Example 2* was loaded in: 
 ![main2](https://user-images.githubusercontent.com/34305776/55095678-d63c6e80-50b8-11e9-9b58-bcea7c0c389b.png)
 
-Importing a model of an elephant as .off file:
+####An Elephant model can be imported, by loading the *as.off* file:
 ![step1_import](https://user-images.githubusercontent.com/34305776/55096875-fff69500-50ba-11e9-9cba-a3236449d76c.png)
 
-After converting the elephant it is simulated as deformable. Some vertices were selected, truncated, and moved to a different location, inducing elastic deformations:
+
+####After the transformation of the elephant its deformation is simulated. Some nodes were selected, cut and moved to a different location, resulting in elastic deformations:
 ![step5_simulate](https://user-images.githubusercontent.com/34305776/55096962-2fa59d00-50bb-11e9-9bf0-5a885e127864.png)
 
-For the collision detection, spheres are used that surrend each object. A bounding volume hierarchy is used for efficient access. Each level or as in this picture all leafs can be visualized:
+####For collision detection, spheres are used that surround each object. A bounding volume hierarchy is used for efficient access. Layer by layer can be visualized or as in this example all sheets can be visualized at once:
 ![collision_spheres](https://user-images.githubusercontent.com/34305776/55101329-27059480-50c4-11e9-8083-326ad81e4db9.png)
 
-## How to use CAE
-To simulate a rigid body, simply import the geometric data as .off file and create a rigid body by selecting the node (while having Selection Type: Nodes) and clicking in the right menu Simulation -> Simulate -> Rigid Body.
 
-To create a deformable that is simulated with the corotated FEM, the geometry first needs to be converted to a tree dimensional polygon. To do so, click "Convert" under the "Mesh Converter" tab. The deformable is then created by clicking Simulation -> Simulate -> Deformable. To make either collidable, click the corresponding Simulation -> Simulate -> Collidable.
+## How to use CAE
+To simulate a rigid body, import the geometry data from the  **.off** file and create a rigid body by selecting the node (while having Selection Type set to "Nodes") than click the right menu: Simulation -> Simulate -> Rigid Body.
+
+To create a deformable that is simulated with the [corotated FEM](https://www.google.com/search?q=corotated+FEM&ie=utf-8&oe=utf-8) , the geometry first needs to be converted to a tree dimensional polygon. To do so by clicking on "Convert" (in the "Mesh Converter" tab). The deformable is then created by clicking Simulation -> Simulate -> Deformable. To make either collidable, click the corresponding Simulation -> Simulate -> Collidable.
 
 ## Installation
-I am using qmake because of its better integration with QtCreator. If you want as well, see "Building with qmake and QtCreator".
-Despite that, building with CMake is also perfectly fine.
+I am using qmake because of its better integration with QtCreator. If you want to use it as well, see "Building with qmake and QtCreator" (a few sections below).
+Despite that I make use of QMake, building with CMake is also perfectly fine.
 
 ### Required libraries
 * Boost
