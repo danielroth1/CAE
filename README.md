@@ -11,6 +11,9 @@ Importing a model of an elephant as .off file:
 After converting the elephant it is simulated as deformable. Some vertices were selected, truncated, and moved to a different location, inducing elastic deformations:
 ![step5_simulate](https://user-images.githubusercontent.com/34305776/55096962-2fa59d00-50bb-11e9-9bf0-5a885e127864.png)
 
+For the collision detection, spheres are used that surrend each object. A bounding volume hierarchy is used for efficient access. Each level or as in this picture all leafs can be visualized:
+![collision_spheres](https://user-images.githubusercontent.com/34305776/55101329-27059480-50c4-11e9-8083-326ad81e4db9.png)
+
 ## How to use CAE
 To simulate a rigid body, simply import the geometric data as .off file and create a rigid body by selecting the node (while having Selection Type: Nodes) and clicking in the right menu Simulation -> Simulate -> Rigid Body.
 
