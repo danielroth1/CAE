@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>CAE</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="sizePolicy">

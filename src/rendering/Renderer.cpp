@@ -46,42 +46,6 @@ void Renderer::draw()
         mLightRenderer->drawLight();
     glEnable(GL_LIGHTING);
 
-    class Visitor : public RenderObjectVisitor
-    {
-    public:
-        Visitor(Renderer& renderer)
-            : mR(renderer)
-        {
-        }
-        void visit(RenderPolygon2D& /*rp*/)
-        {
-            // calculate normals?
-//            rp.refreshBuffers();
-//            rp.drawArray();
-//            rp.draw();
-//            rp.drawImmediate();
-        }
-
-        void visit(RenderPoints& /*rp*/)
-        {
-//            rp.drawImmediate();
-            // TODO: implement this
-        }
-
-        void visit(RenderScreenRectangle& /*rsr*/)
-        {
-//            rsr.drawImmediate();
-        }
-
-        void visit(RenderLine& /*model*/)
-        {
-//            model.draw();
-        }
-
-        Renderer& mR;
-    };
-    Visitor v(*this);
-
     for (const std::shared_ptr<RenderObject>& ro : mRenderObjects)
     {
         if (ro->isVisible())
@@ -91,31 +55,13 @@ void Renderer::draw()
             START_TIMING("RenderObject::refreshBuffers()")
             ro->refreshBuffers();
             STOP_TIMING
-            ro->accept(v);
-//            START_TIMING("RenderObject::refreshBuffers()")
-//            ro->refreshBuffers();
-//            STOP_TIMING
+
             START_TIMING("RenderObject::draw()")
             ro->draw();
             STOP_TIMING
         }
     }
 
-//    glColor3f(0.0f, 1.0f, 0.0f);
-//    // Linear forces
-//    for (auto lf_it = m_simulation->getLinearForces().begin();
-//         lf_it != m_simulation->getLinearForces().end();
-//         ++lf_it)
-//    {
-//        LinearForce* lf = *lf_it;
-//        Vector source = m_simulation->getVertex(lf->getSourceVertexId());
-//        Vector target = lf->getTargetVertex();
-//        glBegin(GL_LINES);
-//            glVertex3f(source(0), source(1), source(2));
-//            glVertex3f(target(0), target(1), target(2));
-//        glEnd();
-//        // TODO: fix debugger
-//    }
     STOP_TIMING
 }
 
@@ -170,8 +116,8 @@ void Renderer::addRenderObjectSlot(std::shared_ptr<RenderObject> ro)
     if (it == mRenderObjects.end())
     {
         mRenderObjects.push_back(ro);
+        ro->createBuffers();
     }
-    ro->createBuffers();
     STOP_TIMING;
 
 //    printInfo();
@@ -234,34 +180,3 @@ void Renderer::printInfo()
 
     std::cout << "#Vertices: " << v.nVertices << ", #Triangles: " << v.nTriangles << std::endl;
 }
-
-//RendererProxy::RendererProxy(Renderer* renderer)
-//    : mRenderer(renderer)
-//{
-//    connect(this, SIGNAL(addRenderOjectSignal(std::shared_ptr<RenderObject>)),
-//            this, SLOT(addRenderOjectSlot(std::shared_ptr<RenderObject>)));
-
-//    connect(this, SIGNAL(removeRenderObjectSignal(const std::shared_ptr<RenderObject>&)),
-//            this, SLOT(removeRenderObjectSlot(const std::shared_ptr<RenderObject>&)));
-
-//}
-
-//void RendererProxy::addRenderOject(std::shared_ptr<RenderObject> ro)
-//{
-//    emit addRenderOjectSignal(ro);
-//}
-
-//void RendererProxy::removeRenderObject(const std::shared_ptr<RenderObject>& ro)
-//{
-//    emit removeRenderObjectSignal(ro);
-//}
-
-//void RendererProxy::addRenderOjectSlot(std::shared_ptr<RenderObject> ro)
-//{
-//    mRenderer->addRenderObject(ro);
-//}
-
-//void RendererProxy::removeRenderObjectSlot(const std::shared_ptr<RenderObject>& ro)
-//{
-//    mRenderer->removeRenderObject(ro);
-//}

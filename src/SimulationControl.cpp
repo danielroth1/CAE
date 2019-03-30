@@ -48,7 +48,7 @@ SimulationControl::SimulationControl()
     mSimulationThread->addDomain(mDomain);
 
     mStepSize = 0.01;
-    mNumFEMCorrectionIterations = 0;
+    mNumFEMCorrectionIterations = 1;
 }
 
 SimulationControl::~SimulationControl()
@@ -467,7 +467,7 @@ void SimulationControl::step()
         mRigidSimulation->revertPositions();
         mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-        mRigidCollisionSolver->solveConstraints(300, 1e-5); // x, v + v^{FEM} + v^{col}
+        mRigidCollisionSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
 
         for (int i = 0; i < mNumFEMCorrectionIterations; ++i)
         {
@@ -478,7 +478,7 @@ void SimulationControl::step()
 
             mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-            mRigidCollisionSolver->solveConstraints(300, 1e-5); // x, v + v^{FEM} + v^{col}
+            mRigidCollisionSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
         }
         // x, v + v^{FEM} + v^{col}
 
