@@ -7,6 +7,7 @@
 #include <data_structures/BidirectionalMap.h>
 
 class Constraint;
+class QtMembersWidget;
 class SimulationObject;
 class SimulationUIControl;
 
@@ -24,6 +25,8 @@ public:
             QWidget *parent = nullptr);
     ~SimulationUIWidget();
 
+
+
     void onSimulationObjectAdded(SimulationObject* simulationObject);
     void onSimulationObjectRemoved(SimulationObject* simulationObject);
 
@@ -34,6 +37,8 @@ public:
     // If none is selected or there is some inconsistency between this module
     // and the simulation, nulllptr is returned.
     SimulationObject* getSelectedSimulationObject();
+
+    QtMembersWidget* getMembersWidget();
 
 private slots:
     void on_pushButton_toggled(bool checked);

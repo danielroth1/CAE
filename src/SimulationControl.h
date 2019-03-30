@@ -100,6 +100,9 @@ public:
 
     bool isSimulationPaused();
 
+    void setNumFEMCorrectionIterations(int correctionIterations);
+    int getNumFEMCorrectionIterations() const;
+
     // repaints the gl widget
 //    void repaint();
 

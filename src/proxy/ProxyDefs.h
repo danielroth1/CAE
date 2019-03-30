@@ -22,7 +22,6 @@
 // className = Simulation
 // callee = mSimulation
 // function = function name
-// TODO: doesn't work this way
 #define PROXY_FUNCTION(className, callee, function, paramsDefs, paramsNoDefs) \
     void function(paramsDefs) \
     { \

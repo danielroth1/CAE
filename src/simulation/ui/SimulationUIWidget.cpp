@@ -8,6 +8,8 @@
 #include <simulation/constraints/Constraint.h>
 #include <simulation/constraints/ConstraintVisitor.h>
 
+#include <utils/MemberAccessorDirect.h>
+
 SimulationUIWidget::SimulationUIWidget(
         SimulationUIControl* uiControl,
         QWidget* parent)
@@ -129,6 +131,11 @@ void SimulationUIWidget::onConstraintRemoved(Constraint* constraint)
 SimulationObject* SimulationUIWidget::getSelectedSimulationObject()
 {
     return mListWidgetSimulationObjectMap.get(mUi->mListWidgetSimulationObjects->currentItem());
+}
+
+QtMembersWidget* SimulationUIWidget::getMembersWidget()
+{
+    return mUi->mMembersWidget;
 }
 
 void SimulationUIWidget::on_pushButton_toggled(bool checked)

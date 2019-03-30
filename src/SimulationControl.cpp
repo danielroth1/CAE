@@ -205,6 +205,16 @@ bool SimulationControl::isSimulationPaused()
     return mPaused;
 }
 
+void SimulationControl::setNumFEMCorrectionIterations(int correctionIterations)
+{
+    mNumFEMCorrectionIterations = correctionIterations;
+}
+
+int SimulationControl::getNumFEMCorrectionIterations() const
+{
+    return mNumFEMCorrectionIterations;
+}
+
 //void SimulationControl::repaint()
 //{
 //    if (mUiControl)

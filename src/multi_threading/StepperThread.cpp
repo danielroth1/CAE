@@ -50,14 +50,14 @@ void StepperThread::threadUpdateMethod()
         mTimeStepper->startStep();
         beforeStep();
 
+        // domains
+        for (Domain* domain : mDomains)
+        {
+            domain->processOperations();
+        }
+
         if (!mPaused)
         {
-            // domains
-            for (Domain* domain : mDomains)
-            {
-                domain->processOperations();
-            }
-
             step();
         }
 

@@ -25,7 +25,7 @@ public:
 
     // Tries to create a fem object for the selected
     // scene node. Calls the corresponding mehtod in
-    // the Sim
+    // the Simulation.
     void onCreateFEMObjectClicked();
     void onCreateRigidObjectClicked(double mass);
     void onRemoveSimulationObjectClicked();

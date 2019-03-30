@@ -20,6 +20,8 @@
 #include <simulation/SimulationObjectFactory.h>
 #include <simulation/rigid/RigidBody.h>
 #include <scene/model/RenderModel.h>
+#include <ui/qt/QtMembersWidget.h>
+#include <utils/MemberAccessorFactory.h>
 
 #include <simulation/fem/FEMObject.h>
 
@@ -37,6 +39,26 @@ void SimulationUIControl::init(QWidget* parent)
 {
     mWidget = new SimulationUIWidget(this, parent);
     mAc->getSimulationControl()->addListener(this);
+
+    std::shared_ptr<MemberAccessor<bool>> accessorBool =
+            MemberAccessorFactory::createGetterSetter<bool, SimulationControl>(
+                &SimulationControl::isSimulationPaused,
+                &SimulationControl::setSimulationPaused,
+                mAc->getSimulationControl(),
+                mAc->getSimulationControl()->getDomain());
+
+    mWidget->getMembersWidget()->addBool(
+                "Simulation Paused", accessorBool);
+
+    std::shared_ptr<MemberAccessor<int>> accessorInt =
+            MemberAccessorFactory::createGetterSetter<int, SimulationControl>(
+                &SimulationControl::getNumFEMCorrectionIterations,
+                &SimulationControl::setNumFEMCorrectionIterations,
+                mAc->getSimulationControl(),
+                mAc->getSimulationControl()->getDomain());
+
+    mWidget->getMembersWidget()->addInteger(
+                "FEM Correction Iterations", accessorInt);
 }
 
 QWidget* SimulationUIControl::getWidget()
