@@ -4,6 +4,8 @@
 #include "BoundingVolumeHierarchy.h"
 #include "BVHCore.h"
 
+#include <memory>
+
 class BVSphere;
 class CollisionObject;
 
@@ -16,7 +18,7 @@ class BVHDeformable : public BoundingVolumeHierarchy
 public:
     BVHDeformable(SimulationObject* so,
                   Polygon* polygon,
-                  const std::vector<CollisionObject*>& collisionObjects);
+                  const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects);
 
     // BoundingVolumeHierarchy interface
 public:
@@ -27,9 +29,9 @@ private:
     void initializeWithKDTree();
 
     BVHNode* initializeWithKDTreeRec(
-            const std::vector<BVSphere*>& spheres,
-            const std::vector<CollisionObject*>& collisionObjects,
-            BVSphere*& boundingVolumeRet);
+            const std::vector<std::shared_ptr<BVSphere>>& spheres,
+            const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
+            std::shared_ptr<BVSphere>& boundingVolumeRet);
 };
 
 #endif // BVHDEFORMABLE_H

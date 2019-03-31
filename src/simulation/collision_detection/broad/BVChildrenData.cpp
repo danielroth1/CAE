@@ -3,9 +3,9 @@
 
 BVChildrenData::BVChildrenData(
         Node<BVChildrenData*, BVLeafData*>* node,
-        BoundingVolume* boundingVolume,
-        BoundingVolume* child1,
-        BoundingVolume* child2)
+        const std::shared_ptr<BoundingVolume>& boundingVolume,
+        const std::shared_ptr<BoundingVolume>& child1,
+        const std::shared_ptr<BoundingVolume>& child2)
     : BVData(node, boundingVolume)
     , mChild1(child1)
     , mChild2(child2)
@@ -13,17 +13,17 @@ BVChildrenData::BVChildrenData(
 
 }
 
-BoundingVolume*BVChildrenData::getChild1()
+BoundingVolume* BVChildrenData::getChild1()
 {
-    return mChild1;
+    return mChild1.get();
 }
 
-BoundingVolume*BVChildrenData::getChild2()
+BoundingVolume* BVChildrenData::getChild2()
 {
-    return mChild2;
+    return mChild2.get();
 }
 
 void BVChildrenData::update()
 {
-    mBoundingVolume->update(mChild1, mChild2);
+    mBoundingVolume->update(mChild1.get(), mChild2.get());
 }

@@ -4,8 +4,8 @@
 
 BVLeafData::BVLeafData(
         Node<BVChildrenData*, BVLeafData*>* node,
-        BoundingVolume* boundingVolume,
-        CollisionObject* collisionObject)
+        std::shared_ptr<BoundingVolume> boundingVolume,
+        std::shared_ptr<CollisionObject> collisionObject)
     : BVData(node, boundingVolume)
     , mCollisionObject(collisionObject)
 {
@@ -14,7 +14,7 @@ BVLeafData::BVLeafData(
 
 CollisionObject* BVLeafData::getCollisionObject()
 {
-    return mCollisionObject;
+    return mCollisionObject.get();
 }
 
 void BVLeafData::update()

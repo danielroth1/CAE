@@ -20,6 +20,8 @@ class SceneLeafData : public SceneData
 public:
     SceneLeafData(Node<SceneData*, SceneLeafData*>* node);
 
+    virtual ~SceneLeafData() override;
+
     virtual void accept(SceneDataVisitor* visitor) override;
 
     virtual bool isLeafData() override;

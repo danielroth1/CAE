@@ -1,7 +1,8 @@
 #include "BVData.h"
 
 
-BVData::BVData(Node<BVChildrenData*, BVLeafData*>* node, BoundingVolume* boundingVolume)
+BVData::BVData(Node<BVChildrenData*, BVLeafData*>* node,
+               std::shared_ptr<BoundingVolume> boundingVolume)
     //: NodeData<BVChildrenData*, BVLeafData*>(node)
     : mBoundingVolume(boundingVolume)
 {
@@ -10,7 +11,7 @@ BVData::BVData(Node<BVChildrenData*, BVLeafData*>* node, BoundingVolume* boundin
 
 BoundingVolume* BVData::getBoundingVolume()
 {
-    return mBoundingVolume;
+    return mBoundingVolume.get();
 }
 
 BVData::~BVData()

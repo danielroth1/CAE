@@ -8,7 +8,7 @@
 
 BoundingVolumeHierarchy::BoundingVolumeHierarchy(SimulationObject* simulationObject,
                                                  Polygon* polygon,
-                                                 const std::vector<CollisionObject*>& collisionObjects)
+                                                 const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects)
     : Tree<BVChildrenData*, BVLeafData*> ("BVH")
     , mSimulationObject(simulationObject)
     , mPolygon(polygon)

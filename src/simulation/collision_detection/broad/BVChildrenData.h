@@ -12,9 +12,9 @@ class BVChildrenData : public BVData
 public:
     BVChildrenData(
             Node<BVChildrenData*, BVLeafData*>* node,
-            BoundingVolume* boundingVolume,
-            BoundingVolume* child1,
-            BoundingVolume* child2);
+            const std::shared_ptr<BoundingVolume>& boundingVolume,
+            const std::shared_ptr<BoundingVolume>& child1,
+            const std::shared_ptr<BoundingVolume>& child2);
 
     BoundingVolume* getChild1();
     BoundingVolume* getChild2();
@@ -25,8 +25,8 @@ public:
 
 
 private:
-    BoundingVolume* mChild1;
-    BoundingVolume* mChild2;
+    std::shared_ptr<BoundingVolume> mChild1;
+    std::shared_ptr<BoundingVolume> mChild2;
 
 };
 

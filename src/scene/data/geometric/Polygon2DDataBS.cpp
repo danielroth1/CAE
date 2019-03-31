@@ -15,6 +15,11 @@ Polygon2DDataBS::Polygon2DDataBS(
 
 }
 
+Polygon2DDataBS::~Polygon2DDataBS()
+{
+
+}
+
 void Polygon2DDataBS::setPositionsBS(const Vectors& positionsBS)
 {
     mPositionsBS = positionsBS;

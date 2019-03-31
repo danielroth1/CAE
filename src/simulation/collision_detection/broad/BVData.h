@@ -6,6 +6,9 @@
 
 #include <data_structures/tree/NodeData.h>
 
+#include <memory>
+
+
 class BVChildrenData;
 class BVLeafData;
 
@@ -14,7 +17,8 @@ class BoundingVolume;
 class BVData// : public NodeData<BVChildrenData*, BVLeafData*>
 {
 public:
-    BVData(Node<BVChildrenData*, BVLeafData*>* node, BoundingVolume* boundingVolume);
+    BVData(Node<BVChildrenData*, BVLeafData*>* node,
+           std::shared_ptr<BoundingVolume> boundingVolume);
 
     BoundingVolume* getBoundingVolume();
 
@@ -23,7 +27,7 @@ public:
 protected:
     virtual ~BVData();
 
-    BoundingVolume* mBoundingVolume;
+    std::shared_ptr<BoundingVolume> mBoundingVolume;
 };
 
 #endif // BVDATA_H

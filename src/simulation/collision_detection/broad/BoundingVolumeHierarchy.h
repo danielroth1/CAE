@@ -6,6 +6,7 @@
 #include "BVHCore.h"
 
 #include <data_structures/tree/Tree.h>
+#include <memory>
 
 
 class Collider;
@@ -18,7 +19,7 @@ class BoundingVolumeHierarchy : public Tree<BVChildrenData*, BVLeafData*>
 public:
     BoundingVolumeHierarchy(SimulationObject* so,
                             Polygon* mPolygon,
-                            const std::vector<CollisionObject*>& collisionObjects);
+                            const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects);
 
     virtual void initialize() = 0;
 
@@ -62,7 +63,7 @@ protected:
 
     Polygon* mPolygon;
 
-    std::vector<CollisionObject*> mCollisionObjects;
+    std::vector<std::shared_ptr<CollisionObject>> mCollisionObjects;
 
 private:
 

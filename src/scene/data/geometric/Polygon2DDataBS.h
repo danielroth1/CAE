@@ -17,6 +17,8 @@ public:
             const Vectors& vertexNormalsBS,
             const Vectors& faceNormalsBS);
 
+    virtual ~Polygon2DDataBS();
+
     void setPositionsBS(const Vectors& positionsBS);
     void setVertexNormalsBS(const Vectors& vertexNormalsBS);
     void setFaceNormalsBS(const Vectors& faceNormalsBS);

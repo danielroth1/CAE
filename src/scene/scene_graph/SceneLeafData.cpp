@@ -12,6 +12,11 @@ SceneLeafData::SceneLeafData(Node<SceneData*, SceneLeafData*>* node)
     mRenderModel = nullptr;
 }
 
+SceneLeafData::~SceneLeafData()
+{
+
+}
+
 void SceneLeafData::accept(SceneDataVisitor* visitor)
 {
     visitor->visit(this);

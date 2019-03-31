@@ -41,7 +41,7 @@ void CollisionManager::addSimulationObject(
     }
 
     // Create CollisionSpheres on vertices of Polygon2D or outer vertices of Polygon3D
-    std::vector<CollisionObject*> collisionObjects;
+    std::vector<std::shared_ptr<CollisionObject>> collisionObjects;
     double radiusFactor = 0.2;
     switch (polygon->getType())
     {
@@ -95,7 +95,7 @@ void CollisionManager::addSimulationObject(
                     spherePos = spherePos - rigid->getPosition();
 
                     collisionObjects.push_back(
-                                new CollisionSphere(
+                                std::make_shared<CollisionSphere>(
                                     SimulationPointRef(so.get(), polygon.get(), spherePos),
                                     diameter / 2));
                 }
@@ -175,7 +175,8 @@ void CollisionManager::addSimulationObject(
                     Vector p1 = pFirst + line / static_cast<double>(nLines) * eFirst;
                     Vector p2 = pSecond + line / static_cast<double>(nLines) * eSecond;
 
-                    int nSpheresPerLine = static_cast<int>(std::floor((p2-p1).norm() / diameter));
+                    int nSpheresPerLine =
+                            static_cast<int>(std::floor((p2-p1).norm() / diameter));
 
                     if ((p2 - p1).norm() < 1e-10)
                         std::cout << "error: triangle is plane";
@@ -184,7 +185,10 @@ void CollisionManager::addSimulationObject(
                         Vector spherePos = p1 + i / static_cast<double>(nSpheresPerLine) * (p2 - p1);
 
                         spherePos = spherePos - rigid->getPosition();
-                        collisionObjects.push_back(new CollisionSphere(SimulationPointRef(so.get(), polygon.get(), spherePos), diameter / 2));
+                        collisionObjects.push_back(
+                                    std::make_shared<CollisionSphere>(
+                                        SimulationPointRef(so.get(), polygon.get(), spherePos),
+                                        diameter / 2));
                     }
                 }
 
@@ -212,7 +216,9 @@ void CollisionManager::addSimulationObject(
             ID index = static_cast<ID>(p3->getOuterPositionIds()[i]);
 //            double radius = minimumDistances[static_cast<unsigned int>(index)] * radiusFactor;
             double radius = maximumDistance * radiusFactor;
-            collisionObjects.push_back(new CollisionSphere(SimulationPointRef(so.get(), index), radius));
+            collisionObjects.push_back(std::make_shared<CollisionSphere>(
+                                           SimulationPointRef(so.get(), index),
+                                           radius));
         }
         break;
     }

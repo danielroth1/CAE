@@ -3,6 +3,8 @@
 
 #include "BVData.h"
 
+#include <memory>
+
 
 class CollisionObject;
 
@@ -12,8 +14,8 @@ class BVLeafData : public BVData
 public:
     BVLeafData(
             Node<BVChildrenData*, BVLeafData*>* node,
-            BoundingVolume* boundingVolume,
-            CollisionObject* collisionObject);
+            std::shared_ptr<BoundingVolume> boundingVolume,
+            std::shared_ptr<CollisionObject> collisionObject);
 
     CollisionObject* getCollisionObject();
 
@@ -22,7 +24,7 @@ public:
     virtual void update();
 
 private:
-    CollisionObject* mCollisionObject;
+    std::shared_ptr<CollisionObject> mCollisionObject;
 
 };
 
