@@ -3,6 +3,8 @@
 
 // Includes
 
+#include "Monitor.h"
+
 #include <queue>
 
 
@@ -29,7 +31,7 @@ public:
     void processOperations();
 
 private:
-    std::queue<Operation*> mQueue;
+    Monitor<std::queue<Operation*>> mQueue;
 };
 
 #endif // DOMAIN_H

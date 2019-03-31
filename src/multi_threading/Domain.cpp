@@ -15,19 +15,27 @@ Domain::~Domain()
 
 void Domain::addOperation(Operation* op)
 {
-    mQueue.push(op);
+    auto queue = mQueue.lock();
+    queue->push(op);
 }
 
 void Domain::processOperations()
 {
-//    if (!mQueue.empty())
-//        std::cout << "processing " << mQueue.size() << " operations\n";
-    while (!mQueue.empty())
+    while (!mQueue.unsafe().empty())
     {
-        // retrieve first element and call operation
-        Operation* op = mQueue.front();
-        mQueue.pop();
+        // Only adding/ removing the queue must be threadsafe
+        // It is important that there is not lock while operations are
+        // called becaues adding an operation wihtin that call
+        // would result in a deadlock
+        Operation* op;
+        {
+            auto queue = mQueue.lock();
+            // retrieve first element and call operation
+            op = queue->front();
+            queue->pop();
+        }
         op->call();
         delete op;
+
     }
 }
