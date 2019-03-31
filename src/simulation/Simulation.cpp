@@ -87,13 +87,17 @@ std::vector<std::shared_ptr<LinearForce>>& Simulation::getLinearForces()
     return mLinearForces;
 }
 
-Domain* Simulation::getDomain()
+void Simulation::setTimeStep(double timeStep)
 {
-    return mDomain;
+    mTimeStep = timeStep;
 }
-
 
 double Simulation::getTimeStep() const
 {
     return mTimeStep;
+}
+
+Domain* Simulation::getDomain()
+{
+    return mDomain;
 }

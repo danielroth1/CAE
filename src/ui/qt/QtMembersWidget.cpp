@@ -36,14 +36,17 @@ void QtMembersWidget::addBool(
 
 void QtMembersWidget::addInteger(
         std::string name,
-        const std::shared_ptr<MemberAccessor<int>>& memberAccessor)
+        const std::shared_ptr<MemberAccessor<int>>& memberAccessor,
+        int min,
+        int max,
+        int singleStep)
 {
     int row = mLayout->rowCount();
 
     mLayout->addWidget(new QLabel(QString::fromStdString(name)), row, 0);
 
     QtMemberWidget<int>* memberWidget =
-            new QtMemberWidgetInteger(memberAccessor, this);
+            new QtMemberWidgetInteger(memberAccessor, this, min, max, singleStep);
     mMemberWidgets.push_back(memberWidget);
 
     mLayout->addWidget(memberWidget, row, 1);
@@ -53,14 +56,18 @@ void QtMembersWidget::addInteger(
 
 void QtMembersWidget::addDouble(
         std::string name,
-        const std::shared_ptr<MemberAccessor<double>>& memberAccessor)
+        const std::shared_ptr<MemberAccessor<double>>& memberAccessor,
+        double min,
+        double max,
+        double singleStep,
+        int precision)
 {
     int row = mLayout->rowCount();
 
     mLayout->addWidget(new QLabel(QString::fromStdString(name)), row, 0);
 
     QtMemberWidget<double>* memberWidget =
-            new QtMemberWidgetDouble(memberAccessor, this);
+            new QtMemberWidgetDouble(memberAccessor, this, min, max, singleStep, precision);
     mMemberWidgets.push_back(memberWidget);
 
     mLayout->addWidget(memberWidget, row, 1);

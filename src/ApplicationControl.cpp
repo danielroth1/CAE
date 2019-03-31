@@ -144,34 +144,15 @@ void ApplicationControl::initiateApplication()
 
         virtual void load()
         {
-            // Floor
-            SGLeafNode* node2 = ac.mSGControl->createBox("Floor", ac.mSGControl->getSceneGraph()->getRoot(),
-                                                      /*Vector(-5, -2, -5)*/Vector(-3, -1.5, -3), 6, 0.5, 6, true);
-            ac.mSGControl->createRigidBody(node2->getData(), 1.0, true);
-            ac.mSGControl->createCollidable(node2->getData());
-
-
             // some boxes:
             for (int r = 0; r < 1; ++r)
             {
-                for (int c = 0; c < 2; ++c)
+                for (int c = 0; c < 1; ++c)
                 {
-                    if (c == 0)
-                    {
-                        SGLeafNode* node1 = ac.mSGControl->createBox("Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                                                                  Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
-                        ac.mSGControl->create3DGeometryFrom2D(node1, 0.15, 30);
-                        ac.mSGControl->createFEMObject(node1->getData());
-                        ac.mSGControl->createCollidable(node1->getData());
-                    }
-                    else
-                    {
-                        SGLeafNode* node1 = ac.mSGControl->createBox("Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                                                                  Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
-                        ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
-                        ac.mSGControl->createCollidable(node1->getData());
-                    }
-
+                    SGLeafNode* node1 = ac.mSGControl->createBox("Box", ac.mSGControl->getSceneGraph()->getRoot(),
+                                                              Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
+                    ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
+                    ac.mSGControl->createCollidable(node1->getData());
                 }
             }
         }

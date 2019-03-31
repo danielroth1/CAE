@@ -14,7 +14,10 @@ public:
 
     explicit QtMemberWidgetInteger(
             const std::shared_ptr<MemberAccessor<int>>& memberAccessor,
-            QWidget* parent = nullptr);
+            QWidget* parent = nullptr,
+            int min = 0,
+            int max = 100,
+            int singleStep = 1);
 
     virtual ~QtMemberWidgetInteger() override;
 

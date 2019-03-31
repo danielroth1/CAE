@@ -27,11 +27,18 @@ public:
 
     void addInteger(
             std::string name,
-            const std::shared_ptr<MemberAccessor<int>>& memberAccessor);
+            const std::shared_ptr<MemberAccessor<int>>& memberAccessor,
+            int min = 0,
+            int max = 100,
+            int singleStep = 1);
 
     void addDouble(
             std::string name,
-            const std::shared_ptr<MemberAccessor<double>>& memberAccessor);
+            const std::shared_ptr<MemberAccessor<double>>& memberAccessor,
+            double min = 0.0,
+            double max = 100.0,
+            double singleStep = 1.0,
+            int precision = 3);
 
 private:
     QGridLayout* mLayout;

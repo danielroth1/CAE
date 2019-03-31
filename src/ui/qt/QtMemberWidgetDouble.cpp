@@ -5,7 +5,11 @@
 
 QtMemberWidgetDouble::QtMemberWidgetDouble(
         const std::shared_ptr<MemberAccessor<double>>& memberAccessor,
-        QWidget* parent)
+        QWidget* parent,
+        double min,
+        double max,
+        double singleStep,
+        int precision)
     : QtMemberWidget<double>(memberAccessor, parent)
 {
     mSpinBox = new QDoubleSpinBox();
@@ -18,6 +22,10 @@ QtMemberWidgetDouble::QtMemberWidgetDouble(
     // Connect the check box
     QObject::connect(mSpinBox, SIGNAL(valueChanged(double)),
                      this, SLOT(valueChanged(double)));
+
+    mSpinBox->setRange(min, max);
+    mSpinBox->setDecimals(precision);
+    mSpinBox->setSingleStep(singleStep);
 }
 
 QtMemberWidgetDouble::~QtMemberWidgetDouble()

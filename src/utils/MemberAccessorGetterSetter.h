@@ -27,10 +27,10 @@ public:
     virtual void setData(T data) override;
 
 private:
-    ObjType* mObject;
-
     std::function<T(ObjType*)> mGetter;
     std::function<void(ObjType*, T)> mSetter;
+
+    ObjType* mObject;
 };
 
 #include "MemberAccessorGetterSetter.cpp"

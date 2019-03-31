@@ -40,25 +40,31 @@ void SimulationUIControl::init(QWidget* parent)
     mWidget = new SimulationUIWidget(this, parent);
     mAc->getSimulationControl()->addListener(this);
 
-    std::shared_ptr<MemberAccessor<bool>> accessorBool =
-            MemberAccessorFactory::createGetterSetter<bool, SimulationControl>(
-                &SimulationControl::isSimulationPaused,
-                &SimulationControl::setSimulationPaused,
-                mAc->getSimulationControl(),
-                mAc->getSimulationControl()->getDomain());
-
     mWidget->getMembersWidget()->addBool(
-                "Simulation Paused", accessorBool);
+                "Simulation Paused",
+                MemberAccessorFactory::createGetterSetter<bool, SimulationControl>(
+                    &SimulationControl::isSimulationPaused,
+                    &SimulationControl::setSimulationPaused,
+                    mAc->getSimulationControl(),
+                    mAc->getSimulationControl()->getDomain()));
 
-    std::shared_ptr<MemberAccessor<int>> accessorInt =
-            MemberAccessorFactory::createGetterSetter<int, SimulationControl>(
-                &SimulationControl::getNumFEMCorrectionIterations,
-                &SimulationControl::setNumFEMCorrectionIterations,
-                mAc->getSimulationControl(),
-                mAc->getSimulationControl()->getDomain());
+    mWidget->getMembersWidget()->addDouble(
+                "Time Step Size",
+                MemberAccessorFactory::createGetterSetter<double, SimulationControl>(
+                    &SimulationControl::getStepSize,
+                    &SimulationControl::setStepSize,
+                    mAc->getSimulationControl(),
+                    mAc->getSimulationControl()->getDomain()),
+                1e-5, 10.0, 0.01);
 
     mWidget->getMembersWidget()->addInteger(
-                "FEM Correction Iterations", accessorInt);
+                "FEM Correction Iterations",
+                MemberAccessorFactory::createGetterSetter<int, SimulationControl>(
+                    &SimulationControl::getNumFEMCorrectionIterations,
+                    &SimulationControl::setNumFEMCorrectionIterations,
+                    mAc->getSimulationControl(),
+                    mAc->getSimulationControl()->getDomain()),
+                0, 100, 1);
 }
 
 QWidget* SimulationUIControl::getWidget()

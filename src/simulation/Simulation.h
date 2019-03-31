@@ -41,8 +41,10 @@ public:
     bool removeLinearForce(LinearForce* linearForce);
     std::vector<std::shared_ptr<LinearForce>>& getLinearForces();
 
-    Domain* getDomain();
+    void setTimeStep(double timeStep);
     double getTimeStep() const;
+
+    Domain* getDomain();
 
 
 protected:

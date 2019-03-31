@@ -100,6 +100,9 @@ public:
 
     bool isSimulationPaused();
 
+    void setStepSize(double stepSize);
+    double getStepSize() const;
+
     void setNumFEMCorrectionIterations(int correctionIterations);
     int getNumFEMCorrectionIterations() const;
 

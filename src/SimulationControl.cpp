@@ -205,6 +205,20 @@ bool SimulationControl::isSimulationPaused()
     return mPaused;
 }
 
+void SimulationControl::setStepSize(double stepSize)
+{
+    mStepSize = stepSize;
+    for (const std::shared_ptr<Simulation>& sim : mSimulations)
+    {
+        sim->setTimeStep(stepSize);
+    }
+}
+
+double SimulationControl::getStepSize() const
+{
+    return mStepSize;
+}
+
 void SimulationControl::setNumFEMCorrectionIterations(int correctionIterations)
 {
     mNumFEMCorrectionIterations = correctionIterations;

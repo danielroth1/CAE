@@ -5,7 +5,10 @@
 
 QtMemberWidgetInteger::QtMemberWidgetInteger(
         const std::shared_ptr<MemberAccessor<int>>& memberAccessor,
-        QWidget* parent)
+        QWidget* parent,
+        int min,
+        int max,
+        int singleStep)
     : QtMemberWidget<int>(memberAccessor, parent)
 {
     mSpinBox = new QSpinBox();
@@ -18,6 +21,9 @@ QtMemberWidgetInteger::QtMemberWidgetInteger(
     // Connect the check box
     QObject::connect(mSpinBox, SIGNAL(valueChanged(int)),
                      this, SLOT(valueChanged(int)));
+
+    mSpinBox->setRange(min, max);
+    mSpinBox->setSingleStep(singleStep);
 }
 
 QtMemberWidgetInteger::~QtMemberWidgetInteger()
