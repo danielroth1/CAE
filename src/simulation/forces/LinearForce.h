@@ -1,7 +1,7 @@
 #ifndef LINEARFORCE_H
 #define LINEARFORCE_H
 
-#include "Constraint.h"
+#include "Force.h"
 #include "data_structures/DataStructures.h"
 #include "ui/UniqueVertex.h"
 
@@ -11,7 +11,7 @@
 
 // For now, this class holds the target vertex as Vector
 // and not as UniqueVertex
-class LinearForce : public Constraint
+class LinearForce : public Force
 {
 public:
     LinearForce(
@@ -21,9 +21,11 @@ public:
 
     virtual ~LinearForce() override;
 
+    virtual void applyForce() override;
+
     // Getter
-    const SimulationPointRef& getTargetVector() const;
-    const SimulationPointRef& getSourceVector() const;
+    SimulationPointRef& getTargetVector();
+    SimulationPointRef& getSourceVector();
     double getStrength() const;
 
     // Setter
@@ -32,8 +34,6 @@ public:
     void setStrength(double strength);
 
     // Visitor method
-    virtual void accept(ConstraintVisitor& cv) override;
-    virtual bool references(Constraint* c) override;
     virtual bool references(SimulationObject* so) override;
 
 private:

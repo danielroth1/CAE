@@ -4,7 +4,7 @@
 
 #include <rendering/Renderer.h>
 
-#include <simulation/constraints/LinearForce.h>
+#include <simulation/forces/LinearForce.h>
 
 #include <rendering/object/RenderLine.h>
 

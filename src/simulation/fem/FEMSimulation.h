@@ -75,23 +75,9 @@ public:
 
     void step() override;
 
-    // protected Simulation methods
-protected:
-    void actExternalForce(
-            SimulationObject* so,
-            ID vertexIndex,
-            Eigen::Vector force) override;
-
-    void actExternalForce(
-            SimulationObject* so,
-            Eigen::Vector r,
-            Eigen::Vector force) override;
-
 private:
 
     void solveExplicitly();
-
-    void applyLinearToExternalForces();
 
 //    std::vector<std::unique_ptr<SceneObject>> m_scene_objects;
     std::vector<std::shared_ptr<FEMObject>> mFEMObjects;

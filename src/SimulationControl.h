@@ -23,13 +23,14 @@ class CollisionManager;
 class CollisionManagerProxy;
 class Constraint;
 class Domain;
+class Force;
 class GLWidget;
 //class Selection;
 class FEMSimulation;
 class FEMSimulationProxy;
 class FEMObject;
 class RigidBody;
-class RigidCollisionSolver;
+class ImpulseConstraintSolver;
 class RigidSimulation;
 class RigidSimulationProxy;
 class SimulationControlListener;
@@ -76,15 +77,11 @@ public:
     void addTruncations(FEMObject* femObject, std::vector<ID> vectorIDs);
 
     // Adds the given linear force to the simulation and creates a
-    // LinearForceRenderModel. The render model isn't saved anywhere. It must
-    // be handled correctly for visualization.
-    //\return shared ptr to the render model
+    // LinearForceRenderModel.
     void addLinearForce(std::shared_ptr<LinearForce> linearForce);
 
     // Adds the given linear force to the simulation and creates a
-    // LinearForceRenderModel. The render model isn't saved anywhere. It must
-    // be handled correctly for visualization.
-    //\return shared ptr to the render model
+    // LinearForceRenderModel.
     void addLinearForce(
             SimulationObject* source, ID sourceVector,
             SimulationObject* target, ID targetVector,
@@ -121,8 +118,11 @@ public:
         // Removes all simulation objects from the simulation.
         void clearSimulationObjects();
 
-        void addConstraint(std::shared_ptr<Constraint> so);
-        void removeConstraint(Constraint* so);
+        void addForce(const std::shared_ptr<Force>& f);
+        void removeForce(const std::shared_ptr<Force>& f);
+
+        void addConstraint(const std::shared_ptr<Constraint>& c);
+        void removeConstraint(const std::shared_ptr<Constraint>& c);
 
         void addCollisionObject(std::shared_ptr<SimulationObject> so);
         void removeCollisionObject(const std::shared_ptr<SimulationObject>& so);
@@ -149,7 +149,6 @@ public:
                        const std::shared_ptr<SimulationProxy>& proxy);
     void removeSimulation(std::shared_ptr<Simulation>& simulation);
 
-
 public slots:
 
 //signals:
@@ -160,6 +159,8 @@ private:
 
     // Handles what happens after a simulation step
     void handleAfterStep();
+
+    void applyForces();
 
     ApplicationControl* mAc;
     UIControl* mUiControl;
@@ -182,8 +183,11 @@ private:
     std::vector<std::shared_ptr<Simulation>> mSimulations;
     std::vector<std::shared_ptr<SimulationProxy>> mSimulationProxies;
 
+    std::vector<std::shared_ptr<Force>> mForces;
+    std::vector<std::shared_ptr<Constraint>> mConstraints;
+
     std::shared_ptr<CollisionControl> mCollisionControl;
-    std::unique_ptr<RigidCollisionSolver> mRigidCollisionSolver;
+    std::unique_ptr<ImpulseConstraintSolver> mImpulseConstraintSolver;
 
     // Is owned by CollisionControl, SimulationControl, and
     // all Simulations

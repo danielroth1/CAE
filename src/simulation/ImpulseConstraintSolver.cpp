@@ -1,24 +1,24 @@
-#include "RigidBody.h"
-#include "RigidCollisionSolver.h"
-#include "RigidSimulation.h"
+#include "ImpulseConstraintSolver.h"
 
 #include <simulation/collision_detection/narrow/Collision.h>
 #include <iostream>
 #include <simulation/fem/FEMObject.h>
+#include <simulation/rigid/RigidBody.h>
+#include <simulation/constraints/CollisionConstraint.h>
 
 using namespace Eigen;
 
-RigidCollisionSolver::RigidCollisionSolver()
+ImpulseConstraintSolver::ImpulseConstraintSolver()
 {
 
 }
 
-RigidCollisionSolver::~RigidCollisionSolver()
+ImpulseConstraintSolver::~ImpulseConstraintSolver()
 {
 
 }
 
-void RigidCollisionSolver::initialize(
+void ImpulseConstraintSolver::initialize(
         std::vector<Collision>& collisions,
         double stepSize,
         double restitution,
@@ -51,7 +51,7 @@ void RigidCollisionSolver::initialize(
     }
 }
 
-void RigidCollisionSolver::solveConstraints(int maxIterations, double maxConstraintError)
+void ImpulseConstraintSolver::solveConstraints(int maxIterations, double maxConstraintError)
 {
     size_t validConstraints = 0;
 
@@ -85,11 +85,12 @@ void RigidCollisionSolver::solveConstraints(int maxIterations, double maxConstra
     std::cout << "took " << iterCount << " iterations\n";
 }
 
-bool RigidCollisionSolver::solveConstraint(CollisionConstraint& cc, double maxConstraintError)
+bool ImpulseConstraintSolver::solveConstraint(
+        CollisionConstraint& cc, double maxConstraintError)
 {
 
     // speed at
-    Collision& c = cc.collision;
+    Collision& c = cc.getCollision();
 
     Eigen::Vector p1 = calculateRelativePoint(c.getSimulationObjectA(), c.getPointA());
     Eigen::Vector p2 = calculateRelativePoint(c.getSimulationObjectB(), c.getPointB());
@@ -99,18 +100,17 @@ bool RigidCollisionSolver::solveConstraint(CollisionConstraint& cc, double maxCo
                 calculateSpeed(c.getSimulationObjectB(), p2, c.getVertexIndexB()),
                 c.getNormal());
 
-    Vector deltaUNormalRel = cc.targetUNormalRel - uRel;
+    Vector deltaUNormalRel = cc.getTargetUNormalRel() - uRel;
     if (deltaUNormalRel.norm() < maxConstraintError)
     {
         return true;
     }
-    Vector impulse = cc.impulseFactor * deltaUNormalRel;
-    if (c.getNormal().dot(cc.sumOfAllAppliedImpulses + impulse) < 0/* && cc.impulseApplied*/)
+    Vector impulse = cc.getImpulseFactor() * deltaUNormalRel;
+    if (c.getNormal().dot(cc.getSumOfAllAppliedImpulses() + impulse) < 0)
     {
-        impulse = -cc.sumOfAllAppliedImpulses;
+        impulse = -cc.getSumOfAllAppliedImpulses();
     }
-    cc.impulseApplied = true;
-    cc.sumOfAllAppliedImpulses += impulse;
+    cc.setSumOfAllAppliedImpulses(cc.getSumOfAllAppliedImpulses() + impulse);
 
     applyImpulse(c.getSimulationObjectA(), impulse, p1, c.getVertexIndexA());
     applyImpulse(c.getSimulationObjectB(), -impulse, p2, c.getVertexIndexB());
@@ -118,7 +118,13 @@ bool RigidCollisionSolver::solveConstraint(CollisionConstraint& cc, double maxCo
     return false;
 }
 
-Matrix3d RigidCollisionSolver::calculateK(
+bool ImpulseConstraintSolver::solveConstraint(
+        BallJoint& ballJoint, double maxConstraintError)
+{
+    // TODO: implement this
+}
+
+Matrix3d ImpulseConstraintSolver::calculateK(
         SimulationObject* so,
         const Vector& point,
         const ID vertexIndex)
@@ -143,7 +149,7 @@ Matrix3d RigidCollisionSolver::calculateK(
     return Eigen::Matrix3d::Identity();
 }
 
-Vector RigidCollisionSolver::calculateRelativeSpeed(
+Vector ImpulseConstraintSolver::calculateRelativeSpeed(
         const Vector& relativeSpeedA,
         const Vector& relativeSpeedB,
         const Vector& normal)
@@ -151,7 +157,7 @@ Vector RigidCollisionSolver::calculateRelativeSpeed(
     return (relativeSpeedA - relativeSpeedB).dot(normal) * normal;
 }
 
-Vector RigidCollisionSolver::calculateSpeed(
+Vector ImpulseConstraintSolver::calculateSpeed(
         SimulationObject* so,
         const Vector& point,
         const ID vertexIndex)
@@ -174,7 +180,7 @@ Vector RigidCollisionSolver::calculateSpeed(
     return Vector::Zero();
 }
 
-void RigidCollisionSolver::applyImpulse(
+void ImpulseConstraintSolver::applyImpulse(
         SimulationObject* so,
         const Vector& impulse,
         const Vector& point,
@@ -199,7 +205,7 @@ void RigidCollisionSolver::applyImpulse(
     }
 }
 
-Vector RigidCollisionSolver::calculateRelativePoint(SimulationObject* so, const Vector& pointGlobal)
+Vector ImpulseConstraintSolver::calculateRelativePoint(SimulationObject* so, const Vector& pointGlobal)
 {
     if (so->getType() == SimulationObject::Type::RIGID_BODY)
     {
@@ -207,18 +213,4 @@ Vector RigidCollisionSolver::calculateRelativePoint(SimulationObject* so, const 
         return pointGlobal - rb->getCenterOfMass();
     }
     return pointGlobal;
-}
-
-RigidCollisionSolver::CollisionConstraint::CollisionConstraint(
-        Collision& _collision,
-        Eigen::Vector _targetUNormalRel,
-        Eigen::Vector _sumOfAllAppliedImpulses,
-        double _impulseFactor)
-    : collision(_collision)
-    , targetUNormalRel(_targetUNormalRel)
-    , sumOfAllAppliedImpulses(_sumOfAllAppliedImpulses)
-    , impulseFactor(_impulseFactor)
-    , impulseApplied(false)
-{
-
 }

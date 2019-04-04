@@ -1,7 +1,7 @@
 #include "FEMSimulation.h"
 #include "FEMObject.h"
 #include "ui/UniqueVertex.h"
-#include "simulation/constraints/LinearForce.h"
+#include "simulation/forces/LinearForce.h"
 #include <scene/data/simulation/FEMData.h>
 #include <simulation/SimulationObjectVisitor.h>
 #include <simulation/constraints/Truncation.h>
@@ -103,8 +103,6 @@ void FEMSimulation::initializeStep()
 
         fo->updateFEM(true);
     }
-
-    applyLinearToExternalForces();
 }
 
 void FEMSimulation::solve(bool firstStep)
@@ -177,79 +175,10 @@ void FEMSimulation::step()
     solve(true);
 }
 
-void FEMSimulation::actExternalForce(SimulationObject* so, ID vertexIndex, Vector force)
-{
-    class ForceActingVisitor : public SimulationObjectVisitor
-    {
-    public:
-        ForceActingVisitor(ID _id, Vector& _force)
-            : id(_id)
-            , force(_force)
-        {
-
-        }
-
-        virtual void visit(FEMObject& femObject)
-        {
-            femObject.getExternalForce(id) += force;
-            // TODO inform about geometric data update?
-//            femObject.setRequiringUpdate(true);
-        }
-
-        virtual void visit(SimulationPoint& /*sp*/)
-        {
-            // SimulationPoints are ignored by this simulation
-        }
-
-
-        virtual void visit(RigidBody& /*femObject*/)
-        {
-            // TODO: act external force on rigid body
-        }
-
-        ID id;
-        Vector& force;
-    } v(vertexIndex, force);
-
-    so->accept(v);
-}
-
-void FEMSimulation::actExternalForce(
-        SimulationObject* /*so*/,
-        Vector /*r*/,
-        Vector /*force*/)
-{
-    // TODO: not implemented yet
-}
-
 void FEMSimulation::solveExplicitly()
 {
     for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
     {
         fo->solveFEMExplicitly(mTimeStep, true);
-    }
-}
-
-void FEMSimulation::applyLinearToExternalForces()
-{
-    for (const std::shared_ptr<LinearForce>& lf : mLinearForces)
-    {
-//        int so_id = lf->getSourceVertex().getSimulationObjectId();
-//        int vertex_id = lf->getSourceVertexId().getVertexId();
-//        FEMObject* so = static_cast<FEMObject*>(mFEMObjects[static_cast<unsigned int>(so_id)]);
-//        Eigen::Vector source_vertex = so->getPositions()[static_cast<unsigned int>(vertex_id)];
-        // with or without normalize decides if length plays a role or not.
-        Eigen::Vector force = lf->getStrength() * 100 *
-                (lf->getTargetVector().getPoint() -
-                 lf->getSourceVector().getPoint()).normalized();
-//        SimulationObject* sourceObject = lf->getSourceSimulationObject();
-                //static_cast<FEMData*>(lf->getSourceVertex().getSceneLeafData()->getSimulationData())->getFEMObject();
-        // ourceObject->getExternalForce(lf->getSourceVectorID()) += force;
-        const SimulationPointRef& source = lf->getSourceVector();
-        const SimulationPointRef& target = lf->getTargetVector();
-        Simulation::actExternalForce(source, force);
-        Simulation::actExternalForce(target, -force);
-
-
     }
 }

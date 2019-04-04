@@ -1,9 +1,8 @@
 #include "RigidBody.h"
-#include "RigidCollisionSolver.h"
 #include "RigidSimulation.h"
 
 #include <simulation/collision_detection/CollisionManager.h>
-#include <simulation/constraints/LinearForce.h>
+#include <simulation/forces/LinearForce.h>
 #include <simulation/SimulationObjectVisitor.h>
 #include <scene/data/GeometricData.h>
 #include <scene/data/geometric/Polygon.h>
@@ -56,7 +55,6 @@ void RigidSimulation::initializeStep()
         rb->update();
         rb->prepareNewStep();
     }
-    applyLinearToExternalForces();
 
     // gravity
     for (std::shared_ptr<RigidBody>& rb : mRigidBodies)
@@ -115,78 +113,6 @@ void RigidSimulation::step()
     solve();
 }
 
-void RigidSimulation::actExternalForce(SimulationObject* so, ID vertexIndex, Vector force)
-{
-    // apply forces
-    class ForceActingVisitor : public SimulationObjectVisitor
-    {
-    public:
-        ForceActingVisitor(ID _id, Vector& _force)
-            : id(_id)
-            , force(_force)
-        {
-        }
-
-        virtual void visit(FEMObject& /*femObject*/) override
-        {
-            // Deformables are ignored by this simulation
-        }
-
-        virtual void visit(SimulationPoint& /*sp*/) override
-        {
-            // SimulationPoints are ignored by this simulation
-        }
-
-        virtual void visit(RigidBody& rigid) override
-        {
-            // position bs is not w.r.t. world space, cant just subsract world space center of mass
-            rigid.applyForce(
-                        rigid.getOrientation().toRotationMatrix() *
-                            rigid.getPolygon()->getPositionBS(id), force);
-//            std::cout << (rigid.getPolygon().getPosition(id) - rigid.getPosition()).transpose() << "\n";
-        }
-
-        ID id;
-        Vector& force;
-    } visitor(vertexIndex, force);
-
-    so->accept(visitor);
-}
-
-void RigidSimulation::actExternalForce(SimulationObject* so, Vector r, Vector force)
-{
-    // apply forces
-    class ForceActingVisitor : public SimulationObjectVisitor
-    {
-    public:
-        ForceActingVisitor(Vector& _r, Vector& _force)
-            : r(_r)
-            , force(_force)
-        {
-        }
-
-        virtual void visit(FEMObject& /*femObject*/) override
-        {
-            // Deformables are ignored by this simulation
-        }
-
-        virtual void visit(SimulationPoint& /*sp*/) override
-        {
-            // SimulationPoints are ignored by this simulation
-        }
-
-        virtual void visit(RigidBody& rigid) override
-        {
-            rigid.applyImpulse(r, force);
-        }
-
-        Vector& r;
-        Vector& force;
-    } visitor(r, force);
-
-    so->accept(visitor);
-}
-
 Vector RigidSimulation::calculateRelativeSpeed(
         RigidBody* body1, const Vector& r1,
         RigidBody* body2, const Vector& r2,
@@ -213,19 +139,3 @@ void RigidSimulation::solveExplicitly()
 {
 
 }
-
-void RigidSimulation::applyLinearToExternalForces()
-{
-    for (const std::shared_ptr<LinearForce>& lf : mLinearForces)
-    {
-        // force = target - source
-        Eigen::Vector3d force = lf->getTargetVector().getPoint() - lf->getSourceVector().getPoint();
-
-        // apply force to source
-        Simulation::actExternalForce(lf->getSourceVector(), force);
-
-        // apply force to target
-        Simulation::actExternalForce(lf->getTargetVector(), -force);
-    }
-}
-

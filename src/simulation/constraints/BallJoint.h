@@ -4,21 +4,37 @@
 #include "Constraint.h"
 #include "data_structures/DataStructures.h"
 
+#include <simulation/references/SimulationPointRef.h>
+
 class RigidBody;
 
 class BallJoint : public Constraint
 {
 public:
-    BallJoint(RigidBody* rb1, RigidBody* rb2);
+    BallJoint(SimulationPointRef pointA, SimulationPointRef pointB);
 
-    double calculateValue();
+    const Eigen::Vector& getTargetURel() const;
 
-    Eigen::Vector calculateGradient();
+    const Eigen::Vector& getSumOfAllAppliedImpulses() const;
+    void setSumOfAllAppliedImpulses(const Eigen::Vector& impulses);
 
+    double getImpulseFactor();
+    void setImpulseFactor(double impulseFactor);
 
     // Constraint interface
 public:
     virtual void accept(ConstraintVisitor& cv);
+    virtual bool references(Constraint* c) = 0;
+    virtual bool references(SimulationObject* so) = 0;
+
+private:
+
+    SimulationPointRef mPointA;
+    SimulationPointRef mPointB;
+
+    Eigen::Vector mTargetURel;
+    Eigen::Vector mSumOfAllAppliedImpulses;
+    double mImpulseFactor; // 1 / (n^T K_aa + K_bb n) * n
 
 };
 

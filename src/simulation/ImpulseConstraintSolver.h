@@ -1,54 +1,41 @@
-#ifndef RIGIDCOLLISIONSOLVER_H
-#define RIGIDCOLLISIONSOLVER_H
+#ifndef ImpulseConstraintSolver_H
+#define ImpulseConstraintSolver_H
+
+#include "ConstraintSolver.h"
 
 #include <data_structures/DataStructures.h>
 #include <memory>
 #include <vector>
 
 class Collision;
+class CollisionConstraint;
 class FEMObject;
 class RigidBody;
 class SimulationObject;
 
 // Becomes invalid after collideAll()
-class RigidCollisionSolver
+class ImpulseConstraintSolver : public ConstraintSolver
 {
-    // Forward declaration of nested class must be inside class definition.
-    class CollisionConstraint;
-
 public:
 
-    RigidCollisionSolver();
+    ImpulseConstraintSolver();
 
-    ~RigidCollisionSolver();
+    ~ImpulseConstraintSolver() override;
 
     void initialize(std::vector<Collision>& collisions,
                     double stepSize,
                     double restitution,
                     double maxCollisionDistance);
 
-    void solveConstraints(int maxIterations, double maxConstraintError);
+    void solveConstraints(int maxIterations, double maxConstraintError) override;
 
     // Returns true if the constraint was already valid and no impulse was
     // applied, else returns false.
-    bool solveConstraint(CollisionConstraint& cc, double maxConstraintError);
+    bool solveConstraint(CollisionConstraint& cc, double maxConstraintError) override;
 
+    bool solveConstraint(BallJoint& ballJoint, double maxConstraintError) override;
 
 private:
-    class CollisionConstraint
-    {
-    public:
-        CollisionConstraint(Collision& _collision,
-                            Eigen::Vector _targetUNormalRel,
-                            Eigen::Vector _sumOfAllAppliedImpulses,
-                            double _impulseFactor);
-
-        Collision& collision;
-        Eigen::Vector targetUNormalRel;
-        Eigen::Vector sumOfAllAppliedImpulses;
-        double impulseFactor; // 1 / (n^T K_aa + K_bb + n) * n
-        bool impulseApplied;
-    };
 
     Eigen::Matrix3d calculateK(
             SimulationObject* so,
@@ -75,7 +62,6 @@ private:
             SimulationObject* so,
             const Eigen::Vector& pointGlobal);
 
-    std::vector<CollisionConstraint> mCollisionConstraints;
 };
 
-#endif // RIGIDCOLLISIONSOLVER_H
+#endif // ImpulseConstraintSolver_H

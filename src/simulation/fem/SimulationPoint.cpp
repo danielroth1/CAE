@@ -22,6 +22,18 @@ void SimulationPoint::accept(SimulationObjectVisitor& visitor)
     visitor.visit(*this);
 }
 
+void SimulationPoint::applyImpulse(
+        SimulationPointRef& /*ref*/, const Vector& /*impulse*/)
+{
+
+}
+
+void SimulationPoint::applyForce(
+        SimulationPointRef& /*ref*/, const Vector& /*force*/)
+{
+
+}
+
 Eigen::Vector& SimulationPoint::getPosition(size_t /*id*/)
 {
     return mPoint.getPosition(0);

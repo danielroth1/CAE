@@ -10,6 +10,13 @@
 
 #include <iostream>
 
+#include <scene/data/references/GeometricPointRef.h>
+#include <scene/data/references/GeometricPointRefVisitor.h>
+#include <scene/data/references/GeometricVertexRef.h>
+#include <scene/data/references/PolygonVectorRef.h>
+
+#include <simulation/references/SimulationPointRef.h>
+
 using namespace Eigen;
 
 RigidBody::RigidBody(
@@ -124,6 +131,16 @@ void RigidBody::revertPositions()
     update();
 }
 
+void RigidBody::applyImpulse(SimulationPointRef& ref, const Eigen::Vector& impulse)
+{
+    applyImpulse(getR(ref), impulse);
+}
+
+void RigidBody::applyForce(SimulationPointRef& ref, const Eigen::Vector& force)
+{
+    applyForce(getR(ref), force);
+}
+
 void RigidBody::applyImpulse(
         const Eigen::Vector3d& r,
         const Eigen::Vector3d& p)
@@ -154,6 +171,35 @@ void RigidBody::applyDamping()
 {
     mV *= (1 - mTranslationalDamping);
     mOmega *= (1 - mRotationalDamping);
+}
+
+Vector RigidBody::getR(SimulationPointRef& pointRef)
+{
+    class GetRVisitor : public GeometricPointRefVisitor
+    {
+    public:
+        GetRVisitor(RigidBody& _rb)
+            : rb(_rb)
+        {
+        }
+
+        virtual void visit(GeometricVertexRef& ref)
+        {
+            r = rb.getOrientation().toRotationMatrix() *
+                    rb.getPosition(ref.getIndex());
+        }
+
+        virtual void visit(PolygonVectorRef& ref)
+        {
+            r = rb.getOrientation().toRotationMatrix() * ref.getR();
+        }
+
+        RigidBody& rb;
+        Eigen::Vector r;
+    } visitor(*this);
+
+    pointRef.getGeometricPointRef()->accept(visitor);
+    return visitor.r;
 }
 
 Vector RigidBody::calculateSpeedAt(const Vector& r)

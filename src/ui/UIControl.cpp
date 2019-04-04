@@ -40,7 +40,7 @@
 #include "rendering/ViewFrustum.h"
 #include "scene/VertexGroupManager.h"
 #include "ui/qt/QGroupsListWidget.h"
-#include "simulation/constraints/LinearForce.h"
+#include "simulation/forces/LinearForce.h"
 #include <iostream>
 #include <math.h>
 #include <memory>

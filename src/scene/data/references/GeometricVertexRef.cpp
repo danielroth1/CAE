@@ -15,6 +15,11 @@ ID GeometricVertexRef::getIndex()
     return mIndex;
 }
 
+GeometricPointRef::Type GeometricVertexRef::getType()
+{
+    return Type::GEOMETRIC_VERTEX;
+}
+
 Vector GeometricVertexRef::getPoint() const
 {
     return mGeometricData->getPosition(mIndex);

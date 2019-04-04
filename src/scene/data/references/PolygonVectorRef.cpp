@@ -16,6 +16,11 @@ Vector PolygonVectorRef::getR() const
     return mR;
 }
 
+GeometricPointRef::Type PolygonVectorRef::getType()
+{
+    return Type::POLYGON_VECTOR;
+}
+
 Vector PolygonVectorRef::getPoint() const
 {
     switch(mPolygon->getPositionType())

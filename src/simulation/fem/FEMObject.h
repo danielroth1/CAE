@@ -39,6 +39,12 @@ public:
 
     virtual void accept(SimulationObjectVisitor& visitor) override;
 
+    virtual void applyImpulse(
+            SimulationPointRef& ref, const Eigen::Vector& impulse) override;
+
+    virtual void applyForce(
+            SimulationPointRef& ref, const Eigen::Vector& force) override;
+
     // Getters
     ID getId() const;
 
@@ -87,6 +93,7 @@ public:
     void updateGeometricData();
 
     void applyImpulse(ID vertexIndex, const Eigen::Vector& impulse);
+    void applyForce(ID vertexIndex, const Eigen::Vector& force);
 
     Eigen::Vector& x(unsigned int i);
     Eigen::Vector& y(unsigned int i);

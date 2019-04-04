@@ -7,7 +7,10 @@
 #include <QDebug>
 #include <iostream>
 #include <scene/data/geometric/Polygon3D.h>
+#include <scene/data/references/GeometricPointRefVisitor.h>
+#include <scene/data/references/GeometricVertexRef.h>
 #include <simulation/constraints/Truncation.h>
+#include <simulation/references/SimulationPointRef.h>
 
 // FEMObject without initialPositions
 
@@ -100,6 +103,62 @@ SimulationObject::Type FEMObject::getType() const
 void FEMObject::accept(SimulationObjectVisitor& visitor)
 {
     visitor.visit(*this);
+}
+
+void FEMObject::applyImpulse(SimulationPointRef& ref, const Vector& impulse)
+{
+    class ApplyImpulseVisitor : public GeometricPointRefVisitor
+    {
+    public:
+        ApplyImpulseVisitor(FEMObject& _femObj, const Eigen::Vector& _impulse)
+            : femObj(_femObj)
+            , impulse(_impulse)
+        {
+        }
+
+        virtual void visit(GeometricVertexRef& ref)
+        {
+            femObj.applyImpulse(ref.getIndex(), impulse);
+        }
+
+        virtual void visit(PolygonVectorRef& /*ref*/)
+        {
+            // nothing to do here
+        }
+
+        FEMObject& femObj;
+        const Eigen::Vector& impulse;
+    } visitor(*this, impulse);
+
+    ref.getGeometricPointRef()->accept(visitor);
+}
+
+void FEMObject::applyForce(SimulationPointRef& ref, const Vector& force)
+{
+    class ApplyForceVisitor : public GeometricPointRefVisitor
+    {
+    public:
+        ApplyForceVisitor(FEMObject& _femObj, const Eigen::Vector& _force)
+            : femObj(_femObj)
+            , force(_force)
+        {
+        }
+
+        virtual void visit(GeometricVertexRef& ref)
+        {
+            femObj.applyForce(ref.getIndex(), force);
+        }
+
+        virtual void visit(PolygonVectorRef& /*ref*/)
+        {
+            // nothing to do here
+        }
+
+        FEMObject& femObj;
+        const Eigen::Vector& force;
+    } visitor(*this, force);
+
+    ref.getGeometricPointRef()->accept(visitor);
 }
 
 ID FEMObject::getId() const
@@ -425,6 +484,11 @@ void FEMObject::applyImpulse(ID vertexIndex, const Vector& impulse)
         mVelocities[vertexIndex] += 1 / mMasses[vertexIndex] * impulse;
     else
         std::cout << "error: mass is negative\n";
+}
+
+void FEMObject::applyForce(ID vertexIndex, const Vector& force)
+{
+    mForcesExt[vertexIndex] += force;
 }
 
 void FEMObject::updateElasticForces()

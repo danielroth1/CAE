@@ -10,11 +10,18 @@ class GeometricPointRefVisitor;
 class GeometricPointRef// : public PointRef<GeometricData*, Eigen::Vector&>
 {
 public:
+    enum class Type
+    {
+        GEOMETRIC_VERTEX, POLYGON_VECTOR
+    };
+
     GeometricPointRef(GeometricData* geometricData);
 
     virtual ~GeometricPointRef();
 
     GeometricData* getGeometricData();
+
+    virtual Type getType() = 0;
 
     virtual Eigen::Vector getPoint() const = 0;
 

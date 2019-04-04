@@ -3,6 +3,7 @@
 
 #include <data_structures/DataStructures.h>
 #include <data_structures/references/PointRef.h>
+#include <simulation/SimulationObjectVisitor.h>
 
 #include <memory>
 
@@ -47,14 +48,46 @@ public:
     SimulationObject* getSimulationObject() const;
     GeometricPointRef* getGeometricPointRef() const;
 
+    virtual Eigen::Vector getPoint();
+
     // PointRef interface
 public:
-    virtual Eigen::Vector getPoint() const;
+    virtual Eigen::Vector getGeometricPoint() const;
 
 private:
+    class GetSimulationPointDispatcher : public SimulationObjectVisitor
+    {
+    public:
+        GetSimulationPointDispatcher(SimulationPointRef& _ref);
+
+        virtual void visit(FEMObject& femObject)
+        {
+            point = ref.getPoint(femObject);
+        }
+
+        virtual void visit(SimulationPoint& sp)
+        {
+            point = ref.getPoint(sp);
+        }
+
+        virtual void visit(RigidBody& rigidBody)
+        {
+            point = ref.getPoint(rigidBody);
+        }
+
+        SimulationPointRef& ref;
+        Eigen::Vector point;
+    };
+
+    virtual Eigen::Vector getPoint(SimulationPoint& sp);
+    virtual Eigen::Vector getPoint(RigidBody& rb);
+    virtual Eigen::Vector getPoint(FEMObject& femObj);
+
     std::unique_ptr<GeometricPointRef> mGeometricPointRef;
 
     SimulationObject* mSimulationObject;
+
+    GetSimulationPointDispatcher mGetSimulationPointDispatcher;
 
 };
 

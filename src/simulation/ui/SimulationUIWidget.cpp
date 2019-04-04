@@ -93,14 +93,14 @@ void SimulationUIWidget::onConstraintAdded(Constraint* constraint)
             name = "unknown type";
         }
 
-        virtual void visit(LinearForce* /*linearForce*/)
+        virtual void visit(BallJoint* /*ballJoint*/)
         {
-            name = "Linear Force";
+            name = "Balljoint";
         }
 
-        virtual void visit(Truncation* /*truncation*/)
+        virtual void visit(CollisionConstraint* /*cc*/)
         {
-            name = "Truncation";
+            name = "Collision";
         }
 
         std::string name;

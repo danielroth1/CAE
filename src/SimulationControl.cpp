@@ -8,7 +8,7 @@
 #include <QDebug>
 #include <simulation/fem/FEMSimulation.h>
 #include <simulation/constraints/ConstraintVisitor.h>
-#include <simulation/constraints/LinearForce.h>
+#include <simulation/forces/LinearForce.h>
 #include <simulation/constraints/Truncation.h>
 #include <simulation/Simulation.h>
 #include <simulation/SimulationControlListener.h>
@@ -24,7 +24,7 @@
 #include <simulation/collision_detection/CollisionManager.h>
 #include <simulation/models/LinearForceRenderModel.h>
 #include <simulation/rigid/RigidBody.h>
-#include <simulation/rigid/RigidCollisionSolver.h>
+#include <simulation/ImpulseConstraintSolver.h>
 #include <simulation/rigid/RigidSimulation.h>
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon3D.h>
@@ -44,7 +44,7 @@ SimulationControl::SimulationControl()
     mSimulationThread = new SimulationThread(this);
     mDomain = new Domain();
     mPaused = false;
-    mRigidCollisionSolver = std::make_unique<RigidCollisionSolver>();
+    mImpulseConstraintSolver = std::make_unique<ImpulseConstraintSolver>();
     mSimulationThread->addDomain(mDomain);
 
     mStepSize = 0.01;
@@ -114,10 +114,7 @@ void SimulationControl::addTruncations(FEMObject* femObject, std::vector<ID> vec
 void SimulationControl::addLinearForce(
         std::shared_ptr<LinearForce> linearForce)
 {
-    for (std::shared_ptr<SimulationProxy>& simulationProxy : mSimulationProxies)
-    {
-        simulationProxy->addLinearForce(linearForce);
-    }
+    addForce(linearForce);
 
     std::shared_ptr<LinearForceRenderModel> renderModel =
             std::make_shared<LinearForceRenderModel>(linearForce);
@@ -137,14 +134,7 @@ void SimulationControl::addLinearForce(
                 strength);
 
     // add to simulation
-    for (std::shared_ptr<SimulationProxy>& simulationProxy : mSimulationProxies)
-    {
-        simulationProxy->addLinearForce(
-                    static_pointer_cast<LinearForce>(lf->shared_from_this()));
-    }
-
-
-    std::cout << "count = " << lf.use_count() <<"\n";
+    addForce(lf);
 
     // create render model and add to renderer
     std::shared_ptr<LinearForceRenderModel> renderModel =
@@ -360,55 +350,47 @@ void SimulationControl::clearSimulationObjects()
     }
 }
 
-void SimulationControl::addConstraint(std::shared_ptr<Constraint> so)
+void SimulationControl::addForce(const std::shared_ptr<Force>& f)
 {
-    class CV : public ConstraintVisitor
+    // Forces don't need to be added to the simulations
+    // they can be applied independently?
+    // why are the simulations even needed? maybe
+    // renaming them makes sense?
+    // FEMSolver
+    // RigidSolver...
+
+    auto it = std::find(mForces.begin(), mForces.end(), f);
+    if (it == mForces.end())
     {
-    public:
-        CV(SimulationControl& _sc)
-            : sc(_sc)
-        {
-
-        }
-
-        virtual void visit(LinearForce* linearForce)
-        {
-            for (std::shared_ptr<SimulationProxy>& simulationProxy : sc.mSimulationProxies)
-            {
-                simulationProxy->addLinearForce(
-                            static_pointer_cast<LinearForce>(linearForce->shared_from_this()));
-            }
-
-        }
-
-        SimulationControl& sc;
-    } visitor(*this);
-    so->accept(visitor);
+        mForces.push_back(f);
+    }
 }
 
-void SimulationControl::removeConstraint(Constraint* so)
+void SimulationControl::removeForce(const std::shared_ptr<Force>& f)
 {
-    class CV : public ConstraintVisitor
+    auto it = std::find(mForces.begin(), mForces.end(), f);
+    if (it != mForces.end())
     {
-    public:
-        CV(SimulationControl& _sc)
-            : sc(_sc)
-        {
+        mForces.erase(it);
+    }
+}
 
-        }
+void SimulationControl::addConstraint(const std::shared_ptr<Constraint>& c)
+{
+    auto it = std::find(mConstraints.begin(), mConstraints.end(), c);
+    if (it == mConstraints.end())
+    {
+        mConstraints.push_back(c);
+    }
+}
 
-        virtual void visit(LinearForce* linearForce)
-        {
-            for (std::shared_ptr<SimulationProxy>& simulationProxy : sc.mSimulationProxies)
-            {
-                simulationProxy->removeLinearForce(linearForce);
-            }
-
-        }
-
-        SimulationControl& sc;
-    } visitor(*this);
-    so->accept(visitor);
+void SimulationControl::removeConstraint(const std::shared_ptr<Constraint>& c)
+{
+    auto it = std::find(mConstraints.begin(), mConstraints.end(), c);
+    if (it != mConstraints.end())
+    {
+        mConstraints.erase(it);
+    }
 }
 
 void SimulationControl::addCollisionObject(std::shared_ptr<SimulationObject> so)
@@ -474,6 +456,8 @@ void SimulationControl::step()
     mRigidSimulation->initializeStep();
     mFEMSimulation->initializeStep();
 
+    applyForces();
+
     mRigidSimulation->solve();
     mFEMSimulation->solve(true); // x + x^{FEM}, v + v^{FEM}
 
@@ -481,7 +465,7 @@ void SimulationControl::step()
     if (mCollisionManager->collideAll())
     {
         // create collision constraints w.r.t. x + x^{FEM}
-        mRigidCollisionSolver->initialize(
+        mImpulseConstraintSolver->initialize(
                     mCollisionManager->getCollider()->getCollisions(),
                     mStepSize,
                     0.2, // Restitution (bounciness factor)
@@ -491,7 +475,7 @@ void SimulationControl::step()
         mRigidSimulation->revertPositions();
         mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-        mRigidCollisionSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
+        mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
 
         for (int i = 0; i < mNumFEMCorrectionIterations; ++i)
         {
@@ -502,7 +486,7 @@ void SimulationControl::step()
 
             mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-            mRigidCollisionSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
+            mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
         }
         // x, v + v^{FEM} + v^{col}
 
@@ -562,5 +546,13 @@ void SimulationControl::removeSimulation(std::shared_ptr<Simulation>& simulation
 void SimulationControl::handleAfterStep()
 {
     mCollisionManager->updateAll();
-//    repaint();
+    //    repaint();
+}
+
+void SimulationControl::applyForces()
+{
+    for (const std::shared_ptr<Force>& f : mForces)
+    {
+        f->applyForce();
+    }
 }

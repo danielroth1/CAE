@@ -7,6 +7,7 @@
 
 class GeometricData;
 class SimulationObjectVisitor;
+class SimulationPointRef;
 
 // A SimulationObject is a wrapper class for scene objects.
 // Each Simulation type provides his own SimulationObject that must
@@ -62,6 +63,11 @@ public:
     virtual Type getType() const = 0;
 
     virtual void accept(SimulationObjectVisitor& visitor) = 0;
+
+    virtual void applyImpulse(
+            SimulationPointRef& ref, const Eigen::Vector& impulse) = 0;
+    virtual void applyForce(
+            SimulationPointRef& ref, const Eigen::Vector& force) = 0;
 
     virtual Eigen::Vector& getPosition(size_t id) = 0;
 

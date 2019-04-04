@@ -14,7 +14,7 @@ public:
 
     virtual void accept(CollisionObjectVisitor& visitor) = 0;
 
-    virtual Eigen::Vector getPosition() const = 0;
+    virtual Eigen::Vector getPosition() = 0;
 };
 
 #endif // COLLISIONOBJECT_H

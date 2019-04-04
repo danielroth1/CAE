@@ -35,7 +35,7 @@ public:
     // This method dispatches to the other actExternalForce() methods, depending
     // on if the force is acted w.r.t. an arbitrary vector or w.r.t. a vertex with
     // index.
-    void actExternalForce(const SimulationPointRef& ref, Eigen::Vector force);
+    void actExternalForce(SimulationPointRef* ref, Eigen::Vector force);
 
     void addLinearForce(std::shared_ptr<LinearForce> linearForce);
     bool removeLinearForce(LinearForce* linearForce);
@@ -46,18 +46,7 @@ public:
 
     Domain* getDomain();
 
-
 protected:
-    virtual void actExternalForce(
-            SimulationObject* so,
-            ID vertexIndex,
-            Eigen::Vector force) = 0;
-
-    virtual void actExternalForce(
-            SimulationObject* so,
-            Eigen::Vector r,
-            Eigen::Vector force) = 0;
-
     Domain* mDomain;
 
     double mTimeStep;
@@ -67,7 +56,6 @@ protected:
     std::vector<std::shared_ptr<LinearForce>> mLinearForces;
 
     std::shared_ptr<CollisionManager> mCollisionManager;
-
 };
 
 PROXY_CLASS(SimulationProxy, Simulation, mS,
@@ -77,7 +65,6 @@ PROXY_CLASS(SimulationProxy, Simulation, mS,
 //            PROXY_FUNCTION(Simulation, mS, solveExplicitly, , )
 //            PROXY_FUNCTION(Simulation, mS, solve, , )
 //            PROXY_FUNCTION(Simulation, mS, update, , )
-//            PROXY_FUNCTION(Simulation, mS, applyLinearToExternalForces, , )
 
             PROXY_FUNCTION(Simulation, mS, addLinearForce,
                            PL(std::shared_ptr<LinearForce> linearForce),
@@ -88,7 +75,7 @@ PROXY_CLASS(SimulationProxy, Simulation, mS,
                            PL(linearForce))
 
             PROXY_FUNCTION(Simulation, mS, actExternalForce,
-                           PL(const SimulationPointRef& ref, Eigen::Vector force),
+                           PL(SimulationPointRef* ref, Eigen::Vector force),
                            PL(ref, force))
             )
 

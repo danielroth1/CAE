@@ -5,7 +5,6 @@
 
 class Domain;
 class RigidBody;
-class RigidCollisionSolver;
 
 class RigidSimulation : public Simulation
 {
@@ -58,16 +57,6 @@ public:
     virtual void initialize() override;
     virtual void step() override;
 
-    virtual void actExternalForce(
-            SimulationObject* so,
-            ID vertexIndex,
-            Eigen::Vector force) override;
-
-    virtual void actExternalForce(
-            SimulationObject* so,
-            Eigen::Vector r,
-            Eigen::Vector force) override;
-
     // Calculates and returns the relative speed of two
     // contact points in normal direction.
     static Eigen::Vector calculateRelativeSpeed(
@@ -86,7 +75,6 @@ public:
 private:
 
     void solveExplicitly();
-    void applyLinearToExternalForces();
 
 //    for(int i = 0; i < nCollisionIterations; ++i)
 //        applyCollisionCorrectionImpulses()

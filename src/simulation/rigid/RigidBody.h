@@ -6,6 +6,7 @@
 
 class Domain;
 class Polygon;
+class SimulationPointRef;
 
 // Rigid body does not depend on Geometric Data because
 // it should be as independent as possible.
@@ -47,6 +48,14 @@ public:
     virtual void revertPositions() override;
 
     // Rigid Dynamics Methods
+        virtual void applyImpulse(
+            SimulationPointRef& ref,
+            const Eigen::Vector& impulse) override;
+
+        virtual void applyForce(
+            SimulationPointRef& ref,
+            const Eigen::Vector& force) override;
+
         // \param r - the point on the body where the impulse is applied on
         // \param p - the impulse vector.
         void applyImpulse(
@@ -58,6 +67,8 @@ public:
                 const Eigen::Vector3d& force);
 
         void applyDamping();
+
+    Eigen::Vector getR(SimulationPointRef& pointRef);
 
     // Collision Resolution
 

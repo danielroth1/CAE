@@ -24,7 +24,7 @@ public:
     // CollisionObject interface
 public:
     virtual void accept(CollisionObjectVisitor& visitor) override;
-    virtual Eigen::Vector getPosition() const override;
+    virtual Eigen::Vector getPosition() override;
 
 private:
     SimulationPointRef mPointRef;

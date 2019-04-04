@@ -1,11 +1,18 @@
 #include "Simulation.h"
 #include "SimulationObject.h"
+#include "SimulationObjectVisitor.h"
 #include "ui/UniqueVertex.h"
-#include "simulation/constraints/LinearForce.h"
+#include "simulation/forces/LinearForce.h"
 
 #include <scene/data/references/GeometricPointRefVisitor.h>
 #include <scene/data/references/GeometricVertexRef.h>
 #include <scene/data/references/PolygonVectorRef.h>
+
+#include <simulation/fem/SimulationPoint.h>
+
+#include <simulation/rigid/RigidBody.h>
+
+#include <scene/data/geometric/Polygon.h>
 
 using namespace Eigen;
 
@@ -25,35 +32,9 @@ Simulation::~Simulation()
 {
 }
 
-void Simulation::actExternalForce(const SimulationPointRef& ref, Vector force)
+void Simulation::actExternalForce(SimulationPointRef* ref, Vector force)
 {
-    class ActExternalForceDispatcher : public GeometricPointRefVisitor
-    {
-    public:
-        ActExternalForceDispatcher(
-                    Simulation& _simulation, const SimulationPointRef& _simRef, Vector& _force)
-            : simulation(_simulation)
-            , simRef(_simRef)
-            , force(_force)
-        {
-        }
-
-        virtual void visit(GeometricVertexRef& ref)
-        {
-            simulation.actExternalForce(simRef.getSimulationObject(), ref.getIndex(), force);
-        }
-
-        virtual void visit(PolygonVectorRef& ref)
-        {
-            simulation.actExternalForce(simRef.getSimulationObject(), ref.getPoint(), force);
-        }
-
-        Simulation& simulation;
-        const SimulationPointRef& simRef;
-        Vector& force;
-    } visitor(*this, ref, force);
-
-    ref.getGeometricPointRef()->accept(visitor);
+    ref->getSimulationObject()->applyForce(*ref, force);
 }
 
 void Simulation::addLinearForce(std::shared_ptr<LinearForce> linearForce)

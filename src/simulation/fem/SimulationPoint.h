@@ -19,6 +19,10 @@ public:
 public:
     virtual SimulationObject::Type getType() const override;
     virtual void accept(SimulationObjectVisitor& visitor) override;
+    virtual void applyImpulse(
+            SimulationPointRef& ref, const Eigen::Vector& impulse) override;
+    virtual void applyForce(
+            SimulationPointRef& ref, const Eigen::Vector& force) override;
     virtual Eigen::Vector& getPosition(size_t id) override;
     virtual void setPosition(Eigen::Vector v, ID id) override;
     virtual void addToPosition(Eigen::Vector v, ID id) override;
