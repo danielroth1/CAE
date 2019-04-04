@@ -147,7 +147,6 @@ public:
 public:
     void addSimulation(const std::shared_ptr<Simulation>& simulation,
                        const std::shared_ptr<SimulationProxy>& proxy);
-    void removeSimulation(std::shared_ptr<Simulation>& simulation);
 
 public slots:
 
@@ -179,9 +178,6 @@ private:
     SimulationThread* mSimulationThread;
 
     Domain* mDomain;
-
-    std::vector<std::shared_ptr<Simulation>> mSimulations;
-    std::vector<std::shared_ptr<SimulationProxy>> mSimulationProxies;
 
     std::vector<std::shared_ptr<Force>> mForces;
     std::vector<std::shared_ptr<Constraint>> mConstraints;
@@ -223,12 +219,6 @@ private:
 //                           PL(FEMObject* femObject, std::vector<ID> vectorIDs),
 //                           PL(femObject, vectorIDs))
 //            PROXY_FUNCTION(SimulationControl, mSc, initializeSimulation, , )
-//            PROXY_FUNCTION(SimulationControl, mSc, addSimulation,
-//                           PL(std::shared_ptr<Simulation> simulation),
-//                           PL(simulation))
-//            PROXY_FUNCTION(SimulationControl, mSc, removeSimulation,
-//                           PL(std::shared_ptr<Simulation> simulation),
-//                           PL(simulation))
 //            PROXY_FUNCTION(SimulationControl, mSc, addSimulationObject,
 //                           PL(std::shared_ptr<SimulationObject> so),
 //                           PL(so))

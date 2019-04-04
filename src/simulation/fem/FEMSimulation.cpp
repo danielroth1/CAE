@@ -11,9 +11,8 @@ using namespace Eigen;
 
 FEMSimulation::FEMSimulation(
         Domain* domain,
-        double timeStep,
         std::shared_ptr<CollisionManager> collisionManager)
-    : Simulation(domain, timeStep, collisionManager)
+    : Simulation(domain, collisionManager)
 {
     // load .off file
 //    FEMObject so = FEMObject();
@@ -105,11 +104,11 @@ void FEMSimulation::initializeStep()
     }
 }
 
-void FEMSimulation::solve(bool firstStep)
+void FEMSimulation::solve(double stepSize, bool firstStep)
 {
     for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
     {
-        fo->solveFEM(mTimeStep, true, firstStep);
+        fo->solveFEM(stepSize, true, firstStep);
     }
 }
 
@@ -121,11 +120,11 @@ void FEMSimulation::revertSolverStep()
     }
 }
 
-void FEMSimulation::integratePositions()
+void FEMSimulation::integratePositions(double stepSize)
 {
     for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
     {
-        fo->integratePositions(mTimeStep);
+        fo->integratePositions(stepSize);
     }
 }
 
@@ -169,16 +168,16 @@ void FEMSimulation::initialize()
     }
 }
 
-void FEMSimulation::step()
+void FEMSimulation::step(double stepSize)
 {
     initializeStep();
-    solve(true);
+    solve(stepSize, true);
 }
 
-void FEMSimulation::solveExplicitly()
+void FEMSimulation::solveExplicitly(double stepSize)
 {
     for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
     {
-        fo->solveFEMExplicitly(mTimeStep, true);
+        fo->solveFEMExplicitly(stepSize, true);
     }
 }

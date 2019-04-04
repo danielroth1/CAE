@@ -153,14 +153,14 @@ void SimulationControl::initialize()
 
     // initialize simulation
     // create FEMObject
-    mFEMSimulation = std::make_shared<FEMSimulation>(mDomain, mStepSize, mCollisionManager);
+    mFEMSimulation = std::make_shared<FEMSimulation>(mDomain, mCollisionManager);
     mFEMSimulationProxy = std::make_shared<FEMSimulationProxy>(mFEMSimulation.get());
 
-    mRigidSimulation = std::make_shared<RigidSimulation>(mDomain, mStepSize, mCollisionManager);
+    mRigidSimulation = std::make_shared<RigidSimulation>(mDomain, mCollisionManager);
     mRigidSimulationProxy = std::make_shared<RigidSimulationProxy>(mRigidSimulation.get());
 
-    addSimulation(mFEMSimulation, mFEMSimulationProxy);
-    addSimulation(mRigidSimulation, mRigidSimulationProxy);
+    mFEMSimulation->initialize();
+    mRigidSimulation->initialize();
 
     // create opengl shared context
 //    QOpenGLContext* context = new QOpenGLContext;
@@ -198,10 +198,6 @@ bool SimulationControl::isSimulationPaused()
 void SimulationControl::setStepSize(double stepSize)
 {
     mStepSize = stepSize;
-    for (const std::shared_ptr<Simulation>& sim : mSimulations)
-    {
-        sim->setTimeStep(stepSize);
-    }
 }
 
 double SimulationControl::getStepSize() const
@@ -289,16 +285,11 @@ void SimulationControl::removeSimulationObject(const std::shared_ptr<SimulationO
     }
 
     // Remove all linear forces that reference the simulation object
-    for (size_t i = 0; i < mSimulations.size(); ++i)
+    for (const std::shared_ptr<Force>& lf : mForces)
     {
-        const std::shared_ptr<Simulation>& simulation = mSimulations[i];
-        for (const std::shared_ptr<LinearForce>& lf : simulation->getLinearForces())
+        if (lf->references(so.get()))
         {
-            if (lf->references(so.get()))
-            {
-                mSimulationProxies[i]->removeLinearForce(lf.get());
-                mAc->getRenderModelManager()->removeRenderModelByObject(lf);
-            }
+            mAc->getRenderModelManager()->removeRenderModelByObject(lf);
         }
     }
 
@@ -458,8 +449,8 @@ void SimulationControl::step()
 
     applyForces();
 
-    mRigidSimulation->solve();
-    mFEMSimulation->solve(true); // x + x^{FEM}, v + v^{FEM}
+    mRigidSimulation->solve(mStepSize);
+    mFEMSimulation->solve(mStepSize, true); // x + x^{FEM}, v + v^{FEM}
 
      // collision detection on x + x^{FEM}
     if (mCollisionManager->collideAll())
@@ -482,7 +473,7 @@ void SimulationControl::step()
             mFEMSimulation->revertSolverStep(); // x, v + v^{col}
 
             // solve on x, v + v^{col}
-            mFEMSimulation->solve(true); // x + x^{FEM}, v + v^{FEM}
+            mFEMSimulation->solve(mStepSize, true); // x + x^{FEM}, v + v^{FEM}
 
             mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
@@ -490,8 +481,8 @@ void SimulationControl::step()
         }
         // x, v + v^{FEM} + v^{col}
 
-        mRigidSimulation->integratePositions();
-        mFEMSimulation->integratePositions(); // x + x^{FEM} + x^{col}, v + v^{FEM} + v^{col}
+        mRigidSimulation->integratePositions(mStepSize);
+        mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{col}, v + v^{FEM} + v^{col}
     }
 
     mRigidSimulation->applyDamping();
@@ -501,11 +492,6 @@ void SimulationControl::step()
     mFEMSimulation->publish();
 
     handleAfterStep();
-}
-
-std::vector<std::shared_ptr<Simulation>>& SimulationControl::getSimulations()
-{
-    return mSimulations;
 }
 
 void SimulationControl::setCollisionRenderingLevel(int level)
@@ -521,26 +507,6 @@ void SimulationControl::setBVHCollisionRenderingEnabled(bool enabled)
 Domain* SimulationControl::getDomain()
 {
     return mDomain;
-}
-
-void SimulationControl::addSimulation(const std::shared_ptr<Simulation>& simulation,
-                                      const std::shared_ptr<SimulationProxy>& proxy)
-{
-    simulation->initialize();
-    mSimulations.push_back(simulation);
-    mSimulationProxies.push_back(proxy);
-}
-
-void SimulationControl::removeSimulation(std::shared_ptr<Simulation>& simulation)
-{
-    auto it = std::find(mSimulations.begin(), mSimulations.end(), simulation);
-    if (it != mSimulations.end())
-    {
-        mSimulations.erase(it);
-    }
-    // TODO: also remove the corresponding simulation proxy! If not, there will
-    // be a guaranteed segmentation fault when accessing it. But realisticly,
-    // when are simulations even removed?
 }
 
 void SimulationControl::handleAfterStep()

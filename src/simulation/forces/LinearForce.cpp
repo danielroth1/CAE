@@ -30,7 +30,7 @@ void LinearForce::applyForce()
     Eigen::Vector force =
             mStrength * (mTarget.getPoint() - mSource.getPoint());
     mSource.getSimulationObject()->applyForce(mSource, force);
-    mSource.getSimulationObject()->applyForce(mSource, -force);
+    mTarget.getSimulationObject()->applyForce(mSource, -force);
 }
 
 SimulationPointRef& LinearForce::getTargetVector()

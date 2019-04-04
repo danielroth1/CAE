@@ -11,7 +11,6 @@ class RigidSimulation : public Simulation
 public:
     RigidSimulation(
             Domain* domain,
-            double timeStep,
             std::shared_ptr<CollisionManager> collisionManager);
 
     virtual ~RigidSimulation() override;
@@ -31,11 +30,11 @@ public:
     void initializeStep();
 
     // Calculates forces and updates the velocities according to physics.
-    void solve();
+    void solve(double stepSize);
 
     // Time integrates the velocity to update the positions.
     // The previous position state can be reverted to by calling revert().
-    void integratePositions();
+    void integratePositions(double stepSize);
 
     // Reverts the positions to the state before the previous integratePositions()
     // call.
@@ -55,7 +54,7 @@ public:
     // Simulation interface
 public:
     virtual void initialize() override;
-    virtual void step() override;
+    virtual void step(double stepSize) override;
 
     // Calculates and returns the relative speed of two
     // contact points in normal direction.
@@ -71,10 +70,6 @@ public:
             RigidBody* body2, const Eigen::Vector& r2,
             const Eigen::Vector& targetURel,
             const Eigen::Vector& normal);
-
-private:
-
-    void solveExplicitly();
 
 //    for(int i = 0; i < nCollisionIterations; ++i)
 //        applyCollisionCorrectionImpulses()

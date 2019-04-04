@@ -316,7 +316,7 @@ void UIControl::mouseReleaseEvent(QMouseEvent *event)
                 mAc->getSimulationControl()->addLinearForce(
                     it.first->getSimulationObjectRaw(), vID,
                     leafNode->getData()->getSimulationObjectRaw(), 0,
-                    0.02);
+                    10.0);
 
             }
         }

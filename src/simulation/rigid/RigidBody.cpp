@@ -185,8 +185,11 @@ Vector RigidBody::getR(SimulationPointRef& pointRef)
 
         virtual void visit(GeometricVertexRef& ref)
         {
+            // this assumes that the geometric datas initial positions
+            // (which remain unchanged for rigid bodies) have their origin
+            // in the center of mass.
             r = rb.getOrientation().toRotationMatrix() *
-                    rb.getPosition(ref.getIndex());
+                    rb.getPolygon()->getPositionBS(ref.getIndex());
         }
 
         virtual void visit(PolygonVectorRef& ref)

@@ -14,9 +14,8 @@ using namespace Eigen;
 
 RigidSimulation::RigidSimulation(
         Domain* domain,
-        double timeStep,
         std::shared_ptr<CollisionManager> collisionManager)
-    : Simulation(domain, timeStep, collisionManager)
+    : Simulation(domain, collisionManager)
 {
 }
 
@@ -63,19 +62,19 @@ void RigidSimulation::initializeStep()
     }
 }
 
-void RigidSimulation::solve()
+void RigidSimulation::solve(double stepSize)
 {
     for (std::shared_ptr<RigidBody>& rb : mRigidBodies)
     {
-        rb->solveExplicit(mTimeStep);
+        rb->solveExplicit(stepSize);
     }
 }
 
-void RigidSimulation::integratePositions()
+void RigidSimulation::integratePositions(double stepSize)
 {
     for (std::shared_ptr<RigidBody>& rb : mRigidBodies)
     {
-        rb->integratePositions(mTimeStep);
+        rb->integratePositions(stepSize);
     }
 }
 
@@ -107,10 +106,10 @@ void RigidSimulation::initialize()
 {
 }
 
-void RigidSimulation::step()
+void RigidSimulation::step(double stepSize)
 {
     initializeStep();
-    solve();
+    solve(stepSize);
 }
 
 Vector RigidSimulation::calculateRelativeSpeed(
@@ -133,9 +132,4 @@ Vector RigidSimulation::calculateCollisionCorrectionImpulse(
     // This is not correct. Here Deltae rel speed should be used
     // \Delta u_{rel, n} = u^c_{rel, n} - u_{rel, n}
     return factor * (targetURel - calculateRelativeSpeed(body1, r1, body2, r2, normal));
-}
-
-void RigidSimulation::solveExplicitly()
-{
-
 }

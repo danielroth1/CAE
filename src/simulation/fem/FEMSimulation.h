@@ -24,7 +24,6 @@ class FEMSimulation : public Simulation
 public:
     FEMSimulation(
             Domain* domain,
-            double time_step,
             std::shared_ptr<CollisionManager> collisionManager);
 
     virtual ~FEMSimulation() override;
@@ -51,13 +50,13 @@ public:
     void initializeStep();
 
     // Calculates forces and updates the velocities according to physics.
-    void solve(bool firstStep);
+    void solve(double stepSize, bool firstStep);
 
     void revertSolverStep();
 
     // Time integrates the velocity to update the positions.
     // The previous position state can be reverted to by calling revert().
-    void integratePositions();
+    void integratePositions(double stepSize);
 
     // Reverts the positions to the state before the previous integratePositions()
     // call.
@@ -73,11 +72,11 @@ public:
 public:
     void initialize() override;
 
-    void step() override;
+    void step(double stepSize) override;
 
 private:
 
-    void solveExplicitly();
+    void solveExplicitly(double stepSize);
 
 //    std::vector<std::unique_ptr<SceneObject>> m_scene_objects;
     std::vector<std::shared_ptr<FEMObject>> mFEMObjects;
