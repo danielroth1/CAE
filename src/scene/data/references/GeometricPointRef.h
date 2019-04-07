@@ -25,12 +25,18 @@ public:
 
     virtual Eigen::Vector getPoint() const = 0;
 
+    // Returns the index of the vertex this reference points to.
+    // If this is not a reference that points to vertices, e.g.
+    // PolygonVectorRef, ILLEGAL_INDEX is returned instead.
+    virtual ID getIndex() const = 0;
+
     virtual GeometricPointRef* clone() = 0;
 
     virtual void accept(GeometricPointRefVisitor& visitor) = 0;
 
 protected:
     GeometricData* mGeometricData;
+
 };
 
 #endif // GEOMETRICPOINTREF_H

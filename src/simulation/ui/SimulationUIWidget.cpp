@@ -8,7 +8,6 @@
 #include <simulation/constraints/Constraint.h>
 #include <simulation/constraints/ConstraintVisitor.h>
 
-#include <utils/MemberAccessorDirect.h>
 
 SimulationUIWidget::SimulationUIWidget(
         SimulationUIControl* uiControl,
@@ -221,7 +220,7 @@ void SimulationUIWidget::renderCollisionSpheres()
     }
 }
 
-void SimulationUIWidget::on_mCheckBoxRenderLeafs_stateChanged(int arg1)
+void SimulationUIWidget::on_mCheckBoxRenderLeafs_stateChanged(int /*arg1*/)
 {
     renderCollisionSpheres();
 }

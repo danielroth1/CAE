@@ -8,7 +8,7 @@
 class TimeStepper
 {
 public:
-    TimeStepper();
+    TimeStepper(int sleepTime);
 
     // Resets the clock. Can be called at any point.
     void reset();
@@ -18,6 +18,9 @@ public:
 
     // Returns number of milliseconds to sleep.
     int finishStep();
+
+private:
+    int mSleepTime;
 };
 
 #endif // TIMESTEPPER_H

@@ -13,7 +13,7 @@ SimulationThread::SimulationThread(
     : StepperThread()
     , mSimulationControl(simulationControl)
 {
-    setTimeStepper(std::make_shared<TimeStepper>());
+    setTimeStepper(std::make_shared<TimeStepper>(1));
 }
 
 void SimulationThread::initialization()

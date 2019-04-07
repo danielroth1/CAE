@@ -31,6 +31,11 @@ void RigidSimulation::addRigidBody(std::shared_ptr<RigidBody> rigidBody)
     // TODO_RIGIDSIMULATION: implement this
 }
 
+std::vector<std::shared_ptr<RigidBody>> &RigidSimulation::getRigidBodies()
+{
+    return mRigidBodies;
+}
+
 bool RigidSimulation::removeRigidBody(RigidBody* rigidBody)
 {
     auto it = std::find_if(
@@ -53,12 +58,6 @@ void RigidSimulation::initializeStep()
     {
         rb->update();
         rb->prepareNewStep();
-    }
-
-    // gravity
-    for (std::shared_ptr<RigidBody>& rb : mRigidBodies)
-    {
-        rb->applyForce(Vector::Zero(), rb->getMass() * Vector(0, -9.81, 0));
     }
 }
 

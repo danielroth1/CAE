@@ -44,6 +44,7 @@ SimulationControl::SimulationControl()
     mSimulationThread = new SimulationThread(this);
     mDomain = new Domain();
     mPaused = false;
+    mGravity = Eigen::Vector(0.0, -9.81, 0.0);
     mImpulseConstraintSolver = std::make_unique<ImpulseConstraintSolver>();
     mSimulationThread->addDomain(mDomain);
 
@@ -182,6 +183,16 @@ void SimulationControl::startSimulationThread()
 {
     // start simulation loop
     mUpdateInterval = 20 ; // update after every 50 milliseconds
+}
+
+void SimulationControl::setGravity(Vector gravity)
+{
+    mGravity = gravity;
+}
+
+Vector SimulationControl::getGravity() const
+{
+    return mGravity;
 }
 
 void SimulationControl::setSimulationPaused(bool paused)
@@ -373,6 +384,8 @@ void SimulationControl::addConstraint(const std::shared_ptr<Constraint>& c)
     {
         mConstraints.push_back(c);
     }
+
+    mImpulseConstraintSolver->addConstraint(c);
 }
 
 void SimulationControl::removeConstraint(const std::shared_ptr<Constraint>& c)
@@ -382,6 +395,8 @@ void SimulationControl::removeConstraint(const std::shared_ptr<Constraint>& c)
     {
         mConstraints.erase(it);
     }
+
+    mImpulseConstraintSolver->removeConstraint(c);
 }
 
 void SimulationControl::addCollisionObject(std::shared_ptr<SimulationObject> so)
@@ -430,6 +445,28 @@ void SimulationControl::initializeSimulation()
     mRigidSimulation->initialize();
 }
 
+void SimulationControl::initializeStep()
+{
+    mFEMSimulation->initializeStep();
+    mRigidSimulation->initializeStep();
+
+    // apply gravity
+    for (std::shared_ptr<FEMObject>& femObj : mFEMSimulation->getFEMObjects())
+    {
+        for (size_t i = 0; i < femObj->getSize(); ++i)
+        {
+            femObj->applyForce(i, femObj->getMass(i) * mGravity);
+        }
+    }
+    for (std::shared_ptr<RigidBody>& rb : mRigidSimulation->getRigidBodies())
+    {
+        rb->applyForce(Eigen::Vector::Zero(), rb->getMass() * mGravity);
+    }
+
+    // apply other forces
+    applyForces();
+}
+
 void SimulationControl::step()
 {
     // Solver step algorithm
@@ -444,24 +481,23 @@ void SimulationControl::step()
     //      desired velocity after collision
     //      sum of impulses
 
-    mRigidSimulation->initializeStep();
-    mFEMSimulation->initializeStep();
-
-    applyForces();
+    initializeStep();
 
     mRigidSimulation->solve(mStepSize);
     mFEMSimulation->solve(mStepSize, true); // x + x^{FEM}, v + v^{FEM}
 
-     // collision detection on x + x^{FEM}
-    if (mCollisionManager->collideAll())
-    {
-        // create collision constraints w.r.t. x + x^{FEM}
-        mImpulseConstraintSolver->initialize(
-                    mCollisionManager->getCollider()->getCollisions(),
-                    mStepSize,
-                    0.2, // Restitution (bounciness factor)
-                    1e-5); // maxCollisionDistance
+    // initialize constraints
+    mImpulseConstraintSolver->initializeNonCollisionConstraints();
 
+    // collision detection on x + x^{FEM}
+    bool collisionsOccured = mCollisionManager->collideAll();
+    // create collision constraints w.r.t. x + x^{FEM}
+    mImpulseConstraintSolver->initializeCollisionConstraints(
+                mCollisionManager->getCollider()->getCollisions(),
+                0.2); // Restitution (bounciness factor))
+
+    if (collisionsOccured || !mImpulseConstraintSolver->getConstraints().empty())
+    {
         // Revert the illegal state
         mRigidSimulation->revertPositions();
         mFEMSimulation->revertPositions(); // x, v + v^{FEM}
@@ -479,11 +515,12 @@ void SimulationControl::step()
 
             mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
         }
-        // x, v + v^{FEM} + v^{col}
-
-        mRigidSimulation->integratePositions(mStepSize);
-        mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{col}, v + v^{FEM} + v^{col}
     }
+
+    // x, v + v^{FEM} + v^{col}
+
+    mRigidSimulation->integratePositions(mStepSize);
+    mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{col}, v + v^{FEM} + v^{col}
 
     mRigidSimulation->applyDamping();
     mFEMSimulation->applyDamping();

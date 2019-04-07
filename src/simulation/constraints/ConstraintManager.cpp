@@ -1,6 +1,5 @@
 #include "ConstraintManager.h"
 
-#include "LinearForce.h"
 #include "Constraint.h"
 #include "Truncation.h"
 

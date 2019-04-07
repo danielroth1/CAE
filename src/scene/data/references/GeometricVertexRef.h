@@ -8,13 +8,13 @@ class GeometricVertexRef : public GeometricPointRef
 public:
     GeometricVertexRef(GeometricData* geometricData, ID index);
 
-    ID getIndex();
-
     // GeometricPointRef interface
 public:
     virtual Type getType() override;
 
     virtual Vector getPoint() const override;
+
+    virtual ID getIndex() const override;
 
     virtual GeometricPointRef* clone() override;
 

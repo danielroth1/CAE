@@ -48,7 +48,11 @@ public:
     SimulationObject* getSimulationObject() const;
     GeometricPointRef* getGeometricPointRef() const;
 
-    virtual Eigen::Vector getPoint();
+    Eigen::Vector getPoint();
+
+    // Either returns the index of the referenced vertex or if no vertex is
+    // referenced, returns ILLEGAL_INDEX.
+    ID getIndex() const;
 
     // PointRef interface
 public:

@@ -73,6 +73,11 @@ Eigen::Vector SimulationPointRef::getPoint()
     return mGetSimulationPointDispatcher.point;
 }
 
+ID SimulationPointRef::getIndex() const
+{
+    return mGeometricPointRef->getIndex();
+}
+
 Vector SimulationPointRef::getGeometricPoint() const
 {
     return mGeometricPointRef->getPoint();

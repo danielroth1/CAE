@@ -1,5 +1,7 @@
 #include "GeometricPointRef.h"
 
+
+
 GeometricPointRef::GeometricPointRef(GeometricData* geometricData)
     : mGeometricData(geometricData)
 {

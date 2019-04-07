@@ -8,6 +8,22 @@
 
 class RigidBody;
 
+
+// BallJoint Constraint:
+// correction impulse calculation:
+//
+// u_rel = u_A - u_B                    <- nothing to do here
+// targetURel:      0                   <- nothing to do here
+// impulseFactor:   1 / (K_aa + K_bb)
+//
+// apply impulse:
+//
+// u_rel^current = u_A - u_B
+// currentURel = u_rel^current
+// delta_u = impulseFactor * (targetURel - currentURel)
+//      = -impulseFactor * currentURel
+//      = - 1 / (K_aa + K_bb) * currentURel
+//
 class BallJoint : public Constraint
 {
 public:
@@ -18,14 +34,12 @@ public:
     const Eigen::Vector& getSumOfAllAppliedImpulses() const;
     void setSumOfAllAppliedImpulses(const Eigen::Vector& impulses);
 
-    double getImpulseFactor();
-    void setImpulseFactor(double impulseFactor);
-
     // Constraint interface
 public:
-    virtual void accept(ConstraintVisitor& cv);
-    virtual bool references(Constraint* c) = 0;
-    virtual bool references(SimulationObject* so) = 0;
+    virtual void initialize() override;
+    virtual bool solve(double maxConstraintError) override;
+    virtual void accept(ConstraintVisitor& cv) override;
+    virtual bool references(SimulationObject* so) override;
 
 private:
 
@@ -34,7 +48,7 @@ private:
 
     Eigen::Vector mTargetURel;
     Eigen::Vector mSumOfAllAppliedImpulses;
-    double mImpulseFactor; // 1 / (n^T K_aa + K_bb n) * n
+    Eigen::Matrix3d mImpulseFactor; // 1 / (K_aa + K_bb)
 
 };
 

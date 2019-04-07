@@ -65,6 +65,15 @@ void SimulationUIControl::init(QWidget* parent)
                     mAc->getSimulationControl(),
                     mAc->getSimulationControl()->getDomain()),
                 0, 100, 1);
+
+    mWidget->getMembersWidget()->addVectorDouble(
+                "Gravity",
+                MemberAccessorFactory::createGetterSetter<Eigen::Vector3d, SimulationControl>(
+                    &SimulationControl::getGravity,
+                    &SimulationControl::setGravity,
+                    mAc->getSimulationControl(),
+                    mAc->getSimulationControl()->getDomain()),
+                -100.0, 100.0, 1.0);
 }
 
 QWidget* SimulationUIControl::getWidget()

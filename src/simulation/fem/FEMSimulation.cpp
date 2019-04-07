@@ -97,7 +97,7 @@ void FEMSimulation::initializeStep()
     {
         for (size_t i = 0; i < fo->getSize(); ++i)
         {
-            fo->getExternalForce(i) = fo->getMass(i) * Vector(0, -9.81, 0);
+            fo->getExternalForce(i) = Eigen::Vector::Zero();
         }
 
         fo->updateFEM(true);

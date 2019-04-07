@@ -22,6 +22,9 @@ public:
 
     virtual Vector getPoint() const override;
 
+    // Retruns an GeometricPointRef::ILLEGAL_INDEX
+    virtual ID getIndex() const override;
+
     virtual GeometricPointRef* clone() override;
 
     virtual void accept(GeometricPointRefVisitor& visitor) override;

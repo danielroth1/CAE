@@ -3,15 +3,13 @@
 
 #include <simulation/collision_detection/narrow/Collision.h>
 
+#include <simulation/ImpulseConstraintSolver.h>
+
 CollisionConstraint::CollisionConstraint(
         Collision& collision,
-        Eigen::Vector targetUNormalRel,
-        Eigen::Vector sumOfAllAppliedImpulses,
-        double impulseFactor)
+        double restitution)
     : mCollision(collision)
-    , mTargetUNormalRel(targetUNormalRel)
-    , mSumOfAllAppliedImpulses(sumOfAllAppliedImpulses)
-    , mImpulseFactor(impulseFactor)
+    , mRestitution(restitution)
 {
 
 }
@@ -36,29 +34,69 @@ const Eigen::Vector& CollisionConstraint::getSumOfAllAppliedImpulses() const
     return mSumOfAllAppliedImpulses;
 }
 
-void CollisionConstraint::setSumOfAllAppliedImpulses(const Eigen::Vector& impulses)
+void CollisionConstraint::initialize()
 {
-    mSumOfAllAppliedImpulses = impulses;
+    mSumOfAllAppliedImpulses = Eigen::Vector::Zero();
+
+    Eigen::Vector p1 = ImpulseConstraintSolver::calculateRelativePoint(
+                mCollision.getSimulationObjectA(), mCollision.getPointA());
+    Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
+                mCollision.getSimulationObjectB(), mCollision.getPointB());
+
+    mTargetUNormalRel = -mRestitution *
+            ImpulseConstraintSolver::calculateRelativeNormalSpeed(
+                ImpulseConstraintSolver::calculateSpeed(
+                    mCollision.getSimulationObjectA(), p1, mCollision.getVertexIndexA()),
+                ImpulseConstraintSolver::calculateSpeed(
+                    mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB()),
+                mCollision.getNormal());
+
+    mImpulseFactor = 1 /
+            (mCollision.getNormal().transpose() *
+             (ImpulseConstraintSolver::calculateK(
+                  mCollision.getSimulationObjectA(), p1, mCollision.getVertexIndexA()) +
+              ImpulseConstraintSolver::calculateK(
+                  mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB()))
+             * mCollision.getNormal());
 }
 
-double CollisionConstraint::getImpulseFactor()
+bool CollisionConstraint::solve(double maxConstraintError)
 {
-    return mImpulseFactor;
-}
+    Eigen::Vector p1 = ImpulseConstraintSolver::calculateRelativePoint(
+                mCollision.getSimulationObjectA(), mCollision.getPointA());
+    Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
+                mCollision.getSimulationObjectB(), mCollision.getPointB());
 
-void CollisionConstraint::setImpulseFactor(double impulseFactor)
-{
-    mImpulseFactor = impulseFactor;
+    Eigen::Vector uRel =
+            ImpulseConstraintSolver::calculateRelativeNormalSpeed(
+                ImpulseConstraintSolver::calculateSpeed(
+                    mCollision.getSimulationObjectA(), p1, mCollision.getVertexIndexA()),
+                ImpulseConstraintSolver::calculateSpeed(
+                    mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB()),
+                mCollision.getNormal());
+
+    Eigen::Vector deltaUNormalRel = mTargetUNormalRel - uRel;
+    if (deltaUNormalRel.norm() < maxConstraintError)
+    {
+        return true;
+    }
+    Eigen::Vector impulse = mImpulseFactor * deltaUNormalRel;
+    if (mCollision.getNormal().dot(mSumOfAllAppliedImpulses + impulse) < 0)
+    {
+        impulse = -mSumOfAllAppliedImpulses;
+    }
+    mSumOfAllAppliedImpulses += impulse;
+
+    ImpulseConstraintSolver::applyImpulse(
+                mCollision.getSimulationObjectA(), impulse, p1, mCollision.getVertexIndexA());
+    ImpulseConstraintSolver::applyImpulse(
+                mCollision.getSimulationObjectB(), -impulse, p2, mCollision.getVertexIndexB());
+    return false;
 }
 
 void CollisionConstraint::accept(ConstraintVisitor& cv)
 {
     cv.visit(this);
-}
-
-bool CollisionConstraint::references(Constraint* /*c*/)
-{
-    return false;
 }
 
 bool CollisionConstraint::references(SimulationObject* so)

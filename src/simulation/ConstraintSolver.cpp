@@ -68,3 +68,13 @@ void ConstraintSolver::reserveCollisionConstraint(size_t size)
     mCollisionConstraints.reserve(size);
 }
 
+std::vector<std::shared_ptr<Constraint>>& ConstraintSolver::getConstraints()
+{
+    return mConstraints;
+}
+
+std::vector<CollisionConstraint>& ConstraintSolver::getCollisionConstraints()
+{
+    return mCollisionConstraints;
+}
+

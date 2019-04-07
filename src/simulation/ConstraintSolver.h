@@ -47,6 +47,9 @@ public:
     void clearCollisionConstraints();
     void reserveCollisionConstraint(size_t size);
 
+    std::vector<std::shared_ptr<Constraint>>& getConstraints();
+    std::vector<CollisionConstraint>& getCollisionConstraints();
+
 protected:
     // All non collision constraints.
     std::vector<std::shared_ptr<Constraint>> mConstraints;

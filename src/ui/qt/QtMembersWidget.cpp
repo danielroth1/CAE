@@ -1,6 +1,7 @@
 #include "QtMemberWidgetBool.h"
 #include "QtMemberWidgetDouble.h"
 #include "QtMemberWidgetInteger.h"
+#include "QtMemberWidgetVectorDouble.h"
 #include "QtMembersWidget.h"
 
 #include <QGridLayout>
@@ -42,13 +43,10 @@ void QtMembersWidget::addInteger(
         int singleStep)
 {
     int row = mLayout->rowCount();
-
     mLayout->addWidget(new QLabel(QString::fromStdString(name)), row, 0);
-
     QtMemberWidget<int>* memberWidget =
             new QtMemberWidgetInteger(memberAccessor, this, min, max, singleStep);
     mMemberWidgets.push_back(memberWidget);
-
     mLayout->addWidget(memberWidget, row, 1);
 
     memberWidget->update();
@@ -63,13 +61,33 @@ void QtMembersWidget::addDouble(
         int precision)
 {
     int row = mLayout->rowCount();
-
     mLayout->addWidget(new QLabel(QString::fromStdString(name)), row, 0);
 
     QtMemberWidget<double>* memberWidget =
-            new QtMemberWidgetDouble(memberAccessor, this, min, max, singleStep, precision);
+            new QtMemberWidgetDouble(memberAccessor, this, min, max,
+                                     singleStep, precision);
     mMemberWidgets.push_back(memberWidget);
+    mLayout->addWidget(memberWidget, row, 1);
 
+    memberWidget->update();
+}
+
+void QtMembersWidget::addVectorDouble(
+        std::string name,
+        const std::shared_ptr<MemberAccessor<Eigen::Vector3d>>& memberAccessor,
+        double min,
+        double max,
+        double singleStep,
+        int precision)
+{
+    int row = mLayout->rowCount();
+    mLayout->addWidget(new QLabel(QString::fromStdString(name)), row, 0);
+
+    QtMemberWidget<Eigen::Vector3d>* memberWidget =
+            new QtMemberWidgetVectorDouble(memberAccessor, this, min, max,
+                                           singleStep, precision);
+
+    mMemberWidgets.push_back(memberWidget);
     mLayout->addWidget(memberWidget, row, 1);
 
     memberWidget->update();

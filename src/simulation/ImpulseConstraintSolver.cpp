@@ -4,6 +4,7 @@
 #include <iostream>
 #include <simulation/fem/FEMObject.h>
 #include <simulation/rigid/RigidBody.h>
+#include <simulation/constraints/BallJoint.h>
 #include <simulation/constraints/CollisionConstraint.h>
 
 using namespace Eigen;
@@ -18,11 +19,17 @@ ImpulseConstraintSolver::~ImpulseConstraintSolver()
 
 }
 
-void ImpulseConstraintSolver::initialize(
+void ImpulseConstraintSolver::initializeNonCollisionConstraints()
+{
+    for (size_t i = 0; i < mConstraints.size(); ++i)
+    {
+        mConstraints[i]->initialize();
+    }
+}
+
+void ImpulseConstraintSolver::initializeCollisionConstraints(
         std::vector<Collision>& collisions,
-        double stepSize,
-        double restitution,
-        double maxCollisionDistance)
+        double restitution)
 {
     // calculate K, target u rels
     mCollisionConstraints.clear();
@@ -31,23 +38,12 @@ void ImpulseConstraintSolver::initialize(
     for (size_t i = 0; i < collisions.size(); ++i)
     {
         Collision& c = collisions[i];
+        mCollisionConstraints.push_back(CollisionConstraint(c, restitution));
+    }
 
-        Eigen::Vector p1 = calculateRelativePoint(c.getSimulationObjectA(), c.getPointA());
-        Eigen::Vector p2 = calculateRelativePoint(c.getSimulationObjectB(), c.getPointB());
-
-        Eigen::Vector targetUNormalRel = -restitution * calculateRelativeSpeed(
-                    calculateSpeed(c.getSimulationObjectA(), p1, c.getVertexIndexA()),
-                    calculateSpeed(c.getSimulationObjectB(), p2, c.getVertexIndexB()),
-                    c.getNormal());
-
-        double impulseFactor = 1 / (c.getNormal().transpose() *
-                                    (calculateK(c.getSimulationObjectA(), p1, c.getVertexIndexA()) +
-                                     calculateK(c.getSimulationObjectB(), p2, c.getVertexIndexB()))
-                             * c.getNormal());
-
-        mCollisionConstraints.push_back(
-                    CollisionConstraint(c, targetUNormalRel,
-                                        Vector::Zero(), impulseFactor));
+    for (size_t i = 0; i < mCollisionConstraints.size(); ++i)
+    {
+        mCollisionConstraints[i].initialize();
     }
 }
 
@@ -59,6 +55,27 @@ void ImpulseConstraintSolver::solveConstraints(int maxIterations, double maxCons
     for (int iter = 0; iter < maxIterations; ++iter)
     {
         ++iterCount;
+
+        // iterate non-collision constraints
+        for (size_t i = 0; i < mConstraints.size(); ++i)
+        {
+            if (validConstraints == mConstraints.size())
+                break;
+
+            if (ConstraintSolver::solveConstraint(mConstraints[i], maxConstraintError))
+            {
+                // if constraint is valid, nothing to do
+                ++validConstraints;
+            }
+            else
+            {
+                // if not, this corrected coinstraint will be the only one
+                // we can be sure about to be valid since the correction
+                // can make any other constraint invalid again.
+                validConstraints = 1;
+            }
+        }
+
         // iterate collisions for as long as each u rel is equal to target u rel
         for (size_t i = 0; i < mCollisionConstraints.size(); ++i)
         {
@@ -88,40 +105,13 @@ void ImpulseConstraintSolver::solveConstraints(int maxIterations, double maxCons
 bool ImpulseConstraintSolver::solveConstraint(
         CollisionConstraint& cc, double maxConstraintError)
 {
-
-    // speed at
-    Collision& c = cc.getCollision();
-
-    Eigen::Vector p1 = calculateRelativePoint(c.getSimulationObjectA(), c.getPointA());
-    Eigen::Vector p2 = calculateRelativePoint(c.getSimulationObjectB(), c.getPointB());
-
-    Vector uRel = calculateRelativeSpeed(
-                calculateSpeed(c.getSimulationObjectA(), p1, c.getVertexIndexA()),
-                calculateSpeed(c.getSimulationObjectB(), p2, c.getVertexIndexB()),
-                c.getNormal());
-
-    Vector deltaUNormalRel = cc.getTargetUNormalRel() - uRel;
-    if (deltaUNormalRel.norm() < maxConstraintError)
-    {
-        return true;
-    }
-    Vector impulse = cc.getImpulseFactor() * deltaUNormalRel;
-    if (c.getNormal().dot(cc.getSumOfAllAppliedImpulses() + impulse) < 0)
-    {
-        impulse = -cc.getSumOfAllAppliedImpulses();
-    }
-    cc.setSumOfAllAppliedImpulses(cc.getSumOfAllAppliedImpulses() + impulse);
-
-    applyImpulse(c.getSimulationObjectA(), impulse, p1, c.getVertexIndexA());
-    applyImpulse(c.getSimulationObjectB(), -impulse, p2, c.getVertexIndexB());
-
-    return false;
+    return cc.solve(maxConstraintError);
 }
 
 bool ImpulseConstraintSolver::solveConstraint(
         BallJoint& ballJoint, double maxConstraintError)
 {
-    // TODO: implement this
+    return ballJoint.solve(maxConstraintError);
 }
 
 Matrix3d ImpulseConstraintSolver::calculateK(
@@ -131,15 +121,15 @@ Matrix3d ImpulseConstraintSolver::calculateK(
 {
     switch(so->getType())
     {
-    case SimulationObject::Type::RIGID_BODY:
-    {
-        RigidBody* rb = static_cast<RigidBody*>(so);
-        return rb->calculateK(point, point);
-    }
     case SimulationObject::Type::FEM_OBJECT:
     {
         FEMObject* femObj = static_cast<FEMObject*>(so);
         return 1 / femObj->getMass(vertexIndex) * Eigen::Matrix3d::Identity();
+    }
+    case SimulationObject::Type::RIGID_BODY:
+    {
+        RigidBody* rb = static_cast<RigidBody*>(so);
+        return rb->calculateK(point, point);
     }
     case SimulationObject::Type::SIMULATION_POINT:
     {
@@ -149,7 +139,35 @@ Matrix3d ImpulseConstraintSolver::calculateK(
     return Eigen::Matrix3d::Identity();
 }
 
-Vector ImpulseConstraintSolver::calculateRelativeSpeed(
+Matrix3d ImpulseConstraintSolver::calculateK(SimulationPointRef& ref)
+{
+    switch(ref.getSimulationObject()->getType())
+    {
+    case SimulationObject::Type::FEM_OBJECT:
+    {
+        FEMObject* femObj = static_cast<FEMObject*>(ref.getSimulationObject());
+        ID index = ref.getIndex();
+        if (index != ILLEGAL_INDEX)
+        {
+            return 1 / femObj->getMass(index) * Eigen::Matrix3d::Identity();
+        }
+        break;
+    }
+    case SimulationObject::Type::RIGID_BODY:
+    {
+        RigidBody* rb = static_cast<RigidBody*>(ref.getSimulationObject());
+        Eigen::Vector r = rb->getR(ref);
+        return rb->calculateK(r, r);
+    }
+    case SimulationObject::Type::SIMULATION_POINT:
+    {
+        break;
+    }
+    }
+    return Eigen::Matrix3d::Identity();
+}
+
+Vector ImpulseConstraintSolver::calculateRelativeNormalSpeed(
         const Vector& relativeSpeedA,
         const Vector& relativeSpeedB,
         const Vector& normal)

@@ -93,8 +93,10 @@ public:
     void initialize();
     void startSimulationThread();
 
-    void setSimulationPaused(bool paused);
+    void setGravity(Eigen::Vector gravity);
+    Eigen::Vector getGravity() const;
 
+    void setSimulationPaused(bool paused);
     bool isSimulationPaused();
 
     void setStepSize(double stepSize);
@@ -129,6 +131,8 @@ public:
 
     // Is called by SimulationThread once after the thread is started.
     void initializeSimulation();
+
+    void initializeStep();
 
     // Is called by SimulationThread a certain amount of time per second.
     void step();
@@ -189,6 +193,8 @@ private:
     // all Simulations
     std::shared_ptr<CollisionManager> mCollisionManager;
     std::shared_ptr<CollisionManagerProxy> mCollisionManagerProxy;
+
+    Eigen::Vector mGravity;
 
     double mStepSize;
 

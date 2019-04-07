@@ -33,6 +33,11 @@ Vector PolygonVectorRef::getPoint() const
     return Vector::Zero();
 }
 
+ID PolygonVectorRef::getIndex() const
+{
+    return ILLEGAL_INDEX;
+}
+
 GeometricPointRef* PolygonVectorRef::clone()
 {
     return new PolygonVectorRef(mPolygon, mR);

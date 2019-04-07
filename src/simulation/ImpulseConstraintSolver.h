@@ -12,6 +12,7 @@ class CollisionConstraint;
 class FEMObject;
 class RigidBody;
 class SimulationObject;
+class SimulationPointRef;
 
 // Becomes invalid after collideAll()
 class ImpulseConstraintSolver : public ConstraintSolver
@@ -22,10 +23,12 @@ public:
 
     ~ImpulseConstraintSolver() override;
 
-    void initialize(std::vector<Collision>& collisions,
-                    double stepSize,
-                    double restitution,
-                    double maxCollisionDistance);
+    // Creates and adds collision constraints that resolve the given collisions.
+    void initializeNonCollisionConstraints();
+
+    void initializeCollisionConstraints(
+            std::vector<Collision>& collisions,
+            double restitution);
 
     void solveConstraints(int maxIterations, double maxConstraintError) override;
 
@@ -35,30 +38,30 @@ public:
 
     bool solveConstraint(BallJoint& ballJoint, double maxConstraintError) override;
 
-private:
-
-    Eigen::Matrix3d calculateK(
-            SimulationObject* so,
-            const Eigen::Vector& point,
-            const ID vertexIndex);
-
-    Eigen::Vector calculateRelativeSpeed(
+    static Eigen::Vector calculateRelativeNormalSpeed(
             const Eigen::Vector& relativeSpeedA,
             const Eigen::Vector& relativeSpeedB,
             const Eigen::Vector& normal);
 
-    Eigen::Vector calculateSpeed(
+    static Eigen::Vector calculateSpeed(
             SimulationObject* so,
             const Eigen::Vector& point,
             const ID vertexIndex);
 
-    void applyImpulse(
+    static void applyImpulse(
             SimulationObject* so,
             const Eigen::Vector& impulse,
             const Eigen::Vector& point,
             const ID vertexIndex);
 
-    Eigen::Vector calculateRelativePoint(
+    static Eigen::Matrix3d calculateK(
+            SimulationObject* so,
+            const Eigen::Vector& point,
+            const ID vertexIndex);
+
+    static Eigen::Matrix3d calculateK(SimulationPointRef& ref);
+
+    static Eigen::Vector calculateRelativePoint(
             SimulationObject* so,
             const Eigen::Vector& pointGlobal);
 

@@ -23,6 +23,7 @@
 #include <simulation/SimulationModule.h>
 #include <modules/demo_loader/Demo.h>
 #include <modules/demo_loader/DemoLoaderModule.h>
+#include <demos/BallJointDemo.h>
 
 
 ApplicationControl::ApplicationControl()
@@ -224,6 +225,8 @@ void ApplicationControl::initiateApplication()
     };
     std::shared_ptr<Demo> example2Demo = std::make_shared<Example2Demo>(*this);
     mDemoLoaderModule->addDemo(example2Demo);
+
+    mDemoLoaderModule->addDemo(std::make_shared<BallJointDemo>(*this));
 
 //    SGLeafNode* node1 = mSGControl->createSphere(
 //                "Sphere",

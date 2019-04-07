@@ -1,3 +1,5 @@
 #include "DataStructures.h"
 
-#include <Eigen/Dense>
+#include <numeric>
+
+ID ILLEGAL_INDEX = std::numeric_limits<ID>().max();

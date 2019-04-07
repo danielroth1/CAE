@@ -7,6 +7,7 @@
 
 #include <Eigen/Dense>
 
+
 namespace Eigen
 {
     typedef Vector3d Vector;
@@ -27,5 +28,7 @@ typedef std::vector<Cell> Cells;
 typedef std::vector<std::array<unsigned int, 2>> Lines;
 
 typedef size_t ID;
+
+extern ID ILLEGAL_INDEX;
 
 #endif // DATASTRUCTURES_H

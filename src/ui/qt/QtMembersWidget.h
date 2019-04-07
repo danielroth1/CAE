@@ -6,6 +6,8 @@
 
 #include <utils/MemberAccessor.h>
 
+#include <Eigen/Core>
+
 
 class AbstractQtMemberWidget;
 class QGridLayout;
@@ -35,6 +37,14 @@ public:
     void addDouble(
             std::string name,
             const std::shared_ptr<MemberAccessor<double>>& memberAccessor,
+            double min = 0.0,
+            double max = 100.0,
+            double singleStep = 1.0,
+            int precision = 3);
+
+    void addVectorDouble(
+            std::string name,
+            const std::shared_ptr<MemberAccessor<Eigen::Vector3d>>& memberAccessor,
             double min = 0.0,
             double max = 100.0,
             double singleStep = 1.0,

@@ -24,6 +24,8 @@ public:
     // but not while a method call in the SimulationObject.
     void addRigidBody(std::shared_ptr<RigidBody> rigidBody);
 
+    std::vector<std::shared_ptr<RigidBody>>& getRigidBodies();
+
     bool removeRigidBody(RigidBody* rigidBody);
 
     // Call this before calling solve.
