@@ -24,11 +24,12 @@ public:
     ~ImpulseConstraintSolver() override;
 
     // Creates and adds collision constraints that resolve the given collisions.
-    void initializeNonCollisionConstraints();
+    void initializeNonCollisionConstraints(double stepSize);
 
     void initializeCollisionConstraints(
             std::vector<Collision>& collisions,
-            double restitution);
+            double restitution,
+            double stepSize);
 
     void solveConstraints(int maxIterations, double maxConstraintError) override;
 

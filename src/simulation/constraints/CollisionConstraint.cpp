@@ -34,7 +34,7 @@ const Eigen::Vector& CollisionConstraint::getSumOfAllAppliedImpulses() const
     return mSumOfAllAppliedImpulses;
 }
 
-void CollisionConstraint::initialize()
+void CollisionConstraint::initialize(double /*stepSize*/)
 {
     mSumOfAllAppliedImpulses = Eigen::Vector::Zero();
 

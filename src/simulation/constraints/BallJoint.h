@@ -36,7 +36,7 @@ public:
 
     // Constraint interface
 public:
-    virtual void initialize() override;
+    virtual void initialize(double stepSize) override;
     virtual bool solve(double maxConstraintError) override;
     virtual void accept(ConstraintVisitor& cv) override;
     virtual bool references(SimulationObject* so) override;

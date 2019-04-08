@@ -226,7 +226,9 @@ void ApplicationControl::initiateApplication()
     std::shared_ptr<Demo> example2Demo = std::make_shared<Example2Demo>(*this);
     mDemoLoaderModule->addDemo(example2Demo);
 
-    mDemoLoaderModule->addDemo(std::make_shared<BallJointDemo>(*this));
+    std::shared_ptr<BallJointDemo> ballJointDemo = std::make_shared<BallJointDemo>(*this);
+    mDemoLoaderModule->addDemo(ballJointDemo);
+    mDemoLoaderModule->loadDemo(ballJointDemo);
 
 //    SGLeafNode* node1 = mSGControl->createSphere(
 //                "Sphere",
@@ -271,30 +273,28 @@ void ApplicationControl::initiateApplication()
 
 
     // some boxes:
-    for (int r = 0; r < 1; ++r)
-    {
-        for (int c = 0; c < 2; ++c)
-        {
-            if (r == 0)
-            {
-                SGLeafNode* node1 = mSGControl->createBox("Box", mSGControl->getSceneGraph()->getRoot(),
-                                                          Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
-                mSGControl->create3DGeometryFrom2D(node1, 0.15, 30);
-                mSGControl->createFEMObject(node1->getData());
-                mSGControl->createCollidable(node1->getData());
-            }
-            else
-            {
-                SGLeafNode* node1 = mSGControl->createBox("Box", mSGControl->getSceneGraph()->getRoot(),
-                                                          Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
-                mSGControl->createRigidBody(node1->getData(), 1.0, false);
-                mSGControl->createCollidable(node1->getData());
-            }
+//    for (int r = 0; r < 1; ++r)
+//    {
+//        for (int c = 0; c < 2; ++c)
+//        {
+//            if (r == 0)
+//            {
+//                SGLeafNode* node1 = mSGControl->createBox("Box", mSGControl->getSceneGraph()->getRoot(),
+//                                                          Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
+//                mSGControl->create3DGeometryFrom2D(node1, 0.15, 30);
+//                mSGControl->createFEMObject(node1->getData());
+//                mSGControl->createCollidable(node1->getData());
+//            }
+//            else
+//            {
+//                SGLeafNode* node1 = mSGControl->createBox("Box", mSGControl->getSceneGraph()->getRoot(),
+//                                                          Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
+//                mSGControl->createRigidBody(node1->getData(), 1.0, false);
+//                mSGControl->createCollidable(node1->getData());
+//            }
 
-        }
-    }
-
-
+//        }
+//    }
 
     // Deformable simulation:
 //    SGLeafNode* node1 = mSGControl->importFileAsChild("elephant.off", "elephant",

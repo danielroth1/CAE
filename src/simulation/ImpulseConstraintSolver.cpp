@@ -19,17 +19,18 @@ ImpulseConstraintSolver::~ImpulseConstraintSolver()
 
 }
 
-void ImpulseConstraintSolver::initializeNonCollisionConstraints()
+void ImpulseConstraintSolver::initializeNonCollisionConstraints(double stepSize)
 {
     for (size_t i = 0; i < mConstraints.size(); ++i)
     {
-        mConstraints[i]->initialize();
+        mConstraints[i]->initialize(stepSize);
     }
 }
 
 void ImpulseConstraintSolver::initializeCollisionConstraints(
         std::vector<Collision>& collisions,
-        double restitution)
+        double restitution,
+        double stepSize)
 {
     // calculate K, target u rels
     mCollisionConstraints.clear();
@@ -43,13 +44,14 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
 
     for (size_t i = 0; i < mCollisionConstraints.size(); ++i)
     {
-        mCollisionConstraints[i].initialize();
+        mCollisionConstraints[i].initialize(stepSize);
     }
 }
 
 void ImpulseConstraintSolver::solveConstraints(int maxIterations, double maxConstraintError)
 {
     size_t validConstraints = 0;
+    size_t totalConstraints = mConstraints.size() + mCollisionConstraints.size();
 
     int iterCount = 0;
     for (int iter = 0; iter < maxIterations; ++iter)
@@ -59,7 +61,7 @@ void ImpulseConstraintSolver::solveConstraints(int maxIterations, double maxCons
         // iterate non-collision constraints
         for (size_t i = 0; i < mConstraints.size(); ++i)
         {
-            if (validConstraints == mConstraints.size())
+            if (validConstraints == totalConstraints)
                 break;
 
             if (ConstraintSolver::solveConstraint(mConstraints[i], maxConstraintError))
@@ -79,7 +81,7 @@ void ImpulseConstraintSolver::solveConstraints(int maxIterations, double maxCons
         // iterate collisions for as long as each u rel is equal to target u rel
         for (size_t i = 0; i < mCollisionConstraints.size(); ++i)
         {
-            if (validConstraints == mCollisionConstraints.size())
+            if (validConstraints == totalConstraints)
                 break;
 
             if (solveConstraint(mCollisionConstraints[i], maxConstraintError))
@@ -95,7 +97,7 @@ void ImpulseConstraintSolver::solveConstraints(int maxIterations, double maxCons
                 validConstraints = 1;
             }
         }
-        if (validConstraints == mCollisionConstraints.size())
+        if (validConstraints == totalConstraints)
             break;
     }
 

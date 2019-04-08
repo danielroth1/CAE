@@ -27,10 +27,17 @@ void BallJoint::setSumOfAllAppliedImpulses(const Eigen::Vector& impulses)
     mSumOfAllAppliedImpulses = impulses;
 }
 
-void BallJoint::initialize()
+void BallJoint::initialize(double stepSize)
 {
     mImpulseFactor = (ImpulseConstraintSolver::calculateK(mPointB) +
                       ImpulseConstraintSolver::calculateK(mPointA)).inverse();
+
+    mTargetURel = -(mPointA.getPoint() - mPointB.getPoint()) / stepSize;
+
+    // comment in to print the norm
+//    std::cout << "position error = " << mTargetURel.norm() <<
+//                 ", p1 = " << mPointA.getPoint().transpose() <<
+//                 ", p2 = " << mPointB.getPoint().transpose() << "\n";
 }
 
 bool BallJoint::solve(double maxConstraintError)

@@ -484,17 +484,32 @@ void SimulationControl::step()
     initializeStep();
 
     mRigidSimulation->solve(mStepSize);
-    mFEMSimulation->solve(mStepSize, true); // x + x^{FEM}, v + v^{FEM}
+    mFEMSimulation->solve(mStepSize, true); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
+
+    // Reverting the position before initializing the non-collision
+    // constraints, so that only the position error from the previous
+    // time step is corrected. Usually, the position error from this
+    // predictor step is large and can make the simulation unstable.
+    // Correcting the position error of the previous iteration is
+    // equivalent to the baumgarte stabilization and deviates from
+    // the approach of Benders "Constraint-based collision and contact handling
+    // using impulses".
+    mRigidSimulation->revertPositions();
+    mFEMSimulation->revertPositions(); // x, v + v^{FEM} + v^{rigid}
 
     // initialize constraints
-    mImpulseConstraintSolver->initializeNonCollisionConstraints();
+    mImpulseConstraintSolver->initializeNonCollisionConstraints(mStepSize);
+
+    mRigidSimulation->integratePositions(mStepSize);
+    mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
 
     // collision detection on x + x^{FEM}
     bool collisionsOccured = mCollisionManager->collideAll();
     // create collision constraints w.r.t. x + x^{FEM}
     mImpulseConstraintSolver->initializeCollisionConstraints(
                 mCollisionManager->getCollider()->getCollisions(),
-                0.2); // Restitution (bounciness factor))
+                0.2,
+                mStepSize); // Restitution (bounciness factor))
 
     if (collisionsOccured || !mImpulseConstraintSolver->getConstraints().empty())
     {
@@ -502,7 +517,7 @@ void SimulationControl::step()
         mRigidSimulation->revertPositions();
         mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-        mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
+        mImpulseConstraintSolver->solveConstraints(30, 1e-10); // x, v + v^{FEM} + v^{col}
 
         for (int i = 0; i < mNumFEMCorrectionIterations; ++i)
         {
@@ -513,7 +528,7 @@ void SimulationControl::step()
 
             mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-            mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
+            mImpulseConstraintSolver->solveConstraints(30, 1e-10); // x, v + v^{FEM} + v^{col}
         }
     }
 

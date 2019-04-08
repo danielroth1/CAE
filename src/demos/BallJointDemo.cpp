@@ -27,6 +27,8 @@ void BallJointDemo::load()
 {
 //    mAc.getSimulationControl()->setGravity(Eigen::Vector3d::Zero());
 
+    mAc.getSimulationControl()->setStepSize(0.001);
+
     // upper cuboid
     SGLeafNode* node1 = mAc.getSGControl()->createBox(
                 "Upper Cuboid", mAc.getSGControl()->getSceneGraph()->getRoot(),
@@ -43,10 +45,10 @@ void BallJointDemo::load()
     RigidBody* rb1 = static_cast<RigidBody*>(node1->getData()->getSimulationObjectRaw());
     RigidBody* rb2 = static_cast<RigidBody*>(node2->getData()->getSimulationObjectRaw());
 
-    rb1->setRotationalDamping(0.0);
-    rb1->setTranslationalDamping(0.0);
-    rb2->setRotationalDamping(0.0);
-    rb2->setTranslationalDamping(0.0);
+    rb1->setRotationalDamping(0.001);
+    rb1->setTranslationalDamping(0.001);
+    rb2->setRotationalDamping(0.001);
+    rb2->setTranslationalDamping(0.001);
 
     std::shared_ptr<BallJoint> ballJoint = std::make_shared<BallJoint>(
                 SimulationPointRef(rb1, rb1->getPolygon().get(), Eigen::Vector3d(-0.5 ,0.0, 0.0)),

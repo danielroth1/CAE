@@ -55,7 +55,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &SimulationControl::setStepSize,
                     mAc->getSimulationControl(),
                     mAc->getSimulationControl()->getDomain()),
-                1e-5, 10.0, 0.01);
+                1e-5, 10.0, 0.01, 4);
 
     mWidget->getMembersWidget()->addInteger(
                 "FEM Correction Iterations",
