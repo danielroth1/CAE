@@ -10,12 +10,14 @@ class GeometricPoint : public GeometricData
 public:
     GeometricPoint(Vector position);
 
+    Vector& getPosition();
+    void setPosition(const Eigen::Vector& position);
+
     // GeometricData interface
 public:
     void updateBoundingBox() override;
     void accept(GeometricDataVisitor& visitor) override;
     Vector& getPosition(size_t index) override;
-    Vector& getPosition();
     size_t getSize() override;
     void translate(const Eigen::Vector& position) override;
 

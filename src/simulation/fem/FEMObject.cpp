@@ -364,7 +364,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 
     integratePositions(timeStep);
 
-    std::cout << "norm = " << sol.norm() << "\n";
+//    std::cout << "norm = " << sol.norm() << "\n";
 
     // truncation test
     // truncation TODO: not working because of zero columns

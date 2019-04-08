@@ -13,7 +13,7 @@ class GeometricPoint;
 class SimulationPoint : public SimulationObject
 {
 public:
-    SimulationPoint(Domain* domain, GeometricPoint& point);
+    SimulationPoint(Domain* domain, const std::shared_ptr<GeometricPoint> point);
 
     // SimulationObject interface
 public:
@@ -32,7 +32,7 @@ public:
     virtual GeometricData* getGeometricData() override;
 
 private:
-    GeometricPoint& mPoint;
+    std::shared_ptr<GeometricPoint> mPoint;
 
 };
 

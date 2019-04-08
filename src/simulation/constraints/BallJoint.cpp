@@ -55,7 +55,7 @@ bool BallJoint::solve(double maxConstraintError)
 
     Eigen::Vector deltaURel = mTargetURel - uRel;
 
-    std::cout << "norm = " << deltaURel.norm() << "\n";
+//    std::cout << "norm = " << deltaURel.norm() << "\n";
     if (deltaURel.norm() < maxConstraintError)
     {
         return true;

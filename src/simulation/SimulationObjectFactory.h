@@ -32,7 +32,9 @@ public:
     static std::vector<SimulationObject::Type>
     getPossibleSimulationObjectTypes(GeometricData& geometricData);
 
-    static SimulationPoint* createSimulationPoint(Domain* domain, GeometricPoint* point);
+    static SimulationPoint* createSimulationPoint(
+            Domain* domain,
+            const std::shared_ptr<GeometricPoint>& point);
 
     static FEMObject* createFEMObject(Domain* domain, std::shared_ptr<Polygon3D> poly3);
 

@@ -413,7 +413,8 @@ SimulationObject* SGControl::createCorrespondingSimulationObject(GeometricData* 
         {
             target = SimulationObjectFactory::createSimulationPoint(
                         sgc.mAc->getSimulationControl()->getDomain(),
-                        &point);
+                        std::static_pointer_cast<GeometricPoint>(
+                            point.shared_from_this()));
         }
 
         SGControl& sgc;

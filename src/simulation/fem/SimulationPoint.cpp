@@ -5,7 +5,9 @@
 #include <scene/data/geometric/GeometricPoint.h>
 
 
-SimulationPoint::SimulationPoint(Domain* domain, GeometricPoint& point)
+SimulationPoint::SimulationPoint(
+        Domain* domain,
+        const std::shared_ptr<GeometricPoint> point)
     : SimulationObject (domain)
     , mPoint(point)
 {
@@ -36,17 +38,17 @@ void SimulationPoint::applyForce(
 
 Eigen::Vector& SimulationPoint::getPosition(size_t /*id*/)
 {
-    return mPoint.getPosition(0);
+    return mPoint->getPosition(0);
 }
 
 void SimulationPoint::setPosition(Eigen::Vector v, ID /*id*/)
 {
-    mPoint = v;
+    mPoint->setPosition(v);
 }
 
 void SimulationPoint::addToPosition(Eigen::Vector v, ID /*id*/)
 {
-    mPoint.getPosition(0) += v;
+    mPoint->setPosition(mPoint->getPosition() + v);
 }
 
 void SimulationPoint::integratePositions(double /*stepSize*/)
@@ -66,5 +68,5 @@ size_t SimulationPoint::getSize()
 
 GeometricData* SimulationPoint::getGeometricData()
 {
-    return &mPoint;
+    return mPoint.get();
 }

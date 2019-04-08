@@ -29,6 +29,11 @@ Vector&GeometricPoint::getPosition()
     return mPosition;
 }
 
+void GeometricPoint::setPosition(const Vector& position)
+{
+    mPosition = position;
+}
+
 size_t GeometricPoint::getSize()
 {
     return 1;

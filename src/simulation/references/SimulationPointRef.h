@@ -89,7 +89,7 @@ private:
 
     std::unique_ptr<GeometricPointRef> mGeometricPointRef;
 
-    SimulationObject* mSimulationObject;
+    std::shared_ptr<SimulationObject> mSimulationObject;
 
     GetSimulationPointDispatcher mGetSimulationPointDispatcher;
 

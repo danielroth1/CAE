@@ -48,9 +48,9 @@ SimulationObjectFactory::getPossibleSimulationObjectTypes(
 SimulationPoint*
 SimulationObjectFactory::createSimulationPoint(
         Domain* domain,
-        GeometricPoint* point)
+        const std::shared_ptr<GeometricPoint>& point)
 {
-    return new SimulationPoint(domain, *point);
+    return new SimulationPoint(domain, point);
 }
 
 FEMObject*
