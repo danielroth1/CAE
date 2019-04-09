@@ -64,6 +64,20 @@ public:
                 double cellRadiusEdgeRatio = 30,
                 bool renderOnlyOuterFaces = true);
 
+        SGLeafNode* createSimulationPoint(
+                std::string name,
+                SGChildrenNode* parent,
+                Eigen::Vector position);
+
+        // Creates a linear force from a SimulationPointRef to a target point.
+        // Creates the point (GeometricPoint and SimulationPoint) and adds
+        // them to parent.
+        void createLinearForce(
+                std::string name,
+                SGChildrenNode* parent,
+                SimulationPointRef source,
+                const Eigen::Vector& target,
+                double strength);
 
     // Simulation Methods
         void createFEMObject(SceneLeafData* ld);

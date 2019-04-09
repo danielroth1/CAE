@@ -23,7 +23,8 @@
 #include <simulation/SimulationModule.h>
 #include <modules/demo_loader/Demo.h>
 #include <modules/demo_loader/DemoLoaderModule.h>
-#include <demos/BallJointDemo.h>
+#include <demos/ChainDemo.h>
+#include <demos/DoublePendulumDemo.h>
 
 
 ApplicationControl::ApplicationControl()
@@ -226,8 +227,12 @@ void ApplicationControl::initiateApplication()
     std::shared_ptr<Demo> example2Demo = std::make_shared<Example2Demo>(*this);
     mDemoLoaderModule->addDemo(example2Demo);
 
-    std::shared_ptr<BallJointDemo> ballJointDemo = std::make_shared<BallJointDemo>(*this);
+    std::shared_ptr<DoublePendulumDemo> doublePendulumDemo = std::make_shared<DoublePendulumDemo>(*this);
+    mDemoLoaderModule->addDemo(doublePendulumDemo);
+
+    std::shared_ptr<ChainDemo> ballJointDemo = std::make_shared<ChainDemo>(*this);
     mDemoLoaderModule->addDemo(ballJointDemo);
+
     mDemoLoaderModule->loadDemo(ballJointDemo);
 
 //    SGLeafNode* node1 = mSGControl->createSphere(

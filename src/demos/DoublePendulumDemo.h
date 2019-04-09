@@ -1,14 +1,14 @@
-#ifndef BALLJOINTDEMO_H
-#define BALLJOINTDEMO_H
+#ifndef DOUBLEPENDULUMDEMO_H
+#define DOUBLEPENDULUMDEMO_H
 
 #include <modules/demo_loader/Demo.h>
 
 class ApplicationControl;
 
-class BallJointDemo : public Demo
+class DoublePendulumDemo : public Demo
 {
 public:
-    BallJointDemo(ApplicationControl& ac);
+    DoublePendulumDemo(ApplicationControl& ac);
 
     // Demo interface
 public:
@@ -20,4 +20,4 @@ private:
     ApplicationControl& mAc;
 };
 
-#endif // BALLJOINTDEMO_H
+#endif // DoublePendulumDemo
