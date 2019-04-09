@@ -39,6 +39,7 @@ SimulationControl::SimulationControl()
 //    m_update_interval = 500 ; // update after every 50 milliseconds
 //    mUpdateThread = new std::thread(&SimulationControl::simulationLoop, this);
 //    m_surface.create();
+    mProxy = std::make_shared<SimulationControlProxy>(this);
     mFEMSimulation = nullptr;
     mFEMSimulationProxy = nullptr;
     mSimulationThread = new SimulationThread(this);
@@ -354,49 +355,22 @@ void SimulationControl::clearSimulationObjects()
 
 void SimulationControl::addForce(const std::shared_ptr<Force>& f)
 {
-    // Forces don't need to be added to the simulations
-    // they can be applied independently?
-    // why are the simulations even needed? maybe
-    // renaming them makes sense?
-    // FEMSolver
-    // RigidSolver...
-
-    auto it = std::find(mForces.begin(), mForces.end(), f);
-    if (it == mForces.end())
-    {
-        mForces.push_back(f);
-    }
+    mProxy->addForceSlot(f);
 }
 
 void SimulationControl::removeForce(const std::shared_ptr<Force>& f)
 {
-    auto it = std::find(mForces.begin(), mForces.end(), f);
-    if (it != mForces.end())
-    {
-        mForces.erase(it);
-    }
+    mProxy->removeForceSlot(f);
 }
 
 void SimulationControl::addConstraint(const std::shared_ptr<Constraint>& c)
 {
-    auto it = std::find(mConstraints.begin(), mConstraints.end(), c);
-    if (it == mConstraints.end())
-    {
-        mConstraints.push_back(c);
-    }
-
-    mImpulseConstraintSolver->addConstraint(c);
+    mProxy->addConstraintSlot(c);
 }
 
 void SimulationControl::removeConstraint(const std::shared_ptr<Constraint>& c)
 {
-    auto it = std::find(mConstraints.begin(), mConstraints.end(), c);
-    if (it != mConstraints.end())
-    {
-        mConstraints.erase(it);
-    }
-
-    mImpulseConstraintSolver->removeConstraint(c);
+    mProxy->removeConstraintSlot(c);
 }
 
 void SimulationControl::addCollisionObject(std::shared_ptr<SimulationObject> so)
@@ -559,6 +533,53 @@ void SimulationControl::setBVHCollisionRenderingEnabled(bool enabled)
 Domain* SimulationControl::getDomain()
 {
     return mDomain;
+}
+
+void SimulationControl::addForceSlot(const std::shared_ptr<Force>& force)
+{
+    // Forces don't need to be added to the simulations
+    // they can be applied independently?
+    // why are the simulations even needed? maybe
+    // renaming them makes sense?
+    // FEMSolver
+    // RigidSolver...
+
+    auto it = std::find(mForces.begin(), mForces.end(), force);
+    if (it == mForces.end())
+    {
+        mForces.push_back(force);
+    }
+}
+
+void SimulationControl::removeForceSlot(const std::shared_ptr<Force>& force)
+{
+    auto it = std::find(mForces.begin(), mForces.end(), force);
+    if (it != mForces.end())
+    {
+        mForces.erase(it);
+    }
+}
+
+void SimulationControl::addConstraintSlot(const std::shared_ptr<Constraint>& c)
+{
+    auto it = std::find(mConstraints.begin(), mConstraints.end(), c);
+    if (it == mConstraints.end())
+    {
+        mConstraints.push_back(c);
+    }
+
+    mImpulseConstraintSolver->addConstraint(c);
+}
+
+void SimulationControl::removeConstraintSlot(const std::shared_ptr<Constraint>& c)
+{
+    auto it = std::find(mConstraints.begin(), mConstraints.end(), c);
+    if (it != mConstraints.end())
+    {
+        mConstraints.erase(it);
+    }
+
+    mImpulseConstraintSolver->removeConstraint(c);
 }
 
 void SimulationControl::handleAfterStep()

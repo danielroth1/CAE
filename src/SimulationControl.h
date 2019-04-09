@@ -15,8 +15,6 @@
 #include <atomic>
 #include <memory> // shared_ptr
 
-#include <QObject>
-
 class ApplicationControl;
 class CollisionControl;
 class CollisionManager;
@@ -34,6 +32,7 @@ class ImpulseConstraintSolver;
 class RigidSimulation;
 class RigidSimulationProxy;
 class SimulationControlListener;
+class SimulationControlProxy;
 class SimulationThread;
 class StepperThread;
 class UIControl;
@@ -50,7 +49,7 @@ class UIControl;
 // The reason for that is the seperation of UI and logic.
 // UIControl calles the actions anytime a user interaction
 // is registered.
-class SimulationControl : public QObject
+class SimulationControl : public std::enable_shared_from_this<SimulationControl>
 {
 public:
 
@@ -152,11 +151,12 @@ public:
     void addSimulation(const std::shared_ptr<Simulation>& simulation,
                        const std::shared_ptr<SimulationProxy>& proxy);
 
-public slots:
-
-//signals:
-//    void repaintSignal();
-
+    // slots
+public:
+    void addForceSlot(const std::shared_ptr<Force>& force);
+    void removeForceSlot(const std::shared_ptr<Force>& force);
+    void addConstraintSlot(const std::shared_ptr<Constraint>& c);
+    void removeConstraintSlot(const std::shared_ptr<Constraint>& c);
 
 private:
 
@@ -164,6 +164,8 @@ private:
     void handleAfterStep();
 
     void applyForces();
+
+    std::shared_ptr<SimulationControlProxy> mProxy;
 
     ApplicationControl* mAc;
     UIControl* mUiControl;
@@ -216,26 +218,19 @@ private:
 
 };
 
-//PROXY_CLASS(SimulationControlProxy, SimulationControl, mSc,
-//            PROXY_FUNCTION(SimulationControl, mSc, actForce,
-//                           PL(Selection* selection, Eigen::Vector force),
-//                           PL(selection, force))
-//            PROXY_FUNCTION(SimulationControl, mSc, clearTruncations, , )
-//            PROXY_FUNCTION(SimulationControl, mSc, addTruncations,
-//                           PL(FEMObject* femObject, std::vector<ID> vectorIDs),
-//                           PL(femObject, vectorIDs))
-//            PROXY_FUNCTION(SimulationControl, mSc, initializeSimulation, , )
-//            PROXY_FUNCTION(SimulationControl, mSc, addSimulationObject,
-//                           PL(std::shared_ptr<SimulationObject> so),
-//                           PL(so))
-//            PROXY_FUNCTION(SimulationControl, mSc, removeSimulationObject,
-//                           PL(SimulationObject* so),
-//                           PL(so))
-//            )
-
-
-//PROXY_CLASS(SimulationControlProxy, SimulationControl, mSc,
-//            PROXY_FUNCTION(SimulationControl, mSc, initialize)
-//            PROXY_FUNCTION(SimulationControl, mSc, actForce, Selection* s, Eigen::Vector v))
+PROXY_CLASS(SimulationControlProxy, SimulationControl, mSc,
+            PROXY_FUNCTION(SimulationControl, mSc, addForceSlot,
+                           PL(const std::shared_ptr<Force>& force),
+                           PL(force))
+            PROXY_FUNCTION(SimulationControl, mSc, removeForceSlot,
+                           PL(const std::shared_ptr<Force>& force),
+                           PL(force))
+            PROXY_FUNCTION(SimulationControl, mSc, addConstraintSlot,
+                           PL(const std::shared_ptr<Constraint>& constraint),
+                           PL(constraint))
+            PROXY_FUNCTION(SimulationControl, mSc, removeConstraintSlot,
+                           PL(const std::shared_ptr<Constraint>& constraint),
+                           PL(constraint))
+            )
 
 #endif // SIMULATIONCONTROL_H
