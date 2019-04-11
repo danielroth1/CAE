@@ -25,6 +25,8 @@
 #include <modules/demo_loader/DemoLoaderModule.h>
 #include <demos/ChainDemo.h>
 #include <demos/DoublePendulumDemo.h>
+#include <demos/JointTypesDemo.h>
+#include <demos/MobileDemo.h>
 
 
 ApplicationControl::ApplicationControl()
@@ -230,108 +232,16 @@ void ApplicationControl::initiateApplication()
     std::shared_ptr<DoublePendulumDemo> doublePendulumDemo = std::make_shared<DoublePendulumDemo>(*this);
     mDemoLoaderModule->addDemo(doublePendulumDemo);
 
-    std::shared_ptr<ChainDemo> ballJointDemo = std::make_shared<ChainDemo>(*this);
-    mDemoLoaderModule->addDemo(ballJointDemo);
+    std::shared_ptr<ChainDemo> chainDemo = std::make_shared<ChainDemo>(*this);
+    mDemoLoaderModule->addDemo(chainDemo);
 
-    mDemoLoaderModule->loadDemo(ballJointDemo);
+    std::shared_ptr<JointTypesDemo> jointTypesDemo = std::make_shared<JointTypesDemo>(*this);
+    mDemoLoaderModule->addDemo(jointTypesDemo);
 
-//    SGLeafNode* node1 = mSGControl->createSphere(
-//                "Sphere",
-//                mSGControl->getSceneGraph()->getRoot(),
-//                Vector(0, 0, 0), 1.0, 3);
+    std::shared_ptr<MobileDemo> mobileDemo = std::make_shared<MobileDemo>(*this);
+    mDemoLoaderModule->addDemo(mobileDemo);
 
-//    SGLeafNode* node2 = mSGControl->createSphere(
-//                "Sphere",
-//                mSGControl->getSceneGraph()->getRoot(),
-//                Vector(0, 0, 0), 1.0, 3);
-
-    // Create SimulationObjects
-
-
-    // Cross 2
-//    SGLeafNode* node2 = mSGControl->importFileAsChild("cross.off", "cross 2",
-//                                  mSGControl->getSceneGraph()->getRoot());
-//    node2->getData()->getGeometricDataRaw()->translate(Vector(0.65, 0, 0));
-//    mSGControl->createRigidBody(node2->getData(), 1.0);
-//    mSGControl->createCollidable(node2->getData());
-
-    // Elephant
-//    SGLeafNode* node2 = mSGControl->importFileAsChild("elephant.off", "Elephant",
-//                                  mSGControl->getSceneGraph()->getRoot());
-//    node2->getData()->getGeometricDataRaw()->translate(Vector(0.65, 0, 0));
-//    mSGControl->createRigidBody(node2->getData(), 1.0, true);
-//    mSGControl->createCollidable(node2->getData());
-
-
-    // Rigid simulation:
-//    SGLeafNode* node1 = mSGControl->importFileAsChild("cross.off", "cross 1",
-//                                  mSGControl->getSceneGraph()->getRoot());
-//    node1->getData()->getGeometricDataRaw()->translate(Vector(0, 0, 0));
-//    mSGControl->createRigidBody(node1->getData(), 1.0, false);
-//    mSGControl->createCollidable(node1->getData());
-
-//    // Floor
-//    SGLeafNode* node2 = mSGControl->createBox("Floor", mSGControl->getSceneGraph()->getRoot(),
-//                                              /*Vector(-5, -2, -5)*/Vector(-3, -1.5, -3), 6, 0.5, 6, true);
-//    mSGControl->createRigidBody(node2->getData(), 1.0, true);
-//    mSGControl->createCollidable(node2->getData());
-
-
-    // some boxes:
-//    for (int r = 0; r < 1; ++r)
-//    {
-//        for (int c = 0; c < 2; ++c)
-//        {
-//            if (r == 0)
-//            {
-//                SGLeafNode* node1 = mSGControl->createBox("Box", mSGControl->getSceneGraph()->getRoot(),
-//                                                          Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
-//                mSGControl->create3DGeometryFrom2D(node1, 0.15, 30);
-//                mSGControl->createFEMObject(node1->getData());
-//                mSGControl->createCollidable(node1->getData());
-//            }
-//            else
-//            {
-//                SGLeafNode* node1 = mSGControl->createBox("Box", mSGControl->getSceneGraph()->getRoot(),
-//                                                          Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
-//                mSGControl->createRigidBody(node1->getData(), 1.0, false);
-//                mSGControl->createCollidable(node1->getData());
-//            }
-
-//        }
-//    }
-
-    // Deformable simulation:
-//    SGLeafNode* node1 = mSGControl->importFileAsChild("elephant.off", "elephant",
-//                                  mSGControl->getSceneGraph()->getRoot());
-//    mSGControl->create3DGeometryFrom2D(node1, 0.15, 30);
-////    node1->getData()->getGeometricDataRaw()->translate(Vector(0, 0, 0));
-//    mSGControl->createFEMObject(node1->getData());
-////    mSGControl->createRigidBody(node1->getData(), 1.0, false);
-//    mSGControl->createCollidable(node1->getData());
-
-
-
-
-//    node2->getData()->getGeometricDataRaw()->translate(Vector(0.65, 0, 0));
-
-//    SGLeafNode* node2 = mSGControl->importFileAsChild("cross.off", "cross 2",
-//                                  mSGControl->getSceneGraph()->getRoot());
-
-    // Move objects
-//    node1->getData()->getSimulationObject()->addToPosition(Vector(-1, 0, 0), 0);
-//    node2->getData()->getSimulationObject()->addToPosition(Vector(1, 0, 0), 0);
-
-//    std::shared_ptr<Polygon> p1 = static_pointer_cast<Polygon>(node1->getData()->getGeometricData());
-//    p1.translate(Vector(-1, 0, 0));
-
-//    std::shared_ptr<Polygon> p2 = static_pointer_cast<Polygon>(node2->getData()->getGeometricData());
-//    p2.translate(Vector(1, 0, 0));
-
-//    mSGControl->importFileAsChild("elephant.off", "elephant",
-//                                  mSGControl->getSceneGraph()->getRoot());
-
-    // deren Komponenten sollten eigtl in UIControll initialiśiert werden!
+    mDemoLoaderModule->loadDemo(mobileDemo);
 }
 
 void ApplicationControl::createModules()

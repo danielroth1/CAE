@@ -64,7 +64,7 @@ void ImpulseConstraintSolver::solveConstraints(int maxIterations, double maxCons
             if (validConstraints == totalConstraints)
                 break;
 
-            if (ConstraintSolver::solveConstraint(mConstraints[i], maxConstraintError))
+            if (mConstraints[i]->solve(maxConstraintError))
             {
                 // if constraint is valid, nothing to do
                 ++validConstraints;

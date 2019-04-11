@@ -1,10 +1,11 @@
-#include "ChainDemo.h"
+#include "JointTypesDemo.h"
 
 #include <ApplicationControl.h>
 
 #include <simulation/rigid/RigidBody.h>
 
 #include <simulation/constraints/BallJoint.h>
+#include <simulation/constraints/LineJoint.h>
 
 #include <simulation/forces/LinearForce.h>
 
@@ -12,23 +13,24 @@
 
 using namespace Eigen;
 
-ChainDemo::ChainDemo(ApplicationControl& ac)
+JointTypesDemo::JointTypesDemo(ApplicationControl& ac)
     : mAc(ac)
 {
 
 }
 
-std::string ChainDemo::getName()
+std::string JointTypesDemo::getName()
 {
-    return "Chain";
+    return "Joint Types";
 }
 
-void ChainDemo::load()
+void JointTypesDemo::load()
 {
     mAc.getSimulationControl()->setStepSize(0.001);
+    mAc.getSimulationControl()->setGravity(Eigen::Vector::Zero());
 
-    int nChainParts = 25;
-    double cpl = 0.4; // chain part length
+    int nChainParts = 2;
+    double cpl = 1.0; // chain part length
     double cl = nChainParts * cpl; // chain length
 
     // upper cuboid
@@ -54,30 +56,44 @@ void ChainDemo::load()
         rb2->setRotationalDamping(0.001);
         rb2->setTranslationalDamping(0.001);
 
-        // ball joint connecting upper and lower cuboid
-        std::shared_ptr<BallJoint> ballJoint = std::make_shared<BallJoint>(
+        // line joint connecting upper and lower cuboid
+        std::shared_ptr<LineJoint> lineJoint = std::make_shared<LineJoint>(
                     SimulationPointRef(prevChainPart,
                                        prevChainPart->getPolygon().get(),
                                        Eigen::Vector3d(-cpl / 2.0, 0.0, 0.0)),
                     SimulationPointRef(rb2,
                                        rb2->getPolygon().get(),
-                                       Eigen::Vector3d(cpl / 2.0, 0.0, 0.0)));
-        mAc.getSimulationControl()->addConstraint(ballJoint);
+                                       Eigen::Vector3d(cpl / 2.0, 0.0, 0.0)),
+                    Eigen::Vector(1.0, 0.0, 0.0));
+
+        mAc.getSimulationControl()->addConstraint(lineJoint);
 
         prevChainPart = rb2;
     }
 
+    // fixate first part in origin
+    SGLeafNode* point = mAc.getSGControl()->createSimulationPoint(
+                "Fixed point",
+                mAc.getSGControl()->getSceneGraph()->getRoot(),
+                Eigen::Vector(cl / 2.0 + cpl / 2.0,  0.15, 0.15));
+    mAc.getSimulationControl()->addConstraint(
+                std::make_shared<BallJoint>(
+                    SimulationPointRef(
+                        rb1, rb1->getPolygon().get(), Eigen::Vector::Zero()),
+                    SimulationPointRef(
+                        point->getData()->getSimulationObjectRaw(), 0)));
 
-    // add linear force
+    // add linear force to second part
     SGControl* sgControl = mAc.getSGControl();
-    sgControl->createLinearForce("Linear Force",
-                                 sgControl->getSceneGraph()->getRoot(),
-                                 SimulationPointRef(rb1, rb1->getPolygon().get(),
-                                                    Eigen::Vector3d(cpl / 2.0, 0.0, 0.0)),
-                                 Vector(cl / 2.0 + cpl, 0.0, 0.0),
-                                 1000.0);
+    sgControl->createLinearForce(
+                "Linear Force",
+                sgControl->getSceneGraph()->getRoot(),
+                SimulationPointRef(prevChainPart, prevChainPart->getPolygon().get(),
+                                   Eigen::Vector3d(-cpl / 2.0, 0.0, 0.0)),
+                Vector(cl / 2.0 + cpl, -cl, 0.15),
+                10.0);
 }
 
-void ChainDemo::unload()
+void JointTypesDemo::unload()
 {
 }

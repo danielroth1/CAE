@@ -491,7 +491,7 @@ void SimulationControl::step()
         mRigidSimulation->revertPositions();
         mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-        mImpulseConstraintSolver->solveConstraints(30, 1e-10); // x, v + v^{FEM} + v^{col}
+        mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
 
         for (int i = 0; i < mNumFEMCorrectionIterations; ++i)
         {
@@ -502,7 +502,7 @@ void SimulationControl::step()
 
             mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-            mImpulseConstraintSolver->solveConstraints(30, 1e-10); // x, v + v^{FEM} + v^{col}
+            mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
         }
     }
 

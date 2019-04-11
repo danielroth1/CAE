@@ -183,6 +183,19 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
     return leafNode;
 }
 
+SGLeafNode*SGControl::createSimulationPoint(
+        std::string name,
+        SGChildrenNode* parent,
+        Vector position)
+{
+    SGLeafNode* leafNode = SGTreeNodeFactory::createLeafNode(parent, name);
+    leafNode->setData(new SceneLeafData(leafNode));
+    leafNode->getData()->setGeometricData(
+                std::make_shared<GeometricPoint>(position));
+    createAndSetCorrespondingSimulationObject(leafNode);
+    return leafNode;
+}
+
 void SGControl::createLinearForce(
         std::string name,
         SGChildrenNode* parent,
@@ -191,13 +204,7 @@ void SGControl::createLinearForce(
         double strength)
 {
     // add linear force
-    SGLeafNode* leafNode = SGTreeNodeFactory::createLeafNode(parent, name);
-    leafNode->setData(new SceneLeafData(leafNode));
-
-    leafNode->getData()->setGeometricData(
-                std::make_shared<GeometricPoint>(target));
-
-    createAndSetCorrespondingSimulationObject(leafNode);
+    SGLeafNode* leafNode = createSimulationPoint(name, parent, target);
 
     // create the linear force
     std::shared_ptr<LinearForce> lf = std::make_shared<LinearForce>(

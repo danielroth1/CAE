@@ -20,7 +20,7 @@ DoublePendulumDemo::DoublePendulumDemo(ApplicationControl& ac)
 
 std::string DoublePendulumDemo::getName()
 {
-    return "Double Pendulum Demo";
+    return "Double Pendulum";
 }
 
 void DoublePendulumDemo::load()
