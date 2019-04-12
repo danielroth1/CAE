@@ -47,9 +47,14 @@ void DemoLoaderModule::removeDemo(const std::shared_ptr<Demo>& demo)
 
 void DemoLoaderModule::loadDemo(const std::shared_ptr<Demo>& demo)
 {
+    // restore default parameters
+    mAc->getSimulationControl()->setGravity(Eigen::Vector(0.0, -9.81, 0.0));
+    mAc->getSimulationControl()->setStepSize(0.01);
+
     mAc->getSGControl()->clearScene();
     if (mCurrentlyLoadedDemo)
         mCurrentlyLoadedDemo->unload();
+
     mCurrentlyLoadedDemo = demo;
     mCurrentlyLoadedDemo->load();
 }

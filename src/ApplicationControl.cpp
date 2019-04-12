@@ -25,8 +25,9 @@
 #include <modules/demo_loader/DemoLoaderModule.h>
 #include <demos/ChainDemo.h>
 #include <demos/DoublePendulumDemo.h>
-#include <demos/JointTypesDemo.h>
+#include <demos/LineJointDemo.h>
 #include <demos/MobileDemo.h>
+#include <demos/PlaneJointDemo.h>
 
 
 ApplicationControl::ApplicationControl()
@@ -143,18 +144,21 @@ void ApplicationControl::initiateApplication()
 
         virtual std::string getName()
         {
-            return "Example 1";
+            return "Four Boxes";
         }
 
         virtual void load()
         {
+            ac.getSimulationControl()->setGravity(Vector::Zero());
+            ac.getSimulationControl()->setStepSize(0.001);
+
             // some boxes:
-            for (int r = 0; r < 1; ++r)
+            for (int r = 0; r < 2; ++r)
             {
-                for (int c = 0; c < 1; ++c)
+                for (int c = 0; c < 2; ++c)
                 {
                     SGLeafNode* node1 = ac.mSGControl->createBox("Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                                                              Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
+                                                              Vector(0.6 * c, 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
                     ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
                     ac.mSGControl->createCollidable(node1->getData());
                 }
@@ -182,14 +186,14 @@ void ApplicationControl::initiateApplication()
 
         virtual std::string getName()
         {
-            return "Example 2";
+            return "Rigid Deformable Collision";
         }
 
         virtual void load()
         {
             // Floor
             SGLeafNode* node2 = ac.mSGControl->createBox("Floor", ac.mSGControl->getSceneGraph()->getRoot(),
-                                                      /*Vector(-5, -2, -5)*/Vector(-3, -1.5, -3), 6, 0.5, 6, true);
+                                                      /*Vector(-5, -2, -5)*/Vector(0.0, -1.5, 0.0), 6, 0.5, 6, true);
             ac.mSGControl->createRigidBody(node2->getData(), 1.0, true);
             ac.mSGControl->createCollidable(node2->getData());
 
@@ -235,13 +239,16 @@ void ApplicationControl::initiateApplication()
     std::shared_ptr<ChainDemo> chainDemo = std::make_shared<ChainDemo>(*this);
     mDemoLoaderModule->addDemo(chainDemo);
 
-    std::shared_ptr<JointTypesDemo> jointTypesDemo = std::make_shared<JointTypesDemo>(*this);
-    mDemoLoaderModule->addDemo(jointTypesDemo);
+    std::shared_ptr<LineJointDemo> lineJointDemo = std::make_shared<LineJointDemo>(*this);
+    mDemoLoaderModule->addDemo(lineJointDemo);
+
+    std::shared_ptr<PlaneJointDemo> planeJointDemo = std::make_shared<PlaneJointDemo>(*this);
+    mDemoLoaderModule->addDemo(planeJointDemo);
 
     std::shared_ptr<MobileDemo> mobileDemo = std::make_shared<MobileDemo>(*this);
     mDemoLoaderModule->addDemo(mobileDemo);
 
-    mDemoLoaderModule->loadDemo(mobileDemo);
+    mDemoLoaderModule->loadDemo(planeJointDemo);
 }
 
 void ApplicationControl::createModules()

@@ -1,14 +1,14 @@
-#ifndef JOINTTYPESDEMO_H
-#define JOINTTYPESDEMO_H
+#ifndef LINEJOINTDEMO_H
+#define LINEJOINTDEMO_H
 
 #include <modules/demo_loader/Demo.h>
 
 class ApplicationControl;
 
-class JointTypesDemo : public Demo
+class LineJointDemo : public Demo
 {
 public:
-    JointTypesDemo(ApplicationControl& ac);
+    LineJointDemo(ApplicationControl& ac);
 
     // Demo interface
 public:
@@ -20,4 +20,4 @@ private:
     ApplicationControl& mAc;
 };
 
-#endif // JOINTTYPESDEMO_H
+#endif // LINEJOINTDEMO_H

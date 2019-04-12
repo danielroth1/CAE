@@ -16,20 +16,20 @@ Polygon2D GeometricDataFactory::create2DBox(double width, double length, double 
     Vectors positions;
     Faces faces;
 
-    positions.push_back(Vector(0,0,0));
-    positions.push_back(Vector(1,0,0));
-    positions.push_back(Vector(1,1,0));
-    positions.push_back(Vector(0,1,0));
-    positions.push_back(Vector(0,0,1));
-    positions.push_back(Vector(1,0,1));
-    positions.push_back(Vector(1,1,1));
-    positions.push_back(Vector(0,1,1));
+    positions.push_back(Vector(-1,-1,-1));
+    positions.push_back(Vector( 1,-1,-1));
+    positions.push_back(Vector( 1, 1,-1));
+    positions.push_back(Vector(-1, 1,-1));
+    positions.push_back(Vector(-1,-1, 1));
+    positions.push_back(Vector( 1,-1, 1));
+    positions.push_back(Vector( 1, 1, 1));
+    positions.push_back(Vector(-1, 1, 1));
 
     for (Vector& p : positions)
     {
-        p[0] *= width;
-        p[1] *= height;
-        p[2] *= length;
+        p[0] *= 0.5 * width;
+        p[1] *= 0.5 * height;
+        p[2] *= 0.5 * length;
     }
 
     // gather triangles and normals

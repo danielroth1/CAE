@@ -57,7 +57,7 @@ void DoublePendulumDemo::load()
                                  sgControl->getSceneGraph()->getRoot(),
                                  SimulationPointRef(rb1, rb1->getPolygon().get(),
                                                     Eigen::Vector3d(0.5 ,0.0, 0.0)),
-                                 Vector(1.5, 0.0, 0.0),
+                                 Vector(1.0, 0.0, 0.0),
                                  50.0);
 }
 

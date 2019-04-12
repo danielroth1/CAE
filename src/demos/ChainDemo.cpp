@@ -74,7 +74,7 @@ void ChainDemo::load()
                                  sgControl->getSceneGraph()->getRoot(),
                                  SimulationPointRef(rb1, rb1->getPolygon().get(),
                                                     Eigen::Vector3d(cpl / 2.0, 0.0, 0.0)),
-                                 Vector(cl / 2.0 + cpl, 0.0, 0.0),
+                                 Vector(cl / 2.0 + cpl / 2.0, 0.0, 0.0),
                                  1000.0);
 }
 
