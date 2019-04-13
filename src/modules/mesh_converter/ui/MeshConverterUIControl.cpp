@@ -63,13 +63,13 @@ void MeshConverterUIControl::onRevertButtonClicked()
     mModule->getControl()->revert();
 }
 
-void MeshConverterUIControl::onSceneNodeSelected(SceneData* sd)
+void MeshConverterUIControl::onSceneNodeSelected(const std::shared_ptr<SceneData>& sd)
 {
     processSceneData(sd);
 }
 
 void MeshConverterUIControl::onSelectedSceneNodesChanged(
-        const std::set<SceneData*>& sd)
+        const std::set<std::shared_ptr<SceneData>>& sd)
 {
     if (sd.empty())
     {
@@ -82,8 +82,7 @@ void MeshConverterUIControl::onSelectedSceneNodesChanged(
 }
 
 void MeshConverterUIControl::onSelectedVerticesChanged(
-        const std::map<SceneLeafData*,
-        std::vector<ID> >& /*sv*/)
+        const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID> >& /*sv*/)
 {
 
 }
@@ -93,7 +92,7 @@ void MeshConverterUIControl::onSelectionCleared()
     mWidget->updateGeometricData(0, 0, 0);
 }
 
-void MeshConverterUIControl::processSceneData(SceneData* sd)
+void MeshConverterUIControl::processSceneData(const std::shared_ptr<SceneData>& sd)
 {
     class Visitor : public SceneDataVisitor
     {

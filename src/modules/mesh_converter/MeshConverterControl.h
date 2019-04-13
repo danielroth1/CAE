@@ -49,7 +49,7 @@ private:
 
     std::vector<
         std::tuple<
-            SceneLeafData*,
+            std::shared_ptr<SceneLeafData>,
             std::shared_ptr<Polygon>>> mSavedPolygons;
 
     ApplicationControl* mAc;

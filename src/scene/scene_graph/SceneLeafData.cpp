@@ -4,7 +4,9 @@
 #include <scene/model/RenderModel.h>
 #include <simulation/SimulationObject.h>
 
-SceneLeafData::SceneLeafData(Node<SceneData*, SceneLeafData*>* node)
+
+SceneLeafData::SceneLeafData(
+        Node<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>* node)
     : SceneData (node)
 {
     mGeometricData = nullptr;

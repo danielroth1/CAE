@@ -84,8 +84,8 @@ public:
     // Getters
         SelectionSceneData* getSelectionSceneData();
         SelectionVertices* getSelectionVertices();
-        const std::set<SceneData*>& getSelectedSceneData();
-        std::vector<SceneLeafData*> retrieveSelectedSceneLeafData();
+        const std::set<std::shared_ptr<SceneData>>& getSelectedSceneData();
+        std::vector<std::shared_ptr<SceneLeafData>> retrieveSelectedSceneLeafData();
 
     //*********************************************
     // Selection Rectangle
@@ -103,7 +103,7 @@ private:
 
     // General Methods
         void finalizeSelection(
-                SceneLeafData* leafData,
+                const std::shared_ptr<SceneLeafData>& leafData,
                 ViewFrustum& viewFrustum);
 
     // SelectionRectangle

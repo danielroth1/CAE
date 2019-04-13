@@ -33,12 +33,12 @@ public:
     virtual void clear() = 0;
 
     virtual void updateSelectionByRectangle(
-            SceneLeafData* leafData,
+            const std::shared_ptr<SceneLeafData>& leafData,
             ViewFrustum* viewFrustum,
             SelectionRectangle& rectangle) = 0;
 
     virtual void updateSelectionByRay(
-            SceneLeafData* leafData,
+            const std::shared_ptr<SceneLeafData>& leafData,
             ViewFrustum* viewFrustum,
             int x, int y) = 0;
 

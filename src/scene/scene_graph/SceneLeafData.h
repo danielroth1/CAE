@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef SCENELEAFDATA_H
 #define SCENELEAFDATA_H
 
@@ -18,7 +20,8 @@ class RenderModel;
 class SceneLeafData : public SceneData
 {
 public:
-    SceneLeafData(Node<SceneData*, SceneLeafData*>* node);
+    SceneLeafData(
+            Node<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>* node);
 
     virtual ~SceneLeafData() override;
 

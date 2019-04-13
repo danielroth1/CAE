@@ -90,10 +90,10 @@ void SimulationUIControl::onTruncateButtonClicked()
 {
     // For now: add truncation
     mAc->getSimulationControl()->clearTruncations();
-    const std::map<SceneLeafData*, std::vector<ID>>& dvm =
+    const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>& dvm =
             mAc->getUIControl()->getSelectionControl()->getSelectionVertices()
             ->getSelectedVertexCollection()->getDataVectorsMap();
-    for (std::map<SceneLeafData*, std::vector<ID>>::const_iterator it = dvm.begin();
+    for (std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>::const_iterator it = dvm.begin();
          it != dvm.end(); ++it)
     {
         mAc->getSimulationControl()->addTruncations(
@@ -106,11 +106,12 @@ void SimulationUIControl::onCreateFEMObjectClicked()
 {
     SelectionControl* sc = mAc->getUIControl()->getSelectionControl();
 
-    for (SceneData* sd : sc->getSelectedSceneData())
+    for (const std::shared_ptr<SceneData>& sd : sc->getSelectedSceneData())
     {
         if (sd->isLeafData())
         {
-            SceneLeafData* leafData = static_cast<SceneLeafData*>(sd);
+            std::shared_ptr<SceneLeafData> leafData =
+                    std::static_pointer_cast<SceneLeafData>(sd);
             mAc->getSGControl()->createFEMObject(leafData);
         }
         else
@@ -124,11 +125,12 @@ void SimulationUIControl::onCreateRigidObjectClicked(double mass)
 {
     SelectionControl* sc = mAc->getUIControl()->getSelectionControl();
 
-    for (SceneData* sd : sc->getSelectedSceneData())
+    for (const std::shared_ptr<SceneData>& sd : sc->getSelectedSceneData())
     {
         if (sd->isLeafData())
         {
-            SceneLeafData* leafData = static_cast<SceneLeafData*>(sd);
+            std::shared_ptr<SceneLeafData> leafData =
+                    std::static_pointer_cast<SceneLeafData>(sd);
             mAc->getSGControl()->createRigidBody(leafData, mass);
         }
         else
@@ -155,11 +157,12 @@ void SimulationUIControl::onCreateCollidableClicked()
 {
     SelectionControl* sc = mAc->getUIControl()->getSelectionControl();
 
-    for (SceneData* sd : sc->getSelectedSceneData())
+    for (const std::shared_ptr<SceneData>& sd : sc->getSelectedSceneData())
     {
         if (sd->isLeafData())
         {
-            SceneLeafData* leafData = static_cast<SceneLeafData*>(sd);
+            std::shared_ptr<SceneLeafData> leafData =
+                    std::static_pointer_cast<SceneLeafData>(sd);
             mAc->getSGControl()->createCollidable(leafData);
         }
         else

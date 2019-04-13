@@ -18,7 +18,7 @@ SelectionSceneData::~SelectionSceneData()
 
 }
 
-std::set<SceneData*>& SelectionSceneData::getSceneData()
+std::set<std::shared_ptr<SceneData>>& SelectionSceneData::getSceneData()
 {
     return mSceneDatas;
 }
@@ -29,7 +29,7 @@ void SelectionSceneData::clear()
 }
 
 void SelectionSceneData::updateSelectionByRectangle(
-        SceneLeafData* leafData,
+        const std::shared_ptr<SceneLeafData>& leafData,
         ViewFrustum* viewFrustum,
         SelectionRectangle& rectangle)
 {
@@ -46,10 +46,10 @@ void SelectionSceneData::updateSelectionByRectangle(
 }
 
 void SelectionSceneData::updateSelectionByRay(
-        SceneLeafData* leafData,
-        ViewFrustum* viewFrustum,
-        int x,
-        int y)
+        const std::shared_ptr<SceneLeafData>& /*leafData*/,
+        ViewFrustum* /*viewFrustum*/,
+        int /*x*/,
+        int /*y*/)
 {
 
 }

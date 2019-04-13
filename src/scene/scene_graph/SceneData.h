@@ -11,11 +11,11 @@
 class SceneDataVisitor;
 class SceneLeafData;
 
-class SceneData : public NodeData<SceneData*, SceneLeafData*>,
+class SceneData : public NodeData<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>,
         public std::enable_shared_from_this<SceneData>
 {
 public:
-    SceneData(Node<SceneData*, SceneLeafData*>* node);
+    SceneData(Node<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>* node);
     virtual ~SceneData();
 
     // If you override SceneData, do not call this method from

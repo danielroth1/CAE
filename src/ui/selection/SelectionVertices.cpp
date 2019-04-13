@@ -35,7 +35,7 @@ void SelectionVertices::clear()
 }
 
 void SelectionVertices::updateSelectionByRectangle(
-        SceneLeafData* leafData,
+        const std::shared_ptr<SceneLeafData>& leafData,
         ViewFrustum* viewFrustum,
         SelectionRectangle& rectangle)
 {
@@ -93,7 +93,7 @@ void SelectionVertices::updateSelectionByRectangle(
 }
 
 void SelectionVertices::updateSelectionByRay(
-        SceneLeafData* leafData,
+        const std::shared_ptr<SceneLeafData>& leafData,
         ViewFrustum* viewFrustum,
         int x,
         int y)

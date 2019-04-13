@@ -159,7 +159,7 @@ void SelectionControl::selectSceneNode(SGNode* node)
 
         virtual void visit(SGLeafNode* leafNode)
         {
-            SceneLeafData* data = leafNode->getData();
+            std::shared_ptr<SceneLeafData> data = leafNode->getData();
             switch (sc.mSelectionType)
             {
             case SELECT_SCENE_NODES:
@@ -201,19 +201,19 @@ SelectionVertices* SelectionControl::getSelectionVertices()
     return mSelectionVertices.get();
 }
 
-const std::set<SceneData*>& SelectionControl::getSelectedSceneData()
+const std::set<std::shared_ptr<SceneData>>& SelectionControl::getSelectedSceneData()
 {
     return mSelectionSceneData->getSceneData();
 }
 
-std::vector<SceneLeafData*> SelectionControl::retrieveSelectedSceneLeafData()
+std::vector<std::shared_ptr<SceneLeafData>> SelectionControl::retrieveSelectedSceneLeafData()
 {
-    std::vector<SceneLeafData*> sceneLeafData;
-    for (SceneData* sd : getSelectedSceneData())
+    std::vector<std::shared_ptr<SceneLeafData>> sceneLeafData;
+    for (const std::shared_ptr<SceneData>& sd : getSelectedSceneData())
     {
         if (sd->isLeafData())
         {
-            sceneLeafData.push_back(static_cast<SceneLeafData*>(sd));
+            sceneLeafData.push_back(std::static_pointer_cast<SceneLeafData>(sd));
         }
     }
     return sceneLeafData;
@@ -333,7 +333,7 @@ void SelectionControl::removeListener(SelectionListener* listener)
 }
 
 void SelectionControl::finalizeSelection(
-        SceneLeafData* leafData,
+        const std::shared_ptr<SceneLeafData>& leafData,
         ViewFrustum& viewFrustum)
 {
     switch(mSelectionType)
@@ -373,8 +373,7 @@ void SelectionControl::finalizeSelection(
         }
         for (auto it : mSelectionListeners)
             it->onSelectedVerticesChanged(
-                        mSelectionVertices->
-                        getSelectedVertexCollection()->getDataVectorsMap());
+                        mSelectionVertices->getSelectedVertexCollection()->getDataVectorsMap());
 
         break;
     case UNDEFINED:

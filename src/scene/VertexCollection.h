@@ -8,7 +8,7 @@
 
 class SceneLeafData;
 
-typedef std::map<SceneLeafData*, std::vector<ID>> DataVectorsMap;
+typedef std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>> DataVectorsMap;
 
 class VertexCollection
 {
@@ -17,12 +17,19 @@ public:
     VertexCollection(const DataVectorsMap& dvm);
 
     // Adder
-    void addVertex(SceneLeafData* leafData, ID vertexID);
-    void addVertices(SceneLeafData* leafData, std::vector<ID>& vectors);
+    void addVertex(
+            const std::shared_ptr<SceneLeafData>& leafData,
+            ID vertexID);
+    void addVertices(
+            const std::shared_ptr<SceneLeafData>& leafData,
+            std::vector<ID>& vectors);
 
     // Remover
-    void removeVertex(SceneLeafData* leafData, ID vertexID);
-    void removeVertices(SceneLeafData* leafData);
+    void removeVertex(
+            const std::shared_ptr<SceneLeafData>& leafData,
+            ID vertexID);
+    void removeVertices(
+            const std::shared_ptr<SceneLeafData>& leafData);
 
     // Getter
     const DataVectorsMap& getDataVectorsMap() const;

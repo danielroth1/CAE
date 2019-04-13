@@ -80,9 +80,11 @@ public:
                 double strength);
 
     // Simulation Methods
-        void createFEMObject(SceneLeafData* ld);
-        void createRigidBody(SceneLeafData* ld, double mass, bool iStatic = false);
-        void createCollidable(SceneLeafData* ld);
+        void createFEMObject(const std::shared_ptr<SceneLeafData>& ld);
+        void createRigidBody(const std::shared_ptr<SceneLeafData>& ld,
+                             double mass,
+                             bool iStatic = false);
+        void createCollidable(const std::shared_ptr<SceneLeafData>& ld);
 
 
     // Factory methods

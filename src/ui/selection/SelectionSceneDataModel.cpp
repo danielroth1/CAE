@@ -38,7 +38,7 @@ void SelectionSceneDataModel::update()
     if (!mSelectionSceneData.isActive())
         return;
 
-    for (SceneData* sd : mSelectionSceneData.getSceneData())
+    for (const std::shared_ptr<SceneData>& sd : mSelectionSceneData.getSceneData())
     {
         class Visitor : public SceneDataVisitor
         {

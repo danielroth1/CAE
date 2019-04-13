@@ -38,7 +38,7 @@ void LineJointDemo::load()
     // upper cuboid
     SGLeafNode* node1 = mAc.getSGControl()->createBox(
                 "Upper Cuboid", mAc.getSGControl()->getSceneGraph()->getRoot(),
-                Vector(0.1,  0.0 + yOffset, 0.0), length, width, width, true);
+                Vector(0.0,  0.0 + yOffset, 0.0), length, width, width, true);
     mAc.getSGControl()->createRigidBody(node1->getData(), 1.0, false);
     RigidBody* rb1 = static_cast<RigidBody*>(node1->getData()->getSimulationObjectRaw());
     rb1->setRotationalDamping(0.005);

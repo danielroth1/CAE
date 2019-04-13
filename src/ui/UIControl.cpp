@@ -284,7 +284,7 @@ void UIControl::mouseReleaseEvent(QMouseEvent *event)
                 SGControl* sgControl = mAc->getSGControl();
                 SGLeafNode* leafNode =
                         sgControl->createAndAddLeafNodeToRoot("linearForcePoint");
-                leafNode->setData(new SceneLeafData(leafNode));
+                leafNode->setData(std::make_shared<SceneLeafData>(leafNode));
 
                 // calculate point where mouse is clicked
                 // unproject mouse position with origin point z position
@@ -609,10 +609,10 @@ void UIControl::onAddTruncationActionTriggered()
 {
     // For now: add truncation
     mAc->getSimulationControl()->clearTruncations();
-    const std::map<SceneLeafData*, std::vector<ID>>& dvm =
+    const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>& dvm =
             mSelectionControl->getSelectionVertices()
             ->getSelectedVertexCollection()->getDataVectorsMap();
-    for (std::map<SceneLeafData*, std::vector<ID>>::const_iterator it = dvm.begin();
+    for (std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>::const_iterator it = dvm.begin();
          it != dvm.end(); ++it)
     {
         mAc->getSimulationControl()->addTruncations(

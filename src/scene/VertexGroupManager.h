@@ -11,7 +11,7 @@
 class SceneLeafData;
 class VertexGroup;
 
-typedef std::map<SceneLeafData*, std::vector<ID>> DataVectorsMap;
+typedef std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>> DataVectorsMap;
 
 class VertexGroupManager
 {

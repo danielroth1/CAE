@@ -9,7 +9,7 @@
 class SceneLeafData;
 class VertexCollection;
 
-typedef std::map<SceneLeafData*, std::vector<ID>> DataVectorsMap;
+typedef std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>> DataVectorsMap;
 
 // A VertexCollection that has an ID.
 class VertexGroup
@@ -26,8 +26,8 @@ public:
 
     // Delegated Methods from Vertex Collection:
     // Adder
-    void addVertex(SceneLeafData* leafData, ID vertexId);
-    void removeVertex(SceneLeafData* leafData, ID vertexId);
+    void addVertex(const std::shared_ptr<SceneLeafData>& leafData, ID vertexId);
+    void removeVertex(const std::shared_ptr<SceneLeafData>& leafData, ID vertexId);
     // Getter
     const VertexCollection* getVertexCollection() const;
     const DataVectorsMap& getDataVectorsMap() const;

@@ -170,7 +170,7 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
 
     if (poly3)
     {
-        SceneLeafData* leafData = leafNode->getData();
+        std::shared_ptr<SceneLeafData> leafData = leafNode->getData();
         leafData->setGeometricData(poly3);
 
         // Render Model
@@ -189,7 +189,7 @@ SGLeafNode*SGControl::createSimulationPoint(
         Vector position)
 {
     SGLeafNode* leafNode = SGTreeNodeFactory::createLeafNode(parent, name);
-    leafNode->setData(new SceneLeafData(leafNode));
+    leafNode->setData(std::make_shared<SceneLeafData>(leafNode));
     leafNode->getData()->setGeometricData(
                 std::make_shared<GeometricPoint>(position));
     createAndSetCorrespondingSimulationObject(leafNode);
@@ -214,14 +214,14 @@ void SGControl::createLinearForce(
     mAc->getSimulationControl()->addLinearForce(lf);
 }
 
-void SGControl::createFEMObject(SceneLeafData* ld)
+void SGControl::createFEMObject(const std::shared_ptr<SceneLeafData>& ld)
 {
     // create FEM object if possible
     // check in list of
     class GDVisitor : public GeometricDataVisitor
     {
     public:
-        GDVisitor(SGControl& _sgc, SceneLeafData* _ld)
+        GDVisitor(SGControl& _sgc, const std::shared_ptr<SceneLeafData>& _ld)
             : sgc(_sgc)
             , ld(_ld)
         {
@@ -263,20 +263,20 @@ void SGControl::createFEMObject(SceneLeafData* ld)
             std::cout << "Can not create FEM object from point." << std::endl;
         }
         SGControl& sgc;
-        SceneLeafData* ld;
+        std::shared_ptr<SceneLeafData> ld;
     } gdVisitor(*this, ld);
 
     ld->getGeometricData()->accept(gdVisitor);
 }
 
-void SGControl::createRigidBody(SceneLeafData* ld, double mass, bool isStatic)
+void SGControl::createRigidBody(const std::shared_ptr<SceneLeafData>& ld, double mass, bool isStatic)
 {
     // create FEM object if possible
     // check in list of
     class GDVisitor : public GeometricDataVisitor
     {
     public:
-        GDVisitor(SGControl& _sgc, SceneLeafData* _ld, double _mass, bool _isStatic)
+        GDVisitor(SGControl& _sgc, const std::shared_ptr<SceneLeafData>& _ld, double _mass, bool _isStatic)
             : sgc(_sgc)
             , ld(_ld)
             , mass(_mass)
@@ -330,7 +330,7 @@ void SGControl::createRigidBody(SceneLeafData* ld, double mass, bool isStatic)
         }
 
         SGControl& sgc;
-        SceneLeafData* ld;
+        const std::shared_ptr<SceneLeafData>& ld;
         double mass;
         bool isStatic;
 
@@ -340,7 +340,7 @@ void SGControl::createRigidBody(SceneLeafData* ld, double mass, bool isStatic)
     ld->getGeometricData()->accept(gdVisitor);
 }
 
-void SGControl::createCollidable(SceneLeafData* ld)
+void SGControl::createCollidable(const std::shared_ptr<SceneLeafData>& ld)
 {
     std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
     if (so)
@@ -535,7 +535,7 @@ void SGControl::removeNode(SGNode* node)
             // this causes a segmentation fault because the mPositoins memory of polygon3d is
             // freed while the simulaion is accessing it
             // and because it removes the simulation object itself...
-            delete leafNode->getData();
+//            delete leafNode->getData();
 
         }
 
@@ -563,7 +563,7 @@ SGLeafNode* SGControl::createLeafNode(
         bool renderOnlyOuterFaces)
 {
     SGLeafNode* leafNode = new SGLeafNode(name);
-    SceneLeafData* leafData = new SceneLeafData(leafNode);
+    std::shared_ptr<SceneLeafData> leafData = std::make_shared<SceneLeafData>(leafNode);
 
     leafData->setGeometricData(polygon);
 

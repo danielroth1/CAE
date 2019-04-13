@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef CHILDRENNODE_CPP
 #define CHILDRENNODE_CPP
 

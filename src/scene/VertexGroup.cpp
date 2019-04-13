@@ -32,12 +32,12 @@ bool VertexGroup::operator<(const VertexGroup &vg) const
     return mId < vg.getId();
 }
 
-void VertexGroup::addVertex(SceneLeafData* leafData, ID vertexId)
+void VertexGroup::addVertex(const std::shared_ptr<SceneLeafData>& leafData, ID vertexId)
 {
     mVertexCollection->addVertex(leafData, vertexId);
 }
 
-void VertexGroup::removeVertex(SceneLeafData* leafData, ID vertexId)
+void VertexGroup::removeVertex(const std::shared_ptr<SceneLeafData>& leafData, ID vertexId)
 {
     mVertexCollection->removeVertex(leafData, vertexId);
 }

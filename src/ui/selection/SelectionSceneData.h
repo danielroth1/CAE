@@ -14,25 +14,25 @@ public:
     SelectionSceneData();
     virtual ~SelectionSceneData() override;
 
-    std::set<SceneData*>& getSceneData();
+    std::set<std::shared_ptr<SceneData>>& getSceneData();
 
     // Selection interface
 public:
     virtual void clear() override;
 
     virtual void updateSelectionByRectangle(
-            SceneLeafData* leafData,
+            const std::shared_ptr<SceneLeafData>& leafData,
             ViewFrustum* viewFrustum,
             SelectionRectangle& rectangle) override;
 
     virtual void updateSelectionByRay(
-            SceneLeafData* leafData,
+            const std::shared_ptr<SceneLeafData>& leafData,
             ViewFrustum* viewFrustum,
             int x,
             int y) override;
 
 private:
-    std::set<SceneData*> mSceneDatas;
+    std::set<std::shared_ptr<SceneData>> mSceneDatas;
 
 };
 

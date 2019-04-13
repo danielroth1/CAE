@@ -94,7 +94,7 @@ void UISGControl::removeNode(SGNode* node)
     mBidirectionalMap.remove(node);
 }
 
-void UISGControl::notifyLeafDataChanged(SGNode* /*source*/, SceneLeafData*& /*data*/)
+void UISGControl::notifyLeafDataChanged(SGNode* /*source*/, std::shared_ptr<SceneLeafData>& /*data*/)
 {
 
 }
@@ -109,7 +109,7 @@ void UISGControl::notifyChildRemoved(SGNode* /*source*/, SGNode* childNode)
     removeNode(childNode);
 }
 
-void UISGControl::notifyChildrenDataChanged(SGNode* /*source*/, SceneData*& /*data*/)
+void UISGControl::notifyChildrenDataChanged(SGNode* /*source*/, std::shared_ptr<SceneData>& /*data*/)
 {
 
 }

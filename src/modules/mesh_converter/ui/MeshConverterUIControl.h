@@ -25,7 +25,7 @@ public:
     MeshConverterUIControl(MeshConverterModule* module,
                            ApplicationControl* ac);
 
-    virtual ~MeshConverterUIControl();
+    virtual ~MeshConverterUIControl() override;
 
     void init(QWidget* parent);
 
@@ -39,16 +39,18 @@ public:
 
     // SelectionListener interface
 public:
-    virtual void onSceneNodeSelected(SceneData* sd);
+    virtual void onSceneNodeSelected(const std::shared_ptr<SceneData>& sd) override;
+
     virtual void onSelectedSceneNodesChanged(
-            const std::set<SceneData*>& sd);
+            const std::set<std::shared_ptr<SceneData>>& sd) override;
+
     virtual void onSelectedVerticesChanged(
-            const std::map<SceneLeafData*, std::vector<ID> >& sv);
+            const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID> >& sv) override;
 
 private:
 
     void onSelectionCleared();
-    void processSceneData(SceneData* sd);
+    void processSceneData(const std::shared_ptr<SceneData>& sd);
     void processGeometricData(GeometricData* gd);
 
     ApplicationControl* mAc;

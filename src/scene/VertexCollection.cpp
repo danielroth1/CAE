@@ -13,7 +13,9 @@ VertexCollection::VertexCollection(const DataVectorsMap& dvm)
     mDataVectorsMap = dvm;
 }
 
-void VertexCollection::addVertex(SceneLeafData* leafData, ID vertexID)
+void VertexCollection::addVertex(
+        const std::shared_ptr<SceneLeafData>& leafData,
+        ID vertexID)
 {
     DataVectorsMap::iterator it = mDataVectorsMap.find(leafData);
     if (it != mDataVectorsMap.end())
@@ -28,7 +30,9 @@ void VertexCollection::addVertex(SceneLeafData* leafData, ID vertexID)
     }
 }
 
-void VertexCollection::addVertices(SceneLeafData* leafData, std::vector<ID>& vectors)
+void VertexCollection::addVertices(
+        const std::shared_ptr<SceneLeafData>& leafData,
+        std::vector<ID>& vectors)
 {
     DataVectorsMap::iterator it = mDataVectorsMap.find(leafData);
     if (it != mDataVectorsMap.end())
@@ -41,7 +45,9 @@ void VertexCollection::addVertices(SceneLeafData* leafData, std::vector<ID>& vec
     }
 }
 
-void VertexCollection::removeVertex(SceneLeafData* leafData, ID vertexID)
+void VertexCollection::removeVertex(
+        const std::shared_ptr<SceneLeafData>& leafData,
+        ID vertexID)
 {
     DataVectorsMap::iterator it = mDataVectorsMap.find(leafData);
     if (it != mDataVectorsMap.end())
@@ -50,7 +56,8 @@ void VertexCollection::removeVertex(SceneLeafData* leafData, ID vertexID)
     }
 }
 
-void VertexCollection::removeVertices(SceneLeafData* leafData)
+void VertexCollection::removeVertices(
+        const std::shared_ptr<SceneLeafData>& leafData)
 {
     mDataVectorsMap.erase(leafData);
 }

@@ -50,7 +50,7 @@ void MeshConverterControl::convert(
     // TODO: how to retrieve the SGLeafNode from SceneLeafData? currently not possible
     // either get the SGLeafNode directly from the selection or store pointer in
     // SceneLeafData
-    std::vector<SceneLeafData*> sceneLeafData =
+    std::vector<std::shared_ptr<SceneLeafData>> sceneLeafData =
             mAc->getUIControl()->getSelectionControl()->retrieveSelectedSceneLeafData();
 
     mSavedPolygons.clear();
@@ -80,7 +80,7 @@ void MeshConverterControl::convert(
         std::shared_ptr<Polygon> polygon;
     } extractPolygonVisitor;
 
-    for (SceneLeafData* leafData : sceneLeafData)
+    for (const std::shared_ptr<SceneLeafData>& leafData : sceneLeafData)
     {
         // save the current polygon
         extractPolygonVisitor.polygon = nullptr;
@@ -170,10 +170,10 @@ void MeshConverterControl::revert()
     // How is there no segfault? simulation object keeps polygon alive i guess...
 
     for (std::tuple<
-         SceneLeafData*,
+         std::shared_ptr<SceneLeafData>,
          std::shared_ptr<Polygon>>& p : mSavedPolygons)
     {
-        SceneLeafData* sceneData = std::get<0>(p);
+        std::shared_ptr<SceneLeafData> sceneData = std::get<0>(p);
         std::shared_ptr<Polygon> poly = std::get<1>(p);
 
         // when setting goemetric data, the corresponing render model must be

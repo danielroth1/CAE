@@ -27,13 +27,13 @@ public:
 
     // LeafNodeListener interface
 public:
-    virtual void notifyLeafDataChanged(SGNode* source, SceneLeafData*& data);
+    virtual void notifyLeafDataChanged(SGNode* source, std::shared_ptr<SceneLeafData>& data);
 
     // ChildrenNodeListener interface
 public:
     virtual void notifyChildAdded(SGNode* source, SGNode* childNode);
     virtual void notifyChildRemoved(SGNode* source, SGNode* childNode);
-    virtual void notifyChildrenDataChanged(SGNode* source, SceneData*& data);
+    virtual void notifyChildrenDataChanged(SGNode* source, std::shared_ptr<SceneData>& data);
 
     // NodeListener interface
 public:

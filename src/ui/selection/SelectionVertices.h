@@ -21,7 +21,7 @@ public:
     // Adds the vertices that are inside the 3D
     // view frustum to the vertex collection.
     virtual void updateSelectionByRectangle(
-            SceneLeafData* leafData,
+            const std::shared_ptr<SceneLeafData>& leafData,
             ViewFrustum* viewFrustum,
             SelectionRectangle& rectangle) override;
 
@@ -29,14 +29,14 @@ public:
     // Adds the vertices that are within a certain
     // range of a at x, y casted ray.
     virtual void updateSelectionByRay(
-            SceneLeafData* leafData,
+            const std::shared_ptr<SceneLeafData>& leafData,
             ViewFrustum* viewFrustum,
             int x,
             int y) override;
 
 private:
     void updateSelectedVertices(
-            SceneLeafData* leafData,
+            const std::shared_ptr<SceneLeafData>& leafData,
             ViewFrustum* viewFrustum);
 
     // TODO: implement this
