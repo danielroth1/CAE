@@ -159,8 +159,8 @@ void Polygon2D::changeRepresentationToBS(const Eigen::Vector& center)
 
         mPositionData.changeRepresentationToBS(
                     &dataBS->getPositionsBS(), Eigen::Affine3d::Identity());
-
         mPositionData.moveCenterTo(center);
+
         mVertexNormals.changeRepresentationToBS(
                     &dataBS->getVertexNormalsBS(), Eigen::Affine3d::Identity());
         mFaceNormals.changeRepresentationToBS(
@@ -170,10 +170,19 @@ void Polygon2D::changeRepresentationToBS(const Eigen::Vector& center)
 
 void Polygon2D::changeRepresentationToWS()
 {
-    // TODO: create data ws
-    Polygon::changeRepresentationToWS();
-    mVertexNormals.changeRepresentationToWS();
-    mFaceNormals.changeRepresentationToWS();
+    std::shared_ptr<Polygon2DDataBS> dataBS =
+            std::dynamic_pointer_cast<Polygon2DDataBS>(mData);
+    if (dataBS)
+    {
+        std::shared_ptr<Polygon2DDataWS> dataWS =
+                std::make_shared<Polygon2DDataWS>(mData->getFaces(),
+                                                  mData->getEdges());
+        mData = dataWS;
+
+        mPositionData.changeRepresentationToWS();
+        mVertexNormals.changeRepresentationToWS();
+        mFaceNormals.changeRepresentationToWS();
+    }
 }
 
 void Polygon2D::setTransform(const Affine3d& transform)

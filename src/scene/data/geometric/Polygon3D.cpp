@@ -195,7 +195,24 @@ void Polygon3D::changeRepresentationToBS(const Vector& center)
 
 void Polygon3D::changeRepresentationToWS()
 {
-    Polygon::changeRepresentationToWS(); // sets mPositionData
+    std::shared_ptr<Polygon3DDataBS> dataBS =
+            std::dynamic_pointer_cast<Polygon3DDataBS>(mData);
+    if (dataBS)
+    {
+        std::shared_ptr<Polygon3DDataWS> dataWS =
+                std::make_shared<Polygon3DDataWS>(
+                    mData->getOuterVertexIds(),
+                    mData->getEdges(),
+                    mData->getOuterEdges(),
+                    mData->getFaces(),
+                    mData->getOuterFaces(),
+                    mData->getCells());
+        mData = dataWS;
+
+        mPositionData.changeRepresentationToWS();
+        mOuterVertexNormals.changeRepresentationToWS();
+        mOuterFaceNormals.changeRepresentationToWS();
+    }
 }
 
 void Polygon3D::setTransform(const Affine3d& transform)

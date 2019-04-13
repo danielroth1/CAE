@@ -76,18 +76,6 @@ Vector Polygon::calculateCenterOfMass(const std::vector<double>& masses)
     return mPositionData.calculateCenterOfMass(masses);
 }
 
-//void Polygon::changeRepresentationToBS(
-//        Vectors* vectorsBS,
-//        const Eigen::Affine3d& transform)
-//{
-//    mPositionData.changeRepresentationToBS(vectorsBS, transform);
-//}
-
-void Polygon::changeRepresentationToWS()
-{
-    mPositionData.changeRepresentationToWS();
-}
-
 Vector& Polygon::getPosition(size_t index)
 {
     return mPositionData.getPosition(index);

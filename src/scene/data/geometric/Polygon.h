@@ -125,7 +125,7 @@ public:
     //
     // -> From body space to world space: applies the
     // transformation matrix on each vertex
-    virtual void changeRepresentationToWS();
+    virtual void changeRepresentationToWS() = 0;
 
 protected:
 
