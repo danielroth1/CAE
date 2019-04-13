@@ -495,9 +495,6 @@ void SGControl::removeNode(SGNode* node)
 
         virtual void visit(SGLeafNode* leafNode)
         {
-            // remove node in scene graph
-            visitImpl(leafNode);
-
             // remove simulation object
             // TODO: here are some memory leaks because it is not save yet
             // to remove simulation object due to the simulation thread first
@@ -512,7 +509,7 @@ void SGControl::removeNode(SGNode* node)
             }
 
             // remode render model
-            RenderModel* rm = leafNode->getData()->getRenderModelRaw();
+            std::shared_ptr<RenderModel> rm = leafNode->getData()->getRenderModel();
             if (rm)
             {
                 rm->removeFromRenderer(control.mAc->getUIControl()->getRenderer());
@@ -531,6 +528,9 @@ void SGControl::removeNode(SGNode* node)
                     control.mAc->getUIControl()->getSelectionControl()->getSelectionVertices()
                     ->getSelectedVertexCollection();
             vc->removeVertices(leafNode->getData());
+
+            // remove node in scene graph
+            visitImpl(leafNode);
 
             // this causes a segmentation fault because the mPositoins memory of polygon3d is
             // freed while the simulaion is accessing it
