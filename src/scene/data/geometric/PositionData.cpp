@@ -79,6 +79,8 @@ void PositionData::setTransform(const Affine3d& transform)
 
 Vector PositionData::calculateCenterVertex()
 {
+    if (mPositions.getType() == BSWSVectors::Type::BODY_SPACE)
+        updateWorldSpace();
     Vector center = Vector::Zero();
     for (size_t i = 0; i < mPositions.getSize(); ++i)
     {
@@ -91,6 +93,8 @@ Vector PositionData::calculateCenterVertex()
 Vector PositionData::calculateCenterOfMass(
         const std::vector<double>& masses)
 {
+    if (mPositions.getType() == BSWSVectors::Type::BODY_SPACE)
+        updateWorldSpace();
     Vector center = Vector::Zero();
     double massesSum = 0.0;
     for (size_t i = 0; i < mPositions.getSize(); ++i)

@@ -74,6 +74,8 @@ private:
 
     void updateNormalLines();
 
+    void updateTransform();
+
     RenderModelManager* mRenderModelManager;
 
     std::shared_ptr<GeometricDataListener> mGeometricListener;

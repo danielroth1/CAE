@@ -290,6 +290,15 @@ void SGControl::createRigidBody(const std::shared_ptr<SceneLeafData>& ld, double
             Vector center = poly.calculateCenterVertex();
             poly.changeRepresentationToBS(center);
 
+
+            std::shared_ptr<RigidBody> rigid =
+                    std::shared_ptr<RigidBody>(
+                    SimulationObjectFactory::createRigidBody(
+                        sgc.mAc->getSimulationControl()->getDomain(),
+                            std::static_pointer_cast<Polygon3D>(poly.shared_from_this()), mass));
+            rigid->setStatic(isStatic);
+
+            // remove the old simulation object
             std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
             if (so)
             {
@@ -297,12 +306,8 @@ void SGControl::createRigidBody(const std::shared_ptr<SceneLeafData>& ld, double
                 // Remove that first from the simulation.
                 sgc.mAc->getSimulationControl()->removeSimulationObject(so);
             }
-            std::shared_ptr<RigidBody> rigid =
-                    std::shared_ptr<RigidBody>(
-                    SimulationObjectFactory::createRigidBody(
-                        sgc.mAc->getSimulationControl()->getDomain(),
-                            std::static_pointer_cast<Polygon3D>(poly.shared_from_this()), mass));
-            rigid->setStatic(isStatic);
+
+            // add the new simulation object
             sgc.mAc->getSimulationControl()->addSimulationObject(rigid);
 
 //            sgc.mAc->getSimulationControl

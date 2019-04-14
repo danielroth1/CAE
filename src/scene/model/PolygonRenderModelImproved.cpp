@@ -177,12 +177,14 @@ void PolygonRenderModelImproved::reset()
     mRenderObjectNormals->lock()->resize(size);
 
     Faces* faces = retrieveRelevantFaces();
-    auto facesLock = mRenderObjectFaces->lock();
-    facesLock->resize(faces->size());
-
-    for (size_t i = 0; i < faces->size(); ++i)
     {
-        facesLock->at(i) = (*faces)[i];
+        auto facesLock = mRenderObjectFaces->lock();
+        facesLock->resize(faces->size());
+
+        for (size_t i = 0; i < faces->size(); ++i)
+        {
+            facesLock->at(i) = (*faces)[i];
+        }
     }
     mFacesBufferedData->setDataChanged(true);
 
@@ -192,6 +194,8 @@ void PolygonRenderModelImproved::reset()
         mRenderLinesNormals = std::make_shared<RenderLines>();
         mRenderPoints = std::make_shared<RenderPoints>();
     }
+
+    updatePositions();
 
     if (replacedRenderPolygons)
         mAddedToRenderer = false;
@@ -228,19 +232,9 @@ void PolygonRenderModelImproved::update()
         // only need to udpate the transformation matrix. No need
         // for moving every vertex to the GPU (which is equal to a
         // revalidation in this case).
-        Eigen::Affine3d transform = mPolygon->getTransform();
-        if (!mCurrentlyRenderedTransform.isApprox(transform, 1e-3))
+        if (!mCurrentlyRenderedTransform.isApprox(mPolygon->getTransform(), 1e-3))
         {
-            // this mRenderPolygonsData is different from the one that
-            // was added to RenderPolygons? probably on the switch from WS to BS
-            // Render transform
-            std::shared_ptr<RenderPolygonsDataBS> dataBS =
-                    std::static_pointer_cast<RenderPolygonsDataBS>(mRenderPolygonsData);
-            auto transformLock = dataBS->getTransform().lock();
-            *transformLock = transform.cast<float>();
-
-            // set current transform to newly rendered one for future checks.
-            mCurrentlyRenderedTransform = transform;
+            updateTransform();
         }
 
         break;
@@ -423,23 +417,27 @@ void PolygonRenderModelImproved::updatePositions()
                 mPolygon->getPositionsBS() :
                 mPolygon->getPositions();
 
-    auto positionsLock = mRenderObjectPositions->lock();
-    for (size_t i = 0; i < positionsLock->size(); ++i)
     {
-        const Vector& v = positions[i];
-        positionsLock->at(i) = v.cast<float>();
+        auto positionsLock = mRenderObjectPositions->lock();
+        for (size_t i = 0; i < positionsLock->size(); ++i)
+        {
+            const Vector& v = positions[i];
+            positionsLock->at(i) = v.cast<float>();
+        }
+
+        auto normalsLock = mRenderObjectNormals->lock();
+        auto facesLock = mRenderObjectFaces->lock();
+        // calculate normals
+        ModelUtils::calculateNormals<float>(
+                    *positionsLock,
+                    *facesLock,
+                    *normalsLock);
     }
-
-    auto normalsLock = mRenderObjectNormals->lock();
-    auto facesLock = mRenderObjectFaces->lock();
-    // calculate normals
-    ModelUtils::calculateNormals<float>(
-                *positionsLock,
-                *facesLock,
-                *normalsLock);
-
     mPositionsBufferedData->setDataChanged(true);
     mNormalsBufferedData->setDataChanged(true);
+
+    if (mPolygon->getPositionType() == BSWSVectors::BODY_SPACE)
+        updateTransform();
 }
 
 void PolygonRenderModelImproved::updateNormalLines()
@@ -473,4 +471,17 @@ void PolygonRenderModelImproved::updateNormalLines()
     }
 
     mRenderLinesNormals->update();
+}
+
+void PolygonRenderModelImproved::updateTransform()
+{
+    Eigen::Affine3d transform = mPolygon->getTransform();
+
+    std::shared_ptr<RenderPolygonsDataBS> dataBS =
+            std::static_pointer_cast<RenderPolygonsDataBS>(mRenderPolygonsData);
+    auto transformLock = dataBS->getTransform().lock();
+    *transformLock = transform.cast<float>();
+
+    // set current transform to newly rendered one for future checks.
+    mCurrentlyRenderedTransform = transform;
 }

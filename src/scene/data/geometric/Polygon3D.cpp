@@ -14,6 +14,8 @@ Polygon3D::Polygon3D(
         const Cells& cells)
     : Polygon(positionsWS)
 {
+    // World space construtor
+    Polygon::initWorldSpace(positionsWS);
     mData = std::make_shared<Polygon3DDataWS>(
                 calculateOuterPositionIDs(faces),
                 calculateEdges(faces),
@@ -36,6 +38,8 @@ Polygon3D::Polygon3D(
         const Cells& cells)
     : Polygon(positionsWS)
 {
+    // World space construtor
+    Polygon::initWorldSpace(positionsWS);
     mData = std::make_shared<Polygon3DDataWS>(
                 calculateOuterPositionIDs(faces),
                 calculateEdges(faces),
@@ -69,6 +73,7 @@ Polygon3D::Polygon3D(
                 Vectors());
 
     mData = dataBS;
+    Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
     mOuterVertexNormals.initializeFromBodySpace(&dataBS->getOuterVertexNormalsBS(),
                                                 Eigen::Affine3d(transform.linear()));
     mOuterFaceNormals.initializeFromBodySpace(&dataBS->getOuterFaceNormalsBS(),
@@ -96,6 +101,7 @@ Polygon3D::Polygon3D(
                 Vectors());
 
     mData = dataBS;
+    Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
     mOuterVertexNormals.initializeFromBodySpace(&dataBS->getOuterVertexNormalsBS(),
                                                 Eigen::Affine3d(transform.linear()));
     mOuterFaceNormals.initializeFromBodySpace(&dataBS->getOuterFaceNormalsBS(),
