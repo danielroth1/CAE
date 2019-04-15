@@ -62,9 +62,14 @@ public:
 
     static Eigen::Matrix3d calculateK(SimulationPointRef& ref);
 
+    static Eigen::Matrix3d calculateL(SimulationObject* so);
+
     static Eigen::Vector calculateRelativePoint(
             SimulationObject* so,
             const Eigen::Vector& pointGlobal);
+
+    static Eigen::Quaterniond getOrientation(SimulationObject* so);
+    static Eigen::Vector getOrientationVelocity(SimulationObject* so);
 
 };
 

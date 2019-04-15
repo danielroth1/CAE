@@ -141,9 +141,7 @@ void RigidBody::applyForce(SimulationPointRef& ref, const Eigen::Vector& force)
     applyForce(getR(ref), force);
 }
 
-void RigidBody::applyImpulse(
-        const Eigen::Vector3d& r,
-        const Eigen::Vector3d& p)
+void RigidBody::applyImpulse(const Eigen::Vector3d& r, const Eigen::Vector3d& p)
 {
     if (mStatic)
         return;
@@ -154,6 +152,11 @@ void RigidBody::applyImpulse(
 //    Eigen::Matrix3d inertiaInv = rot.transpose() * mInertiaInvBS * rot;
     mV = mV + 1 / mMass * p;
     mOmega = mOmega + inertiaInv * (r.cross(p));
+}
+
+void RigidBody::applyOrientationImpulse(const Vector& l)
+{
+    mOmega += mInertiaInv * l;
 }
 
 void RigidBody::applyForce(const Vector3d& r, const Vector3d& force)
@@ -232,6 +235,11 @@ Matrix3d RigidBody::calculateK(const Vector& rA, const Vector& rB)
             rA_cross * mInertiaInv * rB_cross;
 }
 
+Matrix3d RigidBody::calculateL()
+{
+    return mInertiaInv;
+}
+
 void RigidBody::updateGeometricData()
 {
     Eigen::Affine3d transform;
@@ -271,9 +279,29 @@ const Quaterniond& RigidBody::getOrientation() const
     return mQ;
 }
 
+const Eigen::Vector& RigidBody::getOrientationVelocity() const
+{
+    return mOmega;
+}
+
 const Matrix3d& RigidBody::getInertiaTensor() const
 {
     return mInertiaBS;
+}
+
+const Matrix3d& RigidBody::getInveresInertiaTensor() const
+{
+    return mInertiaInvBS;
+}
+
+const Matrix3d& RigidBody::getInertiaTensorWS() const
+{
+    return mInertia;
+}
+
+const Matrix3d& RigidBody::getInverseInertiaTensorWS() const
+{
+    return mInertiaInv;
 }
 
 const Vector& RigidBody::getPosition() const

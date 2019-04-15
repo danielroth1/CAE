@@ -101,7 +101,7 @@ void ImpulseConstraintSolver::solveConstraints(int maxIterations, double maxCons
             break;
     }
 
-    std::cout << "took " << iterCount << " iterations\n";
+//    std::cout << "took " << iterCount << " iterations\n";
 }
 
 bool ImpulseConstraintSolver::solveConstraint(
@@ -160,6 +160,27 @@ Matrix3d ImpulseConstraintSolver::calculateK(SimulationPointRef& ref)
         RigidBody* rb = static_cast<RigidBody*>(ref.getSimulationObject());
         Eigen::Vector r = rb->getR(ref);
         return rb->calculateK(r, r);
+    }
+    case SimulationObject::Type::SIMULATION_POINT:
+    {
+        break;
+    }
+    }
+    return Eigen::Matrix3d::Identity();
+}
+
+Matrix3d ImpulseConstraintSolver::calculateL(SimulationObject* so)
+{
+    switch(so->getType())
+    {
+    case SimulationObject::Type::FEM_OBJECT:
+    {
+        return Eigen::Matrix3d::Identity();
+    }
+    case SimulationObject::Type::RIGID_BODY:
+    {
+        RigidBody* rb = static_cast<RigidBody*>(so);
+        return rb->getInverseInertiaTensorWS();
     }
     case SimulationObject::Type::SIMULATION_POINT:
     {
@@ -233,4 +254,24 @@ Vector ImpulseConstraintSolver::calculateRelativePoint(SimulationObject* so, con
         return pointGlobal - rb->getCenterOfMass();
     }
     return pointGlobal;
+}
+
+Quaterniond ImpulseConstraintSolver::getOrientation(SimulationObject* so)
+{
+    if (so->getType() == SimulationObject::Type::RIGID_BODY)
+    {
+        RigidBody* rb = static_cast<RigidBody*>(so);
+        return rb->getOrientation();
+    }
+    return Eigen::Quaterniond::Identity();
+}
+
+Eigen::Vector ImpulseConstraintSolver::getOrientationVelocity(SimulationObject* so)
+{
+    if (so->getType() == SimulationObject::Type::RIGID_BODY)
+    {
+        RigidBody* rb = static_cast<RigidBody*>(so);
+        return rb->getOrientationVelocity();
+    }
+    return Eigen::Vector::Zero();
 }

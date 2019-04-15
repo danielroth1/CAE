@@ -58,13 +58,11 @@ public:
 
         // \param r - the point on the body where the impulse is applied on
         // \param p - the impulse vector.
-        void applyImpulse(
-                const Eigen::Vector& r,
-                const Eigen::Vector& p);
+        void applyImpulse(const Eigen::Vector& r, const Eigen::Vector& p);
 
-        void applyForce(
-                const Eigen::Vector3d& r,
-                const Eigen::Vector3d& force);
+        void applyOrientationImpulse(const Eigen::Vector& l);
+
+        void applyForce(const Eigen::Vector3d& r, const Eigen::Vector3d& force);
 
         void applyDamping();
 
@@ -80,6 +78,8 @@ public:
         Eigen::Matrix3d calculateK(
                 const Eigen::Vector& rA,
                 const Eigen::Vector& rB);
+
+        Eigen::Matrix3d calculateL();
 
     // Scene Handling
         // Updates the geometric datas transformation matrix.
@@ -99,9 +99,14 @@ public:
 
         // Returns the orientation q.
         const Eigen::Quaterniond& getOrientation() const;
+        const Eigen::Vector& getOrientationVelocity() const;
 
         // Returns the 3x3 inertia tensor I.
         const Eigen::Matrix3d& getInertiaTensor() const;
+        const Eigen::Matrix3d& getInveresInertiaTensor() const;
+
+        const Eigen::Matrix3d& getInertiaTensorWS() const;
+        const Eigen::Matrix3d& getInverseInertiaTensorWS() const;
 
         const Eigen::Vector& getPosition() const;
         const Eigen::Vector& getPositionPrevious() const;

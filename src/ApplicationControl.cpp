@@ -25,6 +25,7 @@
 #include <modules/demo_loader/DemoLoaderModule.h>
 #include <demos/ChainDemo.h>
 #include <demos/DoublePendulumDemo.h>
+#include <demos/FixedRotationalJointDemo.h>
 #include <demos/LineJointDemo.h>
 #include <demos/MobileDemo.h>
 #include <demos/PlaneJointDemo.h>
@@ -159,7 +160,9 @@ void ApplicationControl::initiateApplication()
                 {
                     SGLeafNode* node1 = ac.mSGControl->createBox("Box", ac.mSGControl->getSceneGraph()->getRoot(),
                                                               Vector(0.6 * c, 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
-                    ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
+//                    ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
+                    ac.mSGControl->create3DGeometryFrom2D(node1, 0.15, 30);
+                    ac.mSGControl->createFEMObject(node1->getData());
                     ac.mSGControl->createCollidable(node1->getData());
                 }
             }
@@ -245,10 +248,12 @@ void ApplicationControl::initiateApplication()
     std::shared_ptr<PlaneJointDemo> planeJointDemo = std::make_shared<PlaneJointDemo>(*this);
     mDemoLoaderModule->addDemo(planeJointDemo);
 
+    mDemoLoaderModule->addDemo(std::make_shared<FixedRotationalJointDemo>(*this));
+
     std::shared_ptr<MobileDemo> mobileDemo = std::make_shared<MobileDemo>(*this);
     mDemoLoaderModule->addDemo(mobileDemo);
 
-    mDemoLoaderModule->loadDemo(planeJointDemo);
+    mDemoLoaderModule->loadDemo(emptyDemo);
 }
 
 void ApplicationControl::createModules()
