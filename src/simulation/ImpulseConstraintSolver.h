@@ -71,6 +71,12 @@ public:
     static Eigen::Quaterniond getOrientation(SimulationObject* so);
     static Eigen::Vector getOrientationVelocity(SimulationObject* so);
 
+    static Eigen::Vector3d calculateProjectionMatrix(
+            const Eigen::Vector& axis1,
+            const Eigen::Vector& axis2);
+
+    static Eigen::Matrix<double, 2, 3>
+    calculateProjectionMatrix(const Eigen::Vector& axis);
 };
 
 #endif // ImpulseConstraintSolver_H

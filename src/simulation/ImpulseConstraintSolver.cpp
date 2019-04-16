@@ -275,3 +275,23 @@ Eigen::Vector ImpulseConstraintSolver::getOrientationVelocity(SimulationObject* 
     }
     return Eigen::Vector::Zero();
 }
+
+Vector3d ImpulseConstraintSolver::calculateProjectionMatrix(
+        const Vector& axis1, const Vector& axis2)
+{
+    return axis1.cross(axis2);
+}
+
+Eigen::Matrix<double, 2, 3>
+ImpulseConstraintSolver::calculateProjectionMatrix(const Vector& axis)
+{
+    Eigen::Vector v(1, 0, 0);
+    if (std::fabs(v.dot(axis)) > 0.9999)
+        v = Eigen::Vector(0, 1, 0);
+
+    Eigen::Matrix<double, 2, 3> m;
+    m.row(0) = axis.cross(v);
+    m.row(1) = axis.cross(m.row(0));
+
+    return m;
+}

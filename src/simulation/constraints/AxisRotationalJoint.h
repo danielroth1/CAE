@@ -1,0 +1,42 @@
+#ifndef AXISROTATIONALJOINT_H
+#define AXISROTATIONALJOINT_H
+
+#include "Constraint.h"
+
+#include <data_structures/DataStructures.h>
+
+#include <simulation/references/SimulationPointRef.h>
+
+class AxisRotationalJoint : public Constraint
+{
+public:
+    AxisRotationalJoint(
+            RigidBody* rbA,
+            RigidBody* rbB,
+            Eigen::Vector axisBS);
+
+    // MechanicalProperty interface
+public:
+    virtual bool references(SimulationObject* so);
+
+    // Constraint interface
+public:
+    virtual void initialize(double stepSize);
+    virtual bool solve(double maxConstraintError);
+    virtual void accept(ConstraintVisitor& cv);
+
+private:
+
+    Eigen::Vector calculateAxisWS(Eigen::Vector axisBS) const;
+
+    RigidBody* mRbA;
+    RigidBody* mRbB;
+    Eigen::Vector mAxisBS;
+
+    Eigen::Vector mAxisWS;
+    Eigen::Matrix<double, 2, 3> mProjMatrix;
+    Eigen::Vector2d mTargetOmegaRel;
+    Eigen::Matrix2d mImpulseFactor;
+};
+
+#endif // AXISROTATIONALJOINT_H
