@@ -27,13 +27,10 @@ public:
 
 private:
 
-    Eigen::Vector calculateAxisWS(Eigen::Vector axisBS) const;
-
     RigidBody* mRbA;
     RigidBody* mRbB;
     Eigen::Vector mAxisBS;
 
-    Eigen::Vector mAxisWS;
     Eigen::Matrix<double, 2, 3> mProjMatrix;
     Eigen::Vector2d mTargetOmegaRel;
     Eigen::Matrix2d mImpulseFactor;

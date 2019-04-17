@@ -24,8 +24,6 @@ bool AxisRotationalJoint::references(SimulationObject* so)
 
 void AxisRotationalJoint::initialize(double stepSize)
 {
-    mAxisWS = calculateAxisWS(mAxisBS);
-
     // position error
     Eigen::Quaterniond q1 = mRbA->getOrientation();
     Eigen::Quaterniond q2 = mRbB->getOrientation();
@@ -74,15 +72,4 @@ bool AxisRotationalJoint::solve(double maxConstraintError)
 void AxisRotationalJoint::accept(ConstraintVisitor& cv)
 {
 
-}
-
-Eigen::Vector AxisRotationalJoint::calculateAxisWS(Eigen::Vector axisBS) const
-{
-    Eigen::Vector axisWS = axisBS;
-    if (mRbA->getType() == SimulationObject::Type::RIGID_BODY)
-    {
-        RigidBody* rb = static_cast<RigidBody*>(mRbA);
-        axisWS = rb->getOrientation().toRotationMatrix() * axisBS;
-    }
-    return axisWS;
 }

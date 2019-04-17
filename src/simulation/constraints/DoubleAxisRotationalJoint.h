@@ -1,11 +1,42 @@
 #ifndef DOUBLEAXISROTATIONALJOINT_H
 #define DOUBLEAXISROTATIONALJOINT_H
 
+#include "Constraint.h"
 
-class DoubleAxisRotationalJoint
+#include <data_structures/DataStructures.h>
+
+#include <simulation/references/SimulationPointRef.h>
+
+class DoubleAxisRotationalJoint : public Constraint
 {
 public:
-    DoubleAxisRotationalJoint();
+    DoubleAxisRotationalJoint(
+            RigidBody* rbA,
+            RigidBody* rbB,
+            Eigen::Vector axis1BS,
+            Eigen::Vector axis2BS);
+
+    // MechanicalProperty interface
+public:
+    virtual bool references(SimulationObject* so);
+
+    // Constraint interface
+public:
+    virtual void initialize(double stepSize);
+    virtual bool solve(double maxConstraintError);
+    virtual void accept(ConstraintVisitor& cv);
+
+private:
+
+    RigidBody* mRbA;
+    RigidBody* mRbB;
+    Eigen::Vector mAxis1BS;
+    Eigen::Vector mAxis2BS;
+
+    Eigen::Matrix<double, 1, 3> mProjMatrix;
+    Eigen::Vector mProjMatrixT;
+    double mTargetOmegaRel;
+    double mImpulseFactor;
 };
 
 #endif // DOUBLEAXISROTATIONALJOINT_H
