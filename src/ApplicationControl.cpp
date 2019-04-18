@@ -25,7 +25,7 @@
 #include <modules/demo_loader/DemoLoaderModule.h>
 #include <demos/ChainDemo.h>
 #include <demos/DoublePendulumDemo.h>
-#include <demos/FixedRotationalJointDemo.h>
+#include <demos/RotationalJointsDemo.h>
 #include <demos/LineJointDemo.h>
 #include <demos/MobileDemo.h>
 #include <demos/PlaneJointDemo.h>
@@ -248,7 +248,7 @@ void ApplicationControl::initiateApplication()
     std::shared_ptr<PlaneJointDemo> planeJointDemo = std::make_shared<PlaneJointDemo>(*this);
     mDemoLoaderModule->addDemo(planeJointDemo);
 
-    mDemoLoaderModule->addDemo(std::make_shared<FixedRotationalJointDemo>(*this));
+    mDemoLoaderModule->addDemo(std::make_shared<RotationalJointsDemo>(*this));
 
     std::shared_ptr<MobileDemo> mobileDemo = std::make_shared<MobileDemo>(*this);
     mDemoLoaderModule->addDemo(mobileDemo);

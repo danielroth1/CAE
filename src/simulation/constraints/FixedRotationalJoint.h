@@ -10,7 +10,9 @@ class RigidBody;
 class FixedRotationalJoint : public Constraint
 {
 public:
-    FixedRotationalJoint(RigidBody* rbA, RigidBody* rbB);
+    FixedRotationalJoint(
+            const std::shared_ptr<RigidBody>& rbA,
+            const std::shared_ptr<RigidBody>& rbB);
 
     // MechanicalProperty interface
 public:
@@ -24,8 +26,8 @@ public:
 
 private:
 
-    RigidBody* mRbA;
-    RigidBody* mRbB;
+    std::shared_ptr<RigidBody> mRbA;
+    std::shared_ptr<RigidBody> mRbB;
 
     Eigen::Vector mTargetOmegaRel;
     Eigen::Matrix3d mImpulseFactor;

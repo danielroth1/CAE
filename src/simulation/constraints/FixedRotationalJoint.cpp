@@ -7,7 +7,9 @@
 
 #include <iostream>
 
-FixedRotationalJoint::FixedRotationalJoint(RigidBody* rbA, RigidBody* rbB)
+FixedRotationalJoint::FixedRotationalJoint(
+        const std::shared_ptr<RigidBody>& rbA,
+        const std::shared_ptr<RigidBody>& rbB)
     : mRbA(rbA)
     , mRbB(rbB)
 {
@@ -15,15 +17,12 @@ FixedRotationalJoint::FixedRotationalJoint(RigidBody* rbA, RigidBody* rbB)
 
 bool FixedRotationalJoint::references(SimulationObject* so)
 {
-    return so == mRbA || so == mRbB;
+    return so == mRbA.get() || so == mRbB.get();
 }
 
 void FixedRotationalJoint::initialize(double stepSize)
 {
     mImpulseFactor = (mRbB->calculateL() + mRbA->calculateL()).inverse();
-
-    mRbA->update();
-    mRbB->update();
 
     // positoin error is calculated here
     Eigen::Quaterniond q1 = mRbA->getOrientation();
@@ -54,7 +53,7 @@ bool FixedRotationalJoint::solve(double maxConstraintError)
     return false;
 }
 
-void FixedRotationalJoint::accept(ConstraintVisitor& cv)
+void FixedRotationalJoint::accept(ConstraintVisitor& /*cv*/)
 {
 
 }

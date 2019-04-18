@@ -1,14 +1,14 @@
-#ifndef FIXEDROTATIONALJOINTDEMO_H
-#define FIXEDROTATIONALJOINTDEMO_H
+#ifndef ROTATIONALJOINTSDEMO_H
+#define ROTATIONALJOINTSDEMO_H
 
 #include <modules/demo_loader/Demo.h>
 
 class ApplicationControl;
 
-class FixedRotationalJointDemo : public Demo
+class RotationalJointsDemo : public Demo
 {
 public:
-    FixedRotationalJointDemo(ApplicationControl& ac);
+    RotationalJointsDemo(ApplicationControl& ac);
 
     // Demo interface
 public:
@@ -20,4 +20,4 @@ private:
     ApplicationControl& mAc;
 };
 
-#endif // FIXEDROTATIONALJOINTDEMO_H
+#endif // ROTATIONALJOINTSDEMO_H

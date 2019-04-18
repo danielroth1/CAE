@@ -11,8 +11,8 @@ class DoubleAxisRotationalJoint : public Constraint
 {
 public:
     DoubleAxisRotationalJoint(
-            RigidBody* rbA,
-            RigidBody* rbB,
+            const std::shared_ptr<RigidBody>& rbA,
+            const std::shared_ptr<RigidBody>& rbB,
             Eigen::Vector axis1BS,
             Eigen::Vector axis2BS);
 
@@ -28,8 +28,8 @@ public:
 
 private:
 
-    RigidBody* mRbA;
-    RigidBody* mRbB;
+    std::shared_ptr<RigidBody> mRbA;
+    std::shared_ptr<RigidBody> mRbB;
     Eigen::Vector mAxis1BS;
     Eigen::Vector mAxis2BS;
 

@@ -11,8 +11,8 @@ class AxisRotationalJoint : public Constraint
 {
 public:
     AxisRotationalJoint(
-            RigidBody* rbA,
-            RigidBody* rbB,
+            const std::shared_ptr<RigidBody>& rbA,
+            const std::shared_ptr<RigidBody>& rbB,
             Eigen::Vector axisBS);
 
     // MechanicalProperty interface
@@ -27,8 +27,8 @@ public:
 
 private:
 
-    RigidBody* mRbA;
-    RigidBody* mRbB;
+    std::shared_ptr<RigidBody> mRbA;
+    std::shared_ptr<RigidBody> mRbB;
     Eigen::Vector mAxisBS;
 
     Eigen::Matrix<double, 2, 3> mProjMatrix;

@@ -5,10 +5,11 @@
 
 #include <simulation/rigid/RigidBody.h>
 
+#include <iostream>
 
 DoubleAxisRotationalJoint::DoubleAxisRotationalJoint(
-        RigidBody* rbA,
-        RigidBody* rbB,
+        const std::shared_ptr<RigidBody>& rbA,
+        const std::shared_ptr<RigidBody>& rbB,
         Eigen::Vector axis1BS,
         Eigen::Vector axis2BS)
     : mRbA(rbA)
@@ -22,7 +23,7 @@ DoubleAxisRotationalJoint::DoubleAxisRotationalJoint(
 
 bool DoubleAxisRotationalJoint::references(SimulationObject* so)
 {
-    return so == mRbA || so == mRbB;
+    return so == mRbA.get() || so == mRbB.get();
 }
 
 void DoubleAxisRotationalJoint::initialize(double stepSize)
@@ -74,7 +75,7 @@ bool DoubleAxisRotationalJoint::solve(double maxConstraintError)
     return false;
 }
 
-void DoubleAxisRotationalJoint::accept(ConstraintVisitor& cv)
+void DoubleAxisRotationalJoint::accept(ConstraintVisitor& /*cv*/)
 {
 
 }

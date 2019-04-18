@@ -7,8 +7,8 @@
 
 
 AxisRotationalJoint::AxisRotationalJoint(
-        RigidBody* rbA,
-        RigidBody* rbB,
+        const std::shared_ptr<RigidBody>& rbA,
+        const std::shared_ptr<RigidBody>& rbB,
         Eigen::Vector axisBS)
     : mRbA(rbA)
     , mRbB(rbB)
@@ -19,7 +19,7 @@ AxisRotationalJoint::AxisRotationalJoint(
 
 bool AxisRotationalJoint::references(SimulationObject* so)
 {
-    return so == mRbA || so == mRbB;
+    return so == mRbA.get() || so == mRbB.get();
 }
 
 void AxisRotationalJoint::initialize(double stepSize)
@@ -69,7 +69,7 @@ bool AxisRotationalJoint::solve(double maxConstraintError)
     return false;
 }
 
-void AxisRotationalJoint::accept(ConstraintVisitor& cv)
+void AxisRotationalJoint::accept(ConstraintVisitor& /*cv*/)
 {
 
 }
