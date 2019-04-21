@@ -8,6 +8,7 @@
 #include <simulation/constraints/BallJoint.h>
 #include <simulation/constraints/DoubleAxisRotationalJoint.h>
 #include <simulation/constraints/FixedRotationalJoint.h>
+#include <simulation/constraints/HingeJoint.h>
 
 
 using namespace Eigen;
@@ -28,7 +29,7 @@ void RotationalJointsDemo::load()
 {
     mAc.getSimulationControl()->setGravity(Vector::Zero());
 
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 4; ++i)
     {
         // upper cuboid
         SGLeafNode* node1 = mAc.getSGControl()->createBox(
@@ -65,16 +66,19 @@ void RotationalJointsDemo::load()
         rb2->setTranslationalDamping(0.005);
 
         // fixate second part in orign
-        SGLeafNode* point2 = mAc.getSGControl()->createSimulationPoint(
-                    "Fixed point",
-                    mAc.getSGControl()->getSceneGraph()->getRoot(),
-                    rb2->getPosition());
-        mAc.getSimulationControl()->addConstraint(
-                    std::make_shared<BallJoint>(
-                        SimulationPointRef(
-                            rb2.get(), rb2->getPolygon().get(), Eigen::Vector::Zero()),
-                        SimulationPointRef(
-                            point2->getData()->getSimulationObjectRaw(), 0)));
+        if (i < 3)
+        {
+            SGLeafNode* point2 = mAc.getSGControl()->createSimulationPoint(
+                        "Fixed point",
+                        mAc.getSGControl()->getSceneGraph()->getRoot(),
+                        rb2->getPosition());
+            mAc.getSimulationControl()->addConstraint(
+                        std::make_shared<BallJoint>(
+                            SimulationPointRef(
+                                rb2.get(), rb2->getPolygon().get(), Eigen::Vector::Zero()),
+                            SimulationPointRef(
+                                point2->getData()->getSimulationObjectRaw(), 0)));
+        }
 
         if (i == 0)
         {
@@ -97,6 +101,16 @@ void RotationalJointsDemo::load()
                         rb1, rb2, Eigen::Vector(0, 0, 1), Eigen::Vector(0, 0, 1));
             mAc.getSimulationControl()->addConstraint(doubleRotationalJoint);
 
+        }
+        else if (i == 3)
+        {
+            // plane joint connecting upper and lower cuboid
+            std::shared_ptr<HingeJoint> doubleRotationalJoint =
+                    std::make_shared<HingeJoint>(
+                        rb1, rb2,
+                        Eigen::Vector(0.5, 0, 0), Eigen::Vector(-0.5, 0, 0),
+                        Eigen::Vector(0, 0, 1), Eigen::Vector(0, 0, 1));
+            mAc.getSimulationControl()->addConstraint(doubleRotationalJoint);
         }
 
     }
