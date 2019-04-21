@@ -7,9 +7,13 @@
 
 CollisionConstraint::CollisionConstraint(
         Collision& collision,
-        double restitution)
+        double restitution,
+        double cFrictionDynamic,
+        double cFrictionStatic)
     : mCollision(collision)
     , mRestitution(restitution)
+    , mCFrictionDynamic(cFrictionDynamic)
+    , mCFrictionStatic(cFrictionStatic)
 {
 
 }
@@ -43,21 +47,24 @@ void CollisionConstraint::initialize(double /*stepSize*/)
     Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
                 mCollision.getSimulationObjectB(), mCollision.getPointB());
 
-    mTargetUNormalRel = -mRestitution *
-            ImpulseConstraintSolver::calculateRelativeNormalSpeed(
-                ImpulseConstraintSolver::calculateSpeed(
-                    mCollision.getSimulationObjectA(), p1, mCollision.getVertexIndexA()),
-                ImpulseConstraintSolver::calculateSpeed(
-                    mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB()),
-                mCollision.getNormal());
+    const Eigen::Vector& n = mCollision.getNormal();
 
-    mImpulseFactor = 1 /
-            (mCollision.getNormal().transpose() *
-             (ImpulseConstraintSolver::calculateK(
-                  mCollision.getSimulationObjectA(), p1, mCollision.getVertexIndexA()) +
-              ImpulseConstraintSolver::calculateK(
-                  mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB()))
-             * mCollision.getNormal());
+    Eigen::Vector u1 = ImpulseConstraintSolver::calculateSpeed(
+                mCollision.getSimulationObjectA(), p1, mCollision.getVertexIndexA());
+    Eigen::Vector u2 = ImpulseConstraintSolver::calculateSpeed(
+                mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB());
+
+
+    Eigen::Vector uRel = u1 - u2;
+
+    mTargetUNormalRel = -mRestitution * uRel.dot(n) * n;
+
+    mK = ImpulseConstraintSolver::calculateK(
+                mCollision.getSimulationObjectA(), p1, mCollision.getVertexIndexA()) +
+            ImpulseConstraintSolver::calculateK(
+                mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB());
+
+    mImpulseFactor = 1 / (n.transpose() * mK * n);
 }
 
 bool CollisionConstraint::solve(double maxConstraintError)
@@ -67,15 +74,24 @@ bool CollisionConstraint::solve(double maxConstraintError)
     Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
                 mCollision.getSimulationObjectB(), mCollision.getPointB());
 
-    Eigen::Vector uRel =
-            ImpulseConstraintSolver::calculateRelativeNormalSpeed(
-                ImpulseConstraintSolver::calculateSpeed(
-                    mCollision.getSimulationObjectA(), p1, mCollision.getVertexIndexA()),
-                ImpulseConstraintSolver::calculateSpeed(
-                    mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB()),
-                mCollision.getNormal());
+    const Eigen::Vector& n = mCollision.getNormal();
 
-    Eigen::Vector deltaUNormalRel = mTargetUNormalRel - uRel;
+    Eigen::Vector u1 = ImpulseConstraintSolver::calculateSpeed(
+                mCollision.getSimulationObjectA(),
+                p1,
+                mCollision.getVertexIndexA());
+
+    Eigen::Vector u2 = ImpulseConstraintSolver::calculateSpeed(
+                mCollision.getSimulationObjectB(),
+                p2,
+                mCollision.getVertexIndexB());
+
+
+    Eigen::Vector uRel = u1 - u2;
+
+    Eigen::Vector uRelN = uRel.dot(n) * n;
+
+    Eigen::Vector deltaUNormalRel = mTargetUNormalRel - uRelN;
     if (deltaUNormalRel.norm() < maxConstraintError)
     {
         return true;
@@ -91,6 +107,38 @@ bool CollisionConstraint::solve(double maxConstraintError)
                 mCollision.getSimulationObjectA(), impulse, p1, mCollision.getVertexIndexA());
     ImpulseConstraintSolver::applyImpulse(
                 mCollision.getSimulationObjectB(), -impulse, p2, mCollision.getVertexIndexB());
+
+
+    // friction
+    Eigen::Vector frictionImpulse;
+    Eigen::Vector uRelT = uRel - uRelN;
+    if (uRelT.norm() > 1e-8)
+    {
+        Eigen::Vector t = uRelT.normalized();
+        Eigen::Vector frictionImpulseMax = - 1 / (t.transpose() * mK * t) * uRelT;
+
+        if (mSumFrictionImpulses.norm() <= mCFrictionStatic * mSumOfAllAppliedImpulses.norm())
+        {
+            // static friction
+            frictionImpulse = frictionImpulseMax;
+        }
+        else
+        {
+            // dynamic friction
+            frictionImpulse = - mCFrictionDynamic * impulse.dot(n) * t;
+
+            if (frictionImpulse.dot(t) > frictionImpulseMax.dot(t))
+                frictionImpulse = frictionImpulseMax;
+
+        }
+
+        mSumFrictionImpulses += frictionImpulse;
+        ImpulseConstraintSolver::applyImpulse(
+                    mCollision.getSimulationObjectA(), frictionImpulse, p1, mCollision.getVertexIndexA());
+        ImpulseConstraintSolver::applyImpulse(
+                    mCollision.getSimulationObjectB(), -frictionImpulse, p2, mCollision.getVertexIndexB());
+    }
+
     return false;
 }
 

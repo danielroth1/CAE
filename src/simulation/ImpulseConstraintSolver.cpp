@@ -29,8 +29,10 @@ void ImpulseConstraintSolver::initializeNonCollisionConstraints(double stepSize)
 
 void ImpulseConstraintSolver::initializeCollisionConstraints(
         std::vector<Collision>& collisions,
+        double stepSize,
         double restitution,
-        double stepSize)
+        double cFrictionStatic,
+        double cFrictionDynamic)
 {
     // calculate K, target u rels
     mCollisionConstraints.clear();
@@ -39,7 +41,9 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
     for (size_t i = 0; i < collisions.size(); ++i)
     {
         Collision& c = collisions[i];
-        mCollisionConstraints.push_back(CollisionConstraint(c, restitution));
+        mCollisionConstraints.push_back(
+                    CollisionConstraint(c, restitution,
+                                        cFrictionDynamic, cFrictionStatic));
     }
 
     for (size_t i = 0; i < mCollisionConstraints.size(); ++i)

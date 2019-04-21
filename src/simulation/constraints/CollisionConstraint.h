@@ -23,7 +23,11 @@ class Collision;
 class CollisionConstraint : public Constraint
 {
 public:
-    CollisionConstraint(Collision& collision, double restitution);
+    CollisionConstraint(
+            Collision& collision,
+            double restitution,
+            double cFrictionDynamic,
+            double cFrictionStatic);
 
     virtual ~CollisionConstraint() override;
 
@@ -44,8 +48,12 @@ private:
     Collision& mCollision;
     Eigen::Vector mTargetUNormalRel;
     Eigen::Vector mSumOfAllAppliedImpulses;
+    Eigen::Matrix3d mK;
+    Eigen::Vector mSumFrictionImpulses;
     double mImpulseFactor; // 1 / (n^T K_aa + K_bb n) * n
     double mRestitution;
+    double mCFrictionDynamic;
+    double mCFrictionStatic;
 };
 
 #endif // COLLISIONCONSTRAINT_H

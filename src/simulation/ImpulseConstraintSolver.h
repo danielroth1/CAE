@@ -28,8 +28,10 @@ public:
 
     void initializeCollisionConstraints(
             std::vector<Collision>& collisions,
+            double stepSize,
             double restitution,
-            double stepSize);
+            double cFrictionStatic,
+            double cFrictionDynamic);
 
     void solveConstraints(int maxIterations, double maxConstraintError) override;
 

@@ -482,8 +482,10 @@ void SimulationControl::step()
     // create collision constraints w.r.t. x + x^{FEM}
     mImpulseConstraintSolver->initializeCollisionConstraints(
                 mCollisionManager->getCollider()->getCollisions(),
-                0.2,
-                mStepSize); // Restitution (bounciness factor))
+                mStepSize,
+                0.2, // Restitution (bounciness factor))
+                0.1,
+                0.01);
 
     if (collisionsOccured || !mImpulseConstraintSolver->getConstraints().empty())
     {
