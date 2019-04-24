@@ -43,3 +43,8 @@ void GeometricPoint::translate(const Eigen::Vector& position)
 {
     mPosition += position;
 }
+
+void GeometricPoint::transform(const Affine3d& transform)
+{
+    mPosition = transform * mPosition;
+}

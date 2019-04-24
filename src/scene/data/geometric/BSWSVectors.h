@@ -109,6 +109,8 @@ public:
     // Translates all vertices/ the center by the given vector.
     void translate(const Eigen::Vector& t);
 
+    void transform(const Eigen::Affine3d& transform);
+
     void updateWorldSpace();
 
     void moveCenter(Eigen::Vector center);

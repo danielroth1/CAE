@@ -60,6 +60,8 @@ public:
 
     virtual void translate(const Eigen::Vector& position) = 0;
 
+    virtual void transform(const Eigen::Affine3d& transform) = 0;
+
     // This method must be called when this objects geometric data changed.
     void geometricDataChanged();
 

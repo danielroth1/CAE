@@ -54,6 +54,8 @@ public:
     // Translates all vertices/ the center by the given vector.
     virtual void translate(const Eigen::Vector& position) override;
 
+    virtual void transform(const Eigen::Affine3d& transform) override;
+
     // Delegated PositionData methods
 public:
 

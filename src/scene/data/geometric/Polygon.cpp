@@ -91,6 +91,11 @@ void Polygon::translate(const Vector& position)
     mPositionData.translate(position);
 }
 
+void Polygon::transform(const Affine3d& transform)
+{
+    mPositionData.transform(transform);
+}
+
 void Polygon::updatePositions()
 {
     mPositionData.update();

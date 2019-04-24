@@ -126,6 +126,11 @@ void PositionData::translate(const Vector& t)
     mPositions.translate(t);
 }
 
+void PositionData::transform(const Affine3d& transform)
+{
+    mPositions.transform(transform);
+}
+
 void PositionData::initializeFromWorldSpace(Vectors positionsWS)
 {
     mPositions.initializeFromWorldSpace(positionsWS);

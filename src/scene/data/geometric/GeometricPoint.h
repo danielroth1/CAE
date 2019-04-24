@@ -20,6 +20,7 @@ public:
     Vector& getPosition(size_t index) override;
     size_t getSize() override;
     void translate(const Eigen::Vector& position) override;
+    void transform(const Eigen::Affine3d& transform) override;
 
 private:
     Vector mPosition;

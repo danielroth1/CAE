@@ -173,6 +173,24 @@ void BSWSVectors::translate(const Vector& t)
     }
 }
 
+void BSWSVectors::transform(const Affine3d& transform)
+{
+    if (!mInitialized)
+        return;
+
+    switch(mType)
+    {
+    case BODY_SPACE:
+        mTransform = mTransform * transform;
+        break;
+    case WORLD_SPACE:
+        for (Vector& v : mVectorsWS)
+        {
+            v = transform * v;
+        }
+    }
+}
+
 void BSWSVectors::updateWorldSpace()
 {
     if (!mInitialized)
