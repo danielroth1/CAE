@@ -29,6 +29,7 @@
 #include <demos/LineJointDemo.h>
 #include <demos/MobileDemo.h>
 #include <demos/PlaneJointDemo.h>
+#include <demos/CarDemo.h>
 
 
 ApplicationControl::ApplicationControl()
@@ -233,25 +234,19 @@ void ApplicationControl::initiateApplication()
 
         ApplicationControl& ac;
     };
-    std::shared_ptr<Demo> example2Demo = std::make_shared<Example2Demo>(*this);
-    mDemoLoaderModule->addDemo(example2Demo);
 
-    std::shared_ptr<DoublePendulumDemo> doublePendulumDemo = std::make_shared<DoublePendulumDemo>(*this);
-    mDemoLoaderModule->addDemo(doublePendulumDemo);
-
-    std::shared_ptr<ChainDemo> chainDemo = std::make_shared<ChainDemo>(*this);
-    mDemoLoaderModule->addDemo(chainDemo);
-
-    std::shared_ptr<LineJointDemo> lineJointDemo = std::make_shared<LineJointDemo>(*this);
-    mDemoLoaderModule->addDemo(lineJointDemo);
-
-    std::shared_ptr<PlaneJointDemo> planeJointDemo = std::make_shared<PlaneJointDemo>(*this);
-    mDemoLoaderModule->addDemo(planeJointDemo);
-
+    mDemoLoaderModule->addDemo(std::make_shared<Example2Demo>(*this));
+    mDemoLoaderModule->addDemo(std::make_shared<DoublePendulumDemo>(*this));
+    mDemoLoaderModule->addDemo(std::make_shared<ChainDemo>(*this));
+    mDemoLoaderModule->addDemo(std::make_shared<LineJointDemo>(*this));
+    mDemoLoaderModule->addDemo(std::make_shared<PlaneJointDemo>(*this));
     mDemoLoaderModule->addDemo(std::make_shared<RotationalJointsDemo>(*this));
 
     std::shared_ptr<MobileDemo> mobileDemo = std::make_shared<MobileDemo>(*this);
     mDemoLoaderModule->addDemo(mobileDemo);
+
+    std::shared_ptr<CarDemo> carDemo = std::make_shared<CarDemo>(*this);
+    mDemoLoaderModule->addDemo(carDemo);
 
     mDemoLoaderModule->loadDemo(emptyDemo);
 }
