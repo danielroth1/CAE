@@ -55,9 +55,9 @@ SimulationPointRef::~SimulationPointRef()
 
 }
 
-SimulationObject* SimulationPointRef::getSimulationObject() const
+const std::shared_ptr<SimulationObject>& SimulationPointRef::getSimulationObject() const
 {
-    return mSimulationObject.get();
+    return mSimulationObject;
 }
 
 GeometricPointRef* SimulationPointRef::getGeometricPointRef() const

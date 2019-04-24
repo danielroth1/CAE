@@ -45,7 +45,7 @@ public:
 
     virtual ~SimulationPointRef();
 
-    SimulationObject* getSimulationObject() const;
+    const std::shared_ptr<SimulationObject>& getSimulationObject() const;
     GeometricPointRef* getGeometricPointRef() const;
 
     Eigen::Vector getPoint();

@@ -214,7 +214,8 @@ void SGControl::createLinearForce(
     mAc->getSimulationControl()->addLinearForce(lf);
 }
 
-void SGControl::createFEMObject(const std::shared_ptr<SceneLeafData>& ld)
+std::shared_ptr<FEMObject> SGControl::createFEMObject(
+        const std::shared_ptr<SceneLeafData>& ld)
 {
     // create FEM object if possible
     // check in list of
@@ -242,11 +243,11 @@ void SGControl::createFEMObject(const std::shared_ptr<SceneLeafData>& ld)
                 // Remove that first from the simulation.
                 sgc.mAc->getSimulationControl()->removeSimulationObject(so);
             }
-            std::shared_ptr<FEMObject> femObj =
-                    std::shared_ptr<FEMObject>(
-                    SimulationObjectFactory::createFEMObject(
-                        sgc.mAc->getSimulationControl()->getDomain(),
-                            std::static_pointer_cast<Polygon3D>(polygon3D.shared_from_this())));
+            femObj = std::shared_ptr<FEMObject>(
+                        SimulationObjectFactory::createFEMObject(
+                            sgc.mAc->getSimulationControl()->getDomain(),
+                            std::static_pointer_cast<Polygon3D>(
+                                polygon3D.shared_from_this())));
             sgc.mAc->getSimulationControl()->addSimulationObject(femObj);
 
             polygon3D.changeRepresentationToWS();
@@ -264,12 +265,15 @@ void SGControl::createFEMObject(const std::shared_ptr<SceneLeafData>& ld)
         }
         SGControl& sgc;
         std::shared_ptr<SceneLeafData> ld;
+        std::shared_ptr<FEMObject> femObj;
     } gdVisitor(*this, ld);
 
     ld->getGeometricData()->accept(gdVisitor);
+    return gdVisitor.femObj;
 }
 
-void SGControl::createRigidBody(const std::shared_ptr<SceneLeafData>& ld, double mass, bool isStatic)
+std::shared_ptr<RigidBody> SGControl::createRigidBody(
+        const std::shared_ptr<SceneLeafData>& ld, double mass, bool isStatic)
 {
     // create FEM object if possible
     // check in list of
@@ -290,13 +294,11 @@ void SGControl::createRigidBody(const std::shared_ptr<SceneLeafData>& ld, double
             Vector center = poly.calculateCenterVertex();
             poly.changeRepresentationToBS(center);
 
-
-            std::shared_ptr<RigidBody> rigid =
-                    std::shared_ptr<RigidBody>(
-                    SimulationObjectFactory::createRigidBody(
-                        sgc.mAc->getSimulationControl()->getDomain(),
+            rb = std::shared_ptr<RigidBody>(
+                        SimulationObjectFactory::createRigidBody(
+                            sgc.mAc->getSimulationControl()->getDomain(),
                             std::static_pointer_cast<Polygon3D>(poly.shared_from_this()), mass));
-            rigid->setStatic(isStatic);
+            rb->setStatic(isStatic);
 
             // remove the old simulation object
             std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
@@ -308,14 +310,14 @@ void SGControl::createRigidBody(const std::shared_ptr<SceneLeafData>& ld, double
             }
 
             // add the new simulation object
-            sgc.mAc->getSimulationControl()->addSimulationObject(rigid);
+            sgc.mAc->getSimulationControl()->addSimulationObject(rb);
 
 //            sgc.mAc->getSimulationControl
             //TOD:  change render model
 
             // TODO:
             // simplify simulation object handling
-            ld->setSimulationObject(rigid);
+            ld->setSimulationObject(rb);
             ld->getRenderModelRaw()->revalidate();
         }
 
@@ -338,11 +340,12 @@ void SGControl::createRigidBody(const std::shared_ptr<SceneLeafData>& ld, double
         const std::shared_ptr<SceneLeafData>& ld;
         double mass;
         bool isStatic;
+        std::shared_ptr<RigidBody> rb;
 
     } gdVisitor(*this, ld, mass, isStatic);
 
-
     ld->getGeometricData()->accept(gdVisitor);
+    return gdVisitor.rb;
 }
 
 void SGControl::createCollidable(const std::shared_ptr<SceneLeafData>& ld)
@@ -356,6 +359,11 @@ void SGControl::createCollidable(const std::shared_ptr<SceneLeafData>& ld)
     {
         std::cout << "There is no SimulationObject from which a CollisionObject could be created\n";
     }
+}
+
+SGChildrenNode* SGControl::createChildrenNode(SGChildrenNode* parent, std::string name)
+{
+    return SGTreeNodeFactory::createChildrenNode(parent, name);
 }
 
 SGLeafNode* SGControl::createAndAddLeafNodeToRoot(std::string name)
@@ -479,34 +487,14 @@ void SGControl::removeNode(SGNode* node)
         {
 
         }
-        void visitImpl(SGNode* node)
+
+        virtual void visit(SGChildrenNode* /*childrenNode*/)
         {
-            // update SGTree
-            SGChildrenNode* parentNode = node->getParent();
-            parentNode->removeChild(node); // TODO: why do these nodes have no tree listening to them?
-
-            // update QTreeWidget
-//            QTreeWidgetItem* parentItem = item->parent();
-//            parentItem->removeChild(item);
-
-            // update UISGControl
-            //uiControl.mUISGControl->removeNode(item);
-        }
-
-        virtual void visit(SGChildrenNode* childrenNode)
-        {
-            visitImpl(childrenNode);
         }
 
         virtual void visit(SGLeafNode* leafNode)
         {
             // remove simulation object
-            // TODO: here are some memory leaks because it is not save yet
-            // to remove simulation object due to the simulation thread first
-            // having to remove the simulation obejct first but it only does
-            // that after each simulation step.
-            // Also the geometry can not be removed because it contains the
-            // position vector that is adapted by the simulation object.
             std::shared_ptr<SimulationObject> so = leafNode->getData()->getSimulationObject();
             if (so)
             {
@@ -517,48 +505,28 @@ void SGControl::removeNode(SGNode* node)
             std::shared_ptr<RenderModel> rm = leafNode->getData()->getRenderModel();
             if (rm)
             {
+                // TODO: why do these nodes have no tree listening to them?
                 rm->removeFromRenderer(control.mAc->getUIControl()->getRenderer());
             }
-
-            // remove geometric data
-            //GeometricData* gd = leafNode->getData()->getGeometricData();
-//            if (gd)
-//            {
-//                //delete gd;
-//            }
-            // TODO: how to safely remove SimulatoinObject
-            //      RenderModel and GeometricData
 
             VertexCollection* vc =
                     control.mAc->getUIControl()->getSelectionControl()->getSelectionVertices()
                     ->getSelectedVertexCollection();
             vc->removeVertices(leafNode->getData());
-
-            // remove node in scene graph
-            visitImpl(leafNode);
-
-            // this causes a segmentation fault because the mPositoins memory of polygon3d is
-            // freed while the simulaion is accessing it
-            // and because it removes the simulation object itself...
-//            delete leafNode->getData();
-
         }
 
         SGControl& control;
     } visitor(*this);
 
     // item is parent item
-    node->accept(visitor);
-}
+    SGTraverser traverser = SGTraverserFactory::createDefaultSGTraverser(node);
+    traverser.traverse(visitor);
 
-SGSceneGraph* SGControl::getSceneGraph()
-{
-    return mSceneGraph;
-}
-
-SGNode* SGControl::getSceneNodeByName(std::string name)
-{
-    return mSceneGraph->getRoot()->searchNodeByName(name);
+    if (!node->isLeaf())
+    {
+        static_cast<SGChildrenNode*>(node)->getParent()->removeChild(node);
+    }
+//    node->accept(visitor);
 }
 
 SGLeafNode* SGControl::createLeafNode(
@@ -586,4 +554,14 @@ SGLeafNode* SGControl::createLeafNode(
     parent->addChild(leafNode);
 
     return leafNode;
+}
+
+SGSceneGraph* SGControl::getSceneGraph()
+{
+    return mSceneGraph;
+}
+
+SGNode* SGControl::getSceneNodeByName(std::string name)
+{
+    return mSceneGraph->getRoot()->searchNodeByName(name);
 }

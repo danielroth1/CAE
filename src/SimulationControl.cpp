@@ -299,7 +299,7 @@ void SimulationControl::removeSimulationObject(const std::shared_ptr<SimulationO
     // Remove all linear forces that reference the simulation object
     for (const std::shared_ptr<Force>& lf : mForces)
     {
-        if (lf->references(so.get()))
+        if (lf->references(so))
         {
             mAc->getRenderModelManager()->removeRenderModelByObject(lf);
         }

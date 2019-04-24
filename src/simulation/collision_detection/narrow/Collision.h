@@ -10,8 +10,8 @@ public:
     Collision();
 
     Collision(
-            SimulationObject* soA,
-            SimulationObject* soB,
+            const std::shared_ptr<SimulationObject>& soA,
+            const std::shared_ptr<SimulationObject>& soB,
             const Eigen::Vector& pointA,
             const Eigen::Vector& pointB,
             const Eigen::Vector& normal,
@@ -19,8 +19,8 @@ public:
             ID vertexIndexA,
             ID vertexIndexB);
 
-    SimulationObject* getSimulationObjectA();
-    SimulationObject* getSimulationObjectB();
+    const std::shared_ptr<SimulationObject>& getSimulationObjectA();
+    const std::shared_ptr<SimulationObject>& getSimulationObjectB();
     const Eigen::Vector& getPointA() const;
     const Eigen::Vector& getPointB() const;
     const Eigen::Vector& getNormal() const;
@@ -32,8 +32,14 @@ public:
     // it would be able to caluclate the current distance/ current PointA and PointB (before the collision)
 
 private:
-    SimulationObject* mSoA;
-    SimulationObject* mSoB;
+    // This ugly construct is used for performance reasons. We don't want to
+    // reference two shared pointers each time a Collision occurs (which could
+    // happen thousands of times per time step). Instead we only store a pointer
+    // to the shared ptr. The usual reference (i.e.
+    // const std::shared_ptr<SimulationObject>&) isn't used here, because we
+    // want to beeing able to initialized mSoA and mSoB with nullptr.
+    const std::shared_ptr<SimulationObject>* mSoA;
+    const std::shared_ptr<SimulationObject>* mSoB;
     Eigen::Vector mPointA;
     Eigen::Vector mPointB;
     Eigen::Vector mNormal;

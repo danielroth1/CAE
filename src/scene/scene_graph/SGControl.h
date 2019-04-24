@@ -80,14 +80,21 @@ public:
                 double strength);
 
     // Simulation Methods
-        void createFEMObject(const std::shared_ptr<SceneLeafData>& ld);
-        void createRigidBody(const std::shared_ptr<SceneLeafData>& ld,
-                             double mass,
-                             bool iStatic = false);
+        std::shared_ptr<FEMObject> createFEMObject(
+                const std::shared_ptr<SceneLeafData>& ld);
+        std::shared_ptr<RigidBody> createRigidBody(
+                const std::shared_ptr<SceneLeafData>& ld,
+                double mass,
+                bool iStatic = false);
         void createCollidable(const std::shared_ptr<SceneLeafData>& ld);
 
 
     // Factory methods
+
+        SGChildrenNode* createChildrenNode(
+                SGChildrenNode* parent,
+                std::string name);
+
         // Creates a leaf node, adds it to the root node of the scene
         // graph and returns it.
         SGLeafNode* createAndAddLeafNodeToRoot(
@@ -119,15 +126,7 @@ public:
 
         void removeNode(SGNode* node);
 
-
-    // Getters
-        SGSceneGraph* getSceneGraph();
-
-        SGNode* getSceneNodeByName(std::string name);
-
-private:
-
-        // Scene graph insertion methods
+    // Scene graph insertion methods
 
         // Creates a leaf node with the given name and parent.
         // Inserts to its leaf data the given GeometricData.
@@ -138,6 +137,14 @@ private:
                 SGChildrenNode* parent,
                 std::shared_ptr<Polygon> geoData,
                 bool renderOnlyOuterFaces);
+
+    // Getters
+        SGSceneGraph* getSceneGraph();
+
+        SGNode* getSceneNodeByName(std::string name);
+
+private:
+
 
     ApplicationControl* mAc;
     SGSceneGraph* mSceneGraph;

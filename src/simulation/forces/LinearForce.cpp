@@ -1,14 +1,20 @@
 #include "LinearForce.h"
 
+#include <simulation/ImpulseConstraintSolver.h>
+
 using namespace Eigen;
 
 LinearForce::LinearForce(
         SimulationPointRef source,
         SimulationPointRef target,
-        double strength)
+        double strength,
+        double damping,
+        double length)
     : mSource(source)
     , mTarget(target)
     , mStrength(strength)
+    , mDamping(damping)
+    , mLength(length)
 {
 
 }
@@ -27,10 +33,53 @@ void LinearForce::applyForce()
     // again. How to obtain the actual position? Maybe overwrite the
     // SimulationPointRef::getPoint() method, so that these kind of errors
     // won't happen in the future?
-    Eigen::Vector force =
-            mStrength * (mTarget.getPoint() - mSource.getPoint());
+    Eigen::Vector force;
+
+    // spring
+    if (mLength > 1e-10)
+    {
+        Vector direction = mTarget.getPoint() - mSource.getPoint();
+        if (direction.norm() < 1e-10)
+            direction = Eigen::Vector(1.0, 0.0, 0.0);
+        else
+            direction.normalize();
+
+        force = mStrength * (mTarget.getPoint() - mSource.getPoint() -
+                             mLength * direction);
+    }
+    else
+    {
+        force = mStrength * (mTarget.getPoint() - mSource.getPoint());
+    }
+
+    // damping
+    if (mDamping > 1e-10)
+    {
+        Vector direction = mTarget.getPoint() - mSource.getPoint();
+        if (direction.norm() > 1e-10)
+        {
+            direction.normalize();
+
+            // -mDamoing * (v2 - v1).dot(normal) * direction
+            // how to obtain v?
+            Eigen::Vector v1 = ImpulseConstraintSolver::calculateSpeed(
+                        mSource.getSimulationObject(),
+                        ImpulseConstraintSolver::calculateRelativePoint(
+                            mSource.getSimulationObject(), mSource.getPoint()),
+                        mSource.getIndex());
+
+            Eigen::Vector v2 = ImpulseConstraintSolver::calculateSpeed(
+                        mTarget.getSimulationObject(),
+                        ImpulseConstraintSolver::calculateRelativePoint(
+                            mTarget.getSimulationObject(), mTarget.getPoint()),
+                        mTarget.getIndex());
+
+            force += mDamping * (v2 - v1).dot(direction) * direction;
+        }
+    }
+
     mSource.getSimulationObject()->applyForce(mSource, force);
-    mTarget.getSimulationObject()->applyForce(mSource, -force);
+    mTarget.getSimulationObject()->applyForce(mTarget, -force);
 }
 
 SimulationPointRef& LinearForce::getTargetVector()
@@ -63,7 +112,7 @@ void LinearForce::setStrength(double strength)
     mStrength = strength;
 }
 
-bool LinearForce::references(SimulationObject* so)
+bool LinearForce::references(const std::shared_ptr<SimulationObject>& so)
 {
     return so == mSource.getSimulationObject() ||
             so == mTarget.getSimulationObject();

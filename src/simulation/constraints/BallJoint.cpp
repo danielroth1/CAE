@@ -5,7 +5,9 @@
 
 #include <iostream>
 
-BallJoint::BallJoint(SimulationPointRef pointA, SimulationPointRef pointB)
+BallJoint::BallJoint(
+        SimulationPointRef pointA,
+        SimulationPointRef pointB)
     : mPointA(pointA)
     , mPointB(pointB)
 {
@@ -55,7 +57,6 @@ bool BallJoint::solve(double maxConstraintError)
 
     Eigen::Vector deltaURel = mTargetURel - uRel;
 
-//    std::cout << "norm = " << deltaURel.norm() << "\n";
     if (deltaURel.norm() < maxConstraintError)
     {
         return true;
@@ -76,7 +77,7 @@ void BallJoint::accept(ConstraintVisitor& cv)
     cv.visit(this);
 }
 
-bool BallJoint::references(SimulationObject* so)
+bool BallJoint::references(const std::shared_ptr<SimulationObject>& so)
 {
     return so == mPointA.getSimulationObject() ||
             so == mPointB.getSimulationObject();

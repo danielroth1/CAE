@@ -47,31 +47,31 @@ public:
             const Eigen::Vector& normal);
 
     static Eigen::Vector calculateSpeed(
-            SimulationObject* so,
+            const std::shared_ptr<SimulationObject>& so,
             const Eigen::Vector& point,
             const ID vertexIndex);
 
     static void applyImpulse(
-            SimulationObject* so,
+            const std::shared_ptr<SimulationObject>& so,
             const Eigen::Vector& impulse,
             const Eigen::Vector& point,
             const ID vertexIndex);
 
     static Eigen::Matrix3d calculateK(
-            SimulationObject* so,
+            const std::shared_ptr<SimulationObject>& so,
             const Eigen::Vector& point,
             const ID vertexIndex);
 
     static Eigen::Matrix3d calculateK(SimulationPointRef& ref);
 
-    static Eigen::Matrix3d calculateL(SimulationObject* so);
+    static Eigen::Matrix3d calculateL(const std::shared_ptr<SimulationObject>& so);
 
     static Eigen::Vector calculateRelativePoint(
-            SimulationObject* so,
+            const std::shared_ptr<SimulationObject>& so,
             const Eigen::Vector& pointGlobal);
 
-    static Eigen::Quaterniond getOrientation(SimulationObject* so);
-    static Eigen::Vector getOrientationVelocity(SimulationObject* so);
+    static Eigen::Quaterniond getOrientation(const std::shared_ptr<SimulationObject>& so);
+    static Eigen::Vector getOrientationVelocity(const std::shared_ptr<SimulationObject>& so);
 
     static Eigen::Vector3d calculateProjectionMatrix(
             const Eigen::Vector& axis1,

@@ -35,10 +35,9 @@ void RotationalJointsDemo::load()
         SGLeafNode* node1 = mAc.getSGControl()->createBox(
                     "Upper Cuboid", mAc.getSGControl()->getSceneGraph()->getRoot(),
                     Vector(i*3, 0.0, 0.0), 1, 1, 1, true);
-        mAc.getSGControl()->createRigidBody(node1->getData(), 1.0, false);
+
         std::shared_ptr<RigidBody> rb1 =
-                std::static_pointer_cast<RigidBody>(
-                    node1->getData()->getSimulationObject());
+                mAc.getSGControl()->createRigidBody(node1->getData(), 1.0, false);
         rb1->setRotationalDamping(0.005);
         rb1->setTranslationalDamping(0.005);
 
@@ -58,10 +57,9 @@ void RotationalJointsDemo::load()
         SGLeafNode* node2 = mAc.getSGControl()->createBox(
                     "Lower Cuboid", mAc.getSGControl()->getSceneGraph()->getRoot(),
                     Vector(i*3 + 1.0, 0.0, 0.0), 1, 1, 1, true);
-        mAc.getSGControl()->createRigidBody(node2->getData(), 1.0, false);
+
         std::shared_ptr<RigidBody> rb2 =
-                std::static_pointer_cast<RigidBody>(
-                    node2->getData()->getSimulationObject());
+                mAc.getSGControl()->createRigidBody(node2->getData(), 1.0, false);
         rb2->setRotationalDamping(0.005);
         rb2->setTranslationalDamping(0.005);
 

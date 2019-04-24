@@ -30,7 +30,7 @@ private:
 
     // MechanicalProperty interface
 public:
-    virtual bool references(SimulationObject* so);
+    virtual bool references(const std::shared_ptr<SimulationObject>& so);
 
     // Constraint interface
 public:

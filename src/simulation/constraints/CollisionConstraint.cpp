@@ -110,33 +110,37 @@ bool CollisionConstraint::solve(double maxConstraintError)
 
 
     // friction
-    Eigen::Vector frictionImpulse;
-    Eigen::Vector uRelT = uRel - uRelN;
-    if (uRelT.norm() > 1e-8)
+    if (mCFrictionStatic > 1e-10 ||
+        mCFrictionDynamic > 1e-10)
     {
-        Eigen::Vector t = uRelT.normalized();
-        Eigen::Vector frictionImpulseMax = - 1 / (t.transpose() * mK * t) * uRelT;
-
-        if (mSumFrictionImpulses.norm() <= mCFrictionStatic * mSumOfAllAppliedImpulses.norm())
+        Eigen::Vector frictionImpulse;
+        Eigen::Vector uRelT = uRel - uRelN;
+        if (uRelT.norm() > 1e-8)
         {
-            // static friction
-            frictionImpulse = frictionImpulseMax;
-        }
-        else
-        {
-            // dynamic friction
-            frictionImpulse = - mCFrictionDynamic * impulse.dot(n) * t;
+            Eigen::Vector t = uRelT.normalized();
+            Eigen::Vector frictionImpulseMax = - 1 / (t.transpose() * mK * t) * uRelT;
 
-            if (frictionImpulse.dot(t) > frictionImpulseMax.dot(t))
+            if (mSumFrictionImpulses.norm() <= mCFrictionStatic * mSumOfAllAppliedImpulses.norm())
+            {
+                // static friction
                 frictionImpulse = frictionImpulseMax;
+            }
+            else
+            {
+                // dynamic friction
+                frictionImpulse = - mCFrictionDynamic * impulse.dot(n) * t;
 
+                if (frictionImpulse.dot(t) > frictionImpulseMax.dot(t))
+                    frictionImpulse = frictionImpulseMax;
+
+            }
+
+            mSumFrictionImpulses += frictionImpulse;
+            ImpulseConstraintSolver::applyImpulse(
+                        mCollision.getSimulationObjectA(), frictionImpulse, p1, mCollision.getVertexIndexA());
+            ImpulseConstraintSolver::applyImpulse(
+                        mCollision.getSimulationObjectB(), -frictionImpulse, p2, mCollision.getVertexIndexB());
         }
-
-        mSumFrictionImpulses += frictionImpulse;
-        ImpulseConstraintSolver::applyImpulse(
-                    mCollision.getSimulationObjectA(), frictionImpulse, p1, mCollision.getVertexIndexA());
-        ImpulseConstraintSolver::applyImpulse(
-                    mCollision.getSimulationObjectB(), -frictionImpulse, p2, mCollision.getVertexIndexB());
     }
 
     return false;
@@ -147,7 +151,7 @@ void CollisionConstraint::accept(ConstraintVisitor& cv)
     cv.visit(this);
 }
 
-bool CollisionConstraint::references(SimulationObject* so)
+bool CollisionConstraint::references(const std::shared_ptr<SimulationObject>& so)
 {
     return so == mCollision.getSimulationObjectA() ||
             so == mCollision.getSimulationObjectB();

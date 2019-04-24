@@ -42,7 +42,7 @@ public:
     virtual void initialize(double stepSize) override;
     virtual bool solve(double maxConstraintError) override;
     virtual void accept(ConstraintVisitor& cv) override;
-    virtual bool references(SimulationObject* so) override;
+    virtual bool references(const std::shared_ptr<SimulationObject>& so) override;
 
 private:
     Collision& mCollision;

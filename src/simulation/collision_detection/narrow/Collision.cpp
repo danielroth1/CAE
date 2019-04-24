@@ -3,21 +3,23 @@
 
 
 Collision::Collision()
+    : mSoA(nullptr)
+    , mSoB(nullptr)
 {
 
 }
 
 Collision::Collision(
-        SimulationObject* soA,
-        SimulationObject* soB,
+        const std::shared_ptr<SimulationObject>& soA,
+        const std::shared_ptr<SimulationObject>& soB,
         const Eigen::Vector& pointA,
         const Eigen::Vector& pointB,
         const Eigen::Vector& normal,
         double depth,
         ID vertexIndexA,
         ID vertexIndexB)
-    : mSoA(soA)
-    , mSoB(soB)
+    : mSoA(&soA)
+    , mSoB(&soB)
     , mPointA(pointA)
     , mPointB(pointB)
     , mNormal(normal)
@@ -27,14 +29,14 @@ Collision::Collision(
 {
 }
 
-SimulationObject* Collision::getSimulationObjectA()
+const std::shared_ptr<SimulationObject>& Collision::getSimulationObjectA()
 {
-    return mSoA;
+    return *mSoA;
 }
 
-SimulationObject* Collision::getSimulationObjectB()
+const std::shared_ptr<SimulationObject>& Collision::getSimulationObjectB()
 {
-    return mSoB;
+    return *mSoB;
 }
 
 const Eigen::Vector& Collision::getPointA() const

@@ -121,7 +121,7 @@ bool ImpulseConstraintSolver::solveConstraint(
 }
 
 Matrix3d ImpulseConstraintSolver::calculateK(
-        SimulationObject* so,
+        const std::shared_ptr<SimulationObject>& so,
         const Vector& point,
         const ID vertexIndex)
 {
@@ -129,12 +129,12 @@ Matrix3d ImpulseConstraintSolver::calculateK(
     {
     case SimulationObject::Type::FEM_OBJECT:
     {
-        FEMObject* femObj = static_cast<FEMObject*>(so);
+        FEMObject* femObj = static_cast<FEMObject*>(so.get());
         return 1 / femObj->getMass(vertexIndex) * Eigen::Matrix3d::Identity();
     }
     case SimulationObject::Type::RIGID_BODY:
     {
-        RigidBody* rb = static_cast<RigidBody*>(so);
+        RigidBody* rb = static_cast<RigidBody*>(so.get());
         return rb->calculateK(point, point);
     }
     case SimulationObject::Type::SIMULATION_POINT:
@@ -151,7 +151,7 @@ Matrix3d ImpulseConstraintSolver::calculateK(SimulationPointRef& ref)
     {
     case SimulationObject::Type::FEM_OBJECT:
     {
-        FEMObject* femObj = static_cast<FEMObject*>(ref.getSimulationObject());
+        FEMObject* femObj = static_cast<FEMObject*>(ref.getSimulationObject().get());
         ID index = ref.getIndex();
         if (index != ILLEGAL_INDEX)
         {
@@ -161,7 +161,7 @@ Matrix3d ImpulseConstraintSolver::calculateK(SimulationPointRef& ref)
     }
     case SimulationObject::Type::RIGID_BODY:
     {
-        RigidBody* rb = static_cast<RigidBody*>(ref.getSimulationObject());
+        RigidBody* rb = static_cast<RigidBody*>(ref.getSimulationObject().get());
         Eigen::Vector r = rb->getR(ref);
         return rb->calculateK(r, r);
     }
@@ -173,7 +173,7 @@ Matrix3d ImpulseConstraintSolver::calculateK(SimulationPointRef& ref)
     return Eigen::Matrix3d::Identity();
 }
 
-Matrix3d ImpulseConstraintSolver::calculateL(SimulationObject* so)
+Matrix3d ImpulseConstraintSolver::calculateL(const std::shared_ptr<SimulationObject>& so)
 {
     switch(so->getType())
     {
@@ -183,7 +183,7 @@ Matrix3d ImpulseConstraintSolver::calculateL(SimulationObject* so)
     }
     case SimulationObject::Type::RIGID_BODY:
     {
-        RigidBody* rb = static_cast<RigidBody*>(so);
+        RigidBody* rb = static_cast<RigidBody*>(so.get());
         return rb->getInverseInertiaTensorWS();
     }
     case SimulationObject::Type::SIMULATION_POINT:
@@ -203,7 +203,7 @@ Vector ImpulseConstraintSolver::calculateRelativeNormalSpeed(
 }
 
 Vector ImpulseConstraintSolver::calculateSpeed(
-        SimulationObject* so,
+        const std::shared_ptr<SimulationObject>& so,
         const Vector& point,
         const ID vertexIndex)
 {
@@ -211,12 +211,12 @@ Vector ImpulseConstraintSolver::calculateSpeed(
     {
     case SimulationObject::Type::RIGID_BODY:
     {
-        RigidBody* rb = static_cast<RigidBody*>(so);
+        RigidBody* rb = static_cast<RigidBody*>(so.get());
         return rb->calculateSpeedAt(point);
     }
     case SimulationObject::Type::FEM_OBJECT:
     {
-        FEMObject* femObj = static_cast<FEMObject*>(so);
+        FEMObject* femObj = static_cast<FEMObject*>(so.get());
         return femObj->getVelocities()[vertexIndex];
     }
     case SimulationObject::Type::SIMULATION_POINT:
@@ -226,7 +226,7 @@ Vector ImpulseConstraintSolver::calculateSpeed(
 }
 
 void ImpulseConstraintSolver::applyImpulse(
-        SimulationObject* so,
+        const std::shared_ptr<SimulationObject>& so,
         const Vector& impulse,
         const Vector& point,
         const ID vertexIndex)
@@ -235,13 +235,13 @@ void ImpulseConstraintSolver::applyImpulse(
     {
     case SimulationObject::Type::RIGID_BODY:
     {
-        RigidBody* rb = static_cast<RigidBody*>(so);
+        RigidBody* rb = static_cast<RigidBody*>(so.get());
         rb->applyImpulse(point, impulse);
         break;
     }
     case SimulationObject::Type::FEM_OBJECT:
     {
-        FEMObject* femObj = static_cast<FEMObject*>(so);
+        FEMObject* femObj = static_cast<FEMObject*>(so.get());
         femObj->applyImpulse(vertexIndex, impulse);
         break;
     }
@@ -250,31 +250,32 @@ void ImpulseConstraintSolver::applyImpulse(
     }
 }
 
-Vector ImpulseConstraintSolver::calculateRelativePoint(SimulationObject* so, const Vector& pointGlobal)
+Vector ImpulseConstraintSolver::calculateRelativePoint(
+        const std::shared_ptr<SimulationObject>& so, const Vector& pointGlobal)
 {
     if (so->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(so);
+        RigidBody* rb = static_cast<RigidBody*>(so.get());
         return pointGlobal - rb->getCenterOfMass();
     }
     return pointGlobal;
 }
 
-Quaterniond ImpulseConstraintSolver::getOrientation(SimulationObject* so)
+Quaterniond ImpulseConstraintSolver::getOrientation(const std::shared_ptr<SimulationObject>& so)
 {
     if (so->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(so);
+        RigidBody* rb = static_cast<RigidBody*>(so.get());
         return rb->getOrientation();
     }
     return Eigen::Quaterniond::Identity();
 }
 
-Eigen::Vector ImpulseConstraintSolver::getOrientationVelocity(SimulationObject* so)
+Eigen::Vector ImpulseConstraintSolver::getOrientationVelocity(const std::shared_ptr<SimulationObject>& so)
 {
     if (so->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(so);
+        RigidBody* rb = static_cast<RigidBody*>(so.get());
         return rb->getOrientationVelocity();
     }
     return Eigen::Vector::Zero();

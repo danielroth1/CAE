@@ -19,7 +19,7 @@ LineJoint::LineJoint(
 
 }
 
-bool LineJoint::references(SimulationObject* so)
+bool LineJoint::references(const std::shared_ptr<SimulationObject>& so)
 {
     return so == mPointA.getSimulationObject() ||
             so == mPointB.getSimulationObject();
@@ -38,7 +38,7 @@ void LineJoint::initialize(double stepSize)
 
     if (mPointA.getSimulationObject()->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(mPointA.getSimulationObject());
+        RigidBody* rb = static_cast<RigidBody*>(mPointA.getSimulationObject().get());
         mCurrentA = mCurrentAWS - rb->getCenterOfMass();
     }
 
@@ -54,8 +54,7 @@ void LineJoint::initialize(double stepSize)
 
 bool LineJoint::solve(double maxConstraintError)
 {
-    Eigen::Vector p1 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointA.getSimulationObject(), mCurrentAWS);
+    Eigen::Vector p1 = mCurrentA;
     Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
                 mPointB.getSimulationObject(), mPointB.getPoint());
 
@@ -97,7 +96,7 @@ Eigen::Vector LineJoint::calculateLineDirection()
     Eigen::Vector lineDirection = mLineDirectionBS;
     if (mPointA.getSimulationObject()->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(mPointA.getSimulationObject());
+        RigidBody* rb = static_cast<RigidBody*>(mPointA.getSimulationObject().get());
         lineDirection = rb->getOrientation().toRotationMatrix() * lineDirection;
     }
     return lineDirection;

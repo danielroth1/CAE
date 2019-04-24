@@ -21,7 +21,7 @@ PlaneJoint::PlaneJoint(
 
 }
 
-bool PlaneJoint::references(SimulationObject* so)
+bool PlaneJoint::references(const std::shared_ptr<SimulationObject>& so)
 {
     return so == mPointA.getSimulationObject() ||
             so == mPointB.getSimulationObject();
@@ -42,7 +42,8 @@ void PlaneJoint::initialize(double stepSize)
 
     if (mPointA.getSimulationObject()->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(mPointA.getSimulationObject());
+        const std::shared_ptr<RigidBody>& rb =
+                std::static_pointer_cast<RigidBody>(mPointA.getSimulationObject());
         mCurrentA = mCurrentAWS - rb->getCenterOfMass();
     }
 
@@ -104,7 +105,7 @@ Eigen::Vector PlaneJoint::calculateLineDirection(const Eigen::Vector& lineBS)
     Eigen::Vector lineDirection = lineBS;
     if (mPointA.getSimulationObject()->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(mPointA.getSimulationObject());
+        RigidBody* rb = static_cast<RigidBody*>(mPointA.getSimulationObject().get());
         lineDirection = rb->getOrientation().toRotationMatrix() * lineDirection;
     }
     return lineDirection;

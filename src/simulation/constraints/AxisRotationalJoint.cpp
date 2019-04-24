@@ -17,9 +17,9 @@ AxisRotationalJoint::AxisRotationalJoint(
     mAxisBS.normalize();
 }
 
-bool AxisRotationalJoint::references(SimulationObject* so)
+bool AxisRotationalJoint::references(const std::shared_ptr<SimulationObject>& so)
 {
-    return so == mRbA.get() || so == mRbB.get();
+    return so == mRbA || so == mRbB;
 }
 
 void AxisRotationalJoint::initialize(double stepSize)

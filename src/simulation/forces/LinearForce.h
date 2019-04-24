@@ -17,7 +17,9 @@ public:
     LinearForce(
             SimulationPointRef source,
             SimulationPointRef target,
-            double strength);
+            double strength,
+            double damping = 0.0,
+            double length = 0.0);
 
     virtual ~LinearForce() override;
 
@@ -34,13 +36,15 @@ public:
     void setStrength(double strength);
 
     // Visitor method
-    virtual bool references(SimulationObject* so) override;
+    virtual bool references(const std::shared_ptr<SimulationObject>& so) override;
 
 private:
 
     SimulationPointRef mSource;
     SimulationPointRef mTarget;
     double mStrength;
+    double mDamping;
+    double mLength;
 
 //    SimulationObject* mSource;
 //    ID mSourceVectorID;

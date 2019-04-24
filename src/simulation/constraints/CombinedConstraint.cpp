@@ -7,7 +7,7 @@ CombinedConstraint::CombinedConstraint()
 
 }
 
-bool CombinedConstraint::references(SimulationObject* so)
+bool CombinedConstraint::references(const std::shared_ptr<SimulationObject>& so)
 {
     for (const std::shared_ptr<Constraint>& c : mConstraints)
     {
