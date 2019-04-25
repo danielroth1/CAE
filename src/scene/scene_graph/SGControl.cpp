@@ -297,7 +297,8 @@ std::shared_ptr<RigidBody> SGControl::createRigidBody(
             rb = std::shared_ptr<RigidBody>(
                         SimulationObjectFactory::createRigidBody(
                             sgc.mAc->getSimulationControl()->getDomain(),
-                            std::static_pointer_cast<Polygon3D>(poly.shared_from_this()), mass));
+                            std::static_pointer_cast<Polygon3D>(poly.shared_from_this()),
+                            mass));
             rb->setStatic(isStatic);
 
             // remove the old simulation object
@@ -522,11 +523,7 @@ void SGControl::removeNode(SGNode* node)
     SGTraverser traverser = SGTraverserFactory::createDefaultSGTraverser(node);
     traverser.traverse(visitor);
 
-    if (!node->isLeaf())
-    {
-        static_cast<SGChildrenNode*>(node)->getParent()->removeChild(node);
-    }
-//    node->accept(visitor);
+    static_cast<SGChildrenNode*>(node)->getParent()->removeChild(node);
 }
 
 SGLeafNode* SGControl::createLeafNode(
