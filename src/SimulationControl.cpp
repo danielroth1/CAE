@@ -484,8 +484,8 @@ void SimulationControl::step()
                 mCollisionManager->getCollider()->getCollisions(),
                 mStepSize,
                 0.2, // Restitution (bounciness factor))
-                0.1,
-                0.01);
+                0.01,
+                0.1);
 
     if (collisionsOccured || !mImpulseConstraintSolver->getConstraints().empty())
     {

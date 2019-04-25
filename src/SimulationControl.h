@@ -76,11 +76,11 @@ public:
     void addTruncations(FEMObject* femObject, std::vector<ID> vectorIDs);
 
     // Adds the given linear force to the simulation and creates a
-    // LinearForceRenderModel.
+    // LinearForceRenderModel to render it.
     void addLinearForce(std::shared_ptr<LinearForce> linearForce);
 
     // Adds the given linear force to the simulation and creates a
-    // LinearForceRenderModel.
+    // LinearForceRenderModel to render it.
     void addLinearForce(
             SimulationObject* source, ID sourceVector,
             SimulationObject* target, ID targetVector,

@@ -64,6 +64,12 @@ public:
 
         void applyForce(const Eigen::Vector3d& r, const Eigen::Vector3d& force);
 
+        // Applies a force w.r.t. center of mass.
+        void applyForceCOM(const Eigen::Vector& force);
+
+        // Applies a torque.
+        void applyTorque(const Eigen::Vector& torque);
+
         void applyDamping();
 
     Eigen::Vector getR(SimulationPointRef& pointRef);

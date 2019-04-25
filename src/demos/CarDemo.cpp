@@ -8,6 +8,7 @@
 #include <scene/data/geometric/Polygon2D.h>
 
 #include <simulation/forces/LinearForce.h>
+#include <simulation/forces/RotationalMotor.h>
 
 #include <simulation/constraints/BallJoint.h>
 #include <simulation/constraints/DistanceJoint.h>
@@ -39,7 +40,7 @@ void CarDemo::load()
     mAc.getSGControl()->createRigidBody(floor->getData(), 1.0, true);
     mAc.getSGControl()->createCollidable(floor->getData());
 
-    createCar(Affine3d::Identity(), 2.0, 4.0, 1.0, 0.2, 0.5, 100.0, 0.0);
+    createCar(Affine3d::Identity(), 2.0, 4.0, 1.0, 0.2, 0.5, 1000.0, 100.0);
 }
 
 void CarDemo::unload()
@@ -62,7 +63,7 @@ void CarDemo::createCar(
                 "Hull", carNode, transformation * Vector::Zero(),
                 width, height, length);
     std::shared_ptr<RigidBody> hullRigid = mSg->createRigidBody(
-                hull->getData(), 1.0, false);
+                hull->getData(), 5.0, false);
 
     // create 4 tires
     for (int i = 0; i < 4; ++i)
@@ -116,6 +117,10 @@ void CarDemo::createTire(
             std::make_shared<Polygon2D>(
                 GeometricDataFactory::create2DSphere(2 * tireWidth, 3));
 
+    // hull
+    std::shared_ptr<RigidBody> hull =
+            std::static_pointer_cast<RigidBody>(target.getSimulationObject());
+
     // left front tire
     std::shared_ptr<Polygon2D> tirePolyLf = std::make_shared<Polygon2D>(*tireTemplate.get());
     tirePolyLf->transform(transformation * Translation3d(position));
@@ -125,7 +130,7 @@ void CarDemo::createTire(
                 tirePolyLf,
                 true);
     std::shared_ptr<RigidBody> rigidLf =
-            mSg->createRigidBody(tireLf->getData(), 0.1, false);
+            mSg->createRigidBody(tireLf->getData(), 1.0, false);
     mSg->createCollidable(tireLf->getData());
 
     // spring
@@ -147,6 +152,12 @@ void CarDemo::createTire(
     std::shared_ptr<LineJoint> lineJoint =
             std::make_shared<LineJoint>(target, source, Vector(0, -1.0, 0));
     mAc.getSimulationControl()->addConstraint(lineJoint);
+
+    // Rotational motor
+    std::shared_ptr<RotationalMotor> motorForce =
+            std::make_shared<RotationalMotor>(
+                rigidLf, hull, Vector(1.0, 0.0, 0.0), 10.0);
+    mAc.getSimulationControl()->addForce(motorForce);
 
 //    std::shared_ptr<BallJoint> ballJoint =
 //            std::make_shared<BallJoint>(target, source, springLength);

@@ -49,10 +49,10 @@ RigidBody::RigidBody(
     for (Vector& v : positions)
     {
         Vector r = v - mX;
-        mInertiaBS += mass * static_cast<double>(r.transpose() * r) * Matrix3d::Identity() -
-                r * r.transpose();
+        mInertiaBS += mass / positions.size() * (static_cast<double>(r.transpose() * r) * Matrix3d::Identity() -
+                r * r.transpose());
     }
-    mInertiaBS.setIdentity();
+//    mInertiaBS.setIdentity(); // whats
     mInertiaInvBS = mInertiaBS.inverse();
 
     mQ.setIdentity();
@@ -168,6 +168,11 @@ void RigidBody::applyForce(const Vector3d& r, const Vector3d& force)
 //    mTorqueExt += (mQ.toRotationMatrix() * r).cross(force);
     mTorqueExt += (r).cross(force);
     //    std::cout << r.transpose() << " ||| " << (mQ.toRotationMatrix() * r).transpose() << "\n";
+}
+
+void RigidBody::applyTorque(const Vector& torque)
+{
+    mTorqueExt += torque;
 }
 
 void RigidBody::applyDamping()
