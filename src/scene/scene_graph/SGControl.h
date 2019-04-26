@@ -86,7 +86,8 @@ public:
                 const std::shared_ptr<SceneLeafData>& ld,
                 double mass,
                 bool iStatic = false);
-        void createCollidable(const std::shared_ptr<SceneLeafData>& ld);
+        void createCollidable(const std::shared_ptr<SceneLeafData>& ld,
+                              double collisionSphereRadiusFactor = 0.1);
 
 
     // Factory methods

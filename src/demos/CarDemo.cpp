@@ -36,7 +36,7 @@ void CarDemo::load()
     SGLeafNode* floor = mAc.getSGControl()->createBox(
                 "Floor",
                 mAc.getSGControl()->getSceneGraph()->getRoot(),
-                Vector(0.0, -3.0, 0.0), 12, 0.5, 12, true);
+                Vector(0.0, -2.5, 0.0), 12, 0.5, 12, true);
     mAc.getSGControl()->createRigidBody(floor->getData(), 1.0, true);
     mAc.getSGControl()->createCollidable(floor->getData());
 
@@ -93,7 +93,8 @@ void CarDemo::createCar(
         createTire(carNode,
                    name,
                    transformation,
-                   SimulationPointRef(hullRigid.get(), hullRigid->getPolygon().get(),
+                   SimulationPointRef(hullRigid.get(),
+                                      hullRigid->getPolygon().get(),
                                       position),
                    tireWidth, springLength, cSpring, cDamping);
 
@@ -124,18 +125,18 @@ void CarDemo::createTire(
     // left front tire
     std::shared_ptr<Polygon2D> tirePolyLf = std::make_shared<Polygon2D>(*tireTemplate.get());
     tirePolyLf->transform(transformation * Translation3d(position));
-    SGLeafNode* tireLf = mSg->createLeafNode(
+    SGLeafNode* tire = mSg->createLeafNode(
                 name,
                 parent,
                 tirePolyLf,
                 true);
-    std::shared_ptr<RigidBody> rigidLf =
-            mSg->createRigidBody(tireLf->getData(), 1.0, false);
-    mSg->createCollidable(tireLf->getData());
+    std::shared_ptr<RigidBody> rigid =
+            mSg->createRigidBody(tire->getData(), 1.0, false);
+    mSg->createCollidable(tire->getData(), 0.2);
 
     // spring
     SimulationPointRef source = SimulationPointRef(
-                rigidLf.get(), rigidLf->getPolygon().get(), Vector::Zero());
+                rigid.get(), rigid->getPolygon().get(), Vector::Zero());
     std::shared_ptr<LinearForce> f = std::make_shared<LinearForce>(
                 source,
                 target, cSpring, cDamping, springLength);
@@ -156,7 +157,7 @@ void CarDemo::createTire(
     // Rotational motor
     std::shared_ptr<RotationalMotor> motorForce =
             std::make_shared<RotationalMotor>(
-                rigidLf, hull, Vector(1.0, 0.0, 0.0), 10.0);
+                rigid, hull, Vector(1.0, 0.0, 0.0), 10.0);
     mAc.getSimulationControl()->addForce(motorForce);
 
 //    std::shared_ptr<BallJoint> ballJoint =

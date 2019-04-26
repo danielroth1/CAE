@@ -125,7 +125,8 @@ public:
         void addConstraint(const std::shared_ptr<Constraint>& c);
         void removeConstraint(const std::shared_ptr<Constraint>& c);
 
-        void addCollisionObject(std::shared_ptr<SimulationObject> so);
+        void addCollisionObject(std::shared_ptr<SimulationObject> so,
+                                double collisionSphereRadiusFactor = 0.2);
         void removeCollisionObject(const std::shared_ptr<SimulationObject>& so);
 
     // Is called by SimulationThread once after the thread is started.

@@ -349,12 +349,14 @@ std::shared_ptr<RigidBody> SGControl::createRigidBody(
     return gdVisitor.rb;
 }
 
-void SGControl::createCollidable(const std::shared_ptr<SceneLeafData>& ld)
+void SGControl::createCollidable(const std::shared_ptr<SceneLeafData>& ld,
+                                 double collisionSphereRadiusFactor)
 {
     std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
     if (so)
     {
-        mAc->getSimulationControl()->addCollisionObject(so);
+        mAc->getSimulationControl()->addCollisionObject(
+                    so, collisionSphereRadiusFactor);
     }
     else
     {

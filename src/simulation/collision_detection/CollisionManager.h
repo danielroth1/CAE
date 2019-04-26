@@ -31,7 +31,8 @@ public:
 
     void addSimulationObject(
             std::shared_ptr<SimulationObject> so,
-            std::shared_ptr<Polygon> polygon);
+            std::shared_ptr<Polygon> polygon,
+            double sphereDiameter = 0.1);
 
     bool removeSimulationObject(const std::shared_ptr<SimulationObject>& so);
 
@@ -74,8 +75,9 @@ private:
 PROXY_CLASS(CollisionManagerProxy, CollisionManager, mCm,
             PROXY_FUNCTION(CollisionManager, mCm, addSimulationObject,
                            PL(std::shared_ptr<SimulationObject> so,
-                              std::shared_ptr<Polygon> polygon),
-                           PL(so, polygon))
+                              std::shared_ptr<Polygon> polygon,
+                              double sphereDiameter),
+                           PL(so, polygon, sphereDiameter))
             PROXY_FUNCTION(CollisionManager, mCm, removeSimulationObject,
                            PL(const std::shared_ptr<SimulationObject>& so), PL(so))
             )

@@ -25,7 +25,8 @@ Domain* CollisionManager::getDomain()
 
 void CollisionManager::addSimulationObject(
         std::shared_ptr<SimulationObject> so,
-        std::shared_ptr<Polygon> polygon)
+        std::shared_ptr<Polygon> polygon,
+        double sphereDiameter)
 {
     // check if SimulationObject was already added, if so do nothing
     auto it = std::find_if(mCollisionData.begin(), mCollisionData.end(),
@@ -42,7 +43,6 @@ void CollisionManager::addSimulationObject(
 
     // Create CollisionSpheres on vertices of Polygon2D or outer vertices of Polygon3D
     std::vector<std::shared_ptr<CollisionObject>> collisionObjects;
-    double radiusFactor = 0.2;
     switch (polygon->getType())
     {
     case Polygon::Type::TWO_D:
@@ -53,14 +53,14 @@ void CollisionManager::addSimulationObject(
         std::map<unsigned int, double> minimumDistances = calculateMinimumDistances(
                     p2->getFaces(), p2->getPositions());
 
-        double diameter = std::numeric_limits<double>::max();
-        for (auto it : minimumDistances)
-        {
-            diameter = std::min(diameter, it.second);
-        }
-        diameter *= radiusFactor;
+//        double diameter = std::numeric_limits<double>::max();
+//        for (auto it : minimumDistances)
+//        {
+//            diameter = std::min(diameter, it.second);
+//        }
+//        diameter *= radiusFactor;
 
-        diameter = 0.1;
+        double diameter = sphereDiameter;
 
         ///////////////////////////////////////////
         // One sphere per vertex
@@ -86,7 +86,8 @@ void CollisionManager::addSimulationObject(
                 Vector point2 = p2->getPositions()[e[1]];
 
                 double distance = (point2 - point1).norm();
-                int nSpheres = static_cast<int>(floor(distance / diameter));
+                // at least one sphere per edge
+                int nSpheres = std::max(1, static_cast<int>(floor(distance / diameter)));
 
                 for (int i = 0; i < nSpheres; ++i)
                 {
@@ -215,7 +216,7 @@ void CollisionManager::addSimulationObject(
         {
             ID index = static_cast<ID>(p3->getOuterPositionIds()[i]);
 //            double radius = minimumDistances[static_cast<unsigned int>(index)] * radiusFactor;
-            double radius = maximumDistance * radiusFactor;
+            double radius = maximumDistance * sphereDiameter;
             collisionObjects.push_back(std::make_shared<CollisionSphere>(
                                            SimulationPointRef(so.get(), index),
                                            radius));

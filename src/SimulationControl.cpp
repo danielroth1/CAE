@@ -373,13 +373,18 @@ void SimulationControl::removeConstraint(const std::shared_ptr<Constraint>& c)
     mProxy->removeConstraintSlot(c);
 }
 
-void SimulationControl::addCollisionObject(std::shared_ptr<SimulationObject> so)
+void SimulationControl::addCollisionObject(
+        std::shared_ptr<SimulationObject> so,
+        double sphereDiameter)
 {
     class CollisionObjectAdder : public SimulationObjectVisitor
     {
     public:
-        CollisionObjectAdder(SimulationControl& _sc)
+        CollisionObjectAdder(
+                    SimulationControl& _sc,
+                    double _sphereDiameter)
             : sc(_sc)
+            , sphereDiameter(_sphereDiameter)
         {
 
         }
@@ -388,7 +393,8 @@ void SimulationControl::addCollisionObject(std::shared_ptr<SimulationObject> so)
         {
             sc.mCollisionManagerProxy->addSimulationObject(
                         femObject.shared_from_this(),
-                        femObject.getPolygon());
+                        femObject.getPolygon(),
+                        sphereDiameter);
         }
 
         virtual void visit(SimulationPoint& /*sp*/)
@@ -400,11 +406,13 @@ void SimulationControl::addCollisionObject(std::shared_ptr<SimulationObject> so)
         {
             sc.mCollisionManagerProxy->addSimulationObject(
                         rigidBody.shared_from_this(),
-                        rigidBody.getPolygon());
+                        rigidBody.getPolygon(),
+                        sphereDiameter);
         }
 
         SimulationControl& sc;
-    } v(*this);
+        double sphereDiameter;
+    } v(*this, sphereDiameter);
     so->accept(v);
 }
 
@@ -473,6 +481,7 @@ void SimulationControl::step()
 
     // initialize constraints
     mImpulseConstraintSolver->initializeNonCollisionConstraints(mStepSize);
+//    mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{nonh}
 
     mRigidSimulation->integratePositions(mStepSize);
     mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
@@ -484,8 +493,8 @@ void SimulationControl::step()
                 mCollisionManager->getCollider()->getCollisions(),
                 mStepSize,
                 0.2, // Restitution (bounciness factor))
-                0.01,
-                0.1);
+                0.0, // static friction
+                0.01); // dynamic friction
 
     if (collisionsOccured || !mImpulseConstraintSolver->getConstraints().empty())
     {
