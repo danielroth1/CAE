@@ -2,6 +2,7 @@
 
 // Inlcudes
 #include "GeometricDataFactory.h"
+#include "Polygon2DTopology.h"
 
 #include "modules/mesh_converter/MeshConverter.h"
 #include "scene/data/geometric/Polygon2D.h"
@@ -237,7 +238,7 @@ Polygon3D GeometricDataFactory::createPolygon3DFromPolygon2D(
     Cells cellsOut;
     MeshConverter::instance()->generateMesh(
                 p.getPositions(),
-                p.getFaces(),
+                p.getTopology().retrieveFaces(),
                 verticesOut,
                 outerFacesOut,
                 facesOut,

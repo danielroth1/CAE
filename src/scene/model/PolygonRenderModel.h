@@ -6,6 +6,7 @@
 #include <data_structures/DataStructures.h>
 #include <memory>
 #include <multi_threading/Monitor.h>
+#include <scene/data/geometric/TopologyFace.h>
 #include <vector>
 
 class GeometricDataListener;
@@ -44,7 +45,7 @@ protected:
     // Retrieves either faces from Polygon2D or
     // outer faces from Polygon3D. Retrieved faces
     // are stored in the parameter faces.
-    Faces* retrieveRelevantFaces();
+    std::vector<TopologyFace>* retrieveRelevantFaces();
 
     // Update mPositions with either the world or body space positions
     // from the geometric data depending on the representation type

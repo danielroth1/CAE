@@ -131,13 +131,6 @@ public:
 
 protected:
 
-    // Calcualtes the edges for the given faces.
-    // Avoids duplicated edges. For each edges with
-    // its vertex indices (i0, i1) it is always
-    // i0 < i1. This condition is part of the algorithm
-    // and is true for the resulting edges as well.
-    Edges calculateEdges(const Faces& faces);
-
     // Destructor
     virtual ~Polygon() override;
 

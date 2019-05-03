@@ -5,6 +5,7 @@
 
 #include <data_structures/BoundingBox.h>
 
+// Consider using the functions from ModelUtils instead.
 class GeometricDataUtils
 {
 public:

@@ -7,6 +7,7 @@
 #include <memory>
 
 class Polygon3DData;
+class Polygon3DTopology;
 class PositionData;
 
 class Polygon3D : public Polygon
@@ -53,11 +54,8 @@ public:
     virtual ~Polygon3D() override;
 
     // Getters
-    Edges& getEdges();
-    Edges& getOuterEdges();
-    Faces& getFaces();
-    Faces& getOuterFaces();
-    Cells& getCells();
+    Polygon3DTopology& getTopology();
+    const Polygon3DTopology& getTopology() const;
 
     // Returns a vector of IDs that point to the positions
     // that are part of the outer hull. The outer hull are
@@ -74,6 +72,8 @@ public:
 
     // Polygon interface
 public:
+    virtual void update() override;
+
     virtual Type getType() override;
 
     virtual std::shared_ptr<PolygonData> getData() override;
@@ -85,11 +85,6 @@ public:
     virtual void setTransform(const Eigen::Affine3d& transform) override;
 
 private:
-
-    // Calculates the IDs of all vertices that are part of the
-    // outer hull, which are all vertices that are obtained by
-    // mOuterFaces. No index is duplicated.
-    std::vector<unsigned int> calculateOuterPositionIDs(const Faces& faces);
 
     std::shared_ptr<Polygon3DData> mData;
 

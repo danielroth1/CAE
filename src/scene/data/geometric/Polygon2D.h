@@ -5,6 +5,7 @@
 #include "data_structures/DataStructures.h"
 
 class Polygon2DData;
+class Polygon2DTopology;
 
 // Shared Data Policy:
 // BODY_SPACE: either creates shared data or reuses it when the copy
@@ -40,10 +41,8 @@ public:
               const Vectors& vertexNormalsBS,
               const Faces& faces);
 
-
-    Edges& getEdges();
-
-    Faces& getFaces();
+    Polygon2DTopology& getTopology();
+    const Polygon2DTopology& getTopology() const;
 
     std::shared_ptr<Polygon2DData> getData2D();
 

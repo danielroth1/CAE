@@ -1,9 +1,13 @@
 #include "Polygon2DDataWS.h"
 
-Polygon2DDataWS::Polygon2DDataWS(
-        const Faces& faces,
-        const Edges& edges)
-    : Polygon2DData (faces, edges)
+Polygon2DDataWS::Polygon2DDataWS(const Faces& faces, ID nVertices)
+    : Polygon2DData (faces, nVertices)
+{
+
+}
+
+Polygon2DDataWS::Polygon2DDataWS(const Polygon2DTopology& topology)
+    : Polygon2DData(topology)
 {
 
 }

@@ -12,12 +12,17 @@ class Polygon2DDataBS : public Polygon2DData
 public:
     Polygon2DDataBS(
             const Faces& faces,
-            const Edges& edges,
             const Vectors& positionsBS,
             const Vectors& vertexNormalsBS,
             const Vectors& faceNormalsBS);
 
-    virtual ~Polygon2DDataBS();
+    Polygon2DDataBS(
+            const Polygon2DTopology& topology,
+            const Vectors& positionsBS,
+            const Vectors& vertexNormalsBS,
+            const Vectors& faceNormalsBS);
+
+    virtual ~Polygon2DDataBS() override;
 
     void setPositionsBS(const Vectors& positionsBS);
     void setVertexNormalsBS(const Vectors& vertexNormalsBS);

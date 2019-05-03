@@ -3,10 +3,14 @@
 
 Polygon2DData::Polygon2DData(
         const Faces& faces,
-        const Edges& edges)
+        double nVertices)
 {
-    mTopology = std::make_unique<Polygon2DTopology>(
-                faces, edges);
+    mTopology = std::make_unique<Polygon2DTopology>(faces, nVertices);
+}
+
+Polygon2DData::Polygon2DData(const Polygon2DTopology& topology)
+{
+    mTopology = std::make_unique<Polygon2DTopology>(topology);
 }
 
 Polygon2DData::~Polygon2DData()
@@ -14,14 +18,9 @@ Polygon2DData::~Polygon2DData()
 
 }
 
-Faces& Polygon2DData::getFaces()
+Polygon2DTopology& Polygon2DData::getTopology()
 {
-    return mTopology->getFaces();
-}
-
-Edges& Polygon2DData::getEdges()
-{
-    return mTopology->getEdges();
+    return *mTopology.get();
 }
 
 Polygon::Type Polygon2DData::getType() const

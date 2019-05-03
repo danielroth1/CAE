@@ -1,20 +1,24 @@
 #include "Polygon3DTopology.h"
 
+#include <set>
+
 Polygon3DTopology::Polygon3DTopology(
-        const std::vector<unsigned int>& outerVertexIds,
-        const Edges& edges,
-        const Edges& outerEdges,
         const Faces& faces,
         const Faces& outerFaces,
-        const Cells& cells)
-    : mOuterVertexIds(outerVertexIds)
-    , mEdges(edges)
-    , mOuterEdges(outerEdges)
+        const Cells& cells,
+        ID nVertices)
+    : PolygonTopology (faces, nVertices)
+    , mOuterVertexIds(calculateOuterVertexIDs(outerFaces))
     , mFaces(faces)
-    , mOuterFaces(outerFaces)
     , mCells(cells)
+    , mOuterTopology(outerFaces, nVertices) //mOuterVertexIds.size()) TODO topology
 {
 
+}
+
+Cells& Polygon3DTopology::getCells()
+{
+    return mCells;
 }
 
 std::vector<unsigned int>& Polygon3DTopology::getOuterVertexIds()
@@ -28,52 +32,56 @@ void Polygon3DTopology::setOuterVertexIds(
     mOuterVertexIds = outerVertexIds;
 }
 
-Edges& Polygon3DTopology::getEdges()
+std::vector<TopologyEdge>& Polygon3DTopology::getOuterEdges()
 {
-    return mEdges;
+    return mOuterTopology.getEdges();
 }
 
-void Polygon3DTopology::setEdges(const Edges& edges)
+const std::vector<TopologyEdge>& Polygon3DTopology::getOuterEdges() const
 {
-    mEdges = edges;
+    return mOuterTopology.getEdges();
 }
 
-Edges& Polygon3DTopology::getOuterEdges()
+std::vector<TopologyFace>& Polygon3DTopology::getOuterFaces()
 {
-    return mOuterEdges;
+    return mOuterTopology.getFaces();
 }
 
-void Polygon3DTopology::setOuterEdges(const Edges& outerEdges)
+const std::vector<TopologyFace>& Polygon3DTopology::getOuterFaces() const
 {
-    mOuterEdges = outerEdges;
+    return mOuterTopology.getFaces();
 }
 
-Faces& Polygon3DTopology::getFaces()
+Edges Polygon3DTopology::retrieveOuterEdges() const
 {
-    return mFaces;
+    return mOuterTopology.retrieveEdges();
 }
 
-void Polygon3DTopology::setFaces(const Faces& faces)
+Faces Polygon3DTopology::retrieveOuterFaces() const
 {
-    mFaces = faces;
+    return mOuterTopology.retrieveFaces();
 }
 
-Faces& Polygon3DTopology::getOuterFaces()
+std::vector<unsigned int> Polygon3DTopology::calculateOuterVertexIDs(const Faces& faces)
 {
-    return mOuterFaces;
-}
+    std::vector<unsigned int> outerPositionIds;
 
-void Polygon3DTopology::setOuterFaces(const Faces& outerFaces)
-{
-    mOuterFaces = outerFaces;
-}
+    std::set<unsigned int> idsSet;
+    for (const Face& face : faces)
+    {
+        idsSet.insert(face[0]);
+        idsSet.insert(face[1]);
+        idsSet.insert(face[2]);
+    }
 
-Cells& Polygon3DTopology::getCells()
-{
-    return mCells;
-}
+    outerPositionIds.reserve(idsSet.size());
+    for (unsigned int id : idsSet)
+    {
+        outerPositionIds.push_back(id);
+    }
 
-void Polygon3DTopology::setCells(const Cells& cells)
-{
-    mCells = cells;
+//    std::move(idsSet.begin(), idsSet.end(), outerPositionIds.begin());
+    std::sort(outerPositionIds.begin(), outerPositionIds.end(), std::less<unsigned int>());
+
+    return outerPositionIds;
 }

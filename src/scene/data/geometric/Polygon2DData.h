@@ -10,15 +10,15 @@ class Polygon2DTopology;
 class Polygon2DData : public PolygonData
 {
 public:
-    Polygon2DData(const Faces& faces,
-                  const Edges& edges);
+    Polygon2DData(const Faces& faces, double nVertices);
+
+    Polygon2DData(const Polygon2DTopology& topology);
 
     virtual ~Polygon2DData() override;
 
     virtual BSWSVectors::Type getPositionType() = 0;
 
-    Faces& getFaces();
-    Edges& getEdges();
+    Polygon2DTopology& getTopology();
 
     // PolygonData interface
 public:

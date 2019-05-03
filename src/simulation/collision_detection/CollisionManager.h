@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <proxy/ProxyDefs.h>
+#include <scene/data/geometric/TopologyFace.h>
 #include <simulation/collision_detection/narrow/Collider.h>
 #include <vector>
 
@@ -60,7 +61,7 @@ private:
     };
 
     std::map<unsigned int, double> calculateMinimumDistances(
-            const Faces& faces,
+            const std::vector<TopologyFace>& faces,
             const Vectors& positions);
 
     Domain* mDomain;

@@ -7,6 +7,7 @@
 #include <multi_threading/Monitor.h>
 #include <rendering/buffers/BufferedData.h>
 #include <scene/data/geometric/BSWSVectors.h>
+#include <scene/data/geometric/TopologyFace.h>
 
 class GeometricDataListener;
 class Polygon;
@@ -51,7 +52,7 @@ private:
     // Retrieves either faces from Polygon2D or
     // outer faces from Polygon3D. Retrieved faces
     // are stored in the parameter faces.
-    Faces* retrieveRelevantFaces();
+    std::vector<TopologyFace>* retrieveRelevantFaces();
 
     void getMonitors(
             Monitor<Vectorfs>*& positionsMonitor,

@@ -3,8 +3,10 @@
 #include "GeometricDataUtils.h"
 #include "Polygon3DDataBS.h"
 #include "Polygon3DDataWS.h"
+#include "Polygon3DTopology.h"
 
 #include <scene/data/GeometricDataVisitor.h>
+#include <scene/model/ModelUtils.h>
 #include <set>
 
 Polygon3D::Polygon3D(
@@ -17,17 +19,19 @@ Polygon3D::Polygon3D(
     // World space construtor
     Polygon::initWorldSpace(positionsWS);
     mData = std::make_shared<Polygon3DDataWS>(
-                calculateOuterPositionIDs(faces),
-                calculateEdges(faces),
-                calculateEdges(outerFaces),
                 faces,
                 outerFaces,
-                cells);
+                cells,
+                positionsWS.size());
 
     mOuterVertexNormals.initializeFromWorldSpace(
                 GeometricDataUtils::calculateNormals(positionsWS, outerFaces));
 
-    // TODO: initialize mOuterFaceNormals
+    // initialize mOuterFaceNormals
+    Vectors faceNormals;
+    ModelUtils::calculateFaceNormals<double>(
+                mPositionData.getPositions(), faces, faceNormals);
+    mOuterFaceNormals.initializeFromWorldSpace(faceNormals);
 }
 
 Polygon3D::Polygon3D(
@@ -41,16 +45,18 @@ Polygon3D::Polygon3D(
     // World space construtor
     Polygon::initWorldSpace(positionsWS);
     mData = std::make_shared<Polygon3DDataWS>(
-                calculateOuterPositionIDs(faces),
-                calculateEdges(faces),
-                calculateEdges(outerFaces),
                 faces,
                 outerFaces,
-                cells);
+                cells,
+                positionsWS.size());
 
     mOuterVertexNormals.initializeFromWorldSpace(vertexNormalsWS);
 
-    // TODO: initialize mOuterFaceNormals
+    // initialize mOuterFaceNormals
+    Vectors faceNormals;
+    ModelUtils::calculateFaceNormals<double>(
+                mPositionData.getPositions(), faces, faceNormals);
+    mOuterFaceNormals.initializeFromWorldSpace(faceNormals);
 }
 
 Polygon3D::Polygon3D(
@@ -61,16 +67,15 @@ Polygon3D::Polygon3D(
         const Cells& cells)
     : Polygon(positionsBS, transform)
 {
+    Vectors faceNormals = GeometricDataUtils::calculateNormals(*positionsBS, outerFaces);
     std::shared_ptr<Polygon3DDataBS> dataBS = std::make_shared<Polygon3DDataBS>(
-                calculateOuterPositionIDs(faces),
-                calculateEdges(faces),
-                calculateEdges(outerFaces),
                 faces,
                 outerFaces,
                 cells,
                 mPositionData.getPositionsBS(),
-                GeometricDataUtils::calculateNormals(*positionsBS, outerFaces),
-                Vectors());
+                faceNormals,
+                ModelUtils::calculateFaceNormals<double>(
+                            mPositionData.getPositions(), faces, faceNormals));
 
     mData = dataBS;
     Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
@@ -89,16 +94,15 @@ Polygon3D::Polygon3D(
         const Cells& cells)
     : Polygon (positionsBS, transform)
 {
+    Vectors faceNormals = GeometricDataUtils::calculateNormals(*positionsBS, outerFaces);
     std::shared_ptr<Polygon3DDataBS> dataBS = std::make_shared<Polygon3DDataBS>(
-                calculateOuterPositionIDs(faces),
-                calculateEdges(faces),
-                calculateEdges(outerFaces),
                 faces,
                 outerFaces,
                 cells,
                 mPositionData.getPositionsBS(),
                 vertexNormalsBS,
-                Vectors());
+                ModelUtils::calculateFaceNormals<double>(
+                            mPositionData.getPositions(), faces, faceNormals));
 
     mData = dataBS;
     Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
@@ -113,34 +117,19 @@ Polygon3D::~Polygon3D()
 
 }
 
-Edges& Polygon3D::getEdges()
+Polygon3DTopology& Polygon3D::getTopology()
 {
-    return mData->getEdges();
+    return mData->getTopology();
 }
 
-Edges& Polygon3D::getOuterEdges()
+const Polygon3DTopology& Polygon3D::getTopology() const
 {
-    return mData->getOuterEdges();
-}
-
-Faces& Polygon3D::getOuterFaces()
-{
-    return mData->getOuterFaces();
-}
-
-Faces& Polygon3D::getFaces()
-{
-    return mData->getFaces();
-}
-
-Cells& Polygon3D::getCells()
-{
-    return mData->getCells();
+    return mData->getTopology();
 }
 
 std::vector<unsigned int>& Polygon3D::getOuterPositionIds()
 {
-    return mData->getOuterVertexIds();
+    return mData->getTopology().getOuterVertexIds();
 }
 
 std::shared_ptr<Polygon3DData> Polygon3D::getData3D()
@@ -157,6 +146,14 @@ void Polygon3D::updateBoundingBox()
 void Polygon3D::accept(GeometricDataVisitor& visitor)
 {
     visitor.visit(*this);
+}
+
+void Polygon3D::update()
+{
+    Polygon::update();
+
+    mOuterVertexNormals.update();
+    mOuterFaceNormals.update();
 }
 
 Polygon::Type Polygon3D::getType()
@@ -177,12 +174,9 @@ void Polygon3D::changeRepresentationToBS(const Vector& center)
     {
         std::shared_ptr<Polygon3DDataBS> dataBS =
                 std::make_shared<Polygon3DDataBS>(
-                    mData->getOuterVertexIds(),
-                    mData->getEdges(),
-                    mData->getOuterEdges(),
-                    mData->getFaces(),
-                    mData->getOuterFaces(),
-                    mData->getCells(),
+                    mData->getTopology().retrieveFaces(),
+                    mData->getTopology().retrieveOuterFaces(),
+                    mData->getTopology().getCells(),
                     mPositionData.getPositions(),
                     mOuterVertexNormals.getVectors(),
                     mOuterFaceNormals.getVectors());
@@ -207,12 +201,10 @@ void Polygon3D::changeRepresentationToWS()
     {
         std::shared_ptr<Polygon3DDataWS> dataWS =
                 std::make_shared<Polygon3DDataWS>(
-                    mData->getOuterVertexIds(),
-                    mData->getEdges(),
-                    mData->getOuterEdges(),
-                    mData->getFaces(),
-                    mData->getOuterFaces(),
-                    mData->getCells());
+                    mData->getTopology().retrieveFaces(),
+                    mData->getTopology().retrieveOuterFaces(),
+                    mData->getTopology().getCells(),
+                    dataBS->getPositionsBS().size());
         mData = dataWS;
 
         mPositionData.changeRepresentationToWS();
@@ -228,28 +220,3 @@ void Polygon3D::setTransform(const Affine3d& transform)
     mOuterVertexNormals.setTransform(Affine3d(transform.rotation()));
     mOuterFaceNormals.setTransform(Affine3d(transform.rotation()));
 }
-
-std::vector<unsigned int> Polygon3D::calculateOuterPositionIDs(const Faces& faces)
-{
-    std::vector<unsigned int> outerPositionIds;
-
-    std::set<unsigned int> idsSet;
-    for (const Face& face : faces)
-    {
-        idsSet.insert(face[0]);
-        idsSet.insert(face[1]);
-        idsSet.insert(face[2]);
-    }
-
-    outerPositionIds.reserve(idsSet.size());
-    for (unsigned int id : idsSet)
-    {
-        outerPositionIds.push_back(id);
-    }
-
-//    std::move(idsSet.begin(), idsSet.end(), outerPositionIds.begin());
-    std::sort(outerPositionIds.begin(), outerPositionIds.end(), std::less<unsigned int>());
-
-    return outerPositionIds;
-}
-

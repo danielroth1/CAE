@@ -5,7 +5,9 @@
 #include <simulation/collision_detection/broad/BoundingVolumeHierarchy.h>
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon2D.h>
+#include <scene/data/geometric/Polygon2DTopology.h>
 #include <scene/data/geometric/Polygon3D.h>
+#include <scene/data/geometric/Polygon3DTopology.h>
 #include <simulation/SimulationObject.h>
 #include <simulation/collision_detection/narrow/CollisionSphere.h>
 #include <simulation/rigid/RigidBody.h>
@@ -51,7 +53,7 @@ void CollisionManager::addSimulationObject(
 
         // Calculate minimum distance of each vertex
         std::map<unsigned int, double> minimumDistances = calculateMinimumDistances(
-                    p2->getFaces(), p2->getPositions());
+                    p2->getTopology().getFaces(), p2->getPositions());
 
 //        double diameter = std::numeric_limits<double>::max();
 //        for (auto it : minimumDistances)
@@ -80,10 +82,10 @@ void CollisionManager::addSimulationObject(
             ///////////////////////////////////////////
             // Create Spheres on edges
             ///////////////////////////////////////////
-            for (const Edge& e : p2->getEdges())
+            for (const TopologyEdge& e : p2->getTopology().getEdges())
             {
-                Vector point1 = p2->getPositions()[e[0]];
-                Vector point2 = p2->getPositions()[e[1]];
+                Vector point1 = p2->getPositions()[e.getVertexIds()[0]];
+                Vector point2 = p2->getPositions()[e.getVertexIds()[1]];
 
                 double distance = (point2 - point1).norm();
                 // at least one sphere per edge
@@ -112,11 +114,11 @@ void CollisionManager::addSimulationObject(
 
             // go line by line along the longest side
             const Vectors& p = p2->getPositions();
-            for (const Face& f : p2->getFaces())
+            for (const TopologyFace& f : p2->getTopology().getFaces())
             {
-                Vector vA = p[f[0]];
-                Vector vB = p[f[1]];
-                Vector vC = p[f[2]];
+                Vector vA = p[f.getVertexIds()[0]];
+                Vector vB = p[f.getVertexIds()[1]];
+                Vector vC = p[f.getVertexIds()[2]];
 
                 Vector e1 = vB - vA;
                 Vector e2 = vC - vB;
@@ -204,7 +206,7 @@ void CollisionManager::addSimulationObject(
 
         // Calculate minimum distance of each OUTER vertex
         std::map<unsigned int, double> minimumDistances = calculateMinimumDistances(
-                    p3->getOuterFaces(), p3->getPositions());
+                    p3->getTopology().getOuterFaces(), p3->getPositions());
 
         double maximumDistance = -1;
         for (size_t i = 0; i < p3->getOuterPositionIds().size(); ++i)
@@ -357,17 +359,17 @@ bool CollisionManager::removeListener(CollisionManagerListener* listener)
 }
 
 std::map<unsigned int, double> CollisionManager::calculateMinimumDistances(
-        const Faces& faces,
+        const std::vector<TopologyFace>& faces,
         const Vectors& positions)
 {
     std::map<unsigned int, double> distancePairs; // vertex ID, minimum distance
-    for (const Face& f : faces)
+    for (const TopologyFace& f : faces)
     {
         // combinations of i: (0, 1), (1, 2), (2, 0)
         for (unsigned int i = 0; i < 3; ++i)
         {
-            unsigned int id1 = f[i];
-            unsigned int id2 = f[(i+1)%3];
+            unsigned int id1 = f.getVertexIds()[i];
+            unsigned int id2 = f.getVertexIds()[(i+1)%3];
 
             double distance = (positions[id1] - positions[id2]).norm();
 

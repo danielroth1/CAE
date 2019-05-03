@@ -9,7 +9,9 @@
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon2DData.h>
 #include <scene/data/geometric/Polygon3D.h>
+#include <scene/data/geometric/Polygon3DTopology.h>
 #include <scene/data/geometric/PolygonData.h>
+#include <scene/data/geometric/TopologyFace.h>
 
 #include <rendering/object/RenderLines.h>
 #include <rendering/object/RenderPoints.h>
@@ -176,14 +178,14 @@ void PolygonRenderModelImproved::reset()
     mRenderObjectPositions->lock()->resize(size);
     mRenderObjectNormals->lock()->resize(size);
 
-    Faces* faces = retrieveRelevantFaces();
+    std::vector<TopologyFace>* faces = retrieveRelevantFaces();
     {
         auto facesLock = mRenderObjectFaces->lock();
         facesLock->resize(faces->size());
 
         for (size_t i = 0; i < faces->size(); ++i)
         {
-            facesLock->at(i) = (*faces)[i];
+            facesLock->at(i) = (*faces)[i].getVertexIds();
         }
     }
     mFacesBufferedData->setDataChanged(true);
@@ -298,7 +300,7 @@ void PolygonRenderModelImproved::setVisible(bool visible)
     RenderModel::setVisible(visible);
 }
 
-Faces* PolygonRenderModelImproved::retrieveRelevantFaces()
+std::vector<TopologyFace>* PolygonRenderModelImproved::retrieveRelevantFaces()
 {
     class GetFacesVisitor : public GeometricDataVisitor
     {
@@ -311,15 +313,15 @@ Faces* PolygonRenderModelImproved::retrieveRelevantFaces()
 
         virtual void visit(Polygon2D& polygon2D)
         {
-            faces = &polygon2D.getFaces();
+            faces = &polygon2D.getTopology().getFaces();
         }
 
         virtual void visit(Polygon3D& polygon3D)
         {
             if (rm.mRenderOnlyOuterFaces)
-                faces = &polygon3D.getOuterFaces();
+                faces = &polygon3D.getTopology().getOuterFaces();
             else
-                faces = &polygon3D.getFaces();
+                faces = &polygon3D.getTopology().getFaces();
         }
 
         virtual void visit(GeometricPoint& /*point*/)
@@ -328,7 +330,7 @@ Faces* PolygonRenderModelImproved::retrieveRelevantFaces()
         }
 
         PolygonRenderModelImproved& rm;
-        Faces* faces;
+        std::vector<TopologyFace>* faces;
     } visitor(*this);
 
     mPolygon->accept(visitor);

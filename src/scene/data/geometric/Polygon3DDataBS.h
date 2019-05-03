@@ -9,12 +9,15 @@ class Polygon3DDataBS : public Polygon3DData
 {
 public:
     Polygon3DDataBS(
-            const std::vector<unsigned int>& outerVertexIds,
-            const Edges& edges,
-            const Edges& outerEdges,
             const Faces& faces,
             const Faces& outerFaces,
             const Cells& cells,
+            const Vectors& positionsBS,
+            const Vectors& outerVertexNormalsBS,
+            const Vectors& outerFaceNormalsBS);
+
+    Polygon3DDataBS(
+            const Polygon3DTopology& topology,
             const Vectors& positionsBS,
             const Vectors& outerVertexNormalsBS,
             const Vectors& outerFaceNormalsBS);

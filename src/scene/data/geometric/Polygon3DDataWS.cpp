@@ -3,13 +3,11 @@
 
 
 Polygon3DDataWS::Polygon3DDataWS(
-        const std::vector<unsigned int>& outerVertexIds,
-        const Edges& edges,
-        const Edges& outerEdges,
         const Faces& faces,
         const Faces& outerFaces,
-        const Cells& cells)
-    : Polygon3DData(outerVertexIds, edges, outerEdges, faces, outerFaces, cells)
+        const Cells& cells,
+        ID nVertices)
+    : Polygon3DData(faces, outerFaces, cells, nVertices)
 {
 }
 

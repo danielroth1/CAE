@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <iostream>
 #include <scene/data/geometric/Polygon3D.h>
+#include <scene/data/geometric/Polygon3DTopology.h>
 #include <scene/data/references/GeometricPointRefVisitor.h>
 #include <scene/data/references/GeometricVertexRef.h>
 #include <simulation/constraints/Truncation.h>
@@ -38,7 +39,7 @@ FEMObject::FEMObject(
     ElasticMaterial material;
     material.setFromYoungsPoisson(E, v);
 
-    const Cells& cells = poly3->getCells();
+    const Cells& cells = poly3->getTopology().getCells();
     mFiniteElements.reserve(cells.size());
     for (unsigned int i = 0; i < cells.size(); ++i)
     {

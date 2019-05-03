@@ -22,8 +22,8 @@ public:
     template<class Type>
     static std::vector<Eigen::Matrix<Type, 3, 1>>
     calculateNormals(
-            std::vector<Eigen::Matrix<Type, 3, 1>>& positions,
-            Faces& faces,
+            const std::vector<Eigen::Matrix<Type, 3, 1>>& positions,
+            const Faces& faces,
             std::vector<Eigen::Matrix<Type, 3, 1>>& normals)
     {
         normals.resize(positions.size());
@@ -35,7 +35,7 @@ public:
         // calculate normals for each vertex
         for (size_t i = 0; i < faces.size(); ++i)
         {
-            Face& t = faces[i];
+            const Face& t = faces[i];
 
             // face normals
             Eigen::Matrix<Type, 3, 1> p0 = positions[t[0]];
@@ -68,6 +68,32 @@ public:
         for (Eigen::Matrix<Type, 3, 1>& normal : normals)
         {
             normal.normalize();
+        }
+        return normals;
+    }
+
+    template<class Type>
+    static std::vector<Eigen::Matrix<Type, 3, 1>>
+    calculateFaceNormals(
+            const std::vector<Eigen::Matrix<Type, 3, 1>>& positions,
+            const Faces& faces,
+            std::vector<Eigen::Matrix<Type, 3, 1>>& normals)
+    {
+        // calculate normals for each face
+        normals.resize(faces.size());
+        for (size_t i = 0; i < faces.size(); ++i)
+        {
+            const Face& t = faces[i];
+
+            // face normals
+            Eigen::Matrix<Type, 3, 1> p0 = positions[t[0]];
+            Eigen::Matrix<Type, 3, 1> p1 = positions[t[1]];
+            Eigen::Matrix<Type, 3, 1> p2 = positions[t[2]];
+
+            Eigen::Matrix<Type, 3, 1> normal = (p0 - p1).cross(p0 - p2);
+
+            normal.normalize();
+            normals[i] = normal;
         }
         return normals;
     }

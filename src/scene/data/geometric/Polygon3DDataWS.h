@@ -8,12 +8,10 @@ class Polygon3DDataWS : public Polygon3DData
 {
 public:
     Polygon3DDataWS(
-            const std::vector<unsigned int>& outerVertexIds,
-            const Edges& edges,
-            const Edges& outerEdges,
             const Faces& faces,
             const Faces& outerFaces,
-            const Cells& cells);
+            const Cells& cells,
+            ID nVertices);
 
     virtual ~Polygon3DDataWS();
 };

@@ -6,6 +6,8 @@
 
 #include <scene/data/GeometricDataVisitor.h>
 
+#include <scene/model/ModelUtils.h>
+
 using namespace Eigen;
 
 Polygon2D::Polygon2D(
@@ -15,14 +17,16 @@ Polygon2D::Polygon2D(
 {
     // World space construtor
     Polygon::initWorldSpace(positionsWS);
-    mData = std::make_shared<Polygon2DDataWS>(faces, calculateEdges(faces));
+    mData = std::make_shared<Polygon2DDataWS>(faces, positionsWS.size());
 
     Vectors vertexNormals = GeometricDataUtils::calculateNormals(
                 mPositionData.getPositions(), faces);
-
     mVertexNormals.initializeFromWorldSpace(vertexNormals);
 
-    // TODO: initialize mFaceNormals
+    Vectors faceNormals;
+    ModelUtils::calculateFaceNormals<double>(
+                mPositionData.getPositions(), faces, faceNormals);
+    mFaceNormals.initializeFromWorldSpace(faceNormals);
 }
 
 Polygon2D::Polygon2D(
@@ -33,10 +37,13 @@ Polygon2D::Polygon2D(
 {
     // World space constructor
     Polygon::initWorldSpace(positionsWS);
-    mData = std::make_shared<Polygon2DDataWS>(faces, calculateEdges(faces));
+    mData = std::make_shared<Polygon2DDataWS>(faces, positionsWS.size());
     mVertexNormals.initializeFromWorldSpace(vertexNormalsWS);
 
-    // TODO: initialize mFaceNormals
+    Vectors faceNormals;
+    ModelUtils::calculateFaceNormals<double>(
+                mPositionData.getPositions(), faces, faceNormals);
+    mFaceNormals.initializeFromWorldSpace(faceNormals);
 }
 
 Polygon2D::Polygon2D(
@@ -53,7 +60,6 @@ Polygon2D::Polygon2D(
     std::shared_ptr<Polygon2DDataBS> dataBS =
             std::make_shared<Polygon2DDataBS>(
                 faces,
-                calculateEdges(faces),
                 positionsBS,
                 vertexNormals,
                 faceNormals);
@@ -62,7 +68,8 @@ Polygon2D::Polygon2D(
     Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
     mVertexNormals.initializeFromBodySpace(&dataBS->getVertexNormalsBS(),
                                            Eigen::Affine3d(transform.linear()));
-    // TODO: initialize mFaceNormals
+    mFaceNormals.initializeFromBodySpace(&dataBS->getFaceNormalsBS(),
+                                           Eigen::Affine3d(transform.linear()));
 }
 
 Polygon2D::Polygon2D(
@@ -77,7 +84,6 @@ Polygon2D::Polygon2D(
     std::shared_ptr<Polygon2DDataBS> dataBS =
             std::make_shared<Polygon2DDataBS>(
                 faces,
-                calculateEdges(faces),
                 positionsBS,
                 vertexNormalsBS,
                 Vectors());
@@ -86,17 +92,18 @@ Polygon2D::Polygon2D(
     Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
     mVertexNormals.initializeFromBodySpace(&dataBS->getVertexNormalsBS(),
                                            Eigen::Affine3d(transform.linear()));
-    // TODO: initialize mFaceNormals
+    mFaceNormals.initializeFromBodySpace(&dataBS->getFaceNormalsBS(),
+                                         Eigen::Affine3d(transform.linear()));
 }
 
-Edges& Polygon2D::getEdges()
+Polygon2DTopology& Polygon2D::getTopology()
 {
-    return mData->getEdges();
+    return mData->getTopology();
 }
 
-Faces& Polygon2D::getFaces()
+const Polygon2DTopology& Polygon2D::getTopology() const
 {
-    return mData->getFaces();
+    return mData->getTopology();
 }
 
 std::shared_ptr<Polygon2DData> Polygon2D::getData2D()
@@ -114,6 +121,7 @@ void Polygon2D::update()
     Polygon::update();
 
     mVertexNormals.update();
+    mFaceNormals.update();
 }
 
 void Polygon2D::accept(GeometricDataVisitor& visitor)
@@ -150,8 +158,7 @@ void Polygon2D::changeRepresentationToBS(const Eigen::Vector& center)
     if (dataWS)
     {
         std::shared_ptr<Polygon2DDataBS> dataBS =
-                std::make_shared<Polygon2DDataBS>(mData->getFaces(),
-                                                  mData->getEdges(),
+                std::make_shared<Polygon2DDataBS>(mData->getTopology(),
                                                   mPositionData.getPositions(),
                                                   mVertexNormals.getVectors(),
                                                   mFaceNormals.getVectors());
@@ -175,8 +182,7 @@ void Polygon2D::changeRepresentationToWS()
     if (dataBS)
     {
         std::shared_ptr<Polygon2DDataWS> dataWS =
-                std::make_shared<Polygon2DDataWS>(mData->getFaces(),
-                                                  mData->getEdges());
+                std::make_shared<Polygon2DDataWS>(mData->getTopology());
         mData = dataWS;
 
         mPositionData.changeRepresentationToWS();

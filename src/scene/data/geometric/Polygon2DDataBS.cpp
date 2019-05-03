@@ -3,11 +3,23 @@
 
 Polygon2DDataBS::Polygon2DDataBS(
         const Faces& faces,
-        const Edges& edges,
         const Vectors& positionsBS,
         const Vectors& vertexNormalsBS,
         const Vectors& faceNormalsBS)
-    : Polygon2DData(faces, edges)
+    : Polygon2DData(faces, positionsBS.size())
+    , mPositionsBS(positionsBS)
+    , mVertexNormalsBS(vertexNormalsBS)
+    , mFacesNormalsBS(faceNormalsBS)
+{
+
+}
+
+Polygon2DDataBS::Polygon2DDataBS(
+        const Polygon2DTopology& topology,
+        const Vectors& positionsBS,
+        const Vectors& vertexNormalsBS,
+        const Vectors& faceNormalsBS)
+    : Polygon2DData(topology)
     , mPositionsBS(positionsBS)
     , mVertexNormalsBS(vertexNormalsBS)
     , mFacesNormalsBS(faceNormalsBS)

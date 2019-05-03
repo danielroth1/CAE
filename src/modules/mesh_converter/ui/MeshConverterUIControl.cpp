@@ -13,7 +13,9 @@
 
 #include <scene/data/geometric/GeometricPoint.h>
 #include <scene/data/geometric/Polygon2D.h>
+#include <scene/data/geometric/Polygon2DTopology.h>
 #include <scene/data/geometric/Polygon3D.h>
+#include <scene/data/geometric/Polygon3DTopology.h>
 
 #include <ui/UIControl.h>
 
@@ -130,16 +132,18 @@ void MeshConverterUIControl::processGeometricData(GeometricData* gd)
 
         virtual void visit(Polygon2D& polygon2D)
         {
-            mcc.mWidget->updateGeometricData(static_cast<int>(polygon2D.getPositions().size()),
-                                             static_cast<int>(polygon2D.getFaces().size()),
-                                             0);
+            mcc.mWidget->updateGeometricData(
+                        static_cast<int>(polygon2D.getPositions().size()),
+                        static_cast<int>(polygon2D.getTopology().getFaces().size()),
+                        0);
         }
 
         virtual void visit(Polygon3D& polygon3D)
         {
-            mcc.mWidget->updateGeometricData(static_cast<int>(polygon3D.getPositions().size()),
-                                             static_cast<int>(polygon3D.getFaces().size()),
-                                             static_cast<int>(polygon3D.getCells().size()));
+            mcc.mWidget->updateGeometricData(
+                        static_cast<int>(polygon3D.getPositions().size()),
+                        static_cast<int>(polygon3D.getTopology().getFaces().size()),
+                        static_cast<int>(polygon3D.getTopology().getCells().size()));
         }
 
         virtual void visit(GeometricPoint& /*point*/)
