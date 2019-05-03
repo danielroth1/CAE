@@ -10,6 +10,21 @@ PolygonTopology::PolygonTopology(const Faces& faces, ID nVertices)
     buildTopology(faces, nVertices, mVertices, mEdges, mFaces);
 }
 
+TopologyVertex& PolygonTopology::getVertex(ID id)
+{
+    return mVertices[id];
+}
+
+TopologyEdge& PolygonTopology::getEdge(ID id)
+{
+    return mEdges[id];
+}
+
+TopologyFace& PolygonTopology::getFace(ID id)
+{
+    return mFaces[id];
+}
+
 std::vector<TopologyVertex>& PolygonTopology::getVertices()
 {
     return mVertices;
@@ -170,7 +185,7 @@ PolygonTopology::calculateEdges(const Faces& faces) const
     {
         for (ID i2 : entry.second)
         {
-            TopologyEdge e;
+            TopologyEdge e(edges.size());
             e.getVertexIds().push_back(entry.first);
             e.getVertexIds().push_back(i2);
             edges.push_back(e);
@@ -191,7 +206,7 @@ void PolygonTopology::buildTopology(
     verticesOut.reserve(nVertices);
     for (ID i = 0; i < nVertices; ++i)
     {
-        verticesOut.push_back(TopologyVertex());
+        verticesOut.push_back(TopologyVertex(verticesOut.size()));
     }
 
     // create set of vertices
@@ -207,7 +222,7 @@ void PolygonTopology::buildTopology(
     edgesOut.reserve(edgesSet.size());
     for (const std::pair<ID, ID>& p : edgesSet)
     {
-        TopologyEdge te;
+        TopologyEdge te(edgesOut.size());
         // add edge start and end vertex
         te.getVertexIds().push_back(p.first);
         te.getVertexIds().push_back(p.second);
@@ -232,7 +247,7 @@ void PolygonTopology::buildTopology(
     for (ID i = 0; i < faces.size(); ++i)
     {
         const Face& f = faces[i];
-        TopologyFace tFace;
+        TopologyFace tFace(facesOut.size());
         // add surrounding edges
         tFace.getEdgeIds()[0] = edgesMap[makeSmallerPair(f[0], f[1])];
         tFace.getEdgeIds()[1] = edgesMap[makeSmallerPair(f[0], f[2])];

@@ -6,6 +6,7 @@
 
 class Polygon2DData;
 class Polygon2DTopology;
+class TopologyFeature;
 
 // Shared Data Policy:
 // BODY_SPACE: either creates shared data or reuses it when the copy
@@ -46,10 +47,6 @@ public:
 
     std::shared_ptr<Polygon2DData> getData2D();
 
-    virtual void update() override;
-
-    virtual std::shared_ptr<PolygonData> getData() override;
-
     // GeometricData interface
 public:
     void accept(GeometricDataVisitor& visitor) override;
@@ -57,7 +54,18 @@ public:
 
     // Polygon interface
 public:
+
+    virtual void update() override;
+
+    // Checks if the given point is inside the topology. Only tests the
+    // faces that are part of the given feature.
+    // Retruns false, if there are no faces.
+    virtual bool isInside(const TopologyFeature& feature, Eigen::Vector point) override;
+
     virtual Type getType() override;
+
+    virtual std::shared_ptr<PolygonData> getData() override;
+
 
 //    // Is this mehtod even needed?
 //    // It allows to change the representation type but requires to

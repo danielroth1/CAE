@@ -3,6 +3,9 @@
 #include "GeometricDataUtils.h"
 #include "Polygon2DDataBS.h"
 #include "Polygon2DDataWS.h"
+#include "Polygon2DTopology.h"
+#include "TopologyFeature.h"
+#include "TopologyVertex.h"
 
 #include <scene/data/GeometricDataVisitor.h>
 
@@ -111,19 +114,6 @@ std::shared_ptr<Polygon2DData> Polygon2D::getData2D()
     return mData;
 }
 
-std::shared_ptr<PolygonData> Polygon2D::getData()
-{
-    return mData;
-}
-
-void Polygon2D::update()
-{
-    Polygon::update();
-
-    mVertexNormals.update();
-    mFaceNormals.update();
-}
-
 void Polygon2D::accept(GeometricDataVisitor& visitor)
 {
     visitor.visit(*this);
@@ -137,9 +127,27 @@ void Polygon2D::updateBoundingBox()
                 mBoundingBox);
 }
 
+void Polygon2D::update()
+{
+    Polygon::update();
+
+    mVertexNormals.update();
+    mFaceNormals.update();
+}
+
+bool Polygon2D::isInside(const TopologyFeature& feature, Vector point)
+{
+    return Polygon::isInside(feature, point, mData->getTopology(), mVertexNormals);
+}
+
 Polygon::Type Polygon2D::getType()
 {
     return Type::TWO_D;
+}
+
+std::shared_ptr<PolygonData> Polygon2D::getData()
+{
+    return mData;
 }
 
 //void Polygon2D::changeRepresentationToBS(

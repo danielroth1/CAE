@@ -7,6 +7,8 @@
 #include <scene/data/GeometricData.h>
 
 class PolygonData;
+class PolygonTopology;
+class TopologyFeature;
 
 
 class  Polygon : public GeometricData
@@ -38,6 +40,11 @@ public:
     void setFromBodySpace(Vectors positionsBS);
 
     virtual void update();
+
+    // Checks if the given point is inside the topology. Only tests the
+    // faces that are part of the given feature.
+    // Retruns false, if there are no faces.
+    virtual bool isInside(const TopologyFeature& feature, Eigen::Vector point) = 0;
 
     virtual Type getType() = 0;
 
@@ -133,6 +140,15 @@ protected:
 
     // Destructor
     virtual ~Polygon() override;
+
+    // Checks if the given point is inside the topology. Only tests the
+    // faces that are part of the given feature.
+    // Returns false, if there are no faces.
+    bool isInside(
+            const TopologyFeature& feature,
+            Eigen::Vector point,
+            PolygonTopology& topology,
+            BSWSVectors& vertexNormals);
 
     // Protected Members
 //    PositionData mPositionData;

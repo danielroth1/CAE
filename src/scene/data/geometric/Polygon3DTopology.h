@@ -17,6 +17,8 @@ public:
     Cells& getCells();
 
     // Outer topology methods
+        Polygon2DTopology& getOuterTopology();
+
         std::vector<unsigned int>& getOuterVertexIds();
         void setOuterVertexIds(const std::vector<unsigned int>& outerVertexIds);
 
@@ -24,7 +26,6 @@ public:
         const std::vector<TopologyEdge>& getOuterEdges() const;
         std::vector<TopologyFace>& getOuterFaces();
         const std::vector<TopologyFace>& getOuterFaces() const;
-
 
         Edges retrieveOuterEdges() const;
         Faces retrieveOuterFaces() const;

@@ -1,6 +1,7 @@
 #include "TopologyFace.h"
 
-TopologyFace::TopologyFace()
+TopologyFace::TopologyFace(ID id)
+    : TopologyFeature(id)
 {
 
 }

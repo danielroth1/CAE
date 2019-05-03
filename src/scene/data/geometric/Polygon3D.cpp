@@ -156,6 +156,15 @@ void Polygon3D::update()
     mOuterFaceNormals.update();
 }
 
+bool Polygon3D::isInside(const TopologyFeature& feature, Vector point)
+{
+    return Polygon::isInside(
+                feature,
+                point,
+                mData->getTopology().getOuterTopology(), // TODO: make this const?
+                mOuterVertexNormals);
+}
+
 Polygon::Type Polygon3D::getType()
 {
     return Type::THREE_D;

@@ -9,6 +9,7 @@
 class Polygon3DData;
 class Polygon3DTopology;
 class PositionData;
+class TopologyFeature;
 
 class Polygon3D : public Polygon
 {
@@ -65,6 +66,7 @@ public:
 
     std::shared_ptr<Polygon3DData> getData3D();
 
+
     // GeometricData interface
 public:
     void updateBoundingBox() override;
@@ -73,6 +75,11 @@ public:
     // Polygon interface
 public:
     virtual void update() override;
+
+    // Checks if the given point is inside the outer topology. Only tests the
+    // faces that are part of the given feature.
+    // Retruns false, if there are no faces.
+    virtual bool isInside(const TopologyFeature& feature, Eigen::Vector point) override;
 
     virtual Type getType() override;
 

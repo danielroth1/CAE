@@ -1,4 +1,5 @@
 #include "Polygon.h"
+#include "PolygonTopology.h"
 
 #include <iostream>
 #include <map>
@@ -109,4 +110,55 @@ BSWSVectors::Type Polygon::getPositionType()
 Polygon::~Polygon()
 {
 
+}
+
+bool Polygon::isInside(
+        const TopologyFeature& feature,
+        Vector point,
+        PolygonTopology& topology,
+        BSWSVectors& vertexNormals)
+{
+    auto inside = [=](ID faceId) mutable
+    {
+        ID vertexId = topology.getFace(faceId).getVertexIds()[0];
+        return vertexNormals.getVector(faceId).dot(point - mPositionData.getPosition(vertexId)) < 0;
+    };
+
+    switch(feature.getType())
+    {
+    case TopologyFeature::Type::VERTEX:
+    {
+        const TopologyVertex& vertex = static_cast<const TopologyVertex&>(feature);
+
+        if (vertex.getFaceIds().empty())
+            return false;
+
+        for (ID faceId : vertex.getFaceIds())
+        {
+            if (!inside(faceId))
+                return false;
+        }
+        break;
+    }
+    case TopologyFeature::Type::EDGE:
+    {
+        const TopologyEdge& edge = static_cast<const TopologyEdge&>(feature);
+
+        if (edge.getFaceIds().empty())
+            return false;
+
+        for (ID faceId : edge.getFaceIds())
+        {
+            if (!inside(faceId))
+                return false;
+        }
+        break;
+    }
+    case TopologyFeature::Type::FACE:
+    {
+        const TopologyFace& face = static_cast<const TopologyFace&>(feature);
+        return inside(face.getID());
+    }
+    }
+    return true;
 }

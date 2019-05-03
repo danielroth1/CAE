@@ -1,6 +1,17 @@
 #include "TopologyFeature.h"
 
-TopologyFeature::TopologyFeature()
+TopologyFeature::TopologyFeature(ID id)
+    : mId(id)
 {
 
+}
+
+TopologyFeature::~TopologyFeature()
+{
+
+}
+
+ID TopologyFeature::getID() const
+{
+    return mId;
 }

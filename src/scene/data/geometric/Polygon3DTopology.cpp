@@ -21,6 +21,11 @@ Cells& Polygon3DTopology::getCells()
     return mCells;
 }
 
+Polygon2DTopology& Polygon3DTopology::getOuterTopology()
+{
+    return mOuterTopology;
+}
+
 std::vector<unsigned int>& Polygon3DTopology::getOuterVertexIds()
 {
     return mOuterVertexIds;

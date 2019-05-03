@@ -1,7 +1,8 @@
 #include "TopologyEdge.h"
 
 
-TopologyEdge::TopologyEdge()
+TopologyEdge::TopologyEdge(ID id)
+    : TopologyFeature(id)
 {
     mVertices.reserve(2);
     mFaces.reserve(2);

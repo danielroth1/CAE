@@ -21,7 +21,7 @@ class PolygonTopology
 public:
     PolygonTopology(const Faces& faces, ID nVertices);
 
-    TopologyVertex& getVertex(ID iD);
+    TopologyVertex& getVertex(ID id);
     TopologyEdge& getEdge(ID id);
     TopologyFace& getFace(ID id);
 
