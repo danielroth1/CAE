@@ -165,9 +165,9 @@ bool Polygon3D::isInside(const TopologyFeature& feature, Vector point)
                 mOuterVertexNormals);
 }
 
-Polygon::Type Polygon3D::getType()
+Polygon::DimensionType Polygon3D::getDimensionType() const
 {
-    return Type::THREE_D;
+    return DimensionType::THREE_D;
 }
 
 std::shared_ptr<PolygonData> Polygon3D::getData()

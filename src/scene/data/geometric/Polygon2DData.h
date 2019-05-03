@@ -22,7 +22,7 @@ public:
 
     // PolygonData interface
 public:
-    virtual Polygon::Type getType() const override;
+    virtual Polygon::DimensionType getDimensionType() const override;
 
 private:
     std::unique_ptr<Polygon2DTopology> mTopology;

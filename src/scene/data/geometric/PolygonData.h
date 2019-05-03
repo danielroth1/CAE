@@ -9,7 +9,7 @@ public:
     PolygonData();
     virtual ~PolygonData();
 
-    virtual Polygon::Type getType() const = 0;
+    virtual Polygon::DimensionType getDimensionType() const = 0;
 };
 
 #endif // POLYGONDATA_H

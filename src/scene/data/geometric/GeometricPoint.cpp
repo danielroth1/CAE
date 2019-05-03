@@ -34,6 +34,11 @@ void GeometricPoint::setPosition(const Vector& position)
     mPosition = position;
 }
 
+GeometricData::Type GeometricPoint::getType() const
+{
+    return Type::POINT;
+}
+
 size_t GeometricPoint::getSize()
 {
     return 1;

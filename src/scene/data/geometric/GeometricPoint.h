@@ -15,6 +15,7 @@ public:
 
     // GeometricData interface
 public:
+    Type getType() const override;
     void updateBoundingBox() override;
     void accept(GeometricDataVisitor& visitor) override;
     Vector& getPosition(size_t index) override;

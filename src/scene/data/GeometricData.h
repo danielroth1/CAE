@@ -42,8 +42,16 @@ class GeometricDataVisitor;
 class GeometricData : public std::enable_shared_from_this<GeometricData>
 {
 public:
+
+    enum class Type
+    {
+        POINT, POLYGON
+    };
+
     GeometricData();
     virtual ~GeometricData();
+
+    virtual Type getType() const = 0;
 
     // Updates the bounding box.
     // The bounding box surrounds this whole object.

@@ -25,7 +25,7 @@ public:
 
     // PolygonData interface
 public:
-    virtual Polygon::Type getType() const;
+    virtual Polygon::DimensionType getDimensionType() const;
 
 private:
 

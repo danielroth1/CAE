@@ -11,10 +11,10 @@ class PolygonTopology;
 class TopologyFeature;
 
 
-class  Polygon : public GeometricData
+class Polygon : public GeometricData
 {
 public:
-    enum class Type
+    enum class DimensionType
     {
         TWO_D, THREE_D
     };
@@ -46,12 +46,14 @@ public:
     // Retruns false, if there are no faces.
     virtual bool isInside(const TopologyFeature& feature, Eigen::Vector point) = 0;
 
-    virtual Type getType() = 0;
+    virtual DimensionType getDimensionType() const = 0;
 
     virtual std::shared_ptr<PolygonData> getData() = 0;
 
     // GeometricData interface
 public:
+    virtual Type getType() const override;
+
     // Position with index
     virtual Vector& getPosition(size_t index) override;
 

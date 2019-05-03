@@ -140,9 +140,9 @@ bool Polygon2D::isInside(const TopologyFeature& feature, Vector point)
     return Polygon::isInside(feature, point, mData->getTopology(), mVertexNormals);
 }
 
-Polygon::Type Polygon2D::getType()
+Polygon::DimensionType Polygon2D::getDimensionType() const
 {
-    return Type::TWO_D;
+    return DimensionType::TWO_D;
 }
 
 std::shared_ptr<PolygonData> Polygon2D::getData()

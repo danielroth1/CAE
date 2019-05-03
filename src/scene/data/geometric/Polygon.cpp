@@ -37,6 +37,11 @@ void Polygon::update()
     mPositionData.update();
 }
 
+GeometricData::Type Polygon::getType() const
+{
+    return Type::POLYGON;
+}
+
 Vectors& Polygon::getPositions()
 {
     return mPositionData.getPositions();

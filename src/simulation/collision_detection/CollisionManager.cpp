@@ -45,9 +45,9 @@ void CollisionManager::addSimulationObject(
 
     // Create CollisionSpheres on vertices of Polygon2D or outer vertices of Polygon3D
     std::vector<std::shared_ptr<CollisionObject>> collisionObjects;
-    switch (polygon->getType())
+    switch (polygon->getDimensionType())
     {
-    case Polygon::Type::TWO_D:
+    case Polygon::DimensionType::TWO_D:
     {
         std::shared_ptr<Polygon2D> p2 = std::static_pointer_cast<Polygon2D>(polygon);
 
@@ -200,7 +200,7 @@ void CollisionManager::addSimulationObject(
 
         break;
     }
-    case Polygon::Type::THREE_D:
+    case Polygon::DimensionType::THREE_D:
     {
         std::shared_ptr<Polygon3D> p3 = std::static_pointer_cast<Polygon3D>(polygon);
 

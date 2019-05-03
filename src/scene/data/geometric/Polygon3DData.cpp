@@ -27,7 +27,7 @@ Polygon3DTopology& Polygon3DData::getTopology()
     return *mTopology.get();
 }
 
-Polygon::Type Polygon3DData::getType() const
+Polygon::DimensionType Polygon3DData::getDimensionType() const
 {
-    return Polygon::Type::THREE_D;
+    return Polygon::DimensionType::THREE_D;
 }

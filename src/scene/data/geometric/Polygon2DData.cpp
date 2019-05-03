@@ -23,7 +23,7 @@ Polygon2DTopology& Polygon2DData::getTopology()
     return *mTopology.get();
 }
 
-Polygon::Type Polygon2DData::getType() const
+Polygon::DimensionType Polygon2DData::getDimensionType() const
 {
-    return Polygon::Type::TWO_D;
+    return Polygon::DimensionType::TWO_D;
 }

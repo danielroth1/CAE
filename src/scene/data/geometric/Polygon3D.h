@@ -81,7 +81,7 @@ public:
     // Retruns false, if there are no faces.
     virtual bool isInside(const TopologyFeature& feature, Eigen::Vector point) override;
 
-    virtual Type getType() override;
+    virtual DimensionType getDimensionType() const override;
 
     virtual std::shared_ptr<PolygonData> getData() override;
 
