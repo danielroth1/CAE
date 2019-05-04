@@ -8,9 +8,11 @@
 
 CollisionSphere::CollisionSphere(
         SimulationPointRef pointRef,
-        double radius)
+        double radius,
+        const std::shared_ptr<TopologyFeature>& topologyFeature)
     : mPointRef(pointRef)
     , mRadius(radius)
+    , mFeature(topologyFeature)
 {
 
 }
@@ -51,6 +53,11 @@ ID CollisionSphere::getVertexIndex()
 
     mPointRef.getGeometricPointRef()->accept(visitor);
     return visitor.index;
+}
+
+const std::shared_ptr<TopologyFeature>& CollisionSphere::getTopologyFeature() const
+{
+    return mFeature;
 }
 
 void CollisionSphere::accept(CollisionObjectVisitor& visitor)

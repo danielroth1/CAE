@@ -5,13 +5,15 @@
 
 #include <simulation/references/SimulationPointRef.h>
 
-
+class TopologyFeature;
 
 class CollisionSphere : public CollisionObject
 {
 public:
+
     CollisionSphere(SimulationPointRef pointRef,
-                    double radius);
+                    double radius,
+                    const std::shared_ptr<TopologyFeature>& topologyFeature = nullptr);
 
     double getRadius() const;
 
@@ -21,6 +23,8 @@ public:
 
     ID getVertexIndex();
 
+    const std::shared_ptr<TopologyFeature>& getTopologyFeature() const;
+
     // CollisionObject interface
 public:
     virtual void accept(CollisionObjectVisitor& visitor) override;
@@ -29,6 +33,7 @@ public:
 private:
     SimulationPointRef mPointRef;
     double mRadius;
+    std::shared_ptr<TopologyFeature> mFeature;
 };
 
 #endif // COLLISIONSPHERE_H

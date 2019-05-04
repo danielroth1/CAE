@@ -5,6 +5,13 @@
 #include <iostream>
 #include <new>
 
+#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/TopologyFeature.h>
+
+#include <simulation/SimulationObject.h>
+
+#include <scene/data/GeometricData.h>
+
 Collider::Collider()
     : mCollisionObjectDispatcher(*this)
     , mCollisionSphereDispatcher(*this)
@@ -94,6 +101,35 @@ bool Collider::collides(
     Eigen::Vector pointB = cs2.getPosition() + cs2.getRadius() * normal;
 
     double depth = (pointA - pointB).norm();
+
+    // if the collision sphere is part of a polygon, it has a topological feature,
+    // and point2 is inside that polyong w.r.t. the feature, then invert the normal
+//    if (cs1.getPointRef().get
+    bool isInside = false;
+    if (cs1.getTopologyFeature() != nullptr){
+        GeometricData* g1 = cs1.getPointRef().getSimulationObject()->getGeometricData();
+        if (g1->getType() == GeometricData::Type::POLYGON)
+        {
+            Polygon* p1 = static_cast<Polygon*>(g1);
+            isInside = p1->isInside(*cs1.getTopologyFeature().get(), cs2.getPosition());
+        }
+    }
+
+    if (!isInside && cs2.getTopologyFeature() != nullptr)
+    {
+        GeometricData* g2 = cs2.getPointRef().getSimulationObject()->getGeometricData();
+        if (g2->getType() == GeometricData::Type::POLYGON)
+        {
+            Polygon* p2 = static_cast<Polygon*>(g2);
+            isInside = p2->isInside(*cs2.getTopologyFeature().get(), cs1.getPosition());
+        }
+    }
+
+    // if is inside, revert the normal
+    if (isInside)
+    {
+        normal *= -1;
+    }
 
     // Calculate normal
     new (&collisionReturnValue) Collision(cs1.getPointRef().getSimulationObject(),
