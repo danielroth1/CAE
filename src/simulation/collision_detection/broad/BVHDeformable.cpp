@@ -145,7 +145,7 @@ BVHNode* BVHDeformable::initializeWithKDTreeRec(
 
     // find index of biggest axis
     Eigen::Vector min = std::numeric_limits<double>::max() * Eigen::Vector::Ones();
-    Eigen::Vector max = Eigen::Vector::Zero();
+    Eigen::Vector max = -std::numeric_limits<double>::max() * Eigen::Vector::Ones();
     for (const std::shared_ptr<BVSphere>& sphere : spheres)
     {
         min = min.cwiseMin(sphere->getPosition());
