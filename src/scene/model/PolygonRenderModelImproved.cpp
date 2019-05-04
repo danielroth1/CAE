@@ -33,11 +33,13 @@ PolygonRenderModelImproved::PolygonRenderModelImproved(
         RenderModelManager* renderModelManager,
         std::shared_ptr<Polygon> polygon,
         bool renderOnlyOuterFaces,
-        bool renderVertexNormals)
+        bool renderVertexNormals,
+        bool renderFaceNormals)
     : mRenderModelManager(renderModelManager)
     , mPolygon(polygon)
     , mRenderOnlyOuterFaces(renderOnlyOuterFaces)
     , mRenderVertexNormals(renderVertexNormals)
+    , mRenderFaceNormals(renderFaceNormals)
 {
     mRequiresUpdate = false;
     mCurrentlyRenderedCenter = Eigen::Vector::Zero();
@@ -191,7 +193,7 @@ void PolygonRenderModelImproved::reset()
     mFacesBufferedData->setDataChanged(true);
 
     // render normals
-    if (mRenderVertexNormals)
+    if (mRenderVertexNormals || mRenderFaceNormals)
     {
         mRenderLinesNormals = std::make_shared<RenderLines>();
         mRenderPoints = std::make_shared<RenderPoints>();
@@ -269,11 +271,12 @@ void PolygonRenderModelImproved::addToRenderer(Renderer* renderer)
     mRenderPolygons->addRenderPolygonsData(mRenderPolygonsData);
     renderer->addRenderObject(mRenderPolygons);
 //    renderer->addRenderObject(mRenderPolygonsData);
-    if (mRenderVertexNormals)
-    {
+
+    if (mRenderLinesNormals)
         renderer->addRenderObject(mRenderLinesNormals);
+
+    if (mRenderPoints)
         renderer->addRenderObject(mRenderPoints);
-    }
 }
 
 void PolygonRenderModelImproved::removeFromRenderer(Renderer* renderer)
@@ -282,11 +285,12 @@ void PolygonRenderModelImproved::removeFromRenderer(Renderer* renderer)
     if (mRenderPolygons->getData().size() == 0)
         renderer->removeRenderObject(mRenderPolygons);
 //    renderer->removeRenderObject(mRenderPolygonsData);
-    if (mRenderVertexNormals)
-    {
+
+    if (mRenderLinesNormals)
         renderer->removeRenderObject(mRenderLinesNormals);
+
+    if (mRenderPoints)
         renderer->removeRenderObject(mRenderPoints);
-    }
 }
 
 void PolygonRenderModelImproved::setVisible(bool visible)
@@ -444,7 +448,13 @@ void PolygonRenderModelImproved::updatePositions()
 
 void PolygonRenderModelImproved::updateNormalLines()
 {
-    // Lines
+    if (!mRenderVertexNormals && !mRenderLinesNormals)
+        return;
+
+    float normalLineLength = 0.3f;
+
+    // vertex normals
+    if (mRenderVertexNormals)
     {
         auto lines = mRenderLinesNormals->getLines().lock();
         auto points = mRenderPoints->getPoints().lock();
@@ -455,12 +465,12 @@ void PolygonRenderModelImproved::updateNormalLines()
         lines->resize(2 * normals->size());
         points->resize(normals->size());
 
-        float normalLineLength = 0.1f;
+        Eigen::Affine3f transform = mPolygon->getTransform().cast<float>();
 
         for (size_t i = 0; i < normals->size(); ++i)
-        {
+        {    
             // calculate center of face
-            Vectorf source = positions->at(i);
+            Vectorf source = transform * positions->at(i);
 
             // draw line in direction of normal
             Vectorf target = source + normalLineLength * normals->at(i);
@@ -472,7 +482,58 @@ void PolygonRenderModelImproved::updateNormalLines()
         }
     }
 
+    if (mRenderFaceNormals)
+    {
+        auto lines = mRenderLinesNormals->getLines().lock();
+        auto points = mRenderPoints->getPoints().lock();
+
+        auto positions = mRenderObjectPositions->lock();
+        auto facesLock = mRenderObjectFaces->lock();
+
+        // face normals
+        Vectorfs faceNormals;
+        ModelUtils::calculateFaceNormals<float>(
+                    *positions,
+                    *facesLock,
+                    faceNormals);
+
+        // if mRenderVertexNormals is true, lines and points were already
+        // correctly resized in this method and are appended.
+        size_t startingIndex;
+        if (mRenderVertexNormals)
+            startingIndex = lines->size();
+        else
+            startingIndex = 0;
+
+        lines->resize(startingIndex + 2 * faceNormals.size());
+        points->resize(startingIndex + faceNormals.size());
+
+        Eigen::Affine3f transform = mPolygon->getTransform().cast<float>();
+        for (size_t i = 0; i < faceNormals.size(); ++i)
+        {
+            Vectorf pos = Vectorf::Zero();
+            for (size_t j = 0; j < 3; ++j)
+            {
+                pos += positions->at(facesLock->at(i)[j]);
+            }
+            pos /= 3;
+
+            // calculate center of face
+            Vectorf source = transform * pos;
+
+            // draw line in direction of normal
+            Vectorf target = source +
+                    normalLineLength * transform.linear() * faceNormals.at(i);
+
+            (*lines)[startingIndex + 2 * i] = source;
+            (*lines)[startingIndex + 2 * i + 1] = target;
+
+            (*points)[startingIndex + i] = source;
+        }
+    }
+
     mRenderLinesNormals->update();
+    mRenderPoints->update();
 }
 
 void PolygonRenderModelImproved::updateTransform()

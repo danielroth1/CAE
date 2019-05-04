@@ -26,11 +26,26 @@ public:
     // Polygon2D and Polygon3D.
     // \param renderOnlyOuterFaces - if true, only the outer faces of a Polygon3D are renderd
     //          if the given Polygon is of type Polygon2D, this variable has no effect.
+    // \param renderVertexNormals - render the vertex normals. This can be a costly
+    //          operation if there are a lot of faces because for each face a line
+    //          is rendered and rendering lines currently is rather slow.
+    // \param renderFaceNormal - this is even slower than renderVertexNormals for
+    //          the same reasons and additionally it requires the recalculation
+    //          of all face normals in each update step.
+    //          The last part can be avoided for rigid bodies but this isn't
+    //          implemented yet.
+    //
+    // Note: currently the vertex and (if renderFaceNormal) face normals are
+    // recalculated in each update() step. This is only necessary for the simulation
+    // of Polygons in WORLD_SPACE (e.g. deformables) and not polygons in
+    // BODY_SPACE representation (e.g. rigids).
+    //
     PolygonRenderModelImproved(
             RenderModelManager* renderModelManager,
             std::shared_ptr<Polygon> polygon,
             bool renderOnlyOuterFaces = true,
-            bool renderVertexNormals = false);
+            bool renderVertexNormals = false,
+            bool renderFaceNormals = false);
 
     virtual ~PolygonRenderModelImproved() override;
 
@@ -111,6 +126,7 @@ private:
     bool mRenderOnlyOuterFaces;
 
     bool mRenderVertexNormals;
+    bool mRenderFaceNormals;
 };
 
 #endif // POLYGONRENDERMODELIMPROVED_H
