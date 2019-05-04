@@ -185,13 +185,13 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 
 void GLWidget::paintGL()
 {
-    START_TIMING("GLWidget::paintGL()")
+    START_TIMING_RENDERING("GLWidget::paintGL()")
 
     mUiControl->handlePreRenderingStep();
     if (mRenderer)
     {
         // clear and set camera
-        START_TIMING("GLWidget::clear(), gluLookAt() usw.")
+        START_TIMING_RENDERING("GLWidget::clear(), gluLookAt() usw.")
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
@@ -200,7 +200,7 @@ void GLWidget::paintGL()
                   cameraLookAt.x(), cameraLookAt.y(), cameraLookAt.z(),
                   0.0, 1.0, 0.0);
         mUiControl->handleProjectionUpdated();
-        STOP_TIMING;
+        STOP_TIMING_RENDERING;
 //        const double w = width();
 //        const double h = height();
     //    std::cout << w << ", " << h << "\n";
@@ -238,11 +238,11 @@ void GLWidget::paintGL()
             mFramesInThisSecond = 0;
         }
     }
-//    START_TIMING("GLWidget::glFinish()")
+//    START_TIMING_RENDERING("GLWidget::glFinish()")
 //    glFinish();
-//    STOP_TIMING
+//    STOP_TIMING_RENDERING
 
-    STOP_TIMING
+    STOP_TIMING_RENDERING
 }
 
 void GLWidget::angleToDir()

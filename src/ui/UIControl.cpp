@@ -477,21 +477,21 @@ void UIControl::handleProjectionUpdated()
 
 void UIControl::handlePreRenderingStep()
 {
-    START_TIMING("UIControl::handlePreRenderingStep()")
+    START_TIMING_RENDERING("UIControl::handlePreRenderingStep()")
     if (mRenderControl)
     {
-        START_TIMING("Renderer::handlePreRenderingStep()")
+        START_TIMING_RENDERING("Renderer::handlePreRenderingStep()")
         mRenderControl->handlePreRenderingStep();
-        STOP_TIMING
-        START_TIMING("Other handlePreRenderingStep()")
+        STOP_TIMING_RENDERING
+        START_TIMING_RENDERING("Other handlePreRenderingStep()")
         mAc->handlePreRenderingStep();
         if (mSelectionControl)
             mSelectionControl->updateModels();
-        STOP_TIMING
+        STOP_TIMING_RENDERING
 //    if (mSelectionControl && mSelectionControl->getSelectionModel())
 //        mSelectionControl->getSelectionModel()->updatePoints();
     }
-    STOP_TIMING
+    STOP_TIMING_RENDERING
 }
 
 void UIControl::handleCreateGroupButtonPressed()

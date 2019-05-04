@@ -4,6 +4,8 @@
 #include <simulation/collision_detection/narrow/CollisionSphere.h>
 #include <simulation/collision_detection/narrow/CollisionTriangle.h>
 
+#include <times/timing.h>
+
 BVSphere::BVSphere(
         const Eigen::Vector& position,
         double radius)
@@ -45,6 +47,7 @@ void BVSphere::update(CollisionObject& collisionObject)
 
 void BVSphere::update(BoundingVolume* bv1, BoundingVolume* bv2)
 {
+//    START_TIMING_SIMULATION("BVSphere::update()");
     BVSphere* bvSphere1 = static_cast<BVSphere*>(bv1);
     BVSphere* bvSphere2 = static_cast<BVSphere*>(bv2);
 
@@ -68,7 +71,7 @@ void BVSphere::update(BoundingVolume* bv1, BoundingVolume* bv2)
         if (mRadius != mRadius)
             std::cout << "illegal radius\n";
     }
-
+//    STOP_TIMING_SIMULATION;
 }
 
 Eigen::Vector BVSphere::getPosition() const
@@ -101,9 +104,11 @@ void BVSphere::setPosition(const Vector& position)
 
 void BVSphere::BVIntersectsVisitor::visit(BVSphere* sphere)
 {
+//    START_TIMING_SIMULATION("BVSphere::BVIntersectsVisitor::visit()");
     // distance of center points is smaller than sum of radia
     returnValue = (bvSphere.getPosition() - sphere->getPosition()).norm() <
             (bvSphere.mRadius + sphere->getRadius());
+//    STOP_TIMING_SIMULATION;
 
 //    if (returnValue)
 //        std::cout << "pos1 = " << bvSphere.getPosition().transpose() <<

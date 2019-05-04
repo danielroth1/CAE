@@ -9,19 +9,58 @@
 #include <string>
 #include <vector>
 
+
+// Use the in this class provided macros to do some in code performance
+// profiling analysis.
+// The following macros allow to capture the number of calls and
+// the passed time of each call. A call starts with
+// START_TIMING(<call-name>, <#instance>) and ends with STOP_TIMING(<#instance>)
+//
+// When the program is closed or somewhere inbetween when felt necessary use
+// PRINT_TIMING to print the up to this point captured timing statistics.
+//
+// Call operations can be grouped in instances. Timings are printed all at once
+// per instance.
+// There can be multiple call operations per instance. Call operations of one
+// instance must be used in the same thread to avoid any race conditions.
+// It is recomended to define an own macro (how its done below) for each instance
+// to increase readibily, so it is possible to write in the simulation thread:
+//
+// START_TIMING_SIMULATION(<call-name>)
+// <call-code>
+// STOP_TIMING_SIMULATION
+//
+// instead of
+//
+// START_TIMING(<call-name>, 1)
+// <call-code>
+// STOP_TIMING(1)
 namespace times
 {
-    #define START_TIMING(timerName) \
-        times::Timing::startTiming(timerName);
+    #define START_TIMING(timerName, instance) \
+        times::Timing::getInstance(instance)->startTiming(timerName);
 
-    #define STOP_TIMING \
-        times::Timing::stopTiming();
+    #define STOP_TIMING(instance) \
+        times::Timing::getInstance(instance)->stopTiming();
 
-    #define INIT_TIMING \
-        times::Timing::restart();
+    #define INIT_TIMING(instance) \
+        times::Timing::getInstance(instance)->restart();
 
     #define PRINT_TIMING \
-        times::Timing::print();
+        times::Timing::printAll();
+
+// module specific macros
+    #define START_TIMING_RENDERING(timerName) \
+        times::Timing::getInstance(0)->startTiming(timerName);
+
+    #define STOP_TIMING_RENDERING \
+        times::Timing::getInstance(0)->stopTiming();
+
+    #define START_TIMING_SIMULATION(timerName) \
+        times::Timing::getInstance(1)->startTiming(timerName);
+
+    #define STOP_TIMING_SIMULATION \
+        times::Timing::getInstance(1)->stopTiming();
 
     class Timing
     {
@@ -31,7 +70,24 @@ namespace times
         typedef std::chrono::duration<double> Duration; // duration in seconds
         typedef std::time_t Time;
 
-        inline static void restart()
+        static Timing* getInstance(size_t n)
+        {
+            if (n >= mInstances.size())
+            {
+                for (size_t i = mInstances.size(); i < n + 1; ++i)
+                {
+                    mInstances.push_back(new Timing());
+                }
+            }
+            return mInstances[n];
+        }
+
+        static std::vector<Timing*>& getInstances()
+        {
+            return mInstances;
+        }
+
+        inline void restart()
         {
             mTimingMap.clear();
             while (!mStack.empty())
@@ -41,7 +97,7 @@ namespace times
             mTimingOrder.clear();
         }
 
-        inline static TimePoint getCurrentTime()
+        inline TimePoint getCurrentTime()
         {
             return std::chrono::system_clock::now();
         }
@@ -51,7 +107,7 @@ namespace times
 //            return std::chrono::system_clock::to_time_t(timePoint);
 //        }
 
-        inline static double toSeconds(Duration duration)
+        inline double toSeconds(Duration duration)
         {
             return duration.count();
         }
@@ -61,7 +117,7 @@ namespace times
 //            return std::chrono::duration_cast<std::chrono::milliseconds>(duration);
 //        }
 
-        inline static void startTiming(const std::string& name = std::string(""))
+        inline void startTiming(const std::string& name = std::string(""))
         {
             mStack.push(TimingNode(name, getCurrentTime()));
 
@@ -73,7 +129,7 @@ namespace times
             }
         }
 
-        inline static void stopTiming()
+        inline void stopTiming()
         {
             TimingNode& node = mStack.top();
             Duration executionTime = getCurrentTime() - node.mStartingTime;
@@ -89,7 +145,7 @@ namespace times
             mStack.pop();
         }
 
-        inline static void print()
+        inline void print()
         {
             for (const std::string& name : mTimingOrder)
             {
@@ -107,7 +163,19 @@ namespace times
             }
         }
 
+        inline static void printAll()
+        {
+            for (size_t i = 0; i < Timing::getInstances().size(); ++i)
+            {
+                std::cout << "instance #" << i << std::endl;
+                Timing::getInstances()[i]->print();
+            }
+        }
+
     private:
+
+        static std::vector<Timing*> mInstances;
+
         struct TimingNode
         {
             TimingNode(const std::string& _name, TimePoint _startingTime)
@@ -122,11 +190,11 @@ namespace times
         };
 
         // timing name, number of calls, total execution time(seconds), depth
-        static std::map<std::string, std::tuple<size_t, double, size_t>> mTimingMap;
+        std::map<std::string, std::tuple<size_t, double, size_t>> mTimingMap;
 
-        static std::stack<TimingNode> mStack;
+        std::stack<TimingNode> mStack;
 
-        static std::vector<std::string> mTimingOrder;
+        std::vector<std::string> mTimingOrder;
     };
 }
 

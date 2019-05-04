@@ -28,6 +28,7 @@
 #include <simulation/rigid/RigidSimulation.h>
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon3D.h>
+#include <times/timing.h>
 #include "glwidget.h"
 
 using namespace Eigen;
@@ -451,6 +452,7 @@ void SimulationControl::initializeStep()
 
 void SimulationControl::step()
 {
+    START_TIMING_SIMULATION("SimulationControl::step()");
     // Solver step algorithm
     // -> iterate for as long as all collisions are resolved
     // Collision Resolution
@@ -487,7 +489,10 @@ void SimulationControl::step()
     mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
 
     // collision detection on x + x^{FEM}
+    START_TIMING_SIMULATION("CollisionManager::collideAll()");
     bool collisionsOccured = mCollisionManager->collideAll();
+    STOP_TIMING_SIMULATION;
+
     // create collision constraints w.r.t. x + x^{FEM}
     mImpulseConstraintSolver->initializeCollisionConstraints(
                 mCollisionManager->getCollider()->getCollisions(),
@@ -529,6 +534,7 @@ void SimulationControl::step()
     mFEMSimulation->publish();
 
     handleAfterStep();
+    STOP_TIMING_SIMULATION;
 }
 
 void SimulationControl::setCollisionRenderingLevel(int level)

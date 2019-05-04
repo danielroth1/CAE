@@ -134,16 +134,16 @@ void RenderPolygon2D::createBuffers()
         qDebug() << "VBOs are not supported!";
     }
 
-    START_TIMING("create buffers")
+    START_TIMING_RENDERING("create buffers")
     // this hsould allocate the necessary memory
     mPositions.createBuffer();
     mNormals.createBuffer();
     mFaces.createBuffer();
 
-    STOP_TIMING;
-    START_TIMING("refreshBuffers()");
+    STOP_TIMING_RENDERING;
+    START_TIMING_RENDERING("refreshBuffers()");
     refreshBuffers();
-    STOP_TIMING;
+    STOP_TIMING_RENDERING;
 
 }
 
@@ -196,7 +196,7 @@ void RenderPolygon2D::refreshVBO(
 
 void RenderPolygon2D::drawVBO()
 {
-    START_TIMING("RenderPolygon2D::drawVBO2")
+    START_TIMING_RENDERING("RenderPolygon2D::drawVBO2")
     if (mVBOsupported == false)
         return;
     if (!mPositions.isInitialized() ||
@@ -224,7 +224,7 @@ void RenderPolygon2D::drawVBO()
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisableClientState(GL_NORMAL_ARRAY);
     glPopMatrix();
-    STOP_TIMING
+    STOP_TIMING_RENDERING
 }
 
 void RenderPolygon2D::update()

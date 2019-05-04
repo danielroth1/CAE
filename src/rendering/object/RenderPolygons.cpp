@@ -298,7 +298,7 @@ void RenderPolygons::drawArray()
 
 void RenderPolygons::drawVBO()
 {
-    START_TIMING("RenderPolygons::drawVBO2");
+    START_TIMING_RENDERING("RenderPolygons::drawVBO2");
     if (!mVBOsupported || !mConstantData->isInitialized())
         return;
 
@@ -406,7 +406,7 @@ void RenderPolygons::drawVBO()
     }
     }
 
-    STOP_TIMING;
+    STOP_TIMING_RENDERING;
 }
 
 void RenderPolygons::update()

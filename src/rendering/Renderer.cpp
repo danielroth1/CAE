@@ -36,7 +36,7 @@ Domain* Renderer::getDomain()
 
 void Renderer::draw()
 {
-    START_TIMING("Renderer::draw()")
+    START_TIMING_RENDERING("Renderer::draw()")
     if (mEnableWireframe)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else
@@ -52,17 +52,17 @@ void Renderer::draw()
         {
             // refresh buffers needs to be called for world space polygons
             // whichs data changed
-            START_TIMING("RenderObject::refreshBuffers()")
+            START_TIMING_RENDERING("RenderObject::refreshBuffers()")
             ro->refreshBuffers();
-            STOP_TIMING
+            STOP_TIMING_RENDERING
 
-            START_TIMING("RenderObject::draw()")
+            START_TIMING_RENDERING("RenderObject::draw()")
             ro->draw();
-            STOP_TIMING
+            STOP_TIMING_RENDERING
         }
     }
 
-    STOP_TIMING
+    STOP_TIMING_RENDERING
 }
 
 void Renderer::initialize()
@@ -111,14 +111,14 @@ void Renderer::addRenderObjectSlot(std::shared_ptr<RenderObject> ro)
 //    mGLWidget->makeCurrent();
 //    std::cout << "SLOT: add to renderer\n";
 
-    START_TIMING("Renderer::addRenderObjectSlot");
+    START_TIMING_RENDERING("Renderer::addRenderObjectSlot");
     auto it = std::find(mRenderObjects.begin(), mRenderObjects.end(), ro);
     if (it == mRenderObjects.end())
     {
         mRenderObjects.push_back(ro);
         ro->createBuffers();
     }
-    STOP_TIMING;
+    STOP_TIMING_RENDERING;
 
 //    printInfo();
 }
