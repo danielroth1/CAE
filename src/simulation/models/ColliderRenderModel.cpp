@@ -35,7 +35,7 @@ void ColliderRenderModel::update()
             const Collision& c = mCollider->getCollisions()[i];
             Eigen::Vectorf mid = 0.5 * (c.getPointB() - c.getPointA()).cast<float>();
             (*lines)[i * 2] = c.getPointA().cast<float>() + mid + mLineLength * c.getNormal().cast<float>();
-            (*lines)[i * 2 + 1] = c.getPointA().cast<float>() + mid - mLineLength * c.getNormal().cast<float>();
+            (*lines)[i * 2 + 1] = c.getPointA().cast<float>() + mid;// - mLineLength * c.getNormal().cast<float>();
         }
 
         needsUpdate = sizeBefore != lines->size();
