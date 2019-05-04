@@ -67,12 +67,14 @@ void CollisionManager::addSimulationObject(
         ///////////////////////////////////////////
         // One sphere per vertex
         ///////////////////////////////////////////
-//        for (size_t i = 0; i < p2->getPositions().size(); ++i)
-//        {
-////            double radius = minimumDistances[static_cast<unsigned int>(i)] * radiusFactor;
-//            double radius = diameter / 2;
-//            collisionObjects.push_back(new CollisionSphere(SimulationPointRef(so.get(), i), radius));
-//        }
+        for (const TopologyVertex& v : p2->getTopology().getVertices())
+        {
+            collisionObjects.push_back(
+                        std::make_shared<CollisionSphere>(
+                            SimulationPointRef(so.get(), v.getID()),
+                            diameter / 2,
+                            std::make_shared<TopologyVertex>(v)));
+        }
 
 
         if (so->getType() == SimulationObject::Type::RIGID_BODY)
@@ -89,9 +91,9 @@ void CollisionManager::addSimulationObject(
 
                 double distance = (point2 - point1).norm();
                 // at least one sphere per edge
-                int nSpheres = std::max(1, static_cast<int>(floor(distance / diameter)));
+                int nSpheres = std::max(2, static_cast<int>(floor(distance / diameter)));
 
-                for (int i = 0; i < nSpheres; ++i)
+                for (int i = 1; i < nSpheres; ++i)
                 {
                     Vector spherePos = point1 + static_cast<double>(i) / nSpheres * (point2 - point1);
 
@@ -100,7 +102,8 @@ void CollisionManager::addSimulationObject(
                     collisionObjects.push_back(
                                 std::make_shared<CollisionSphere>(
                                     SimulationPointRef(so.get(), polygon.get(), spherePos),
-                                    diameter / 2));
+                                    diameter / 2,
+                                    std::make_shared<TopologyEdge>(e)));
                 }
             }
 
@@ -191,7 +194,8 @@ void CollisionManager::addSimulationObject(
                         collisionObjects.push_back(
                                     std::make_shared<CollisionSphere>(
                                         SimulationPointRef(so.get(), polygon.get(), spherePos),
-                                        diameter / 2));
+                                        diameter / 2,
+                                        std::make_shared<TopologyFace>(f)));
                     }
                 }
 
