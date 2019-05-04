@@ -252,7 +252,8 @@ void RigidBody::updateGeometricData()
     transform.translate(mX);
     transform.rotate(mQ);
     mPolygon->setTransform(transform);
-    mPolygon->updatePositions();
+//    mPolygon->updatePositions();
+    mPolygon->update();
     mPolygon->geometricDataChanged();
 //    mPolygon->getTransform().setIdentity();
 //    mPolygon->getTransform().rotate(mQ);

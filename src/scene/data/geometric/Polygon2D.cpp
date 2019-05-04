@@ -59,7 +59,11 @@ Polygon2D::Polygon2D(
 
     Vectors vertexNormals = GeometricDataUtils::calculateNormals(
                 mPositionData.getPositions(), faces);
-    Vectors faceNormals = Vectors();
+
+    Vectors faceNormals;
+    ModelUtils::calculateFaceNormals<double>(
+                mPositionData.getPositions(), faces, faceNormals);
+
     std::shared_ptr<Polygon2DDataBS> dataBS =
             std::make_shared<Polygon2DDataBS>(
                 faces,
@@ -83,13 +87,17 @@ Polygon2D::Polygon2D(
     : Polygon()
     , mFaceNormals(faces.size())
 {
+    Vectors faceNormals;
+    ModelUtils::calculateFaceNormals<double>(
+                mPositionData.getPositions(), faces, faceNormals);
+
     // Body space constructor
     std::shared_ptr<Polygon2DDataBS> dataBS =
             std::make_shared<Polygon2DDataBS>(
                 faces,
                 positionsBS,
                 vertexNormalsBS,
-                Vectors());
+                faceNormals);
 
     mData = dataBS;
     Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
@@ -137,7 +145,7 @@ void Polygon2D::update()
 
 bool Polygon2D::isInside(const TopologyFeature& feature, Vector point)
 {
-    return Polygon::isInside(feature, point, mData->getTopology(), mVertexNormals);
+    return Polygon::isInside(feature, point, mData->getTopology(), mFaceNormals);
 }
 
 Polygon::DimensionType Polygon2D::getDimensionType() const

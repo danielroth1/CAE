@@ -261,7 +261,7 @@ void PolygonTopology::buildTopology(
         // add this face to all surrounding edges and vertices
         for (ID j = 0; j < 3; ++j)
         {
-            verticesOut[tFace.getVertexIds()[j]].getFaceIds().push_back(j);
+            verticesOut[tFace.getVertexIds()[j]].getFaceIds().push_back(i);
             edgesOut[tFace.getEdgeIds()[j]].getFaceIds().push_back(i);
         }
 

@@ -121,12 +121,18 @@ bool Polygon::isInside(
         const TopologyFeature& feature,
         Vector point,
         PolygonTopology& topology,
-        BSWSVectors& vertexNormals)
+        BSWSVectors& faceNormals)
 {
-    auto inside = [=](ID faceId) mutable
+    auto inside = [&](ID faceId) mutable
     {
         ID vertexId = topology.getFace(faceId).getVertexIds()[0];
-        return vertexNormals.getVector(faceId).dot(point - mPositionData.getPosition(vertexId)) < 0;
+        Eigen::Vector v1 = faceNormals.getVector(faceId);
+        Eigen::Vector v2 = point - mPositionData.getPosition(vertexId);
+        if (v1.dot(v2) < 0)
+        {
+            return true;
+        }
+        return false;
     };
 
     switch(feature.getType())

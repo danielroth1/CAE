@@ -150,7 +150,7 @@ protected:
             const TopologyFeature& feature,
             Eigen::Vector point,
             PolygonTopology& topology,
-            BSWSVectors& vertexNormals);
+            BSWSVectors& faceNormals);
 
     // Protected Members
 //    PositionData mPositionData;

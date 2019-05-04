@@ -162,7 +162,7 @@ bool Polygon3D::isInside(const TopologyFeature& feature, Vector point)
                 feature,
                 point,
                 mData->getTopology().getOuterTopology(), // TODO: make this const?
-                mOuterVertexNormals);
+                mOuterFaceNormals);
 }
 
 Polygon::DimensionType Polygon3D::getDimensionType() const
