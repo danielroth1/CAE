@@ -43,6 +43,7 @@ void RenderLines::drawImmediate()
 
 void RenderLines::drawArray()
 {
+    glLineWidth(3);
     glColor4fv(mColor.data());
 
     // draw in array mode
