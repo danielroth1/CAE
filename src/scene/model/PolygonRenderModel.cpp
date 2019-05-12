@@ -191,9 +191,9 @@ std::vector<TopologyFace>* PolygonRenderModel::retrieveRelevantFaces()
         virtual void visit(Polygon3D& polygon3D)
         {
             if (rm.mRenderOnlyOuterFaces)
-                faces = &polygon3D.getTopology().getOuterFaces();
+                faces = &polygon3D.getTopology3D().getOuterFaces();
             else
-                faces = &polygon3D.getTopology().getFaces();
+                faces = &polygon3D.getTopology3D().getFaces();
         }
 
         virtual void visit(GeometricPoint& /*point*/)

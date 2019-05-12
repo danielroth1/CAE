@@ -15,6 +15,7 @@ public:
     };
 
     ID getID() const;
+    const ID& getIDRef() const;
 
     virtual Type getType() const = 0;
 

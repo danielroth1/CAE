@@ -228,6 +228,16 @@ int SimulationControl::getNumFEMCorrectionIterations() const
     return mNumFEMCorrectionIterations;
 }
 
+void SimulationControl::setInvertNormalsIfNecessary(bool invertNormalsIfNecessary)
+{
+    mCollisionManagerProxy->setInvertNormalsIfNecessary(invertNormalsIfNecessary);
+}
+
+bool SimulationControl::getInvertNormalsIfNecessary() const
+{
+    return mCollisionManager->getInvertNormalsIfNecessary();
+}
+
 //void SimulationControl::repaint()
 //{
 //    if (mUiControl)

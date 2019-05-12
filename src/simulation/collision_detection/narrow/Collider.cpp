@@ -6,6 +6,10 @@
 #include <new>
 
 #include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/Polygon2D.h>
+#include <scene/data/geometric/Polygon2DData.h>
+#include <scene/data/geometric/Polygon3D.h>
+#include <scene/data/geometric/PolygonTopology.h>
 #include <scene/data/geometric/TopologyFeature.h>
 
 #include <simulation/SimulationObject.h>
@@ -13,7 +17,8 @@
 #include <scene/data/GeometricData.h>
 
 Collider::Collider()
-    : mCollisionObjectDispatcher(*this)
+    : mInvertNormalsIfNecessary(false)
+    , mCollisionObjectDispatcher(*this)
     , mCollisionSphereDispatcher(*this)
     , mCollisionTriangleDispatcher(*this)
 {
@@ -40,6 +45,16 @@ void Collider::clear()
 std::vector<Collision>& Collider::getCollisions()
 {
     return mCollisions;
+}
+
+bool Collider::getInvertNormalsIfNecessary() const
+{
+    return mInvertNormalsIfNecessary;
+}
+
+void Collider::setInvertNormalsIfNecessary(bool invertNormalsIfNecessary)
+{
+    mInvertNormalsIfNecessary = invertNormalsIfNecessary;
 }
 
 bool Collider::collides(
@@ -100,35 +115,55 @@ bool Collider::collides(
     Eigen::Vector pointA = cs1.getPosition() - cs1.getRadius() * normal;
     Eigen::Vector pointB = cs2.getPosition() + cs2.getRadius() * normal;
 
+    // calculate previous points
+//    Eigen::Vector normalPrev =
+//            (cs1.getPointRef().getPointPrevious() -
+//             cs2.getPointRef().getPointPrevious()).normalized();
+
+//    Eigen::Vector pointAPrev =
+//            cs1.getPointRef().getPointPrevious() -
+//            cs1.getRadius() * normalPrev;
+
+//    Eigen::Vector pointBPrev =
+//            cs2.getPointRef().getPointPrevious() +
+//            cs2.getRadius() * normalPrev;
+
     double depth = (pointA - pointB).norm();
+    bool isIn = false;
 
-    // if the collision sphere is part of a polygon, it has a topological feature,
-    // and point2 is inside that polyong w.r.t. the feature, then invert the normal
-//    if (cs1.getPointRef().get
-    bool isInside = false;
-    if (cs1.getTopologyFeature() != nullptr){
-        GeometricData* g1 = cs1.getPointRef().getSimulationObject()->getGeometricData();
-        if (g1->getType() == GeometricData::Type::POLYGON)
-        {
-            Polygon* p1 = static_cast<Polygon*>(g1);
-            isInside = p1->isInside(*cs1.getTopologyFeature().get(), cs2.getPosition());
-        }
-    }
-
-    if (!isInside && cs2.getTopologyFeature() != nullptr)
+    if (mInvertNormalsIfNecessary)
     {
-        GeometricData* g2 = cs2.getPointRef().getSimulationObject()->getGeometricData();
-        if (g2->getType() == GeometricData::Type::POLYGON)
-        {
-            Polygon* p2 = static_cast<Polygon*>(g2);
-            isInside = p2->isInside(*cs2.getTopologyFeature().get(), cs1.getPosition());
-        }
-    }
+        bool isIn1 = isInside(cs1, cs2);
 
-    // if is inside, revert the normal
-    if (isInside)
-    {
-        normal *= -1;
+        bool passesFaceNormalCheck1 = false;
+        if (isIn1)
+        {
+            passesFaceNormalCheck1 = passesFaceNormalTest(cs1, -normal);
+        }
+
+        bool isIn2 = isInside(cs2, cs1);
+
+        bool passesFaceNormalCheck2 = false;
+        if (isIn2)
+        {
+            passesFaceNormalCheck2 = passesFaceNormalTest(cs2, normal);
+        }
+
+        isIn = isIn1 && isIn2;
+        // if is inside, revert the normal
+        if (isIn)
+        {
+            normal *= -1;
+            std::cout << "invert normal\n";
+
+            if (!passesFaceNormalCheck1 || !passesFaceNormalCheck2)
+            {
+                std::cout << "threw out collision\n";
+                return false;
+            }
+
+    //        return false;
+        }
     }
 
     // Calculate normal
@@ -136,7 +171,8 @@ bool Collider::collides(
                                           cs2.getPointRef().getSimulationObject(),
                                           pointA, pointB, normal, depth,
                                           cs1.getVertexIndex(),
-                                          cs2.getVertexIndex());
+                                          cs2.getVertexIndex(),
+                                          isIn);
 
     return returnValue;
 }
@@ -157,6 +193,83 @@ bool Collider::collides(
 {
     // TODO: implement this
     return false;
+}
+
+bool Collider::isInside(CollisionSphere& cs1, CollisionSphere& cs2)
+{
+    bool isInside = true;
+    if (cs1.getTopologyFeature() != nullptr)
+    {
+        GeometricData* g1 = cs1.getPointRef().getSimulationObject()->getGeometricData();
+        if (g1->getType() == GeometricData::Type::POLYGON)
+        {
+            Polygon* p1 = static_cast<Polygon*>(g1);
+//            isInside = p1->isInside(
+//                        *cs1.getTopologyFeature().get(),
+//                        cs1.getPosition(),
+//                        cs1.getRadius() * 100,
+//                        cs2.getPosition());
+            isInside =
+                    p1->isInside(
+                        *cs1.getTopologyFeature().get(),
+                        cs2.getPosition());
+        }
+    }
+    return isInside;
+}
+
+bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
+{
+    double toleranceAngleDegree = 15.0;
+    double toleranceRad = toleranceAngleDegree / 180.0 * M_PI;
+
+    if (cs1.getTopologyFeature() != nullptr)
+    {
+        GeometricData* g1 = cs1.getPointRef().getSimulationObject()->getGeometricData();
+        if (g1->getType() == GeometricData::Type::POLYGON)
+        {
+            Polygon* p1 = static_cast<Polygon*>(g1);
+            if (p1->getDimensionType() == Polygon::DimensionType::TWO_D)
+            {
+                Polygon2D* p2d = static_cast<Polygon2D*>(p1);
+
+                // check if the normal should be used by comparing it to
+                // the face normals
+                size_t count;
+                const ID* faceIds = p2d->getRelevantFaces(*cs1.getTopologyFeature().get(), count);
+
+                std::cout << "coun = " << count << "\n";
+                for (size_t i = 0; i < count; ++i)
+                {
+                    ID faceId = faceIds[i];
+        //                    TopologyFace& face = p2->getTopology().getFace(faceId);
+                    Eigen::Vector faceNormal = p2d->getFaceNormals()[faceId];
+
+        //                    std::cout << "f2 = " << faceNormal.dot(normal) << "\n";
+                    double angle = std::acos(faceNormal.dot(normal)) * 180.0 / M_PI;
+                    if (faceNormal.dot(normal) < toleranceRad)
+                    {
+                        std::cout << "normal = " << normal.transpose() << "\n";
+                        std::cout << "faceNormal = " << faceNormal.transpose() << "\n";
+                        std::cout << "angle2 = " << angle << "(" << faceNormal.dot(normal) << ")" << "(rejected)\n";
+                        return false;
+                    }
+                    else
+                    {
+                        std::cout << "normal = " << normal.transpose() << "\n";
+                        std::cout << "faceNormal = " << faceNormal.transpose() << "\n";
+                        std::cout << "angle2 = " << angle << "(" << faceNormal.dot(normal) << ")" << " (accepted)\n";
+                    }
+                }
+            }
+//            else if (p1->getDimensionType() == Polygon::DimensionType::THREE_D)
+//            {
+//                Polygon3D* p3d = static_cast<Polygon3D*>(g1);
+//                p3d->get
+//            }
+        }
+    }
+    return true;
 }
 
 // CollisionObjectCollisionObjectDispatcher

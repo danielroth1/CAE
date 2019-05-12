@@ -55,8 +55,8 @@ public:
     virtual ~Polygon3D() override;
 
     // Getters
-    Polygon3DTopology& getTopology();
-    const Polygon3DTopology& getTopology() const;
+    Polygon3DTopology& getTopology3D();
+    const Polygon3DTopology& getTopology3D() const;
 
     // Returns a vector of IDs that point to the positions
     // that are part of the outer hull. The outer hull are
@@ -79,11 +79,21 @@ public:
     // Checks if the given point is inside the outer topology. Only tests the
     // faces that are part of the given feature.
     // Retruns false, if there are no faces.
-    virtual bool isInside(const TopologyFeature& feature, Eigen::Vector point) override;
+    virtual bool isInside(
+            const TopologyFeature& feature,
+            Eigen::Vector point) override;
+
+    virtual bool isInside(
+            const TopologyFeature& feature,
+            Vector source,
+            double distance,
+            Vector target) override;
 
     virtual DimensionType getDimensionType() const override;
 
     virtual std::shared_ptr<PolygonData> getData() override;
+
+    virtual PolygonTopology& getTopology() override;
 
     virtual void changeRepresentationToBS(const Eigen::Vector& center) override;
 

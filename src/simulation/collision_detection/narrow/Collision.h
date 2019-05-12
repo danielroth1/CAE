@@ -17,7 +17,8 @@ public:
             const Eigen::Vector& normal,
             double depth,
             ID vertexIndexA,
-            ID vertexIndexB);
+            ID vertexIndexB,
+            bool isInside);
 
     const std::shared_ptr<SimulationObject>& getSimulationObjectA();
     const std::shared_ptr<SimulationObject>& getSimulationObjectB();
@@ -27,6 +28,7 @@ public:
     double getDepth() const;
     ID getVertexIndexA() const;
     ID getVertexIndexB() const;
+    bool isInside() const;
 
     // TODO: should this class know of CollisionSpheres?
     // it would be able to caluclate the current distance/ current PointA and PointB (before the collision)
@@ -46,6 +48,7 @@ private:
     double mDepth; // penetration depth
     ID mVertexIndexA; // For deformable objects.
     ID mVertexIndexB; // For deformable objects.
+    bool mIsInside;
 };
 
 #endif // COLLISION_H

@@ -71,6 +71,12 @@ Eigen::Vector SimulationPointRef::getPoint()
     return mGetSimulationPointDispatcher.point;
 }
 
+Vector SimulationPointRef::getPointPrevious()
+{
+    mSimulationObject->accept(mGetPrevSimulationPointDispatcher);
+    return mGetPrevSimulationPointDispatcher.point;
+}
+
 ID SimulationPointRef::getIndex() const
 {
     return mGeometricPointRef->getIndex();
@@ -97,6 +103,27 @@ Vector SimulationPointRef::getPoint(FEMObject& femObj)
     {
         ID index = static_cast<GeometricVertexRef*>(mGeometricPointRef.get())->getIndex();
         return femObj.getPosition(index);
+    }
+    return Eigen::Vector::Zero();
+}
+
+Vector SimulationPointRef::getPreviousPoint(SimulationPoint& sp)
+{
+    return sp.getPosition(0);
+}
+
+Vector SimulationPointRef::getPreviousPoint(RigidBody& rb)
+{
+    return rb.getPositionPrevious() +
+            rb.getOrientationPrevious().toRotationMatrix() * rb.getR(*this);
+}
+
+Vector SimulationPointRef::getPreviousPoint(FEMObject& femObj)
+{
+    if (mGeometricPointRef->getType() == GeometricPointRef::Type::GEOMETRIC_VERTEX)
+    {
+        ID index = static_cast<GeometricVertexRef*>(mGeometricPointRef.get())->getIndex();
+        return femObj.getPositionPrevious(index);
     }
     return Eigen::Vector::Zero();
 }

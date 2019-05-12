@@ -50,6 +50,8 @@ public:
 
     Eigen::Vector getPoint();
 
+    Eigen::Vector getPointPrevious();
+
     // Either returns the index of the referenced vertex or if no vertex is
     // referenced, returns ILLEGAL_INDEX.
     ID getIndex() const;
@@ -83,15 +85,44 @@ private:
         Eigen::Vector point;
     };
 
+    class GetPrevSimulationPointDispatcher : public SimulationObjectVisitor
+    {
+    public:
+        GetPrevSimulationPointDispatcher(SimulationPointRef& _ref);
+
+        virtual void visit(FEMObject& femObject)
+        {
+            point = ref.getPreviousPoint(femObject);
+        }
+
+        virtual void visit(SimulationPoint& sp)
+        {
+            point = ref.getPreviousPoint(sp);
+        }
+
+        virtual void visit(RigidBody& rigidBody)
+        {
+            point = ref.getPreviousPoint(rigidBody);
+        }
+
+        SimulationPointRef& ref;
+        Eigen::Vector point;
+    };
+
     virtual Eigen::Vector getPoint(SimulationPoint& sp);
     virtual Eigen::Vector getPoint(RigidBody& rb);
     virtual Eigen::Vector getPoint(FEMObject& femObj);
+
+    virtual Eigen::Vector getPreviousPoint(SimulationPoint& sp);
+    virtual Eigen::Vector getPreviousPoint(RigidBody& rb);
+    virtual Eigen::Vector getPreviousPoint(FEMObject& femObj);
 
     std::unique_ptr<GeometricPointRef> mGeometricPointRef;
 
     std::shared_ptr<SimulationObject> mSimulationObject;
 
     GetSimulationPointDispatcher mGetSimulationPointDispatcher;
+    GetPrevSimulationPointDispatcher mGetPrevSimulationPointDispatcher;
 
 };
 

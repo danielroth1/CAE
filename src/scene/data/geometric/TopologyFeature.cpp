@@ -15,3 +15,8 @@ ID TopologyFeature::getID() const
 {
     return mId;
 }
+
+const ID& TopologyFeature::getIDRef() const
+{
+    return mId;
+}

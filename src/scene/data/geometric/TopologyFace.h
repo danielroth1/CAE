@@ -15,6 +15,8 @@ public:
     const std::array<unsigned int, 3>& getVertexIds() const;
     std::array<unsigned int, 3>& getEdgeIds();
     const std::array<unsigned int, 3>& getEdgeIds() const;
+    std::vector<ID>& getAdjacentFaces();
+    const std::vector<ID>& getAdjacentFaces() const;
 
     // TopologyFeature interface
 public:
@@ -23,6 +25,8 @@ public:
 private:
     std::array<unsigned int, 3> mVertices;
     std::array<unsigned int, 3> mEdges;
+
+    std::vector<ID> mAdjacentFaces;
 };
 
 #endif // TOPOLOGYFACE_H

@@ -104,22 +104,30 @@ public:
     void setNumFEMCorrectionIterations(int correctionIterations);
     int getNumFEMCorrectionIterations() const;
 
+    void setInvertNormalsIfNecessary(bool invertNormalsIfNecessary);
+    bool getInvertNormalsIfNecessary() const;
+
     // repaints the gl widget
 //    void repaint();
 
     // Simulation access methods
         std::shared_ptr<FEMSimulation> getFEMSimulation();
+        // Thread safe
         void addSimulationObject(std::shared_ptr<SimulationObject> so);
 
+        // Thread safe
         // Removes the given simulation object from the simulation.
         // Also removes all constraints/ potentials that are assosiated with that
         // SimulationObject.
         void removeSimulationObject(const std::shared_ptr<SimulationObject>& so);
 
+        // Thread safe
         // Removes all simulation objects from the simulation.
         void clearSimulationObjects();
 
+        // Thread safe
         void addForce(const std::shared_ptr<Force>& f);
+        // Thread safe
         void removeForce(const std::shared_ptr<Force>& f);
 
         void addConstraint(const std::shared_ptr<Constraint>& c);

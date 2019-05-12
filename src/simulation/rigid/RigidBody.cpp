@@ -118,6 +118,8 @@ void RigidBody::integratePositions(double timeStep)
             (Eigen::Quaterniond(0.0, 0.5 * mOmega(0), 0.5 * mOmega(1), 0.5 * mOmega(2))
              * mQ).coeffs();
     mQ.normalize();
+
+    update();
 }
 
 void RigidBody::revertPositions()
@@ -283,6 +285,11 @@ const Vector3d& RigidBody::getCenterOfMass() const
 const Quaterniond& RigidBody::getOrientation() const
 {
     return mQ;
+}
+
+const Quaterniond& RigidBody::getOrientationPrevious() const
+{
+    return mQOld;
 }
 
 const Eigen::Vector& RigidBody::getOrientationVelocity() const

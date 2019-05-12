@@ -107,12 +107,12 @@ Polygon2D::Polygon2D(
                                          Eigen::Affine3d(transform.linear()));
 }
 
-Polygon2DTopology& Polygon2D::getTopology()
+Polygon2DTopology& Polygon2D::getTopology2D()
 {
     return mData->getTopology();
 }
 
-const Polygon2DTopology& Polygon2D::getTopology() const
+const Polygon2DTopology& Polygon2D::getTopology2D() const
 {
     return mData->getTopology();
 }
@@ -120,6 +120,16 @@ const Polygon2DTopology& Polygon2D::getTopology() const
 std::shared_ptr<Polygon2DData> Polygon2D::getData2D()
 {
     return mData;
+}
+
+Vectors& Polygon2D::getVertexNormals()
+{
+    return mVertexNormals.getVectors();
+}
+
+Vectors& Polygon2D::getFaceNormals()
+{
+    return mFaceNormals.getVectors();
 }
 
 void Polygon2D::accept(GeometricDataVisitor& visitor)
@@ -148,6 +158,16 @@ bool Polygon2D::isInside(const TopologyFeature& feature, Vector point)
     return Polygon::isInside(feature, point, mData->getTopology(), mFaceNormals);
 }
 
+bool Polygon2D::isInside(
+        const TopologyFeature& feature,
+        Vector source,
+        double distance,
+        Vector target)
+{
+    return Polygon::isInside(feature, source, distance, target,
+                             mData->getTopology(), mFaceNormals);
+}
+
 Polygon::DimensionType Polygon2D::getDimensionType() const
 {
     return DimensionType::TWO_D;
@@ -156,6 +176,11 @@ Polygon::DimensionType Polygon2D::getDimensionType() const
 std::shared_ptr<PolygonData> Polygon2D::getData()
 {
     return mData;
+}
+
+PolygonTopology& Polygon2D::getTopology()
+{
+    return mData->getTopology();
 }
 
 //void Polygon2D::changeRepresentationToBS(
@@ -213,15 +238,5 @@ void Polygon2D::setTransform(const Affine3d& transform)
 
     mVertexNormals.setTransform(Affine3d(transform.rotation()));
     mFaceNormals.setTransform(Affine3d(transform.rotation()));
-}
-
-Vectors& Polygon2D::getVertexNormals()
-{
-    return mVertexNormals.getVectors();
-}
-
-Vectors& Polygon2D::getFaceNormals()
-{
-    return mFaceNormals.getVectors();
 }
 

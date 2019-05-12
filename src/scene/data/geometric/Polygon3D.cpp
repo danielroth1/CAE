@@ -117,12 +117,12 @@ Polygon3D::~Polygon3D()
 
 }
 
-Polygon3DTopology& Polygon3D::getTopology()
+Polygon3DTopology& Polygon3D::getTopology3D()
 {
     return mData->getTopology();
 }
 
-const Polygon3DTopology& Polygon3D::getTopology() const
+const Polygon3DTopology& Polygon3D::getTopology3D() const
 {
     return mData->getTopology();
 }
@@ -161,8 +161,19 @@ bool Polygon3D::isInside(const TopologyFeature& feature, Vector point)
     return Polygon::isInside(
                 feature,
                 point,
-                mData->getTopology().getOuterTopology(), // TODO: make this const?
+                mData->getTopology().getOuterTopology(),
                 mOuterFaceNormals);
+}
+
+bool Polygon3D::isInside(
+        const TopologyFeature& feature,
+        Vector source,
+        double distance,
+        Vector target)
+{
+    return Polygon::isInside(
+                feature, source, distance, target,
+                mData->getTopology().getOuterTopology(), mOuterFaceNormals);
 }
 
 Polygon::DimensionType Polygon3D::getDimensionType() const
@@ -173,6 +184,11 @@ Polygon::DimensionType Polygon3D::getDimensionType() const
 std::shared_ptr<PolygonData> Polygon3D::getData()
 {
     return mData;
+}
+
+PolygonTopology& Polygon3D::getTopology()
+{
+    return mData->getTopology();
 }
 
 void Polygon3D::changeRepresentationToBS(const Vector& center)

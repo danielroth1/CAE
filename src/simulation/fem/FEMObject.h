@@ -107,6 +107,7 @@ public:
     Vectors& getInitialPositions();
     Vectors& getVelocities();
     double getMass(ID vertexId);
+    const Eigen::Vector& getPositionPrevious(size_t index) const;
 
     Vectors& getDisplacements();
     Vectors& getElasticForces();

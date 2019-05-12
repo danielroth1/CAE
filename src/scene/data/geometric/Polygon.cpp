@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <map>
+#include <set>
+#include <stack>
 
 Polygon::Polygon()
 {
@@ -112,6 +114,34 @@ BSWSVectors::Type Polygon::getPositionType()
     return mPositionData.getType();
 }
 
+const ID* Polygon::getRelevantFaces(const TopologyFeature& feature, size_t& count)
+{
+    switch(feature.getType())
+    {
+    case TopologyFeature::Type::VERTEX:
+    {
+        const TopologyVertex& vertex = static_cast<const TopologyVertex&>(feature);
+
+        count = vertex.getFaceIds().size();
+        return vertex.getFaceIds().data();
+    }
+    case TopologyFeature::Type::EDGE:
+    {
+        const TopologyEdge& edge = static_cast<const TopologyEdge&>(feature);
+
+        count = edge.getFaceIds().size();
+        return edge.getFaceIds().data();
+    }
+    case TopologyFeature::Type::FACE:
+    {
+        const TopologyFace& face = static_cast<const TopologyFace&>(feature);
+        count = 1;
+        return &face.getIDRef();
+    }
+    }
+    return nullptr;
+}
+
 Polygon::~Polygon()
 {
 
@@ -123,53 +153,93 @@ bool Polygon::isInside(
         PolygonTopology& topology,
         BSWSVectors& faceNormals)
 {
-    auto inside = [&](ID faceId) mutable
-    {
-        ID vertexId = topology.getFace(faceId).getVertexIds()[0];
-        Eigen::Vector v1 = faceNormals.getVector(faceId);
-        Eigen::Vector v2 = point - mPositionData.getPosition(vertexId);
-        if (v1.dot(v2) < 0)
-        {
-            return true;
-        }
+    size_t count;
+    const ID* relevantFaces = getRelevantFaces(feature, count);
+
+    if (count == 0)
         return false;
-    };
 
-    switch(feature.getType())
+    for (size_t i = 0; i < count; ++i)
     {
-    case TopologyFeature::Type::VERTEX:
-    {
-        const TopologyVertex& vertex = static_cast<const TopologyVertex&>(feature);
-
-        if (vertex.getFaceIds().empty())
+        if (!isInside(relevantFaces[i], point, topology, faceNormals))
             return false;
+    }
 
-        for (ID faceId : vertex.getFaceIds())
-        {
-            if (!inside(faceId))
-                return false;
-        }
-        break;
-    }
-    case TopologyFeature::Type::EDGE:
-    {
-        const TopologyEdge& edge = static_cast<const TopologyEdge&>(feature);
-
-        if (edge.getFaceIds().empty())
-            return false;
-
-        for (ID faceId : edge.getFaceIds())
-        {
-            if (!inside(faceId))
-                return false;
-        }
-        break;
-    }
-    case TopologyFeature::Type::FACE:
-    {
-        const TopologyFace& face = static_cast<const TopologyFace&>(feature);
-        return inside(face.getID());
-    }
-    }
     return true;
+}
+
+bool Polygon::isInside(
+        const TopologyFeature& feature,
+        Vector source,
+        double distance,
+        Vector target,
+        PolygonTopology& topology,
+        BSWSVectors& faceNormals)
+{
+    // measure the distance of each visited face and check if its vertices are within distance
+    // if not, visit the adjacent faces. Make sure to not visit faces twice by using a
+    // set.
+
+    std::set<ID> visited; // visited face ids
+    std::stack<ID> tbv; // to be visited face ids
+
+    size_t count;
+    const ID* relevantFaces = getRelevantFaces(feature, count);
+
+    if (count == 0)
+        return false;
+
+    for (size_t i = 0; i < count; ++i)
+    {
+        tbv.push(relevantFaces[i]);
+        visited.insert(relevantFaces[i]);
+    }
+
+    while (!tbv.empty())
+    {
+        ID currentFaceId = tbv.top();
+        TopologyFace& currentFace = topology.getFace(currentFaceId);
+        tbv.pop();
+        visited.insert(currentFaceId);
+
+        // add adjacent faces that weren't visited before to tbv stack
+        for (ID id : currentFace.getAdjacentFaces())
+        {
+            if (visited.find(id) == visited.end() &&
+                isWithinDistance(topology.getFace(id), source, distance))
+            {
+                tbv.push(id);
+            }
+        }
+
+        if (!isInside(currentFaceId, target, topology, faceNormals))
+            return false;
+    }
+
+    return true;
+}
+
+bool Polygon::isInside(
+        ID faceId,
+        const Vector& point,
+        PolygonTopology& topology,
+        BSWSVectors& faceNormals)
+{
+    ID vertexId = topology.getFace(faceId).getVertexIds()[0];
+    return faceNormals.getVector(faceId)
+            .dot(point - mPositionData.getPosition(vertexId)) < 0;
+}
+
+bool Polygon::isWithinDistance(
+        TopologyFace& face,
+        const Eigen::Vector& point,
+        double distance)
+{
+    for (size_t i = 0; i < 3; ++i)
+    {
+        double actualdistance = (mPositionData.getPosition(face.getVertexIds()[i]) - point).norm();
+        if (actualdistance < distance)
+            return true;
+    }
+    return false;
 }

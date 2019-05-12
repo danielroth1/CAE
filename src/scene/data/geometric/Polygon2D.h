@@ -42,10 +42,13 @@ public:
               const Vectors& vertexNormalsBS,
               const Faces& faces);
 
-    Polygon2DTopology& getTopology();
-    const Polygon2DTopology& getTopology() const;
+    Polygon2DTopology& getTopology2D();
+    const Polygon2DTopology& getTopology2D() const;
 
     std::shared_ptr<Polygon2DData> getData2D();
+
+    Vectors& getVertexNormals();
+    Vectors& getFaceNormals();
 
     // GeometricData interface
 public:
@@ -60,12 +63,21 @@ public:
     // Checks if the given point is inside the topology. Only tests the
     // faces that are part of the given feature.
     // Retruns false, if there are no faces.
-    virtual bool isInside(const TopologyFeature& feature, Eigen::Vector point) override;
+    virtual bool isInside(
+            const TopologyFeature& feature,
+            Eigen::Vector point) override;
+
+    virtual bool isInside(
+            const TopologyFeature& feature,
+            Vector source,
+            double distance,
+            Vector target) override;
 
     virtual DimensionType getDimensionType() const override;
 
     virtual std::shared_ptr<PolygonData> getData() override;
 
+    virtual PolygonTopology& getTopology() override;
 
 //    // Is this mehtod even needed?
 //    // It allows to change the representation type but requires to
@@ -88,10 +100,6 @@ public:
     virtual void changeRepresentationToWS() override;
 
     virtual void setTransform(const Eigen::Affine3d& transform) override;
-
-protected:
-    Vectors& getVertexNormals();
-    Vectors& getFaceNormals();
 
 private:
 

@@ -15,6 +15,8 @@ public:
     std::vector<ID>& getFaceIds();
     const std::vector<ID>& getFaceIds() const;
 
+    ID getOtherFaceId(ID faceId);
+
     // TopologyFeature interface
 public:
     virtual Type getType() const;

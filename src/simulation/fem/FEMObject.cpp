@@ -39,7 +39,7 @@ FEMObject::FEMObject(
     ElasticMaterial material;
     material.setFromYoungsPoisson(E, v);
 
-    const Cells& cells = poly3->getTopology().getCells();
+    const Cells& cells = poly3->getTopology3D().getCells();
     mFiniteElements.reserve(cells.size());
     for (unsigned int i = 0; i < cells.size(); ++i)
     {
@@ -620,6 +620,11 @@ Vectors& FEMObject::getVelocities()
 double FEMObject::getMass(ID vertexId)
 {
     return mMasses[vertexId];
+}
+
+const Vector& FEMObject::getPositionPrevious(size_t index) const
+{
+    return mPositionsPrevious[index];
 }
 
 Vectors& FEMObject::getElasticForces()

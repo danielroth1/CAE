@@ -17,7 +17,8 @@ Collision::Collision(
         const Eigen::Vector& normal,
         double depth,
         ID vertexIndexA,
-        ID vertexIndexB)
+        ID vertexIndexB,
+        bool isInside)
     : mSoA(&soA)
     , mSoB(&soB)
     , mPointA(pointA)
@@ -26,6 +27,7 @@ Collision::Collision(
     , mDepth(depth)
     , mVertexIndexA(vertexIndexA)
     , mVertexIndexB(vertexIndexB)
+    , mIsInside(isInside)
 {
 }
 
@@ -67,4 +69,9 @@ ID Collision::getVertexIndexA() const
 ID Collision::getVertexIndexB() const
 {
     return mVertexIndexB;
+}
+
+bool Collision::isInside() const
+{
+    return mIsInside;
 }

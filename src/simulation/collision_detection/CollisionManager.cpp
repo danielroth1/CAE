@@ -210,7 +210,7 @@ void CollisionManager::addSimulationObject(
 
         // Calculate minimum distance of each OUTER vertex
         std::map<unsigned int, double> minimumDistances = calculateMinimumDistances(
-                    p3->getTopology().getOuterFaces(), p3->getPositions());
+                    p3->getTopology3D().getOuterFaces(), p3->getPositions());
 
         double maximumDistance = -1;
         for (size_t i = 0; i < p3->getOuterPositionIds().size(); ++i)
@@ -312,9 +312,19 @@ std::shared_ptr<Collider> CollisionManager::getCollider()
     return mCollider;
 }
 
+bool CollisionManager::getInvertNormalsIfNecessary() const
+{
+    return mCollider->getInvertNormalsIfNecessary();
+}
+
 size_t CollisionManager::getNumberOfBvhs() const
 {
     return mCollisionData.size();
+}
+
+void CollisionManager::setInvertNormalsIfNecessary(bool invertNormalsIfNecessary)
+{
+    mCollider->setInvertNormalsIfNecessary(invertNormalsIfNecessary);
 }
 
 std::shared_ptr<BoundingVolumeHierarchy> CollisionManager::getBoundingVolumeHierarchy(size_t index)

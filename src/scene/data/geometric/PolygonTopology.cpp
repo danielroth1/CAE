@@ -258,6 +258,7 @@ void PolygonTopology::buildTopology(
         tFace.getVertexIds()[1] = f[1];
         tFace.getVertexIds()[2] = f[2];
 
+
         // add this face to all surrounding edges and vertices
         for (ID j = 0; j < 3; ++j)
         {
@@ -266,6 +267,16 @@ void PolygonTopology::buildTopology(
         }
 
         facesOut.push_back(tFace);
+    }
+
+    // insert adjacent faces
+    for (ID i = 0; i < facesOut.size(); ++i)
+    {
+        TopologyFace& tFace = facesOut[i];
+        for (ID j = 0; j < 3; ++j)
+        {
+            tFace.getAdjacentFaces().push_back(edgesOut[tFace.getEdgeIds()[j]].getOtherFaceId(i));
+        }
     }
 }
 

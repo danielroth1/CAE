@@ -8,8 +8,8 @@
 
 class PolygonData;
 class PolygonTopology;
+class TopologyFace;
 class TopologyFeature;
-
 
 class Polygon : public GeometricData
 {
@@ -46,9 +46,21 @@ public:
     // Retruns false, if there are no faces.
     virtual bool isInside(const TopologyFeature& feature, Eigen::Vector point) = 0;
 
+    // Same as isInside(TopologyFeature&, Eigen::Vector) but searches all
+    // faces that are within source and the given distance.
+    // \param distance - the minimum distance from the given feature for which
+    //      the isInside check should be accurate
+    virtual bool isInside(
+            const TopologyFeature& feature,
+            Vector source,
+            double distance,
+            Vector target) = 0;
+
     virtual DimensionType getDimensionType() const = 0;
 
     virtual std::shared_ptr<PolygonData> getData() = 0;
+
+    virtual PolygonTopology& getTopology() = 0;
 
     // GeometricData interface
 public:
@@ -138,6 +150,8 @@ public:
     // transformation matrix on each vertex
     virtual void changeRepresentationToWS() = 0;
 
+    const ID* getRelevantFaces(const TopologyFeature& feature, size_t& count);
+
 protected:
 
     // Destructor
@@ -151,6 +165,31 @@ protected:
             Eigen::Vector point,
             PolygonTopology& topology,
             BSWSVectors& faceNormals);
+
+    // Checks if target is inside the polygon. This method doesn't traverse
+    // all faces of the polygon but only the faces that are within the are
+    // that reaches from source to distance. Also only faces that are connected
+    // to the given topology are looked at.
+    bool isInside(
+            const TopologyFeature& feature,
+            Vector source,
+            double distance,
+            Vector target,
+            PolygonTopology& topology,
+            BSWSVectors& faceNormals);
+
+    bool isInside(ID faceId,
+                  const Vector& point,
+                  PolygonTopology& topology,
+                  BSWSVectors& faceNormals);
+
+    // Checks if the point is within the distance of the face which is the
+    // case if the point is whithin the distance of at least one vertex of the
+    // face.
+    bool isWithinDistance(
+            TopologyFace& face,
+            const Eigen::Vector& point,
+            double distance);
 
     // Protected Members
 //    PositionData mPositionData;

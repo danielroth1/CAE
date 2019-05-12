@@ -43,6 +43,9 @@ public:
 
     std::shared_ptr<Collider> getCollider();
 
+    void setInvertNormalsIfNecessary(bool invertNormalsIfNecessary);
+    bool getInvertNormalsIfNecessary() const;
+
     size_t getNumberOfBvhs() const;
 
     std::shared_ptr<BoundingVolumeHierarchy> getBoundingVolumeHierarchy(size_t index);
@@ -51,6 +54,8 @@ public:
 
     bool addListener(CollisionManagerListener* listener);
     bool removeListener(CollisionManagerListener* listener);
+
+    static bool createEdges;
 
 private:
     struct CollisionData
@@ -81,6 +86,8 @@ PROXY_CLASS(CollisionManagerProxy, CollisionManager, mCm,
                            PL(so, polygon, sphereDiameter))
             PROXY_FUNCTION(CollisionManager, mCm, removeSimulationObject,
                            PL(const std::shared_ptr<SimulationObject>& so), PL(so))
+            PROXY_FUNCTION(CollisionManager, mCm, setInvertNormalsIfNecessary,
+                           PL(bool invertNormalsIfNecessary), PL(invertNormalsIfNecessary))
             )
 
 #endif // COLLISIONMANAGER_H

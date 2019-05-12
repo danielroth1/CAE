@@ -28,6 +28,11 @@ const std::vector<ID>& TopologyEdge::getFaceIds() const
     return mFaces;
 }
 
+ID TopologyEdge::getOtherFaceId(ID faceId)
+{
+    return faceId == mFaces[0] ? mFaces[1] : mFaces[0];
+}
+
 TopologyFeature::Type TopologyEdge::getType() const
 {
     return Type::EDGE;

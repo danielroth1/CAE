@@ -323,9 +323,9 @@ std::vector<TopologyFace>* PolygonRenderModelImproved::retrieveRelevantFaces()
         virtual void visit(Polygon3D& polygon3D)
         {
             if (rm.mRenderOnlyOuterFaces)
-                faces = &polygon3D.getTopology().getOuterFaces();
+                faces = &polygon3D.getTopology3D().getOuterFaces();
             else
-                faces = &polygon3D.getTopology().getFaces();
+                faces = &polygon3D.getTopology3D().getFaces();
         }
 
         virtual void visit(GeometricPoint& /*point*/)
@@ -421,7 +421,7 @@ void PolygonRenderModelImproved::updatePositions()
     Vectors& positions
             = mPolygon->getPositionType() == BSWSVectors::BODY_SPACE ?
                 mPolygon->getPositionsBS() :
-                mPolygon->getPositions();
+                mPolygon->getPositions(); // for 3d case, this are all 3d positions, but often only 2d positions are required
 
     {
         auto positionsLock = mRenderObjectPositions->lock();

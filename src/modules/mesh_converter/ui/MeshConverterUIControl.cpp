@@ -142,8 +142,8 @@ void MeshConverterUIControl::processGeometricData(GeometricData* gd)
         {
             mcc.mWidget->updateGeometricData(
                         static_cast<int>(polygon3D.getPositions().size()),
-                        static_cast<int>(polygon3D.getTopology().getFaces().size()),
-                        static_cast<int>(polygon3D.getTopology().getCells().size()));
+                        static_cast<int>(polygon3D.getTopology3D().getFaces().size()),
+                        static_cast<int>(polygon3D.getTopology3D().getCells().size()));
         }
 
         virtual void visit(GeometricPoint& /*point*/)

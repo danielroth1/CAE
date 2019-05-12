@@ -105,6 +105,7 @@ public:
 
         // Returns the orientation q.
         const Eigen::Quaterniond& getOrientation() const;
+        const Eigen::Quaterniond& getOrientationPrevious() const;
         const Eigen::Vector& getOrientationVelocity() const;
 
         // Returns the 3x3 inertia tensor I.

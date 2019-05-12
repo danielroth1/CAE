@@ -25,6 +25,9 @@ public:
 
         std::vector<Collision>& getCollisions();
 
+        bool getInvertNormalsIfNecessary() const;
+        void setInvertNormalsIfNecessary(bool invertNormalsIfNecessary);
+
     // Mthods for dispatching
         bool collides(
                 CollisionObject& co1,
@@ -58,6 +61,10 @@ private:
                 CollisionTriangle& ct1,
                 CollisionTriangle& ct2,
                 Collision& collisionReturnValue);
+
+    bool isInside(CollisionSphere& cs1, CollisionSphere& cs2);
+
+    bool passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal);
 
     // Dispatcher classes
     class CollisionObjectDispatcher : public CollisionObjectVisitor
@@ -118,6 +125,7 @@ private:
     };
 
     std::vector<Collision> mCollisions;
+    bool mInvertNormalsIfNecessary;
 
     // Dispatcher
         CollisionObjectDispatcher mCollisionObjectDispatcher;
