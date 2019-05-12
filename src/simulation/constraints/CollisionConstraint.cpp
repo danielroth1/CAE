@@ -5,6 +5,8 @@
 
 #include <simulation/ImpulseConstraintSolver.h>
 
+#include <iostream>
+
 CollisionConstraint::CollisionConstraint(
         Collision& collision,
         double restitution,
@@ -38,7 +40,7 @@ const Eigen::Vector& CollisionConstraint::getSumOfAllAppliedImpulses() const
     return mSumOfAllAppliedImpulses;
 }
 
-void CollisionConstraint::initialize(double /*stepSize*/)
+void CollisionConstraint::initialize(double stepSize)
 {
     mSumOfAllAppliedImpulses = Eigen::Vector::Zero();
 
@@ -55,9 +57,13 @@ void CollisionConstraint::initialize(double /*stepSize*/)
                 mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB());
 
 
+//    double positionCorrection = 0.2 * std::max(0.0, (mCollision.getPointA() - mCollision.getPointB()).dot(n) / stepSize);
+    double positionCorrection = 0.0;//-std::max(0.0, (mCollision.getPointB() - mCollision.getPointA()).dot(n) / stepSize);
+    if (positionCorrection > 1e-10)
+        std::cout << "position correction = " << positionCorrection << "\n";
     Eigen::Vector uRel = u1 - u2;
 
-    mTargetUNormalRel = -mRestitution * uRel.dot(n) * n;
+    mTargetUNormalRel = (-mRestitution * uRel.dot(n) + positionCorrection) * n;
 
     mK = ImpulseConstraintSolver::calculateK(
                 mCollision.getSimulationObjectA(), p1, mCollision.getVertexIndexA()) +
@@ -109,9 +115,16 @@ bool CollisionConstraint::solve(double maxConstraintError)
                 mCollision.getSimulationObjectB(), -impulse, p2, mCollision.getVertexIndexB());
 
 
-    // friction
-    if (mCFrictionStatic > 1e-10 ||
-        mCFrictionDynamic > 1e-10)
+    // Friction
+    // Don't apply friction if two objects are currently penetrating so that
+    // the process of resolving the interpenetration isn't slowed down.
+    // do this in collider?
+
+    // this is not the best way of doing it. instead disable friction between
+    // all contacts if there is at least one "isInside" contact
+    if (!mCollision.isInside() &&
+        (mCFrictionStatic > 1e-10 ||
+        mCFrictionDynamic > 1e-10))
     {
         Eigen::Vector frictionImpulse;
         Eigen::Vector uRelT = uRel - uRelN;

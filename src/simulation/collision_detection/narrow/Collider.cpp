@@ -154,11 +154,9 @@ bool Collider::collides(
         if (isIn)
         {
             normal *= -1;
-            std::cout << "invert normal\n";
 
             if (!passesFaceNormalCheck1 || !passesFaceNormalCheck2)
             {
-                std::cout << "threw out collision\n";
                 return false;
             }
 
@@ -238,7 +236,6 @@ bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
                 size_t count;
                 const ID* faceIds = p2d->getRelevantFaces(*cs1.getTopologyFeature().get(), count);
 
-                std::cout << "coun = " << count << "\n";
                 for (size_t i = 0; i < count; ++i)
                 {
                     ID faceId = faceIds[i];
@@ -249,16 +246,16 @@ bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
                     double angle = std::acos(faceNormal.dot(normal)) * 180.0 / M_PI;
                     if (faceNormal.dot(normal) < toleranceRad)
                     {
-                        std::cout << "normal = " << normal.transpose() << "\n";
-                        std::cout << "faceNormal = " << faceNormal.transpose() << "\n";
-                        std::cout << "angle2 = " << angle << "(" << faceNormal.dot(normal) << ")" << "(rejected)\n";
+//                        std::cout << "normal = " << normal.transpose() << "\n";
+//                        std::cout << "faceNormal = " << faceNormal.transpose() << "\n";
+//                        std::cout << "angle2 = " << angle << "(" << faceNormal.dot(normal) << ")" << "(rejected)\n";
                         return false;
                     }
                     else
                     {
-                        std::cout << "normal = " << normal.transpose() << "\n";
-                        std::cout << "faceNormal = " << faceNormal.transpose() << "\n";
-                        std::cout << "angle2 = " << angle << "(" << faceNormal.dot(normal) << ")" << " (accepted)\n";
+//                        std::cout << "normal = " << normal.transpose() << "\n";
+//                        std::cout << "faceNormal = " << faceNormal.transpose() << "\n";
+//                        std::cout << "angle2 = " << angle << "(" << faceNormal.dot(normal) << ")" << " (accepted)\n";
                     }
                 }
             }
