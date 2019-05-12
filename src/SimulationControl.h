@@ -161,9 +161,6 @@ public:
 
 private:
 
-    // Handles what happens after a simulation step
-    void handleAfterStep();
-
     void applyForces();
 
     std::shared_ptr<SimulationControlProxy> mProxy;

@@ -483,10 +483,12 @@ void SimulationControl::step()
 
     // initialize constraints
     mImpulseConstraintSolver->initializeNonCollisionConstraints(mStepSize);
-//    mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{nonh}
+//    mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{nonh};
 
     mRigidSimulation->integratePositions(mStepSize);
     mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
+
+    mCollisionManager->updateAll();
 
     // collision detection on x + x^{FEM}
     START_TIMING_SIMULATION("CollisionManager::collideAll()");
@@ -533,7 +535,6 @@ void SimulationControl::step()
     mRigidSimulation->publish();
     mFEMSimulation->publish();
 
-    handleAfterStep();
     STOP_TIMING_SIMULATION;
 }
 
@@ -597,12 +598,6 @@ void SimulationControl::removeConstraintSlot(const std::shared_ptr<Constraint>& 
     }
 
     mImpulseConstraintSolver->removeConstraint(c);
-}
-
-void SimulationControl::handleAfterStep()
-{
-    mCollisionManager->updateAll();
-    //    repaint();
 }
 
 void SimulationControl::applyForces()
