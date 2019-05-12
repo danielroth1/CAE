@@ -346,14 +346,15 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
     VectorXd bCopy = b;
     mTruncation->truncateByRemoving(ACopy, bCopy, A, b);
 
-    SparseLU<SparseMatrix<double>> solver;
+//    SparseLU<SparseMatrix<double>> solver;
+    SimplicialLLT<SparseMatrix<double>> solver;
     VectorXd sol(size*3);
     solver.analyzePattern(A);
-    if (!solver.lastErrorMessage().empty())
-        printf("EigenErrorMessage[analyzePattern]: %s\n", solver.lastErrorMessage().c_str());
+    if (solver.info() != Eigen::Success)
+        std::cerr << "Solver: analyzePattern failed.\n";
     solver.factorize(A);
-    if (!solver.lastErrorMessage().empty())
-        fprintf(stderr, "EigenErrorMessage[factorize]: %s\n", solver.lastErrorMessage().c_str());
+    if (solver.info() != Eigen::Success)
+        std::cerr << "Solver: factorize failed.\n";
     sol = solver.solve(b);
     sol = mTruncation->createOriginal(sol);
 

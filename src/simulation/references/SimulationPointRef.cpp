@@ -19,6 +19,7 @@ SimulationPointRef::SimulationPointRef(
         Eigen::Vector r)
     : mGeometricPointRef(std::make_unique<PolygonVectorRef>(polygon, r))
     , mGetSimulationPointDispatcher(*this)
+    , mGetPrevSimulationPointDispatcher(*this)
 {
     mSimulationObject = simObj->shared_from_this();
 }
@@ -29,6 +30,7 @@ SimulationPointRef::SimulationPointRef(
     : mGeometricPointRef(
           std::make_unique<GeometricVertexRef>(simObj->getGeometricData(), index))
     , mGetSimulationPointDispatcher(*this)
+    , mGetPrevSimulationPointDispatcher(*this)
 {
     mSimulationObject = simObj->shared_from_this();
 }
@@ -38,6 +40,7 @@ SimulationPointRef::SimulationPointRef(const SimulationPointRef& ref)
           std::unique_ptr<GeometricPointRef>(ref.mGeometricPointRef->clone()))
     , mSimulationObject(ref.mSimulationObject)
     , mGetSimulationPointDispatcher(*this)
+    , mGetPrevSimulationPointDispatcher(*this)
 {
 
 }
@@ -132,4 +135,11 @@ SimulationPointRef::GetSimulationPointDispatcher::GetSimulationPointDispatcher(
         SimulationPointRef& _ref)
     : ref(_ref)
 {
+}
+
+SimulationPointRef::GetPrevSimulationPointDispatcher::GetPrevSimulationPointDispatcher(
+        SimulationPointRef& _ref)
+    : ref(_ref)
+{
+
 }
