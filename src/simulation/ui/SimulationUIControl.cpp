@@ -22,6 +22,7 @@
 #include <scene/model/RenderModel.h>
 #include <ui/qt/QtMembersWidget.h>
 #include <utils/MemberAccessorFactory.h>
+#include <simulation/collision_detection/CollisionManager.h>
 
 #include <simulation/fem/FEMObject.h>
 
@@ -74,6 +75,14 @@ void SimulationUIControl::init(QWidget* parent)
                     mAc->getSimulationControl(),
                     mAc->getSimulationControl()->getDomain()),
                 -100.0, 100.0, 1.0);
+
+    mWidget->getMembersWidget()->addBool(
+                "Invert normals if necessary",
+                MemberAccessorFactory::createGetterSetter<bool, SimulationControl>(
+                    &SimulationControl::getInvertNormalsIfNecessary,
+                    &SimulationControl::setInvertNormalsIfNecessary,
+                    mAc->getSimulationControl(),
+                    mAc->getSimulationControl()->getDomain()));
 }
 
 QWidget* SimulationUIControl::getWidget()
