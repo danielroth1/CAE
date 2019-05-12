@@ -9,6 +9,7 @@
 
 class Collider;
 class RenderLines;
+class RenderPoints;
 
 class ColliderRenderModel : public RenderModel
 {
@@ -29,6 +30,8 @@ private:
     std::shared_ptr<Collider> mCollider;
 
     std::shared_ptr<RenderLines> mRenderLines;
+
+    std::shared_ptr<RenderPoints> mRenderPoints;
 
     float mLineLength;
 };
