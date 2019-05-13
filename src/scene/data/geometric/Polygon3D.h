@@ -64,6 +64,9 @@ public:
     // No ID is duplicated. The ids are ordered ascending.
     std::vector<unsigned int>& getOuterPositionIds();
 
+    Vectors& getOuterVertexNormals();
+    Vectors& getOuterFaceNormals();
+
     std::shared_ptr<Polygon3DData> getData3D();
 
 

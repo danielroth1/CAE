@@ -65,6 +65,11 @@ void CollisionConstraint::initialize(double stepSize)
 
     mTargetUNormalRel = (-mRestitution * uRel.dot(n) + positionCorrection) * n;
 
+    if (/*mCollision.isInside() && */mTargetUNormalRel.dot(n) < 0)
+    {
+        mTargetUNormalRel *= -1.0 / mRestitution;
+    }
+
     mK = ImpulseConstraintSolver::calculateK(
                 mCollision.getSimulationObjectA(), p1, mCollision.getVertexIndexA()) +
             ImpulseConstraintSolver::calculateK(

@@ -132,6 +132,16 @@ std::vector<unsigned int>& Polygon3D::getOuterPositionIds()
     return mData->getTopology().getOuterVertexIds();
 }
 
+Vectors& Polygon3D::getOuterVertexNormals()
+{
+    return mOuterVertexNormals.getVectors();
+}
+
+Vectors& Polygon3D::getOuterFaceNormals()
+{
+    return mOuterFaceNormals.getVectors();
+}
+
 std::shared_ptr<Polygon3DData> Polygon3D::getData3D()
 {
     return mData;

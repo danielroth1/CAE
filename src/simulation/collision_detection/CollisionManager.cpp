@@ -225,7 +225,10 @@ void CollisionManager::addSimulationObject(
             double radius = maximumDistance * sphereDiameter;
             collisionObjects.push_back(std::make_shared<CollisionSphere>(
                                            SimulationPointRef(so.get(), index),
-                                           radius));
+                                           radius,
+                                           std::make_shared<TopologyVertex>(
+                                               p3->getTopology3D().getOuterTopology().getVertex(
+                                               p3->getOuterPositionIds()[i]))));
         }
         break;
     }

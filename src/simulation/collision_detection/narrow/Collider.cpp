@@ -135,7 +135,7 @@ bool Collider::collides(
     {
         bool isIn1 = isInside(cs1, cs2);
 
-        bool passesFaceNormalCheck1 = false;
+        bool passesFaceNormalCheck1 = true;
         if (isIn1)
         {
             passesFaceNormalCheck1 = passesFaceNormalTest(cs1, -normal);
@@ -143,13 +143,14 @@ bool Collider::collides(
 
         bool isIn2 = isInside(cs2, cs1);
 
-        bool passesFaceNormalCheck2 = false;
+        bool passesFaceNormalCheck2 = true;
         if (isIn2)
         {
             passesFaceNormalCheck2 = passesFaceNormalTest(cs2, normal);
         }
 
         isIn = isIn1 && isIn2;
+//        isIn = isIn1 || isIn2;
         // if is inside, revert the normal
         if (isIn)
         {
@@ -227,6 +228,7 @@ bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
         if (g1->getType() == GeometricData::Type::POLYGON)
         {
             Polygon* p1 = static_cast<Polygon*>(g1);
+
             if (p1->getDimensionType() == Polygon::DimensionType::TWO_D)
             {
                 Polygon2D* p2d = static_cast<Polygon2D*>(p1);
@@ -239,31 +241,36 @@ bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
                 for (size_t i = 0; i < count; ++i)
                 {
                     ID faceId = faceIds[i];
-        //                    TopologyFace& face = p2->getTopology().getFace(faceId);
                     Eigen::Vector faceNormal = p2d->getFaceNormals()[faceId];
 
-        //                    std::cout << "f2 = " << faceNormal.dot(normal) << "\n";
                     double angle = std::acos(faceNormal.dot(normal)) * 180.0 / M_PI;
                     if (faceNormal.dot(normal) < toleranceRad)
                     {
-//                        std::cout << "normal = " << normal.transpose() << "\n";
-//                        std::cout << "faceNormal = " << faceNormal.transpose() << "\n";
-//                        std::cout << "angle2 = " << angle << "(" << faceNormal.dot(normal) << ")" << "(rejected)\n";
                         return false;
-                    }
-                    else
-                    {
-//                        std::cout << "normal = " << normal.transpose() << "\n";
-//                        std::cout << "faceNormal = " << faceNormal.transpose() << "\n";
-//                        std::cout << "angle2 = " << angle << "(" << faceNormal.dot(normal) << ")" << " (accepted)\n";
                     }
                 }
             }
-//            else if (p1->getDimensionType() == Polygon::DimensionType::THREE_D)
-//            {
-//                Polygon3D* p3d = static_cast<Polygon3D*>(g1);
-//                p3d->get
-//            }
+            else if (p1->getDimensionType() == Polygon::DimensionType::THREE_D)
+            {
+                Polygon3D* p3d = static_cast<Polygon3D*>(g1);
+
+                // check if the normal should be used by comparing it to
+                // the face normals
+                size_t count;
+                const ID* faceIds = p3d->getRelevantFaces(*cs1.getTopologyFeature().get(), count);
+
+                for (size_t i = 0; i < count; ++i)
+                {
+                    ID faceId = faceIds[i];
+                    Eigen::Vector faceNormal = p3d->getOuterFaceNormals()[faceId];
+
+                    double angle = std::acos(faceNormal.dot(normal)) * 180.0 / M_PI;
+                    if (faceNormal.dot(normal) < toleranceRad)
+                    {
+                        return false;
+                    }
+                }
+            }
         }
     }
     return true;
