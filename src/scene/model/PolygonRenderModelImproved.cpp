@@ -41,6 +41,7 @@ PolygonRenderModelImproved::PolygonRenderModelImproved(
     , mRenderVertexNormals(renderVertexNormals)
     , mRenderFaceNormals(renderFaceNormals)
 {
+//    mRenderFaceNormals = true;
     mRequiresUpdate = false;
     mCurrentlyRenderedCenter = Eigen::Vector::Zero();
 
@@ -176,7 +177,24 @@ void PolygonRenderModelImproved::reset()
                     mFacesBufferedData);
 
     // reset positions
-    size_t size = mPolygon->getPositions().size();
+    size_t size;
+
+    switch(mPolygon->getDimensionType())
+    {
+    case Polygon::DimensionType::TWO_D:
+    {
+        Polygon2D* p2 = static_cast<Polygon2D*>(mPolygon.get());
+        size = p2->getPositions().size();
+        break;
+    }
+    case Polygon::DimensionType::THREE_D:
+    {
+        Polygon3D* p3 = static_cast<Polygon3D*>(mPolygon.get());
+        size = p3->getOuterPositionIds().size();
+        break;
+    }
+    }
+
     mRenderObjectPositions->lock()->resize(size);
     mRenderObjectNormals->lock()->resize(size);
 
@@ -427,8 +445,16 @@ void PolygonRenderModelImproved::updatePositions()
         auto positionsLock = mRenderObjectPositions->lock();
         for (size_t i = 0; i < positionsLock->size(); ++i)
         {
-            const Vector& v = positions[i];
-            positionsLock->at(i) = v.cast<float>();
+            if (mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+            {
+                positionsLock->at(i) = positions[
+                        static_cast<Polygon3D*>(
+                            mPolygon.get())->getOuterPositionIds()[i]].cast<float>();
+            }
+            else
+            {
+                positionsLock->at(i) = positions[i].cast<float>();
+            }
         }
 
         auto normalsLock = mRenderObjectNormals->lock();
@@ -492,10 +518,30 @@ void PolygonRenderModelImproved::updateNormalLines()
 
         // face normals
         Vectorfs faceNormals;
-        ModelUtils::calculateFaceNormals<float>(
-                    *positions,
-                    *facesLock,
-                    faceNormals);
+
+        if (mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+        {
+            Polygon3D* p3 = static_cast<Polygon3D*>(mPolygon.get());
+            faceNormals.resize(p3->getOuterFaceNormals().size());
+            for (size_t i = 0; i < faceNormals.size(); ++i)
+            {
+                faceNormals[i] = p3->getOuterFaceNormals()[i].cast<float>();
+            }
+        }
+        else if (mPolygon->getDimensionType() == Polygon::DimensionType::TWO_D)
+        {
+            Polygon2D* p2 = static_cast<Polygon2D*>(mPolygon.get());
+            faceNormals.resize(p2->getFaceNormals().size());
+            for (size_t i = 0; i < faceNormals.size(); ++i)
+            {
+                faceNormals[i] = p2->getFaceNormals()[i].cast<float>();
+            }
+        }
+
+//        ModelUtils::calculateFaceNormals<float>(
+//                    *positions,
+//                    *facesLock,
+//                    faceNormals);
 
         // if mRenderVertexNormals is true, lines and points were already
         // correctly resized in this method and are appended.

@@ -10,7 +10,6 @@ class Polygon2DTopology;
 class Polygon2DData : public PolygonData
 {
 public:
-    Polygon2DData(const Faces& faces, double nVertices);
 
     Polygon2DData(const Polygon2DTopology& topology);
 

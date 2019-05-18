@@ -11,11 +11,6 @@ class Polygon3DTopology;
 class Polygon3DData : public PolygonData
 {
 public:
-    Polygon3DData(
-            const Faces& faces,
-            const Faces& outerFaces,
-            const Cells& cells,
-            ID nVertices);
 
     Polygon3DData(const Polygon3DTopology& topology);
 

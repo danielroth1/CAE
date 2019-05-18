@@ -10,11 +10,6 @@
 class Polygon2DDataBS : public Polygon2DData
 {
 public:
-    Polygon2DDataBS(
-            const Faces& faces,
-            const Vectors& positionsBS,
-            const Vectors& vertexNormalsBS,
-            const Vectors& faceNormalsBS);
 
     Polygon2DDataBS(
             const Polygon2DTopology& topology,

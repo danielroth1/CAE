@@ -7,11 +7,8 @@
 class Polygon3DDataWS : public Polygon3DData
 {
 public:
-    Polygon3DDataWS(
-            const Faces& faces,
-            const Faces& outerFaces,
-            const Cells& cells,
-            ID nVertices);
+
+    Polygon3DDataWS(const Polygon3DTopology& topology);
 
     virtual ~Polygon3DDataWS();
 };

@@ -210,12 +210,14 @@ void CollisionManager::addSimulationObject(
 
         // Calculate minimum distance of each OUTER vertex
         std::map<unsigned int, double> minimumDistances = calculateMinimumDistances(
-                    p3->getTopology3D().getOuterFaces(), p3->getPositions());
+                    p3->getTopology3D().getOuterFaces(), p3->calcualtePositions2DFrom3D());
 
         double maximumDistance = -1;
         for (size_t i = 0; i < p3->getOuterPositionIds().size(); ++i)
         {
-            maximumDistance = std::max(maximumDistance, 2 * minimumDistances[static_cast<unsigned int>(i)]);
+            maximumDistance = std::max(maximumDistance,
+                                       2 * minimumDistances[
+                                       static_cast<unsigned int>(i)]);
         }
 
         for (size_t i = 0; i < p3->getOuterPositionIds().size(); ++i)
@@ -223,12 +225,16 @@ void CollisionManager::addSimulationObject(
             ID index = static_cast<ID>(p3->getOuterPositionIds()[i]);
 //            double radius = minimumDistances[static_cast<unsigned int>(index)] * radiusFactor;
             double radius = maximumDistance * sphereDiameter;
-            collisionObjects.push_back(std::make_shared<CollisionSphere>(
-                                           SimulationPointRef(so.get(), index),
-                                           radius,
-                                           std::make_shared<TopologyVertex>(
-                                               p3->getTopology3D().getOuterTopology().getVertex(
-                                               p3->getOuterPositionIds()[i]))));
+            collisionObjects.push_back(
+                        std::make_shared<CollisionSphere>(
+                            SimulationPointRef(so.get(), index),
+                            radius,
+                            std::make_shared<TopologyVertex>(
+                                p3->getTopology3D().getOuterTopology().getVertex(i))
+//                               std::make_shared<TopologyVertex>(
+//                                   p3->getTopology3D().getOuterTopology().getVertex(
+//                                   p3->getOuterPositionIds()[i]))
+                                           ));
         }
         break;
     }

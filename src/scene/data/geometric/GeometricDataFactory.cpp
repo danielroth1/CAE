@@ -3,6 +3,7 @@
 // Inlcudes
 #include "GeometricDataFactory.h"
 #include "Polygon2DTopology.h"
+#include "Polygon3DTopology.h"
 
 #include "modules/mesh_converter/MeshConverter.h"
 #include "scene/data/geometric/Polygon2D.h"
@@ -245,7 +246,9 @@ Polygon3D GeometricDataFactory::createPolygon3DFromPolygon2D(
                 cellsOut,
                 cellSize,
                 cellRadiusEdgeRatio);
-    return Polygon3D(verticesOut, facesOut, outerFacesOut, cellsOut);
+    return Polygon3D(verticesOut,
+                     Polygon3DTopology(facesOut, outerFacesOut,
+                                       cellsOut, verticesOut.size()));
 }
 
 GeometricDataFactory::GeometricDataFactory()

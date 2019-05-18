@@ -257,7 +257,8 @@ bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
                 // check if the normal should be used by comparing it to
                 // the face normals
                 size_t count;
-                const ID* faceIds = p3d->getRelevantFaces(*cs1.getTopologyFeature().get(), count);
+                const ID* faceIds = p3d->getRelevantFaces(
+                            *cs1.getTopologyFeature().get(), count);
 
                 for (size_t i = 0; i < count; ++i)
                 {

@@ -31,6 +31,8 @@ public:
     const std::vector<TopologyEdge>& getEdges() const;
     std::vector<TopologyFace>& getFaces();
     const std::vector<TopologyFace>& getFaces() const;
+    Faces& getFacesIndices();
+    const Faces& getFacesIndices() const;
 
     Edges retrieveEdges() const;
     Faces retrieveFaces() const;
@@ -64,6 +66,8 @@ private:
     std::vector<TopologyVertex> mVertices;
     std::vector<TopologyEdge> mEdges;
     std::vector<TopologyFace> mFaces;
+
+    Faces mFacesIndices;
 };
 
 #endif // POLYGONTOPOLOGY_H

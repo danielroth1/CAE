@@ -8,7 +8,6 @@
 class Polygon2DDataWS : public Polygon2DData
 {
 public:
-    Polygon2DDataWS(const Faces& faces, ID nVertices);
 
     Polygon2DDataWS(const Polygon2DTopology& topology);
 

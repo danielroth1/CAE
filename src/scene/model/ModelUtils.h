@@ -51,8 +51,8 @@ public:
             normal.normalize();
 
             // angles
-            float angle_factor = std::acos((p0 - p1).normalized().dot((p0 - p2).normalized()));
-            Eigen::Vector3f angle_normal = angle_factor * normal;
+            Type angle_factor = std::acos((p0 - p1).normalized().dot((p0 - p2).normalized()));
+            Eigen::Matrix<Type, 3, 1> angle_normal = angle_factor * normal;
             normals[t[0]] += angle_normal;
 
             angle_factor = std::acos((p1 - p0).normalized().dot((p1 - p2).normalized()));

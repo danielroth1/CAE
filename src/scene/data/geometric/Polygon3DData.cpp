@@ -2,16 +2,6 @@
 #include "Polygon3DTopology.h"
 
 
-Polygon3DData::Polygon3DData(
-        const Faces& faces,
-        const Faces& outerFaces,
-        const Cells& cells,
-        ID nVertices)
-{
-    mTopology = std::make_unique<Polygon3DTopology>(
-                faces, outerFaces, cells, nVertices);
-}
-
 Polygon3DData::Polygon3DData(const Polygon3DTopology& topology)
 {
     mTopology = std::make_unique<Polygon3DTopology>(topology);

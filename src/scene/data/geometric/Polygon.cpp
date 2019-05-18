@@ -225,6 +225,8 @@ bool Polygon::isInside(
         PolygonTopology& topology,
         BSWSVectors& faceNormals)
 {
+    // this vertexId is w.r.t. outerPositionsIds?
+    // mPositionsData.getPosition(mOuterPositionIds[vertexId])
     ID vertexId = topology.getFace(faceId).getVertexIds()[0];
     return faceNormals.getVector(faceId)
             .dot(point - mPositionData.getPosition(vertexId)) < 0;

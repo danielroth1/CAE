@@ -20,27 +20,21 @@ public:
     // vertices.
     Polygon3D(
             const Vectors& positionsWS,
-            const Faces& faces,
-            const Faces& outerFaces,
-            const Cells& cells);
+            const Polygon3DTopology& topology);
 
     // Constructor for world space position data.
     // The outer vertex normals are given.
     Polygon3D(
             const Vectors& positionsWS,
             const Vectors& vertexNormalsWS,
-            const Faces& faces,
-            const Faces& outerFaces,
-            const Cells& cells);
+            const Polygon3DTopology& topology);
 
     // Constructor for body space position data
     // Calculates the missing normals for the outer.
     Polygon3D(
             Vectors* positionsBS,
             const Eigen::Affine3d& transform,
-            const Faces& faces,
-            const Faces& outerFaces,
-            const Cells& cells);
+            const Polygon3DTopology& topology);
 
     // Constructor for body space position data
     // The outer vertex normals are given.
@@ -48,11 +42,15 @@ public:
             Vectors* positionsBS,
             const Eigen::Affine3d& transform,
             const Vectors& vertexNormalsBS,
-            const Faces& faces,
-            const Faces& outerFaces,
-            const Cells& cells);
+            const Polygon3DTopology& topology);
 
     virtual ~Polygon3D() override;
+
+    // Calculates a vector of positions whomes indices correspond to the
+    // indices from Topology2D. This operation is expensive as a whole vector
+    // is created each time it is called so don't use it in timing critical
+    // code.
+    Vectors calcualtePositions2DFrom3D() const;
 
     // Getters
     Polygon3DTopology& getTopology3D();
@@ -103,6 +101,13 @@ public:
     virtual void changeRepresentationToWS() override;
 
     virtual void setTransform(const Eigen::Affine3d& transform) override;
+
+protected:
+
+    bool isInside(ID faceId,
+                  const Vector& point,
+                  PolygonTopology& topology,
+                  BSWSVectors& faceNormals) override;
 
 private:
 

@@ -88,7 +88,17 @@ Vectors& BSWSVectors::getVectors()
     return mVectorsWS;
 }
 
+const Vectors& BSWSVectors::getVectors() const
+{
+    return mVectorsWS;
+}
+
 Vector& BSWSVectors::getVector(ID index)
+{
+    return mVectorsWS[index];
+}
+
+const Vector& BSWSVectors::getVector(ID index) const
 {
     return mVectorsWS[index];
 }

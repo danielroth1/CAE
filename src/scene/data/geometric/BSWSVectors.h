@@ -71,7 +71,9 @@ public:
 
     // World space
     Vectors& getVectors();
+    const Vectors& getVectors() const;
     Eigen::Vector& getVector(ID index);
+    const Eigen::Vector& getVector(ID index) const;
 
     // Body space
     Eigen::Affine3d& getTransform();

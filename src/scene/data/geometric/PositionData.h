@@ -56,7 +56,9 @@ public:
 
     // World space
     Vectors& getPositions();
+    const Vectors& getPositions() const;
     Eigen::Vector& getPosition(ID index);
+    const Eigen::Vector& getPosition(ID index) const;
 
     // Body space
     Eigen::Affine3d& getTransform();

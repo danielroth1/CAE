@@ -3,23 +3,6 @@
 
 
 Polygon3DDataBS::Polygon3DDataBS(
-        const Faces& faces,
-        const Faces& outerFaces,
-        const Cells& cells,
-        const Vectors& positionsBS,
-        const Vectors& outerVertexNormalsBS,
-        const Vectors& outerFaceNormalsBS)
-    : Polygon3DData (faces,
-                     outerFaces,
-                     cells,
-                     positionsBS.size())
-    , mPositionsBS(positionsBS)
-    , mOuterVertexNormalsBS(outerVertexNormalsBS)
-    , mOuterFaceNormalsBS(outerFaceNormalsBS)
-{
-}
-
-Polygon3DDataBS::Polygon3DDataBS(
         const Polygon3DTopology& topology,
         const Vectors& positionsBS,
         const Vectors& outerVertexNormalsBS,

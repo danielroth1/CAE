@@ -47,7 +47,17 @@ Vectors& PositionData::getPositions()
     return mPositions.getVectors();
 }
 
+const Vectors& PositionData::getPositions() const
+{
+    return mPositions.getVectors();
+}
+
 Vector& PositionData::getPosition(ID index)
+{
+    return mPositions.getVector(index);
+}
+
+const Vector& PositionData::getPosition(ID index) const
 {
     return mPositions.getVector(index);
 }
@@ -157,15 +167,18 @@ void PositionData::moveCenterTo(const Vector& center)
 // because it affects all Polygons that point on this data.
 void PositionData::moveCenter(const Vector& deltaCenter)
 {
-    Vectors& positionsBS = mPositions.getVectorsBS();
-    Vectors& positionsWS = mPositions.getVectors();
-    for (size_t i = 0; i < positionsBS.size(); ++i)
+    if (mPositions.getType() == BSWSVectors::BODY_SPACE)
     {
-        positionsBS[i] = positionsWS[i] - deltaCenter;
-    }
-    mPositions.getTransform().translate(deltaCenter);
+        Vectors& positionsBS = mPositions.getVectorsBS();
+        Vectors& positionsWS = mPositions.getVectors();
+        for (size_t i = 0; i < positionsBS.size(); ++i)
+        {
+            positionsBS[i] = positionsWS[i] - deltaCenter;
+        }
+        mPositions.getTransform().translate(deltaCenter);
 
-    mCenter += deltaCenter;
+        mCenter += deltaCenter;
+    }
 }
 
 void PositionData::updateWorldSpace()

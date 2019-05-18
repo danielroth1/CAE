@@ -178,7 +178,7 @@ protected:
             PolygonTopology& topology,
             BSWSVectors& faceNormals);
 
-    bool isInside(ID faceId,
+    virtual bool isInside(ID faceId,
                   const Vector& point,
                   PolygonTopology& topology,
                   BSWSVectors& faceNormals);

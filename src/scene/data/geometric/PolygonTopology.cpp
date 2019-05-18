@@ -6,6 +6,7 @@
 #include <set>
 
 PolygonTopology::PolygonTopology(const Faces& faces, ID nVertices)
+    : mFacesIndices(faces)
 {
     buildTopology(faces, nVertices, mVertices, mEdges, mFaces);
 }
@@ -53,6 +54,16 @@ std::vector<TopologyFace>& PolygonTopology::getFaces()
 const std::vector<TopologyFace>& PolygonTopology::getFaces() const
 {
     return mFaces;
+}
+
+Faces& PolygonTopology::getFacesIndices()
+{
+    return mFacesIndices;
+}
+
+const Faces& PolygonTopology::getFacesIndices() const
+{
+    return mFacesIndices;
 }
 
 Edges PolygonTopology::retrieveEdges() const

@@ -20,7 +20,8 @@ Polygon2D::Polygon2D(
 {
     // World space construtor
     Polygon::initWorldSpace(positionsWS);
-    mData = std::make_shared<Polygon2DDataWS>(faces, positionsWS.size());
+    mData = std::make_shared<Polygon2DDataWS>(
+                Polygon2DTopology(faces, positionsWS.size()));
 
     Vectors vertexNormals = GeometricDataUtils::calculateNormals(
                 mPositionData.getPositions(), faces);
@@ -40,7 +41,8 @@ Polygon2D::Polygon2D(
 {
     // World space constructor
     Polygon::initWorldSpace(positionsWS);
-    mData = std::make_shared<Polygon2DDataWS>(faces, positionsWS.size());
+    mData = std::make_shared<Polygon2DDataWS>(
+                Polygon2DTopology(faces, positionsWS.size()));
     mVertexNormals.initializeFromWorldSpace(vertexNormalsWS);
 
     Vectors faceNormals;
@@ -66,7 +68,7 @@ Polygon2D::Polygon2D(
 
     std::shared_ptr<Polygon2DDataBS> dataBS =
             std::make_shared<Polygon2DDataBS>(
-                faces,
+                Polygon2DTopology(faces, positionsBS.size()),
                 positionsBS,
                 vertexNormals,
                 faceNormals);
@@ -94,7 +96,7 @@ Polygon2D::Polygon2D(
     // Body space constructor
     std::shared_ptr<Polygon2DDataBS> dataBS =
             std::make_shared<Polygon2DDataBS>(
-                faces,
+                Polygon2DTopology(faces, positionsBS.size()),
                 positionsBS,
                 vertexNormalsBS,
                 faceNormals);
@@ -149,8 +151,23 @@ void Polygon2D::update()
 {
     Polygon::update();
 
-    mVertexNormals.update();
-    mFaceNormals.update();
+    if (mVertexNormals.getType() == BSWSVectors::Type::BODY_SPACE)
+    {
+        mVertexNormals.update();
+        mFaceNormals.update();
+    }
+    else
+    {
+        ModelUtils::calculateNormals<double>(
+                    mPositionData.getPositions(),
+                    mData->getTopology().getFacesIndices(),
+                    mVertexNormals.getVectors());
+
+        ModelUtils::calculateFaceNormals<double>(
+                    mPositionData.getPositions(),
+                    mData->getTopology().getFacesIndices(),
+                    mFaceNormals.getVectors());
+    }
 }
 
 bool Polygon2D::isInside(const TopologyFeature& feature, Vector point)
