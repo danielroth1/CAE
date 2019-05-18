@@ -475,6 +475,7 @@ void FEMObject::updateGeometricData()
     // This call is necessary to inform the other modules about
     // the change in position of the underlying Polygon3D that is
     // simulated here.
+    mPoly3->update();
     mPoly3->geometricDataChanged();
 }
 

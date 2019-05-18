@@ -134,34 +134,33 @@ bool Collider::collides(
     if (mInvertNormalsIfNecessary)
     {
         bool isIn1 = isInside(cs1, cs2);
-
-        bool passesFaceNormalCheck1 = true;
-        if (isIn1)
-        {
-            passesFaceNormalCheck1 = passesFaceNormalTest(cs1, -normal);
-        }
-
         bool isIn2 = isInside(cs2, cs1);
 
-        bool passesFaceNormalCheck2 = true;
-        if (isIn2)
-        {
-            passesFaceNormalCheck2 = passesFaceNormalTest(cs2, normal);
-        }
-
-        isIn = isIn1 && isIn2;
-//        isIn = isIn1 || isIn2;
-        // if is inside, revert the normal
-        if (isIn)
+        // if both are inside, the normal can be safely reverted and it will
+        // be correct.
+        if (isIn1 && isIn2)
         {
             normal *= -1;
+        }
+        else if (isIn1 || isIn2)
+        {
+            // in some cases reverting the normal doesn't work (not sure why exactly).
+            // perform a check if both ascending face normals and contact normal
+            // point in the same (or for the other object opposite) direction. If not
+            // remove the contact.
+
+            bool passesFaceNormalCheck1 = true;
+            if (isIn1)
+                passesFaceNormalCheck1 = passesFaceNormalTest(cs1, -normal);
+
+            bool passesFaceNormalCheck2 = true;
+            if (isIn2)
+                passesFaceNormalCheck2 = passesFaceNormalTest(cs2, normal);
 
             if (!passesFaceNormalCheck1 || !passesFaceNormalCheck2)
             {
                 return false;
             }
-
-    //        return false;
         }
     }
 
@@ -219,7 +218,7 @@ bool Collider::isInside(CollisionSphere& cs1, CollisionSphere& cs2)
 
 bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
 {
-    double toleranceAngleDegree = 15.0;
+    double toleranceAngleDegree = 0.0;
     double toleranceRad = toleranceAngleDegree / 180.0 * M_PI;
 
     if (cs1.getTopologyFeature() != nullptr)
