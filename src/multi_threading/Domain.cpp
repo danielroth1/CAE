@@ -39,3 +39,13 @@ void Domain::processOperations()
 
     }
 }
+
+void Domain::setThreadId(std::thread::id threadId)
+{
+    mThreadId = threadId;
+}
+
+std::thread::id Domain::getThreadId() const
+{
+    return mThreadId;
+}

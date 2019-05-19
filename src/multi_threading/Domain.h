@@ -6,6 +6,7 @@
 #include "Monitor.h"
 
 #include <queue>
+#include <thread>
 
 
 // Forward Declarations
@@ -30,8 +31,14 @@ public:
     // Call this method at one point in your while loop.
     void processOperations();
 
+    void setThreadId(std::thread::id threadId);
+
+    std::thread::id getThreadId() const;
+
 private:
     Monitor<std::queue<Operation*>> mQueue;
+
+    std::thread::id mThreadId;
 };
 
 #endif // DOMAIN_H

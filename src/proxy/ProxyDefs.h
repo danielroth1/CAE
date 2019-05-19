@@ -5,16 +5,32 @@
 #include <multi_threading/Operation.h>
 
 
-// className = Simulation
-// callee = mSimulation
-// function = function name
-// ... = list of function parameters
+// A thread safe call to the given function.
+// If there is no domain, nothing happens.
+// If the current thread is the Domains thread, the operation is called directly.
+// If the current thread is not the Domains thread, a Operation is added to the
+// Domain. This is because it is not safe to call the function in a thread that
+// is different from the Domain.
+//
+// \param className = Simulation
+// \param callee = mSimulation
+// \param function = function name
+// \param ... = list of function parameters
 #define PROXY_FUNCTION_CALL(className, callee, function, ...) \
     if (callee->getDomain()) \
-        callee->getDomain()->addOperation( \
-        new Operation(std::bind([__VA_ARGS__](std::shared_ptr<className> s) { \
-                s->function(__VA_ARGS__); }, \
-                    std::static_pointer_cast<className>(callee->shared_from_this()))))
+    { \
+        if (callee->getDomain()->getThreadId() == std::this_thread::get_id()) \
+        { \
+            callee->function(__VA_ARGS__); \
+        } \
+        else \
+        { \
+            callee->getDomain()->addOperation( \
+            new Operation(std::bind([__VA_ARGS__](std::shared_ptr<className> s) { \
+                    s->function(__VA_ARGS__); }, \
+                        std::static_pointer_cast<className>(callee->shared_from_this())))); \
+        } \
+    }
 
 #define PL(...) __VA_ARGS__
 
@@ -25,7 +41,7 @@
 #define PROXY_FUNCTION(className, callee, function, paramsDefs, paramsNoDefs) \
     void function(paramsDefs) \
     { \
-        PROXY_FUNCTION_CALL(className, callee, function, paramsNoDefs); \
+        PROXY_FUNCTION_CALL(className, callee, function, paramsNoDefs) \
     }
 
 // Use this makro in the cpp file. It requires a corresponding makro in the
@@ -34,7 +50,7 @@
 #define PROXY_FUNCTION_CPP(proxyClassName, className, callee, function, ...) \
     void proxyClassName::function() \
     { \
-        PROXY_FUNCTION_CALL(className, callee, function, __VA_ARGS__); \
+        PROXY_FUNCTION_CALL(className, callee, function, __VA_ARGS__) \
     }
 
 // Use this makro in the head file. It requires a corresponding

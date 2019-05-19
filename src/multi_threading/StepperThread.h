@@ -8,13 +8,19 @@
 class TimeStepper;
 class Domain;
 
-// Requires to call initialize() after creation
+// A Stepper thread is a thread that supports Domains.
+// It iterates a single while loop.
+// At the start of each iteration, all operations of all domains are executed.
+// A TimeStepper determines the sleeping time after each iteration.
+// Call start() to start the thread.
 class StepperThread
 {
 public:
     StepperThread();
     virtual ~StepperThread();
 
+    // Creats and starts the thread. After calling this method, operations in the
+    // domains operation queue are processed. Sets the threads id to all domains.
     void start();
 
     // Getters/ Setters
@@ -23,9 +29,9 @@ public:
     void setPaused(bool paused);
 
     // Delegated Domains
+    // Either sets the domains threads id now or if not already done
+    // when start() is executed.
     void addDomain(Domain* domain);
-    void removeDomain(Domain* domain);
-    void clearDomains();
 
     // Stepper thread methods
     virtual void initialization() = 0;
@@ -44,7 +50,7 @@ private:
     std::atomic<bool> mRunning { true };
     std::atomic<bool> mPaused { false };
 
-    std::thread* mThread;
+    std::shared_ptr<std::thread> mThread;
 
     std::shared_ptr<TimeStepper> mTimeStepper;
     std::vector<Domain*> mDomains;

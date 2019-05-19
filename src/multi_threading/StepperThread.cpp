@@ -12,12 +12,16 @@ StepperThread::StepperThread()
 
 StepperThread::~StepperThread()
 {
-
 }
 
 void StepperThread::start()
 {
-    mThread = new std::thread(&StepperThread::threadUpdateMethod, this);
+    mThread = std::make_shared<std::thread>(&StepperThread::threadUpdateMethod, this);
+
+    for (auto domain : mDomains)
+    {
+        domain->setThreadId(mThread->get_id());
+    }
 }
 
 void StepperThread::setTimeStepper(std::shared_ptr<TimeStepper> timeStepper)
@@ -37,6 +41,9 @@ void StepperThread::setPaused(bool paused)
 
 void StepperThread::addDomain(Domain* domain)
 {
+    if (mThread)
+        domain->setThreadId(mThread->get_id());
+
     mDomains.push_back(domain);
 }
 
