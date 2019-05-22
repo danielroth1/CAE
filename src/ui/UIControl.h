@@ -21,9 +21,10 @@ class Renderer;
 class RenderScreenRectangle;
 class SelectionControl;
 class SGControl;
+class SGUIControl;
 class Simulation;
 class SimulationControl;
-class UISGControl;
+class SGQtWidgetManager;
 class VertexGroup;
 class ViewFrustum;
 class VertexGroupManager;
@@ -105,10 +106,10 @@ public slots:
         void onLoadFileSGNodeActionTriggered(QTreeWidgetItemWrapper* item);
 
         // Called by SelectionControl
-        // Updates UISGControl
+        // Updates SGQtWidgetManager
         void onSGSelectionChanged(QList<QTreeWidgetItem*>& selectedItems);
 
-        // Called by UISGControl
+        // Called by SGQtWidgetManager
         // Updates SelectionControl
         // TODO: implement this
         void onSGSelectionChanged(std::set<SceneData*>& selectedItems);
@@ -130,7 +131,7 @@ private:
 
     std::unique_ptr<SelectionControl> mSelectionControl;
 
-    UISGControl* mUISGControl;
+    SGQtWidgetManager* mSGQtWidgetManager;
     std::unique_ptr<ModulesUIControl> mModulesUIControl;
 
     // the current view frustum

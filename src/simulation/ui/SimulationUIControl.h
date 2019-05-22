@@ -6,6 +6,7 @@
 class ApplicationControl;
 class GeometricData;
 class QWidget;
+class RenderModelVisitor;
 class SceneLeafData;
 class SimulationModule;
 class SimulationUIWidget;
@@ -47,6 +48,7 @@ public:
 public:
     virtual void onConstraintAdded(SimulationObject* so);
     virtual void onConstraintRemoved(SimulationObject* so);
+
 };
 
 #endif // SIMULATIONUICONTROL_H

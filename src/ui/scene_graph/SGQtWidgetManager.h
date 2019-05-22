@@ -1,15 +1,17 @@
-#ifndef UISGCONTROL_H
-#define UISGCONTROL_H
+#ifndef SGQTWIDGETMANAGER_H
+#define SGQTWIDGETMANAGER_H
 
 #include "UISGBidirectionalMap.h"
 #include "scene/scene_graph/SGCore.h"
 
 class QTreeWidget;
+class RenderModelVisitor;
 
-class UISGControl : public SGTreeListener
+// Manages the Qt component that visualizes the scene graph.
+class SGQtWidgetManager : public SGTreeListener
 {
 public:
-    UISGControl(QTreeWidget* treeWidget);
+    SGQtWidgetManager(QTreeWidget* treeWidget);
 
     // Delegated methods from UISGBidirectionalMap
 public:
@@ -23,7 +25,6 @@ public:
 
     void addNode(SGNode* child);
     void removeNode(SGNode* node);
-
 
     // LeafNodeListener interface
 public:
@@ -42,11 +43,15 @@ public:
     virtual void notifyTreeChanged(SGNode* source, SGSceneGraph* tree);
 
 private:
+
     QTreeWidget* mTreeWidget;
 
     SGSceneGraph* mSceneGraph;
 
     UISGBidirectionalMap mBidirectionalMap;
+
+    bool mVisualizeFaceNormals;
+    bool mVisualizeVertexNormals;
 };
 
-#endif // UISGCONTROL_H
+#endif // SGQTWIDGETMANAGER_H

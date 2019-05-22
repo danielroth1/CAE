@@ -1,12 +1,18 @@
-#include "UISGControl.h"
+#include "SGQtWidgetManager.h"
+
+#include <scene/model/PolygonRenderModelImproved.h>
+#include <scene/model/RenderModel.h>
+#include <scene/model/RenderModelVisitor.h>
 
 
-UISGControl::UISGControl(QTreeWidget* treeWidget)
+SGQtWidgetManager::SGQtWidgetManager(QTreeWidget* treeWidget)
     : mTreeWidget(treeWidget)
 {
+    mVisualizeFaceNormals = false;
+    mVisualizeVertexNormals = false;
 }
 
-void UISGControl::registerNewSceneGraph(SGSceneGraph* sceneGraph)
+void SGQtWidgetManager::registerNewSceneGraph(SGSceneGraph* sceneGraph)
 {
     clear();
     mSceneGraph = sceneGraph;
@@ -14,20 +20,20 @@ void UISGControl::registerNewSceneGraph(SGSceneGraph* sceneGraph)
     sceneGraph->addTreeListener(this);
 }
 
-void UISGControl::clear()
+void SGQtWidgetManager::clear()
 {
     mTreeWidget->clear();
     mBidirectionalMap.clear();
 }
 
-void UISGControl::revalidate()
+void SGQtWidgetManager::revalidate()
 {
     clear();
     SGTraverser tt(mSceneGraph->getRoot());
     class RevalidateVisitor : public SGNodeVisitor
     {
     public:
-        RevalidateVisitor(UISGControl& u)
+        RevalidateVisitor(SGQtWidgetManager& u)
             : ui(u)
         {
         }
@@ -44,23 +50,23 @@ void UISGControl::revalidate()
             visitImpl(leafNode);
         }
 
-        UISGControl& ui;
+        SGQtWidgetManager& ui;
     } visitor(*this);
 
     tt.traverse(visitor);
 }
 
-SGNode *UISGControl::get(QTreeWidgetItem* item)
+SGNode *SGQtWidgetManager::get(QTreeWidgetItem* item)
 {
     return mBidirectionalMap.get(item);
 }
 
-QTreeWidgetItem* UISGControl::get(SGNode* node)
+QTreeWidgetItem* SGQtWidgetManager::get(SGNode* node)
 {
     return mBidirectionalMap.get(node);
 }
 
-void UISGControl::addNode(SGNode* node)
+void SGQtWidgetManager::addNode(SGNode* node)
 {
     if (node->getParent() == nullptr)
     {
@@ -85,7 +91,7 @@ void UISGControl::addNode(SGNode* node)
     }
 }
 
-void UISGControl::removeNode(SGNode* node)
+void SGQtWidgetManager::removeNode(SGNode* node)
 {
     QTreeWidgetItem* item = mBidirectionalMap.get(node);
     item->parent()->removeChild(item);
@@ -94,37 +100,37 @@ void UISGControl::removeNode(SGNode* node)
     mBidirectionalMap.remove(node);
 }
 
-void UISGControl::notifyLeafDataChanged(SGNode* /*source*/, std::shared_ptr<SceneLeafData>& /*data*/)
+void SGQtWidgetManager::notifyLeafDataChanged(SGNode* /*source*/, std::shared_ptr<SceneLeafData>& /*data*/)
 {
 
 }
 
-void UISGControl::notifyChildAdded(SGNode* /*source*/, SGNode* childNode)
+void SGQtWidgetManager::notifyChildAdded(SGNode* /*source*/, SGNode* childNode)
 {
     addNode(childNode);
 }
 
-void UISGControl::notifyChildRemoved(SGNode* /*source*/, SGNode* childNode)
+void SGQtWidgetManager::notifyChildRemoved(SGNode* /*source*/, SGNode* childNode)
 {
     removeNode(childNode);
 }
 
-void UISGControl::notifyChildrenDataChanged(SGNode* /*source*/, std::shared_ptr<SceneData>& /*data*/)
+void SGQtWidgetManager::notifyChildrenDataChanged(SGNode* /*source*/, std::shared_ptr<SceneData>& /*data*/)
 {
 
 }
 
-void UISGControl::notifyParentChanged(SGNode* /*source*/, SGNode* /*parent*/)
+void SGQtWidgetManager::notifyParentChanged(SGNode* /*source*/, SGNode* /*parent*/)
 {
 
 }
 
-void UISGControl::notifyNameChanged(SGNode* /*source*/, std::string /*name*/)
+void SGQtWidgetManager::notifyNameChanged(SGNode* /*source*/, std::string /*name*/)
 {
 
 }
 
-void UISGControl::notifyTreeChanged(SGNode* /*source*/, SGSceneGraph* /*tree*/)
+void SGQtWidgetManager::notifyTreeChanged(SGNode* /*source*/, SGSceneGraph* /*tree*/)
 {
     // whenever a node refers to the scene graph as tree, it can be
     // assumed that that node is also a node of the scene graph

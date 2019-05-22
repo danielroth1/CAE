@@ -35,7 +35,8 @@
 #include <ui/selection/SelectionSceneDataModel.h>
 #include <ui/selection/SelectionVertices.h>
 #include <ui/selection/SelectionVerticesModel.h>
-#include <ui/scene_graph/UISGControl.h>
+#include <ui/scene_graph/SGQtWidgetManager.h>
+#include <ui/scene_graph/SGUIControl.h>
 #include <rendering/RenderControl.h>
 #include "rendering/ViewFrustum.h"
 #include "scene/VertexGroupManager.h"
@@ -74,13 +75,14 @@ void UIControl::initialize(ApplicationControl* applicationControl)
     mMainWindow->show();
 
     mGlWidget = mMainWindow->getGlWidget();
+
     initializeRenderer();
 
     mSelectionControl = std::make_unique<SelectionControl>(applicationControl, *mViewFrustum);
     mSelectionControl->init(mRenderControl->getRenderer());
     mSelectionControl->changeSelectionType(SelectionControl::SelectionType::SELECT_VERTICES);
 
-    mUISGControl = new UISGControl(mMainWindow->getSGTreeWidget());
+    mSGQtWidgetManager = new SGQtWidgetManager(mMainWindow->getSGTreeWidget());
     mModulesUIControl = std::make_unique<ModulesUIControl>(mMainWindow->getModulesTabWidget());
     handleNewSceneGraph();
 }
@@ -99,8 +101,8 @@ void UIControl::handleNewSceneGraph()
 {
     // delete old ui
 
-    // initiate UISGControl
-    mUISGControl->registerNewSceneGraph(mAc->getSGControl()->getSceneGraph());
+    // initiate SGQtWidgetManager
+    mSGQtWidgetManager->registerNewSceneGraph(mAc->getSGControl()->getSceneGraph());
 }
 
 void UIControl::connectSignals()
@@ -645,8 +647,8 @@ void UIControl::onAddNewSGNodeActionTriggered(QTreeWidgetItemWrapper* parentItem
 //            childItem = new QTreeWidgetItem(parentItem->treeWidget());
 //            parentItem->addChild(childItem);
 
-            // update UISGControl
-            //uiControl.mUISGControl->addNewNode(childItem, childNode);
+            // update SGQtWidgetManager
+            //uiControl.mSGQtWidgetManager->addNewNode(childItem, childNode);
         }
 
         virtual void visit(SGLeafNode* /*leafNode*/)
@@ -661,20 +663,20 @@ void UIControl::onAddNewSGNodeActionTriggered(QTreeWidgetItemWrapper* parentItem
     } visitor(*this, parentItem->getItem());
 
     // item is parent item
-    SGNode* parentNode = mUISGControl->get(parentItem->getItem());
+    SGNode* parentNode = mSGQtWidgetManager->get(parentItem->getItem());
     parentNode->accept(visitor);
 
 }
 
 void UIControl::onRemoveSGNodeActionTriggered(QTreeWidgetItemWrapper* item)
 {
-    SGNode* node = mUISGControl->get(item->getItem());
+    SGNode* node = mSGQtWidgetManager->get(item->getItem());
     mAc->getSGControl()->removeNode(node);
 }
 
 void UIControl::onLoadFileSGNodeActionTriggered(QTreeWidgetItemWrapper* item)
 {
-    SGNode* node = mUISGControl->get(item->getItem());
+    SGNode* node = mSGQtWidgetManager->get(item->getItem());
     class FileAsChildAdder : public SGNodeVisitor
     {
     public:
@@ -709,10 +711,10 @@ void UIControl::onLoadFileSGNodeActionTriggered(QTreeWidgetItemWrapper* item)
 
 void UIControl::onSGSelectionChanged(QList<QTreeWidgetItem*>& selectedItems)
 {
-    // update UISGControl
+    // update SGQtWidgetManager
     for (QTreeWidgetItem* item : selectedItems)
     {
-        SGNode* node = mUISGControl->get(item);
+        SGNode* node = mSGQtWidgetManager->get(item);
         mSelectionControl->selectSceneNode(node);
     }
 }

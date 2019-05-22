@@ -52,6 +52,8 @@ SimulationControl::SimulationControl()
 
     mStepSize = 0.01;
     mNumFEMCorrectionIterations = 1;
+    mMaxNumConstraintSolverIterations = 30;
+    mMaxConstraintError = 1e-5;
 }
 
 SimulationControl::~SimulationControl()
@@ -153,6 +155,7 @@ void SimulationControl::initialize()
     mCollisionControl = std::make_shared<CollisionControl>(mDomain, mUiControl, mAc->getRenderModelManager());
     mCollisionManager = mCollisionControl->getCollisionManager();
     mCollisionManagerProxy = std::make_shared<CollisionManagerProxy>(mCollisionManager.get());
+    mCollisionManager->setInvertNormalsIfNecessary(true);
 
     // initialize simulation
     // create FEMObject
@@ -216,6 +219,27 @@ void SimulationControl::setStepSize(double stepSize)
 double SimulationControl::getStepSize() const
 {
     return mStepSize;
+}
+
+void SimulationControl::setMaxNumConstraintSolverIterations(
+        int numConstraintSolverIterations)
+{
+    mMaxNumConstraintSolverIterations = numConstraintSolverIterations;
+}
+
+int SimulationControl::getMaxNumConstraintSolverIterations() const
+{
+    return mMaxNumConstraintSolverIterations;
+}
+
+void SimulationControl::setMaxConstraintError(double maxConstraintError)
+{
+    mMaxConstraintError = maxConstraintError;
+}
+
+double SimulationControl::getMaxConstraintError() const
+{
+    return mMaxConstraintError;
 }
 
 void SimulationControl::setNumFEMCorrectionIterations(int correctionIterations)
@@ -519,7 +543,9 @@ void SimulationControl::step()
         mRigidSimulation->revertPositions();
         mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-        mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
+        mImpulseConstraintSolver->solveConstraints(
+                    mMaxNumConstraintSolverIterations,
+                    mMaxConstraintError); // x, v + v^{FEM} + v^{col}
 
         for (int i = 0; i < mNumFEMCorrectionIterations; ++i)
         {
@@ -530,7 +556,9 @@ void SimulationControl::step()
 
             mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-            mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{FEM} + v^{col}
+            mImpulseConstraintSolver->solveConstraints(
+                        mMaxNumConstraintSolverIterations,
+                        mMaxConstraintError); // x, v + v^{FEM} + v^{col}
         }
     }
 

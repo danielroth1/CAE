@@ -1,5 +1,6 @@
 #include "ModelUtils.h"
 #include "PolygonRenderModelImproved.h"
+#include "RenderModelVisitor.h"
 
 #include <iostream>
 
@@ -41,7 +42,6 @@ PolygonRenderModelImproved::PolygonRenderModelImproved(
     , mRenderVertexNormals(renderVertexNormals)
     , mRenderFaceNormals(renderFaceNormals)
 {
-//    mRenderFaceNormals = true;
     mRequiresUpdate = false;
     mCurrentlyRenderedCenter = Eigen::Vector::Zero();
 
@@ -84,6 +84,38 @@ PolygonRenderModelImproved::~PolygonRenderModelImproved()
 
     if (mRenderPolygons && mRenderPolygonsData)
         mRenderPolygons->removeRenderPolygonsData(mRenderPolygonsData);
+}
+
+bool PolygonRenderModelImproved::isRenderOnlyOuterFaces() const
+{
+    return mRenderOnlyOuterFaces;
+}
+
+void PolygonRenderModelImproved::setRenderOnlyOuterFaces(bool renderOnlyOuterFaces)
+{
+    mRenderOnlyOuterFaces = renderOnlyOuterFaces;
+}
+
+bool PolygonRenderModelImproved::isRenderVertexNormals() const
+{
+    return mRenderVertexNormals;
+}
+
+void PolygonRenderModelImproved::setRenderVertexNormals(bool renderVertexNormals)
+{
+    mRenderVertexNormals = renderVertexNormals;
+    revalidatePointLineRendering();
+}
+
+bool PolygonRenderModelImproved::isRenderFaceNormals() const
+{
+    return mRenderFaceNormals;
+}
+
+void PolygonRenderModelImproved::setRenderFaceNormals(bool renderFaceNormals)
+{
+    mRenderFaceNormals = renderFaceNormals;
+    revalidatePointLineRendering();
 }
 
 void PolygonRenderModelImproved::reset()
@@ -278,13 +310,15 @@ void PolygonRenderModelImproved::revalidate()
     updatePositions();
 }
 
-void PolygonRenderModelImproved::accept(RenderModelVisitor& /*v*/)
+void PolygonRenderModelImproved::accept(RenderModelVisitor& v)
 {
-
+    v.visit(*this);
 }
 
 void PolygonRenderModelImproved::addToRenderer(Renderer* renderer)
 {
+    mRenderer = renderer;
+
     mRenderPolygons->setDomain(renderer->getDomain());
     mRenderPolygons->addRenderPolygonsData(mRenderPolygonsData);
     renderer->addRenderObject(mRenderPolygons);
@@ -434,6 +468,41 @@ void PolygonRenderModelImproved::getBufferedData(
     }
 }
 
+void PolygonRenderModelImproved::revalidatePointLineRendering()
+{
+    // set invisible if neccessary
+    if (mRenderVertexNormals || mRenderFaceNormals)
+    {
+        // Create and add (if not already done) renderLinesNormals and renderPoints
+        // to renderer.
+
+        if (!mRenderLinesNormals)
+        {
+            mRenderLinesNormals = std::make_shared<RenderLines>();
+            mRenderer->addRenderObject(mRenderLinesNormals);
+        }
+
+        if (!mRenderPoints)
+        {
+            mRenderPoints = std::make_shared<RenderPoints>();
+            mRenderer->addRenderObject(mRenderPoints);
+        }
+    }
+    else
+    {
+        // renderLineNormals and renderPoints aren't needed anymore, so remove
+        // them from renderer
+        if (!mRenderVertexNormals && !mRenderFaceNormals)
+        {
+            mRenderer->removeRenderObject(mRenderLinesNormals);
+            mRenderer->removeRenderObject(mRenderPoints);
+            mRenderLinesNormals = nullptr;
+            mRenderPoints = nullptr;
+        }
+
+    }
+}
+
 void PolygonRenderModelImproved::updatePositions()
 {
     Vectors& positions
@@ -499,7 +568,7 @@ void PolygonRenderModelImproved::updateNormalLines()
             Vectorf source = transform * positions->at(i);
 
             // draw line in direction of normal
-            Vectorf target = source + normalLineLength * normals->at(i);
+            Vectorf target = source + normalLineLength * transform.rotation() * normals->at(i);
 
             (*lines)[2 * i] = source;
             (*lines)[2 * i + 1] = target;
@@ -522,7 +591,7 @@ void PolygonRenderModelImproved::updateNormalLines()
         if (mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
         {
             Polygon3D* p3 = static_cast<Polygon3D*>(mPolygon.get());
-            faceNormals.resize(p3->getOuterFaceNormals().size());
+            faceNormals.resize(p3->getOuterFaceNormals().size()); // returns the outer face normals in world space
             for (size_t i = 0; i < faceNormals.size(); ++i)
             {
                 faceNormals[i] = p3->getOuterFaceNormals()[i].cast<float>();
@@ -569,7 +638,7 @@ void PolygonRenderModelImproved::updateNormalLines()
 
             // draw line in direction of normal
             Vectorf target = source +
-                    normalLineLength * transform.linear() * faceNormals.at(i);
+                    normalLineLength * faceNormals.at(i);
 
             (*lines)[startingIndex + 2 * i] = source;
             (*lines)[startingIndex + 2 * i + 1] = target;

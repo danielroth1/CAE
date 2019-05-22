@@ -37,8 +37,10 @@ public:
     void handlePreRenderingStep();
 
     // Adds render object and creates its buffers.
+    // This method is completely thread safe.
     void addRenderObject(std::shared_ptr<RenderObject> ro);
 
+    // This method is completely thread safe.
     void removeRenderObject(std::shared_ptr<RenderObject> ro);
 
     void setRenderSelection(RenderSelection* rs);

@@ -49,6 +49,15 @@ public:
 
     virtual ~PolygonRenderModelImproved() override;
 
+    bool isRenderOnlyOuterFaces() const;
+    void setRenderOnlyOuterFaces(bool renderOnlyOuterFaces);
+
+    bool isRenderVertexNormals() const;
+    void setRenderVertexNormals(bool renderVertexNormals);
+
+    bool isRenderFaceNormals() const;
+    void setRenderFaceNormals(bool renderFaceNormals);
+
     // RenderModel interface
 public:
 
@@ -79,6 +88,8 @@ private:
             BufferedData<Eigen::Vectorf, float, 3>*& normalsBufferedData,
             BufferedData<Face, unsigned int, 3>*& facesBufferedData);
 
+    void revalidatePointLineRendering();
+
     // Update mPositions with either the world or body space positions
     // from the geometric data depending on the representation type
     // of the geometric data.
@@ -93,6 +104,8 @@ private:
     void updateTransform();
 
     RenderModelManager* mRenderModelManager;
+
+    Renderer* mRenderer;
 
     std::shared_ptr<GeometricDataListener> mGeometricListener;
 

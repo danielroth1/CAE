@@ -23,6 +23,7 @@
 #include <ui/qt/QtMembersWidget.h>
 #include <utils/MemberAccessorFactory.h>
 #include <simulation/collision_detection/CollisionManager.h>
+#include <ui/scene_graph/SGUIControl.h>
 
 #include <simulation/fem/FEMObject.h>
 
@@ -58,6 +59,24 @@ void SimulationUIControl::init(QWidget* parent)
                     mAc->getSimulationControl()->getDomain()),
                 1e-5, 10.0, 0.01, 4);
 
+    mWidget->getMembersWidget()->addDouble(
+                "Max. Constraint Error",
+                MemberAccessorFactory::createGetterSetter<double, SimulationControl>(
+                    &SimulationControl::getMaxConstraintError,
+                    &SimulationControl::setMaxConstraintError,
+                    mAc->getSimulationControl(),
+                    mAc->getSimulationControl()->getDomain()),
+                0.0, 1.0, 1e-5, 7);
+
+    mWidget->getMembersWidget()->addInteger(
+                "Max. Constraint Iterations",
+                MemberAccessorFactory::createGetterSetter<int, SimulationControl>(
+                    &SimulationControl::getMaxNumConstraintSolverIterations,
+                    &SimulationControl::setMaxNumConstraintSolverIterations,
+                    mAc->getSimulationControl(),
+                    mAc->getSimulationControl()->getDomain()),
+                0, 100, 1);
+
     mWidget->getMembersWidget()->addInteger(
                 "FEM Correction Iterations",
                 MemberAccessorFactory::createGetterSetter<int, SimulationControl>(
@@ -82,6 +101,22 @@ void SimulationUIControl::init(QWidget* parent)
                     &SimulationControl::getInvertNormalsIfNecessary,
                     &SimulationControl::setInvertNormalsIfNecessary,
                     mAc->getSimulationControl(),
+                    mAc->getSimulationControl()->getDomain()));
+
+    mWidget->getMembersWidget()->addBool(
+                "Visualize Face normals",
+                MemberAccessorFactory::createGetterSetter<bool, SGUIControl>(
+                    &SGUIControl::isVisualizeFaceNormals,
+                    &SGUIControl::setVisualizeFaceNormals,
+                    mAc->getSGUIControl(),
+                    mAc->getSimulationControl()->getDomain()));
+
+    mWidget->getMembersWidget()->addBool(
+                "Visualize Vertex normals",
+                MemberAccessorFactory::createGetterSetter<bool, SGUIControl>(
+                    &SGUIControl::isVisualizeVertexNormals,
+                    &SGUIControl::setVisualizeVertexNormals,
+                    mAc->getSGUIControl(),
                     mAc->getSimulationControl()->getDomain()));
 }
 

@@ -183,7 +183,7 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
     return leafNode;
 }
 
-SGLeafNode*SGControl::createSimulationPoint(
+SGLeafNode* SGControl::createSimulationPoint(
         std::string name,
         SGChildrenNode* parent,
         Vector position)

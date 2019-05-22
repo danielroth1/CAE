@@ -146,7 +146,6 @@ public:
 
 private:
 
-
     ApplicationControl* mAc;
     SGSceneGraph* mSceneGraph;
 };

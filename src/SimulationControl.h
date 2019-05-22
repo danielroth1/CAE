@@ -101,6 +101,12 @@ public:
     void setStepSize(double stepSize);
     double getStepSize() const;
 
+    void setMaxNumConstraintSolverIterations(int numConstraintSolverIterations);
+    int getMaxNumConstraintSolverIterations() const;
+
+    void setMaxConstraintError(double maxConstraintError);
+    double getMaxConstraintError() const;
+
     void setNumFEMCorrectionIterations(int correctionIterations);
     int getNumFEMCorrectionIterations() const;
 
@@ -206,7 +212,9 @@ private:
 
     double mStepSize;
 
+    int mMaxNumConstraintSolverIterations;
     int mNumFEMCorrectionIterations;
+    double mMaxConstraintError;
 
     bool mPaused;
 
