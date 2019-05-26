@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>200</width>
+    <width>235</width>
     <height>485</height>
    </rect>
   </property>
@@ -46,8 +46,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>194</width>
-        <height>494</height>
+        <width>211</width>
+        <height>359</height>
        </rect>
       </property>
       <attribute name="label">
@@ -81,7 +81,24 @@
           <property name="bottomMargin">
            <number>9</number>
           </property>
-          <item row="10" column="0" colspan="2">
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pushButton_3">
+            <property name="text">
+             <string>Reset</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QtMembersWidget" name="mMembersWidget" native="true"/>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="Line" name="line_6">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0" colspan="2">
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
              <number>0</number>
@@ -178,49 +195,14 @@
             </property>
            </widget>
           </item>
-          <item row="6" column="0" colspan="2">
-           <widget class="QGroupBox" name="mToolsGroupBox">
-            <property name="title">
-             <string>Vertex Tools</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_3">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item row="0" column="1">
-              <widget class="QPushButton" name="mButtonCreateVertexGroup">
-               <property name="text">
-                <string>Create Group</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QPushButton" name="mButtonTruncate">
-               <property name="text">
-                <string>Truncate</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="7" column="0" colspan="2">
-           <widget class="Line" name="line">
+          <item row="5" column="0" colspan="2">
+           <widget class="Line" name="line_2">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
-          <item row="8" column="0" colspan="2">
+          <item row="4" column="0" colspan="2">
            <widget class="QGroupBox" name="groupBox">
             <property name="title">
              <string>Creation</string>
@@ -262,90 +244,8 @@
             </layout>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="pushButton_3">
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="Line" name="line_3">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="11" column="0" colspan="2">
+          <item row="7" column="0" colspan="2">
            <widget class="Line" name="line_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QtMembersWidget" name="mMembersWidget" native="true"/>
-          </item>
-          <item row="9" column="0" colspan="2">
-           <widget class="Line" name="line_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0" colspan="2">
-           <widget class="QGroupBox" name="groupBox_2">
-            <property name="title">
-             <string>Vertex Operations</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_5">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item row="0" column="0">
-              <widget class="QPushButton" name="mButtonSelect">
-               <property name="text">
-                <string>Select</string>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QPushButton" name="mButtonMove">
-               <property name="text">
-                <string>Move</string>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="QPushButton" name="mButtonActLinearForce">
-               <property name="text">
-                <string>Linear Force</string>
-               </property>
-               <property name="checkable">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="Line" name="line_6">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -361,7 +261,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>176</width>
+        <width>211</width>
         <height>284</height>
        </rect>
       </property>
@@ -409,7 +309,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>206</width>
+               <width>209</width>
                <height>282</height>
               </rect>
              </property>

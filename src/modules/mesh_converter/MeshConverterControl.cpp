@@ -42,6 +42,9 @@ void MeshConverterControl::loadGeometry2D(Polygon2D* /*poly2*/)
 }
 
 void MeshConverterControl::convert(
+        double facetAngle,
+        double facetSize,
+        double facetDistance,
         double cellSize,
         double cellRadiusEdgeRatio,
         bool renderOnlyOuterFaces)
@@ -90,6 +93,9 @@ void MeshConverterControl::convert(
         SGLeafNode* newNode =
                 mAc->getSGControl()->create3DGeometryFrom2D(
                     static_cast<SGLeafNode*>(leafData->getNode()),
+                    facetAngle,
+                    facetSize,
+                    facetDistance,
                     cellSize,
                     cellRadiusEdgeRatio,
                     renderOnlyOuterFaces);

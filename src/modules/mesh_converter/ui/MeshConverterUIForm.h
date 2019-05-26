@@ -24,6 +24,9 @@ public:
     // Getters for UI elements
         double getCellSize();
         double getCellRadiusEdgeRatio();
+        double getFacetAngle() const;
+        double getFacetSize() const;
+        double getFacetDistance() const;
 
     // Methods for updatingUI
     // Signals are blocked while updating, preventing infite loops.

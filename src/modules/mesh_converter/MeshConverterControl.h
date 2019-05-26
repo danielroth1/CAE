@@ -36,6 +36,9 @@ public:
     // Converts the Polygon2D that was loaded in loadGeometry2D.
     //TODO: call these from ui control
     void convert(
+            double facetAngle,
+            double facetSize,
+            double facetDistance,
             double cellSize,
             double cellRadiusEdgeRatio,
             bool renderOnlyOuterFaces = true);

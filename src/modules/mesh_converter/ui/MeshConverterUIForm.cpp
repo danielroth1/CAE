@@ -26,6 +26,21 @@ double MeshConverterUIForm::getCellRadiusEdgeRatio()
     return ui->mCellRadiusEdgeRatioBox->value();
 }
 
+double MeshConverterUIForm::getFacetAngle() const
+{
+    return ui->mFacetAngle->value();
+}
+
+double MeshConverterUIForm::getFacetSize() const
+{
+    return ui->mFacetSize->value();
+}
+
+double MeshConverterUIForm::getFacetDistance() const
+{
+    return ui->mFacetDistance->value();
+}
+
 void MeshConverterUIForm::updateCellSize(double cellSize)
 {
     updateDoubleSpinBox(ui->mCellSizeBox, cellSize);

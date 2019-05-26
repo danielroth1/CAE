@@ -9,7 +9,10 @@
 #include "scene/data/geometric/Polygon2D.h"
 #include "scene/data/geometric/Polygon3D.h"
 
+#include <iostream>
 #include <vector>
+
+#include <modules/mesh_converter/MeshCriteria.h>
 
 using namespace Eigen;
 
@@ -220,16 +223,25 @@ Polygon2D GeometricDataFactory::create2DSphere(
 Polygon3D GeometricDataFactory::create3DSphere(
         double radius,
         int resolution,
+        double facetAngle,
+        double facetSize,
+        double facetDistance,
         double cellSize,
         double cellRadiusEdgeRatio)
 {
     Polygon2D p2temp = create2DSphere(radius, resolution);
-    Polygon3D p3 = createPolygon3DFromPolygon2D(p2temp, cellSize, cellRadiusEdgeRatio);
+    Polygon3D p3 = createPolygon3DFromPolygon2D(
+                p2temp,
+                facetAngle, facetSize, facetDistance,
+                cellSize, cellRadiusEdgeRatio);
     return p3;
 }
 
 Polygon3D GeometricDataFactory::createPolygon3DFromPolygon2D(
         Polygon2D& p,
+        double facetAngle,
+        double facetSize,
+        double facetDistance,
         double cellSize,
         double cellRadiusEdgeRatio)
 {
@@ -237,6 +249,12 @@ Polygon3D GeometricDataFactory::createPolygon3DFromPolygon2D(
     Faces outerFacesOut;
     Faces facesOut;
     Cells cellsOut;
+    MeshCriteria criteria(
+                facetAngle,
+                facetSize,
+                facetDistance,
+                cellSize,
+                cellRadiusEdgeRatio);
     MeshConverter::instance()->generateMesh(
                 p.getPositions(),
                 p.getTopology().retrieveFaces(),
@@ -244,8 +262,7 @@ Polygon3D GeometricDataFactory::createPolygon3DFromPolygon2D(
                 outerFacesOut,
                 facesOut,
                 cellsOut,
-                cellSize,
-                cellRadiusEdgeRatio);
+                criteria);
     return Polygon3D(verticesOut,
                      Polygon3DTopology(facesOut, outerFacesOut,
                                        cellsOut, verticesOut.size()));

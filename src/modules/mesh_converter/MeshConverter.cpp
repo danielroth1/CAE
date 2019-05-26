@@ -1,14 +1,17 @@
 #include "MeshConverter.h"
+#include "MeshCriteria.h"
 
-
-#include <CGAL/Mesh_triangulation_3.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/make_mesh_3.h>
+#include <CGAL/Mesh_3/config.h>
 #include <CGAL/Mesh_complex_3_in_triangulation_3.h>
 #include <CGAL/Mesh_criteria_3.h>
+#include <CGAL/Mesh_triangulation_3.h>
+#include <CGAL/Mesh_polyhedron_3.h>
 #include <CGAL/Polyhedral_mesh_domain_3.h>
-#include <CGAL/make_mesh_3.h>
+#include <CGAL/Polyhedral_mesh_domain_with_features_3.h>
+#include <CGAL/Polyhedron_3.h>
 #include <CGAL/refine_mesh_3.h>
-
-#include <CGAL/Mesh_3/config.h>
 #include <CGAL/utility.h>
 
 // IO
@@ -25,33 +28,43 @@
 // std
 #include <vector>
 
+// CGAL feature detection
+#include <CGAL/Polygon_mesh_processing/detect_features.h>
 
-// Domain
-typedef CGAL::Polyhedral_mesh_domain_3<Polyhedron, K> Mesh_domain;
+// concurrency tags
 #ifdef CGAL_CONCURRENT_MESH_3
 typedef CGAL::Parallel_tag Concurrency_tag;
 #else
 typedef CGAL::Sequential_tag Concurrency_tag;
 #endif
-typedef Polyhedron::HalfedgeDS HalfedgeDS;
+
+
+// Polyhedron
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef CGAL::Mesh_polyhedron_3<K>::type Polyhedron;
+
+// Domain
+typedef CGAL::Polyhedral_mesh_domain_with_features_3<K> Mesh_domain_features;
+typedef CGAL::Polyhedral_mesh_domain_3<Polyhedron, K> Mesh_domain;
 
 // Triangulation
 typedef CGAL::Mesh_triangulation_3<Mesh_domain, CGAL::Default, Concurrency_tag>::type Tr;
+typedef CGAL::Mesh_triangulation_3<Mesh_domain_features, CGAL::Default, Concurrency_tag>::type Tr_features;
+
 typedef CGAL::Mesh_complex_3_in_triangulation_3<Tr> C3t3;
+typedef CGAL::Mesh_complex_3_in_triangulation_3<Tr> C3t3_features;
 
 // Criteria
 typedef CGAL::Mesh_criteria_3<Tr> Mesh_criteria;
 
-
-using namespace CGAL::parameters;
+typedef Polyhedron::HalfedgeDS HalfedgeDS;
 
 
 MeshConverter* MeshConverter::m_instance = new MeshConverter();
 
 MeshConverter::MeshConverter()
 {
-    mCellSize = 0.08;
-    mCellRadiusEdgeRatio = 0.1;
+
 }
 
 // Helper function
@@ -73,59 +86,89 @@ void add_if_not_contains(std::vector<std::array<T, n>>& v, std::array<T, n> e)
 }
 
 
-bool MeshConverter::generateMesh(
-        const Vectors& vertices,
-        const Faces& facets,
-        Vectors& vertices_out,
-        Faces& outer_facets_out,
-        Faces& facets_out,
-        Cells& cells_out,
-        double cellSize,
-        double cellRadiusEdgeRatio)
+template<typename Polyhedron>
+void reset_sharp_edges(Polyhedron* pMesh)
 {
-    mCellSize = cellSize;
-    mCellRadiusEdgeRatio = cellRadiusEdgeRatio;
-    std::cout << "Input: \n "
-              << "Vertices: " << vertices.size() << "\n"
-              << "Facets/Triangles: " << facets.size() << "\n";
+    typename boost::property_map<Polyhedron, CGAL::edge_is_feature_t>::type if_pm =
+            get(CGAL::edge_is_feature, *pMesh);
+    for(typename boost::graph_traits<Polyhedron>::edge_descriptor ed : edges(*pMesh))
+    {
+        put(if_pm,ed,false);
+    }
+}
+template<typename Polyhedron>
+void detect_sharp_edges(Polyhedron* pMesh, const double angle)
+{
+    reset_sharp_edges(pMesh);
 
-    vertices_out.clear();
-    outer_facets_out.clear();
-    facets_out.clear();
-    cells_out.clear();
+    // Detect edges in current polyhedron
+    typename boost::property_map<Polyhedron, CGAL::edge_is_feature_t>::type eif =
+            get(CGAL::edge_is_feature, *pMesh);
 
-    Polyhedron p = createPolyhedron(vertices, facets);
-
-    std::cout << "\nAfter Conversion to Polyhedron: \n"
-              << "Vertices: " << p.size_of_vertices() << "\n"
-              << "Facets/Triangles: " << p.size_of_facets() << "\n";
-
-    return generateMesh(p, vertices_out, outer_facets_out, facets_out,
-                        cells_out, cellSize, cellRadiusEdgeRatio);
-
-
+    CGAL::Polygon_mesh_processing::detect_sharp_edges(*pMesh, angle, eif);
 }
 
-bool MeshConverter::generateMesh(
-        Polyhedron& p,
+// Creates a CGAL Polyhedron from the given vertices and triangles.
+Polyhedron createPolyhedron(
+        const Vectors& vertices,
+        const Faces& facets)
+{
+    Polyhedron p;
+
+    CGAL::Polyhedron_incremental_builder_3<HalfedgeDS> builder( p.hds(), true);
+    typedef typename HalfedgeDS::Vertex   Vertex;
+    typedef typename Vertex::Point Point;
+
+    builder.begin_surface(vertices.size(), facets.size(), 0);
+
+    for (const Eigen::Vector3d& v : vertices)
+    {
+        builder.add_vertex(Point(v(0), v(1), v(2)));
+    }
+
+    for (const std::array<unsigned int, 3>& f : facets)
+    {
+        builder.begin_facet();
+        builder.add_vertex_to_facet(f[0]);
+        builder.add_vertex_to_facet(f[1]);
+        builder.add_vertex_to_facet(f[2]);
+        builder.end_facet();
+    }
+
+    builder.end_surface();
+
+    return p;
+}
+
+template <typename Mesh_domain>
+bool generateMeshFromCGALPolyhedron(
+        Mesh_domain& domain,
         Vectors& vertices_out,
         Faces& outer_facets_out,
         Faces& facets_out,
         Cells& cells_out,
-        double cellSize,
-        double cellRadiusEdgeRatio)
+        const MeshCriteria& meshCriteria)
 {
-    mCellSize = cellSize;
-    mCellRadiusEdgeRatio = cellRadiusEdgeRatio;
 
-    // Create domain
-    Mesh_domain domain(p);
+    // Triangulation
+    typedef typename CGAL::Mesh_triangulation_3<Mesh_domain, CGAL::Default, Concurrency_tag>::type MeshTr;
+    typedef CGAL::Mesh_complex_3_in_triangulation_3<MeshTr> C3t3;
+    typedef CGAL::Mesh_criteria_3<MeshTr> Mesh_criteria;
 
-    Mesh_criteria criteria(cell_radius_edge_ratio=mCellRadiusEdgeRatio,
-                           cell_size=mCellSize);
+    Mesh_criteria criteria(
+                CGAL::parameters::cell_radius_edge_ratio=meshCriteria.getCellRadiusEdgeRatio(),
+                CGAL::parameters::cell_size=meshCriteria.getCellSize(),
+                CGAL::parameters::facet_angle=meshCriteria.getFacetAngle(),
+                CGAL::parameters::facet_size=meshCriteria.getFacetSize(),
+                CGAL::parameters::facet_distance=meshCriteria.getFaceDistance());
+
+//    Mesh_criteria criteria;
 
     // Mesh generation
-    C3t3 c3t3 = CGAL::make_mesh_3<C3t3>(domain, criteria, no_perturb(), no_exude());
+    C3t3 c3t3 = CGAL::make_mesh_3<C3t3>(
+                domain, criteria,
+                CGAL::parameters::no_perturb(),
+                CGAL::parameters::no_exude());
 
 
     // CONVERT FROM CGAL TO vectors
@@ -269,42 +312,71 @@ bool MeshConverter::generateMesh(
     return true;
 }
 
-Polyhedron MeshConverter::createPolyhedron(
+
+// The same as the other generateMesh() but uses a CGAL Polyhedron.
+// Calling createPolyhedron() and this method is equal to the other
+// generateMesh().
+bool generateMeshFromCGALPolyhedron(
+        Polyhedron& p,
+        Vectors& vertices_out,
+        Faces& outer_facets_out,
+        Faces& facets_out,
+        Cells& cells_out,
+        const MeshCriteria& meshCriteria)
+{
+    if (meshCriteria.isEdgesAsFeatures())
+    {
+        typedef CGAL::Polyhedral_mesh_domain_with_features_3<K> Mesh_domain;
+
+        // Create domain
+        Mesh_domain domain(p, p);
+        domain.detect_features(meshCriteria.getMinFeatureEdgeAngleDeg());
+
+        return generateMeshFromCGALPolyhedron(
+                    domain, vertices_out, outer_facets_out, facets_out, cells_out,
+                    meshCriteria);
+    }
+    else
+    {
+        typedef CGAL::Polyhedral_mesh_domain_3<Polyhedron, K> Mesh_domain;
+
+        // Create domain
+        Mesh_domain domain(p);
+
+        return generateMeshFromCGALPolyhedron(
+                    domain, vertices_out, outer_facets_out, facets_out, cells_out,
+                    meshCriteria);
+    }
+
+}
+
+
+bool MeshConverter::generateMesh(
         const Vectors& vertices,
-        const Faces& facets)
+        const Faces& facets,
+        Vectors& vertices_out,
+        Faces& outer_facets_out,
+        Faces& facets_out,
+        Cells& cells_out,
+        const MeshCriteria& meshCriteria)
 {
-    Polyhedron p;
-    CGAL::Polyhedron_incremental_builder_3<HalfedgeDS> builder( p.hds(), true);
-    typedef typename HalfedgeDS::Vertex   Vertex;
-    typedef typename Vertex::Point Point;
+    std::cout << "Input: \n "
+              << "Vertices: " << vertices.size() << "\n"
+              << "Facets/Triangles: " << facets.size() << "\n";
 
-    builder.begin_surface(vertices.size(), facets.size(), 0);
+    vertices_out.clear();
+    outer_facets_out.clear();
+    facets_out.clear();
+    cells_out.clear();
 
-    for (const Eigen::Vector3d& v : vertices)
-    {
-        builder.add_vertex(Point(v(0), v(1), v(2)));
-    }
+    Polyhedron p = createPolyhedron(vertices, facets);
 
-    for (const std::array<unsigned int, 3>& f : facets)
-    {
-        builder.begin_facet();
-        builder.add_vertex_to_facet(f[0]);
-        builder.add_vertex_to_facet(f[1]);
-        builder.add_vertex_to_facet(f[2]);
-        builder.end_facet();
-    }
+    std::cout << "\nAfter Conversion to Polyhedron: \n"
+              << "Vertices: " << p.size_of_vertices() << "\n"
+              << "Facets/Triangles: " << p.size_of_facets() << "\n";
 
-    builder.end_surface();
+    return generateMeshFromCGALPolyhedron(
+                p, vertices_out, outer_facets_out, facets_out, cells_out, meshCriteria);
 
-    return p;
-}
 
-double MeshConverter::getCellSize() const
-{
-    return mCellSize;
-}
-
-double MeshConverter::getCellRadiusEdgeRatio() const
-{
-    return mCellRadiusEdgeRatio;
 }

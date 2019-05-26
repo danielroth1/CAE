@@ -56,8 +56,13 @@ void MeshConverterUIControl::onConvertButtonClicked()
     //  - cellRadiusEdgeRatio
     double cellSize = mWidget->getCellSize();
     double cellRadiusEdgeRatio = mWidget->getCellRadiusEdgeRatio();
+    double facetAngle = mWidget->getFacetAngle();
+    double facetSize = mWidget->getFacetSize();
+    double facetDistance = mWidget->getFacetDistance();
 
-    mModule->getControl()->convert(cellSize, cellRadiusEdgeRatio);
+    mModule->getControl()->convert(
+                cellSize, cellRadiusEdgeRatio,
+                facetAngle, facetSize, facetDistance);
 }
 
 void MeshConverterUIControl::onRevertButtonClicked()

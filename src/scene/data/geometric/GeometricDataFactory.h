@@ -40,13 +40,19 @@ public:
     static Polygon3D create3DSphere(
             double radius,
             int resolution,
-            double cellSize,
-            double cellRadiusEdgeRatio);
+            double facetAngle = 0,
+            double facetSize = 0,
+            double facetDistance = 0,
+            double cellSize = 0,
+            double cellRadiusEdgeRatio = 0);
 
     static Polygon3D createPolygon3DFromPolygon2D(
             Polygon2D& p,
-            double cellSize = 0.3,
-            double cellRadiusEdgeRatio = 30);
+            double facetAngle = 0,
+            double facetSize = 0,
+            double facetDistance = 0,
+            double cellSize = 0,
+            double cellRadiusEdgeRatio = 0);
 
 protected:
     GeometricDataFactory();

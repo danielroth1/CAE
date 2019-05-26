@@ -4,17 +4,19 @@
 #include <Eigen/Dense>
 #include "data_structures/DataStructures.h"
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Polyhedron_3.h>
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef CGAL::Polyhedron_3<K> Polyhedron;
+class MeshCriteria;
 
 // This method provides methods from the CGAL library for the creationg
 // of Polygon3D volumes from Polygon2D meshes. Polygon2Ds are made of
 // triangles while Polygon3Ds are made of tetrahedrons. The MeshConverter
 // can be used anytime it is desirable to simulate volumetric data while
 // only a mesh is provided.
+//
+// Many of the methods of this class are implemented outside of the class definition
+// directly in the .cpp. This is done to speed up compilation by avoiding cgal includes
+// Since CGAL is a highly templated library, there is no possibility to use
+// forward declarations.
 //
 // Use generateMesh() to create Polygon3Ds from Polygon2Ds data.
 class MeshConverter
@@ -26,6 +28,15 @@ public:
     static MeshConverter* instance() {
         return m_instance;
     }
+
+    bool generateMesh(
+            const Vectors& vertices,
+            const Faces& facets,
+            Vectors& vertices_out,
+            Faces& outer_facets_out,
+            Faces& facets_out,
+            Cells& cells_out,
+            const MeshCriteria& criteria);
 
     // Generates a 3D polygon from a given 2D polygon.
     // \param vertices - input vertices
@@ -44,35 +55,14 @@ public:
             Faces& outer_facets_out,
             Faces& facets_out,
             Cells& cells_out,
-            double cellSize = 0.3, //0.08,
-            double cellRadiusEdgeRatio = 30); //0.1);
-
-    // The same as the other generateMesh() but uses a CGAL Polyhedron.
-    // Calling createPolyhedron() and this method is equal to the other
-    // generateMesh().
-    bool generateMesh(
-            Polyhedron& polyhedron,
-            Vectors& vertices_out,
-            Faces& outer_facets_out,
-            Faces& facets_out,
-            Cells& cells_out,
-            double cellSize = 0.3,
-            double cellRadiusEdgeRatio = 30);
-
-    // Creates a CGAL Polyhedron from the given vertices and triangles.
-    Polyhedron createPolyhedron(
-            const Vectors& vertices,
-            const Faces& facets);
-
-    double getCellSize() const;
-    double getCellRadiusEdgeRatio() const;
+            double facetAngle = 0,
+            double facetSize = 0,
+            double facetDistance = 0,
+            double cellSize = 0,
+            double cellRadiusEdgeRatio = 0);
 
 private:
     static MeshConverter* m_instance;
-
-    double mCellSize;
-
-    double mCellRadiusEdgeRatio;
 };
 
 #endif // MESH_CONVERTER_H

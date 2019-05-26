@@ -99,6 +99,9 @@ SGLeafNode* SGControl::createSphere(
 
 SGLeafNode* SGControl::create3DGeometryFrom2D(
         SGLeafNode* leafNode,
+        double facetAngle,
+        double facetSize,
+        double facetDistance,
         double cellSize,
         double cellRadiusEdgeRatio,
         bool renderOnlyOuterFaces)
@@ -107,8 +110,16 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
     class Geo2DTo3DVisitor : public GeometricDataVisitor
     {
     public:
-        Geo2DTo3DVisitor(double _cellSize, double _cellRadiusEdgeRatio)
-            : cellSize(_cellSize)
+        Geo2DTo3DVisitor(
+                    double _facetAngle,
+                    double _facetSize,
+                    double _facetDistance,
+                    double _cellSize,
+                    double _cellRadiusEdgeRatio)
+            : facetAngle(_facetAngle)
+            , facetSize(_facetSize)
+            , facetDistance(_facetDistance)
+            , cellSize(_cellSize)
             , cellRadiusEdgeRatio(_cellRadiusEdgeRatio)
         {
 
@@ -118,7 +129,9 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
         {
             returnValue = std::make_shared<Polygon3D>(
                         GeometricDataFactory::createPolygon3DFromPolygon2D(
-                            poly2, cellSize, cellRadiusEdgeRatio));
+                            poly2,
+                            facetAngle, facetSize, facetDistance,
+                            cellSize, cellRadiusEdgeRatio));
         }
 
         virtual void visit(Polygon3D& /*polygon3D*/)
@@ -131,6 +144,9 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
             std::cout << "Can not convert a GeometricPoint to a Polyon3D\n";
         }
 
+        double facetAngle;
+        double facetSize;
+        double facetDistance;
         double cellSize;
         double cellRadiusEdgeRatio;
         std::shared_ptr<Polygon3D> returnValue;
@@ -139,8 +155,16 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
     class Poly2To3Visitor : public SGNodeVisitor
     {
     public:
-        Poly2To3Visitor(double _cellSize, double _cellRadiusEdgeRatio)
-            : cellSize(_cellSize)
+        Poly2To3Visitor(
+                    double _cellSize,
+                    double _cellRadiusEdgeRatio,
+                    double _facetAngle,
+                    double _facetSize,
+                    double _facetDistance)
+            : facetAngle(_facetAngle)
+            , facetSize(_facetSize)
+            , facetDistance(_facetDistance)
+            , cellSize(_cellSize)
             , cellRadiusEdgeRatio(_cellRadiusEdgeRatio)
         {
 
@@ -155,15 +179,23 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
 
         virtual void visit(SGLeafNode* leafNode)
         {
-            Geo2DTo3DVisitor v(cellSize, cellRadiusEdgeRatio);
+            Geo2DTo3DVisitor v(
+                        facetAngle,
+                        facetSize,
+                        facetDistance,
+                        cellSize,
+                        cellRadiusEdgeRatio);
             leafNode->getData()->getGeometricData()->accept(v);
             returnValue = v.returnValue;
         }
 
+        double facetAngle;
+        double facetSize;
+        double facetDistance;
         double cellSize;
         double cellRadiusEdgeRatio;
         std::shared_ptr<Polygon3D> returnValue;
-    } v(cellSize, cellRadiusEdgeRatio);
+    } v(facetAngle, facetSize, facetDistance, cellSize, cellRadiusEdgeRatio);
 
     leafNode->accept(v);
     std::shared_ptr<Polygon3D> poly3 = v.returnValue;

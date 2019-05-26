@@ -60,8 +60,11 @@ public:
         // Returns the given leaf node.
         SGLeafNode* create3DGeometryFrom2D(
                 SGLeafNode* leafNode,
-                double cellSize = 0.3,
-                double cellRadiusEdgeRatio = 30,
+                double facetAngle = 0,
+                double facetSize = 0,
+                double facetDistance = 0,
+                double cellSize = 0,
+                double cellRadiusEdgeRatio = 0,
                 bool renderOnlyOuterFaces = true);
 
         SGLeafNode* createSimulationPoint(

@@ -17,10 +17,6 @@ SimulationUIWidget::SimulationUIWidget(
     , mUi(new Ui::SimulationUIWidget)
 {
     mUi->setupUi(this);
-    QButtonGroup* buttonGroup = new QButtonGroup(this);
-    buttonGroup->addButton(mUi->mButtonActLinearForce);
-    buttonGroup->addButton(mUi->mButtonMove);
-    buttonGroup->addButton(mUi->mButtonSelect);
 
     QButtonGroup* renderCollisionSphereCheckBoxesGroup = new QButtonGroup(this);
     renderCollisionSphereCheckBoxesGroup->addButton(mUi->mCheckBoxRenderLeafs);

@@ -57,6 +57,13 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Facet Angle</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="1">
        <widget class="QDoubleSpinBox" name="mCellSizeBox">
         <property name="maximum">
@@ -64,13 +71,6 @@
         </property>
         <property name="value">
          <double>0.300000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Cell Size</string>
         </property>
        </widget>
       </item>
@@ -83,6 +83,36 @@
          <double>30.000000000000000</double>
         </property>
        </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Cell Size</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Facet Size</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Facet Distance</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QDoubleSpinBox" name="mFacetAngle"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QDoubleSpinBox" name="mFacetSize"/>
+      </item>
+      <item row="4" column="1">
+       <widget class="QDoubleSpinBox" name="mFacetDistance"/>
       </item>
      </layout>
     </widget>
