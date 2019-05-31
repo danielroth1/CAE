@@ -9,6 +9,7 @@
 
 class DemoLoaderModule;
 class RenderModelManager;
+class SGUIControl;
 class SimulationControl;
 class UIControl;
 
@@ -44,6 +45,7 @@ public:
     void onExit();
 
     SGControl* getSGControl();
+    SGUIControl* getSGUIControl();
     SimulationControl* getSimulationControl();
     UIControl* getUIControl();
     RenderModelManager* getRenderModelManager();
@@ -57,6 +59,7 @@ private:
 
     // Getters for all controls
     std::shared_ptr<SGControl> mSGControl;
+    std::shared_ptr<SGUIControl> mSGUIControl;
     std::shared_ptr<SimulationControl> mSimulationControl;
     std::shared_ptr<UIControl> mUiControl;
     std::shared_ptr<RenderModelManager> mRenderModelManager;

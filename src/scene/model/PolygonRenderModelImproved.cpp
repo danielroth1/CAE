@@ -222,8 +222,11 @@ void PolygonRenderModelImproved::reset()
     case Polygon::DimensionType::THREE_D:
     {
         Polygon3D* p3 = static_cast<Polygon3D*>(mPolygon.get());
-        size = p3->getOuterPositionIds().size();
-        break;
+        if (mRenderOnlyOuterFaces)
+            size = p3->getOuterPositionIds().size();
+        else
+            size = p3->getPositions().size();
+            break;
     }
     }
 
@@ -514,7 +517,7 @@ void PolygonRenderModelImproved::updatePositions()
         auto positionsLock = mRenderObjectPositions->lock();
         for (size_t i = 0; i < positionsLock->size(); ++i)
         {
-            if (mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+            if (mRenderOnlyOuterFaces && mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
             {
                 positionsLock->at(i) = positions[
                         static_cast<Polygon3D*>(
