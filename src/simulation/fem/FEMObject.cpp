@@ -12,6 +12,7 @@
 #include <scene/data/references/GeometricVertexRef.h>
 #include <simulation/constraints/Truncation.h>
 #include <simulation/references/SimulationPointRef.h>
+#include <times/timing.h>
 
 // FEMObject without initialPositions
 
@@ -201,8 +202,7 @@ void FEMObject::updatePositions()
 
 void FEMObject::updateFEM(bool corotated)
 {
-    for (FiniteElement& fe : mFiniteElements)
-        fe.update(corotated);
+    START_TIMING_SIMULATION("FEMObject::updateFEM()");
     updateStiffnessMatrix(corotated);
     updateElasticForces();
 
@@ -215,66 +215,7 @@ void FEMObject::updateFEM(bool corotated)
     VectorXd::Map(mVelocitiesPrevious[0].data(), size * 3) =
             VectorXd::Map(mVelocities[0].data(), size * 3);
 
-}
-
-void FEMObject::updateMassMatrix()
-{
-    mMassCoef.clear();
-    mMassCoef.reserve(mFiniteElements.size() * 12);
-    for (FiniteElement& fe : mFiniteElements)
-    {
-        for (unsigned int a = 0; a < 4; ++a)
-        {
-            unsigned int a_global = fe.getCell()[a];
-            double value = fe.getM()[a];
-            for (unsigned int i = 0; i < 3; ++i)
-            {
-                unsigned int r = a_global * 3 + i;
-                unsigned int c = a_global * 3 + i;
-                mMassCoef.push_back(Triplet<double>(r, c, value));
-            }
-
-        }
-    }
-    // update sparse matrix
-    //std::cout << mM << "\n";
-    mM.setZero();
-    mM.setFromTriplets(mMassCoef.begin(), mMassCoef.end());
-}
-
-Truncation* FEMObject::getTruncation()
-{
-    return mTruncation.get();
-}
-
-std::shared_ptr<Polygon3D> FEMObject::getPolygon()
-{
-    return mPoly3;
-}
-
-Vector& FEMObject::getPosition(size_t id)
-{
-    return mPositions[id];
-}
-
-void FEMObject::setPosition(Vector v, ID id)
-{
-    mPositions[id] = v;
-}
-
-void FEMObject::addToPosition(Vector v, ID id)
-{
-    mPositions[id] += v;
-}
-
-size_t FEMObject::getSize()
-{
-    return mPositions.size();
-}
-
-GeometricData* FEMObject::getGeometricData()
-{
-    return mPoly3.get();
+    STOP_TIMING_SIMULATION;
 }
 
 void FEMObject::solveFEMExplicitly(double timeStep, bool corotated)
@@ -303,13 +244,12 @@ void FEMObject::solveFEMExplicitly(double timeStep, bool corotated)
 
 void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 {
+    START_TIMING_SIMULATION("SimulationControl::solveFEM()");
     if (mTruncation->getTruncatedVectorIds().size() == mPositions.size())
         return;
 
     if (!firstStep)
     {
-        for (FiniteElement& fe : mFiniteElements)
-            fe.updateCorotatedForces();
         updateElasticForces();
     }
 
@@ -342,21 +282,56 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
     // good truncation
     //Truncation truncation(A, b, mTruncatedVectorIds);
 
+//        std::cout << A << "\n";
     SparseMatrix<double> ACopy = A;
     VectorXd bCopy = b;
     mTruncation->truncateByRemoving(ACopy, bCopy, A, b);
 
-//    SparseLU<SparseMatrix<double>> solver;
-    SimplicialLLT<SparseMatrix<double>> solver;
+    START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver");
+    SimplicialLDLT<SparseMatrix<double>, Eigen::Lower> solver;
+    A = A.transpose();
+    A.makeCompressed();
     VectorXd sol(size*3);
+
+#if 1
     solver.analyzePattern(A);
     if (solver.info() != Eigen::Success)
         std::cerr << "Solver: analyzePattern failed.\n";
+
+    START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::factorize");
     solver.factorize(A);
+    STOP_TIMING_SIMULATION;
+#else
+
+    START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::factorize");
+    solver.compute(A);
+    STOP_TIMING_SIMULATION;
+
+#endif
+
+    std::cout << "non zeros = " << A.nonZeros() << ", cols = " << A.cols() << ", rows = " << A.rows() << "\n";
     if (solver.info() != Eigen::Success)
+    {
+        std::cout << A << "\n";
         std::cerr << "Solver: factorize failed.\n";
+    }
+
+//    SparseLU<SparseMatrix<double>> solver;
+//    VectorXd sol(size*3);
+//    solver.analyzePattern(A);
+//    if (!solver.lastErrorMessage().empty())
+//        printf("EigenErrorMessage[analyzePattern]: %s\n", solver.lastErrorMessage().c_str());
+//    solver.factorize(A);
+//    if (!solver.lastErrorMessage().empty())
+//        fprintf(stderr, "EigenErrorMessage[factorize]: %s\n", solver.lastErrorMessage().c_str());
+
+    START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::solve");
     sol = solver.solve(b);
+    STOP_TIMING_SIMULATION;
+
     sol = mTruncation->createOriginal(sol);
+
+    STOP_TIMING_SIMULATION;
 
     // update the velocities
     VectorXd::Map(mDeltaV[0].data(), size * 3) = sol;
@@ -365,6 +340,8 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
             VectorXd::Map(mDeltaV[0].data(), size * 3);
 
     integratePositions(timeStep);
+
+    STOP_TIMING_SIMULATION;
 
 //    std::cout << "norm = " << sol.norm() << "\n";
 
@@ -494,7 +471,160 @@ void FEMObject::applyForce(ID vertexIndex, const Vector& force)
     mForcesExt[vertexIndex] += force;
 }
 
+Vector& FEMObject::x(unsigned int i)
+{
+    return mInitialPositions[i];
+}
+
+Vector& FEMObject::y(unsigned int i)
+{
+    return mPositions[i];
+}
+
+Vector& FEMObject::u(unsigned int i)
+{
+    return mDisplacements[i];
+}
+
+Vector& FEMObject::v(unsigned int i)
+{
+    return mVelocities[i];
+}
+
+Vector& FEMObject::f_el(unsigned int i)
+{
+    return mForcesEl[i];
+}
+
+Vectors& FEMObject::getInitialPositions()
+{
+    return mInitialPositions;
+}
+
+Vectors& FEMObject::getPositions()
+{
+    return mPositions;
+}
+
+const Vector& FEMObject::getPositionPrevious(size_t index) const
+{
+    return mPositionsPrevious[index];
+}
+
+Vectors& FEMObject::getVelocities()
+{
+    return mVelocities;
+}
+
+double FEMObject::getMass(ID vertexId)
+{
+    return mMasses[vertexId];
+}
+
+Vectors& FEMObject::getDisplacements()
+{
+    return mDisplacements;
+}
+
+Vectors& FEMObject::getElasticForces()
+{
+    return mForcesEl;
+}
+
+Vectors& FEMObject::getExternalForces()
+{
+    return mForcesExt;
+}
+
+Vector& FEMObject::getExternalForce(size_t id)
+{
+    return mForcesExt[id];
+}
+
+Truncation* FEMObject::getTruncation()
+{
+    return mTruncation.get();
+}
+
+std::shared_ptr<Polygon3D> FEMObject::getPolygon()
+{
+    return mPoly3;
+}
+
+Vector& FEMObject::getPosition(size_t id)
+{
+    return mPositions[id];
+}
+
+void FEMObject::setPosition(Vector v, ID id)
+{
+    mPositions[id] = v;
+}
+
+void FEMObject::addToPosition(Vector v, ID id)
+{
+    mPositions[id] += v;
+}
+
+size_t FEMObject::getSize()
+{
+    return mPositions.size();
+}
+
+GeometricData* FEMObject::getGeometricData()
+{
+    return mPoly3.get();
+}
+
+void FEMObject::initializeStiffnessMatrix()
+{
+    updateStiffnessMatrix(false);
+}
+
 void FEMObject::updateElasticForces()
+{
+    for (FiniteElement& fe : mFiniteElements)
+        fe.updateCorotatedForces();
+    assembleElasticForces();
+}
+
+void FEMObject::updateStiffnessMatrix(bool corotated)
+{
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        if (corotated)
+            fe.updateRotation();
+        fe.updateStiffnessMatrix(corotated);
+    }
+    assembleStiffnessMatrix(corotated);
+}
+
+void FEMObject::updateMassMatrix()
+{
+    mMassCoef.clear();
+    mMassCoef.reserve(mFiniteElements.size() * 12);
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        for (unsigned int a = 0; a < 4; ++a)
+        {
+            unsigned int a_global = fe.getCell()[a];
+            double value = fe.getM()[a];
+            for (unsigned int i = 0; i < 3; ++i)
+            {
+                unsigned int r = a_global * 3 + i;
+                unsigned int c = a_global * 3 + i;
+                mMassCoef.push_back(Triplet<double>(r, c, value));
+            }
+
+        }
+    }
+    // update sparse matrix
+    //std::cout << mM << "\n";
+    mM.setZero();
+    mM.setFromTriplets(mMassCoef.begin(), mMassCoef.end());
+}
+
+void FEMObject::assembleElasticForces()
 {
     unsigned int size = static_cast<unsigned int>(mForcesEl.size());
     VectorXd::Map(mForcesEl[0].data(), size * 3)
@@ -510,18 +640,79 @@ void FEMObject::updateElasticForces()
     }
 }
 
-void FEMObject::initializeStiffnessMatrix()
+void FEMObject::assembleStiffnessMatrix(bool corotated)
 {
-    updateStiffnessMatrix(false);
-}
+    // upper symmetric matrix: currently, not in use
 
-void FEMObject::updateStiffnessMatrix(bool corotated)
-{
     // fill tripplet
     // there are per finite element 4*4*3*3=144 entries
     // this is a 12x12 matrix with the elements at
     // r = a * 3 + i
     // c = b * 3 + k
+//    mCoefficients.clear();
+//    mCoefficients.reserve(mFiniteElements.size() * 144);
+//    for (FiniteElement& fe : mFiniteElements)
+//    {
+//        std::array<unsigned int, 4> cell = fe.getCell();
+//        for (unsigned int a = 0; a < 4; ++a)
+//        {
+//            size_t r_major = cell[a] * 3;
+//            for (unsigned int b = 0; b < 4; ++b)
+//            {
+//                size_t c_major = cell[b] * 3;
+//                if (r_major > c_major)
+//                    continue;
+
+//                bool diagonal = r_major == c_major;
+
+//                for (unsigned int i = 0; i < 3; ++i)
+//                {
+//                    size_t r = r_major + i;
+
+//                    unsigned int kStart = diagonal ? i : 0;
+//                    for (unsigned int k = kStart; k < 3; ++k)
+//                    {
+//                        size_t c = c_major + k;
+//                        double value;
+//                        if (corotated)
+//                            value = fe.getKCorot()[a][b](i,k);
+//                        else
+//                            value = fe.getK()[a][b](i,k);
+
+//                        // TODO: pay attention to when
+//                        // a, cell[a], a * 3, cell[a] * 3 is called
+//                        // -> * 3 is used if the structure saved double values
+//                        // it is not used if it uses Matrix3d or Vector3d
+//                        // -> a is used if the structure saves local values
+//                        // cell[a] is used if the structure saved global values
+//                        // a*3+i => FEM with double array
+//                        // a => FEM with Matrix3d or Vector3d
+//                        // cell[a] * 3 + i => global with double array
+//                        // cell[a] => global with Matrix3d or Vector3d
+
+//                        mCoefficients.push_back(Triplet<double>(r, c, value));
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+//    // update sparse matrix
+//    if (corotated)
+//    {
+//        mKCorot.setZero();
+//        mKCorot.setFromTriplets(mCoefficients.begin(), mCoefficients.end());
+//    }
+//    else
+//    {
+//        mK.setZero();
+//        mK.setFromTriplets(mCoefficients.begin(), mCoefficients.end());
+//    }
+
+//    std::cout << "only upper:\n";
+//    std::cout << mKCorot << "\n";
+
+
     mCoefficients.clear();
     mCoefficients.reserve(mFiniteElements.size() * 144);
     for (FiniteElement& fe : mFiniteElements)
@@ -529,14 +720,23 @@ void FEMObject::updateStiffnessMatrix(bool corotated)
         std::array<unsigned int, 4> cell = fe.getCell();
         for (unsigned int a = 0; a < 4; ++a)
         {
+            size_t r_major = cell[a] * 3;
             for (unsigned int b = 0; b < 4; ++b)
             {
+                size_t c_major = cell[b] * 3;
+//                if (r_major > c_major)
+//                    continue;
+
+                bool diagonal = r_major == c_major;
+
                 for (unsigned int i = 0; i < 3; ++i)
                 {
+                    size_t r = r_major + i;
+
+                    unsigned int kStart = diagonal ? i : 0;
                     for (unsigned int k = 0; k < 3; ++k)
                     {
-                        size_t r = cell[a] * 3 + i;
-                        size_t c = cell[b] * 3 + k;
+                        size_t c = c_major + k;
                         double value;
                         if (corotated)
                             value = fe.getKCorot()[a][b](i,k);
@@ -572,74 +772,4 @@ void FEMObject::updateStiffnessMatrix(bool corotated)
         mK.setZero();
         mK.setFromTriplets(mCoefficients.begin(), mCoefficients.end());
     }
-}
-
-Vector& FEMObject::x(unsigned int i)
-{
-    return mInitialPositions[i];
-}
-
-Vector& FEMObject::y(unsigned int i)
-{
-    return mPositions[i];
-}
-
-Vector& FEMObject::u(unsigned int i)
-{
-    return mDisplacements[i];
-}
-
-Vector& FEMObject::v(unsigned int i)
-{
-    return mVelocities[i];
-}
-
-Vector& FEMObject::f_el(unsigned int i)
-{
-    return mForcesEl[i];
-}
-
-Vectors& FEMObject::getPositions()
-{
-    return mPositions;
-}
-
-Vectors& FEMObject::getDisplacements()
-{
-    return mDisplacements;
-}
-
-Vectors& FEMObject::getInitialPositions()
-{
-    return mInitialPositions;
-}
-
-Vectors& FEMObject::getVelocities()
-{
-    return mVelocities;
-}
-
-double FEMObject::getMass(ID vertexId)
-{
-    return mMasses[vertexId];
-}
-
-const Vector& FEMObject::getPositionPrevious(size_t index) const
-{
-    return mPositionsPrevious[index];
-}
-
-Vectors& FEMObject::getElasticForces()
-{
-    return mForcesEl;
-}
-
-Vectors& FEMObject::getExternalForces()
-{
-    return mForcesExt;
-}
-
-Vector& FEMObject::getExternalForce(size_t id)
-{
-    return mForcesExt[id];
 }

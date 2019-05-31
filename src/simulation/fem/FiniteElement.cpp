@@ -72,19 +72,132 @@ void FiniteElement::initialize()
     updateDnx();
     updateF();
     updateCauchyStressStrain();
-    updateK();
+    updateLinearStiffnessMatrix();
+}
+
+void FiniteElement::updateRotation()
+{
+    updateF();
+    JacobiSVD<Matrix3d> svd(mF, ComputeFullU | ComputeFullV);
+    double det = (svd.matrixU() * svd.matrixV().transpose()).determinant();
+    Matrix3d C = Matrix3d::Identity();
+    C(2,2) = det;
+    mR = svd.matrixU() * C * svd.matrixV().transpose();
+    if (det < 0)
+        std::cout << "inversion detected! det = " << det << "\n";
+
 }
 
 void FiniteElement::update(bool corotated)
 {
     if (corotated)
     {
-        updateCorotatedK();
+        updateCorotatedStiffnessMatrix();
         updateCorotatedForces();
     }
     else
     {
-        updateForces();
+        updateLinearForces();
+    }
+}
+
+void FiniteElement::updateStiffnessMatrix(bool corotated)
+{
+    if (corotated)
+        updateCorotatedStiffnessMatrix();
+    else
+        updateLinearStiffnessMatrix();
+}
+
+void FiniteElement::updateLinearStiffnessMatrix()
+{
+    for (size_t a = 0; a < 4; ++a)
+    {
+        for (size_t b = 0; b < 4; ++b)
+        {
+            double second_part = mMaterial.getLameMu() * mDnx[a].dot(mDnx[b]);
+            Matrix3d& K = mK[a][b];
+            for (Index i = 0; i < 3; ++i)
+            {
+                for (Index k = 0; k < 3; ++k)
+                {
+                    //K(i,k) = ...
+                    double value = 0.0;
+                    if (i == k)
+                        value = second_part;
+                    value += mMaterial.getLameLambda() * mDnx[a](i) * mDnx[b](k)
+                            + mMaterial.getLameMu() * mDnx[a](k) * mDnx[b](i);
+                    K(i,k) = value * mVolume;
+                }
+            }
+        }
+        double mass = (mDensity * mVolume) / 4;
+        mM[a] = mass;// * Matrix3d::Identity();
+    }
+}
+
+void FiniteElement::updateCorotatedStiffnessMatrix()
+{
+    for (size_t a = 0; a < 4; ++a)
+    {
+        for (size_t b = 0; b < 4; ++b)
+        {
+            Matrix3d& K = mK[a][b];
+            Matrix3d& K_corot = mKCorot[a][b];
+            K_corot = mR * K * mR.transpose();
+        }
+    }
+}
+
+void FiniteElement::updateForces(bool corotated)
+{
+    if (corotated)
+        updateCorotatedForces();
+    else
+        updateLinearForces();
+}
+
+void FiniteElement::updateCorotatedForces()
+{
+//    updateRotation(); // TODO: if not already done
+    for (size_t a = 0; a < 4; ++a)
+    {
+        mForces[a] = Vector::Zero();
+        for (size_t b = 0; b < 4; ++b)
+        {
+            mForces[a] += mR * mK[a][b] *
+                    (mR.transpose() * y(b) - x(b));
+//            f(a) += mR * mK[a][b] *
+//                    (mR.transpose() * y(b) - x(b));
+        }
+    }
+}
+
+void FiniteElement::updateLinearForces()
+{
+    for (size_t a = 0; a < 4; ++a)
+    {
+        mForces[a] = Vector::Zero();
+        for (size_t b = 0; b < 4; ++b)
+        {
+            mForces[a] += mK[a][b] * u(b);
+
+            // directly globally updates them this way
+            // but this is not wanted here
+            //f(a) += mK[a][b] * u(b);
+        }
+    }
+}
+
+void FiniteElement::updateGlobalValues()
+{
+    for (size_t a = 0; a < 4; ++a)
+    {
+        f(a) += mForces[a];
+        for (size_t b = 0; b < 4; ++b)
+        {
+
+        }
     }
 }
 
@@ -143,104 +256,3 @@ void FiniteElement::updateDny()
         }
     }
 }
-
-void FiniteElement::updateK()
-{
-    for (size_t a = 0; a < 4; ++a)
-    {
-        for (size_t b = 0; b < 4; ++b)
-        {
-            double second_part = mMaterial.getLameMu() * mDnx[a].dot(mDnx[b]);
-            Matrix3d& K = mK[a][b];
-            for (Index i = 0; i < 3; ++i)
-            {
-                for (Index k = 0; k < 3; ++k)
-                {
-                    //K(i,k) = ...
-                    double value = 0.0;
-                    if (i == k)
-                        value = second_part;
-                    value += mMaterial.getLameLambda() * mDnx[a](i) * mDnx[b](k)
-                            + mMaterial.getLameMu() * mDnx[a](k) * mDnx[b](i);
-                    K(i,k) = value * mVolume;
-                }
-            }
-        }
-        double mass = (mDensity * mVolume) / 4;
-        mM[a] = mass;// * Matrix3d::Identity();
-    }
-}
-
-void FiniteElement::updateCorotatedK()
-{
-    updateRotation();
-    for (size_t a = 0; a < 4; ++a)
-    {
-        for (size_t b = 0; b < 4; ++b)
-        {
-            Matrix3d& K = mK[a][b];
-            Matrix3d& K_corot = mKCorot[a][b];
-            K_corot = mR * K * mR.transpose();
-        }
-    }
-}
-
-void FiniteElement::updateForces()
-{
-    for (size_t a = 0; a < 4; ++a)
-    {
-        mForces[a] = Vector::Zero();
-        for (size_t b = 0; b < 4; ++b)
-        {
-            // TODO: this should be correct but I am not sure
-            mForces[a] += mK[a][b] * u(b);
-
-            // directly globally updates them this way
-            // but this is not wanted here
-            //f(a) += mK[a][b] * u(b);
-        }
-    }
-}
-
-void FiniteElement::updateCorotatedForces()
-{
-//    updateRotation(); // TODO: if not already done
-    for (size_t a = 0; a < 4; ++a)
-    {
-        mForces[a] = Vector::Zero();
-        for (size_t b = 0; b < 4; ++b)
-        {
-            mForces[a] += mR * mK[a][b] *
-                    (mR.transpose() * y(b) - x(b));
-//            f(a) += mR * mK[a][b] *
-//                    (mR.transpose() * y(b) - x(b));
-        }
-    }
-}
-
-void FiniteElement::updateRotation()
-{
-    updateF();
-    JacobiSVD<Matrix3d> svd(mF, ComputeFullU | ComputeFullV);
-    double det = (svd.matrixU() * svd.matrixV().transpose()).determinant();
-    Matrix3d C = Matrix3d::Identity();
-    C(2,2) = det;
-    mR = svd.matrixU() * C * svd.matrixV().transpose();
-    if (det < 0)
-        std::cout << "inversion detected! det = " << det << "\n";
-
-}
-
-void FiniteElement::updateGlobalValues()
-{
-    for (size_t a = 0; a < 4; ++a)
-    {
-        f(a) += mForces[a];
-        for (size_t b = 0; b < 4; ++b)
-        {
-
-        }
-    }
-}
-
-

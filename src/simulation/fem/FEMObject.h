@@ -100,23 +100,19 @@ public:
     Eigen::Vector& u(unsigned int i);
     Eigen::Vector& v(unsigned int i);
     Eigen::Vector& f_el(unsigned int i);
-    std::vector<Eigen::Triplet<double>> getCoefficients();
 
     // Getters
-    Vectors& getPositions();
     Vectors& getInitialPositions();
+    Vectors& getPositions();
+    const Eigen::Vector& getPositionPrevious(size_t index) const;
     Vectors& getVelocities();
     double getMass(ID vertexId);
-    const Eigen::Vector& getPositionPrevious(size_t index) const;
 
     Vectors& getDisplacements();
     Vectors& getElasticForces();
     Vectors& getExternalForces();
     Eigen::Vector& getExternalForce(size_t id);
     //std::vector<FiniteElement>& getFiniteElements() { return m_finite_elements; }
-
-    Vectors& getOuterNormals();
-    Faces& getOuterFaces();
 
     Truncation* getTruncation();
 
@@ -133,11 +129,24 @@ public:
 private:
 
     void initializeStiffnessMatrix();
+
+    // TOOD: assembling and calculating can be combined?
+
+    // Assemles the global forces from each finite elements and writes them
+    // in mForcesEl.
     void updateElasticForces();
+
+    // Assembles and updtes the global stiffness matrix mK or mKCorot from
+    // the local stiffness matrices of the FiniteElements.
+    // Updates mK if corotated is false or mKCorot if corotated is true.
     void updateStiffnessMatrix(bool corotated);
 
-    // call tihs method in the simulation loop
+    // Assambles the global mass matrix from the local masses of each finite
+    // element.
     void updateMassMatrix();
+
+    void assembleElasticForces();
+    void assembleStiffnessMatrix(bool corotated);
 
     ID mId;
 

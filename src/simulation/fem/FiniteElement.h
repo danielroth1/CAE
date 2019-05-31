@@ -20,9 +20,46 @@ public:
     std::array<std::array<Eigen::Matrix3d, 4>, 4> getKCorot();
     std::array<double, 4> getM();
 
+    // Updates the stiffness matrix w.r.t. the initial configuration.
     void initialize();
 
+    // Updates the current rotation of this finite element by applying
+    // a singular value decomposition (SVD).
+    void updateRotation();
+
+    // Updates stiffness matrix and forces.
     void update(bool corotated);
+
+    // update stiffness matrix
+        void updateStiffnessMatrix(bool corotated);
+
+        // Updates the stiffness matrix according to the linear FEM.
+        void updateLinearStiffnessMatrix();
+
+        // Calculates the corotated stiffness matrix and stores it in mKCorot.
+        // Requires a call of updateK() on the initial configuration.
+        // If positions changed, requires a call to updateRotation().
+        void updateCorotatedStiffnessMatrix();
+
+    // Update forces
+        // Calculates and updates the forces according to the FEM.
+        // \param corotated - if true, calculates forces according to corotated FEM,
+        //      if false, according to linear FEM.
+        void updateForces(bool corotated);
+
+        // Calculates and updates mForces accordign to the corotated FEM:
+        // F += R * K[a][b] * (R.transpose() * y(b) - x(b));
+        void updateCorotatedForces();
+
+        // Calculates and updates mForces according to the linear FEM:
+        // F += K[a][b] * u(b);
+        void updateLinearForces();
+
+    // not implemented
+    void updateGlobalValues();
+
+
+private:
 
     // calculates the deformation gradient F
     void updateF();
@@ -35,23 +72,6 @@ public:
 
     // update the derivative of the deformation gradient for the current position
     void updateDny();
-
-    // update the stiffness matrix for this finite element
-    // A linear matrial law is assumed
-    void updateK();
-
-    void updateCorotatedK();
-
-    void updateForces();
-
-    void updateCorotatedForces();
-
-    void updateRotation();
-
-    void updateGlobalValues();
-
-
-private:
 
     // deformation u = y - x
     Eigen::Vector u(size_t i);
