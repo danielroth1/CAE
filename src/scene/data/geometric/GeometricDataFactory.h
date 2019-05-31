@@ -13,16 +13,21 @@ class GeometricDataFactory
 {
 public:
 
+    // Creates a simple 2d box.
     static Polygon2D create2DBox(
             double width,
             double length,
             double height);
 
+    // Creates a simple 3d box that consists of 5 tetrahedrons which is the
+    // the minimum number.
     static Polygon3D create3DBox(
             double width,
             double length,
             double height);
 
+    // Creates a 3d box that is created from a 2d box and the given mesh
+    // criteria.
     static Polygon3D create3DBox(
             double width,
             double length,

@@ -97,7 +97,7 @@ std::shared_ptr<PolygonRenderModelImproved> ModelFactory::createPolygonRenderMod
         {
             returnValue = ModelFactory::createPolygonRenderModelImproved(
                         rmm,
-                        std::static_pointer_cast<Polygon2D>(polygon3D.shared_from_this()),
+                        std::static_pointer_cast<Polygon3D>(polygon3D.shared_from_this()),
                         renderOnlyOuterFaces);
         }
 

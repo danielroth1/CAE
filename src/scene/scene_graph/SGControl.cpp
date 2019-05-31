@@ -61,7 +61,7 @@ SGLeafNode* SGControl::importFileAsChild(
     // Geometric Data
     std::shared_ptr<Polygon2D> poly2 = std::shared_ptr<Polygon2D>(
                 MeshIO::instance()->loadOff(path.c_str()));
-    return createLeafNode(name, parent, poly2, renderOnlyOuterFaces);
+    return createLeafNode(name, parent, poly2, Eigen::Vector::Zero(), renderOnlyOuterFaces);
 }
 
 SGLeafNode* SGControl::createBox(
@@ -76,9 +76,8 @@ SGLeafNode* SGControl::createBox(
     // Create box and translate to target position
     std::shared_ptr<Polygon2D> poly2 =
             std::make_shared<Polygon2D>(GeometricDataFactory::create2DBox(width, length, height));
-    poly2->translate(position);
 
-    return createLeafNode(name, parent, poly2, renderOnlyOuterFaces);
+    return createLeafNode(name, parent, poly2, position, renderOnlyOuterFaces);
 }
 
 SGLeafNode* SGControl::createSphere(
@@ -93,9 +92,8 @@ SGLeafNode* SGControl::createSphere(
     std::shared_ptr<Polygon2D> poly2 =
             std::make_shared<Polygon2D>(
                 GeometricDataFactory::create2DSphere(radius, resolution));
-    poly2->translate(position);
 
-    return createLeafNode(name, parent, poly2, renderOnlyOuterFaces);
+    return createLeafNode(name, parent, poly2, position, renderOnlyOuterFaces);
 }
 
 SGLeafNode* SGControl::create3DGeometryFrom2D(
@@ -528,11 +526,13 @@ SGLeafNode* SGControl::createLeafNode(
         std::string name,
         SGChildrenNode* parent,
         std::shared_ptr<Polygon> polygon,
+        Eigen::Vector position,
         bool renderOnlyOuterFaces)
 {
     SGLeafNode* leafNode = new SGLeafNode(name);
     std::shared_ptr<SceneLeafData> leafData = std::make_shared<SceneLeafData>(leafNode);
 
+    polygon->translate(position);
     leafData->setGeometricData(polygon);
 
     // Render Model

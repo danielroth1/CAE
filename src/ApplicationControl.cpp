@@ -191,15 +191,26 @@ void ApplicationControl::initiateApplication()
                 for (int c = 0; c < 1; ++c)
                 {
                     double boxDim = 1.5;
-                    SGLeafNode* node1 = ac.mSGControl->createBox(
+//                    SGLeafNode* node1 = ac.mSGControl->createBox(
+//                                "Box", ac.mSGControl->getSceneGraph()->getRoot(),
+//                                Vector(0.6 * c, 0.7 * r, 0.0),
+//                                boxDim, boxDim, boxDim, true);
+
+                    SGLeafNode* node1 = ac.mSGControl->createLeafNode(
                                 "Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                                Vector(0.6 * c, 0.7 * r, 0.0),
-                                boxDim, boxDim, boxDim, true);
+                                std::make_shared<Polygon3D>(
+                                    GeometricDataFactory::create3DBox(boxDim, boxDim, boxDim)),
+                                Vector(0.6 * c, 0.7 * r, 0.0), false);
+
+                    // rigid
 //                    ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
 
-                    MeshCriteria criteria(0.0, 0.0, 0.0, 0.15, 30, true);
-                    ac.mSGControl->create3DGeometryFrom2D(node1, criteria, false);
+                    // deformable
+//                    MeshCriteria criteria(0.0, 0.0, 0.0, 0.15, 30, true);
+//                    ac.mSGControl->create3DGeometryFrom2D(node1, criteria, false);
                     ac.mSGControl->createFEMObject(node1->getData());
+
+                    // collidable
 //                    ac.mSGControl->createCollidable(node1->getData());
                 }
             }

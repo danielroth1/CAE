@@ -43,30 +43,50 @@ Polygon2D GeometricDataFactory::create2DBox(double width, double length, double 
     calculateTriangles(positions, faces, normals);
 
     // front
-    faces.push_back(Face({ {0,3,1} }));
-    faces.push_back(Face({ {1,3,2} }));
+    faces.push_back(Face({ {0,2,1} }));
+    faces.push_back(Face({ {0,3,2} }));
 
     // bottom
     faces.push_back(Face({ {0,5,4} }));
     faces.push_back(Face({ {0,1,5} }));
 
     // left
-    faces.push_back(Face({ {0,4,3} }));
-    faces.push_back(Face({ {4,7,3} }));
+    faces.push_back(Face({ {0,4,7} }));
+    faces.push_back(Face({ {0,7,3} }));
 
     // top
-    faces.push_back(Face({ {3,6,2} }));
-    faces.push_back(Face({ {7,6,3} }));
+    faces.push_back(Face({ {3,7,2} }));
+    faces.push_back(Face({ {2,7,6} }));
 
     // right
-    faces.push_back(Face({ {1,2,6} }));
-    faces.push_back(Face({ {6,5,1} }));
+    faces.push_back(Face({ {1,2,5} }));
+    faces.push_back(Face({ {5,2,6} }));
 
     // back
-    faces.push_back(Face({ {4,6,7} }));
-    faces.push_back(Face({ {4,5,6} }));
+    faces.push_back(Face({ {5,6,7} }));
+    faces.push_back(Face({ {4,5,7} }));
 
     return Polygon2D(positions, faces);
+}
+
+Polygon3D GeometricDataFactory::create3DBox(double width, double length, double height)
+{
+    Polygon2D p2 = create2DBox(width, length, height);
+    Faces faces = p2.getTopology2D().getFacesIndices();
+    faces.push_back(Face({ {0,2,5} }));
+    faces.push_back(Face({ {0,2,7} }));
+    faces.push_back(Face({ {0,5,7} }));
+    faces.push_back(Face({ {2,5,7} }));
+    Cells cells;
+    cells.push_back(Cell({ {0,1,2,5} }));
+    cells.push_back(Cell({ {0,2,3,7} }));
+    cells.push_back(Cell({ {0,4,5,7} }));
+    cells.push_back(Cell({ {2,5,6,7} }));
+    cells.push_back(Cell({ {0,7,5,2} }));
+
+    Polygon3DTopology t3(faces, p2.getTopology2D().getFacesIndices(), cells, p2.getPositions().size());
+
+    return Polygon3D(p2.getPositions(), t3);
 }
 
 Polygon3D GeometricDataFactory::create3DBox(double width,

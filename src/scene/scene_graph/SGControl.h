@@ -137,7 +137,8 @@ public:
                 std::string name,
                 SGChildrenNode* parent,
                 std::shared_ptr<Polygon> geoData,
-                bool renderOnlyOuterFaces);
+                Eigen::Vector position = Eigen::Vector::Zero(),
+                bool renderOnlyOuterFaces = true);
 
     // Getters
         SGSceneGraph* getSceneGraph();
