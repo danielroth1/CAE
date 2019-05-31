@@ -6,6 +6,7 @@
 #include <SimulationControl.h>
 
 class ApplicationControl;
+class MeshCriteria;
 
 // Manages a SGSceneGraph
 // The scnee graph should only be accessed over this class to ensure
@@ -60,11 +61,7 @@ public:
         // Returns the given leaf node.
         SGLeafNode* create3DGeometryFrom2D(
                 SGLeafNode* leafNode,
-                double facetAngle = 0,
-                double facetSize = 0,
-                double facetDistance = 0,
-                double cellSize = 0,
-                double cellRadiusEdgeRatio = 0,
+                const MeshCriteria& meshCriteria,
                 bool renderOnlyOuterFaces = true);
 
         SGLeafNode* createSimulationPoint(

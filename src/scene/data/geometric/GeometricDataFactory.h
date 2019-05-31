@@ -3,6 +3,7 @@
 
 #include <data_structures/DataStructures.h>
 
+class MeshCriteria;
 class Polygon2D;
 class Polygon3D;
 
@@ -20,9 +21,13 @@ public:
     static Polygon3D create3DBox(
             double width,
             double length,
+            double height);
+
+    static Polygon3D create3DBox(
+            double width,
+            double length,
             double height,
-            double cellSize,
-            double cellRadiusEdgeRatio);
+            const MeshCriteria& meshCriteria);
 
     // Creates a 2d mesh of a sphere.
     // Create the vertices by projecting those of a
@@ -40,19 +45,11 @@ public:
     static Polygon3D create3DSphere(
             double radius,
             int resolution,
-            double facetAngle = 0,
-            double facetSize = 0,
-            double facetDistance = 0,
-            double cellSize = 0,
-            double cellRadiusEdgeRatio = 0);
+            const MeshCriteria& meshCriteria);
 
     static Polygon3D createPolygon3DFromPolygon2D(
             Polygon2D& p,
-            double facetAngle = 0,
-            double facetSize = 0,
-            double facetDistance = 0,
-            double cellSize = 0,
-            double cellRadiusEdgeRatio = 0);
+            const MeshCriteria& meshCriteria);
 
 protected:
     GeometricDataFactory();

@@ -1,5 +1,6 @@
 #include "MeshConverter.h"
 #include "MeshConverterControl.h"
+#include "MeshCriteria.h"
 
 #include <ApplicationControl.h>
 
@@ -42,11 +43,7 @@ void MeshConverterControl::loadGeometry2D(Polygon2D* /*poly2*/)
 }
 
 void MeshConverterControl::convert(
-        double facetAngle,
-        double facetSize,
-        double facetDistance,
-        double cellSize,
-        double cellRadiusEdgeRatio,
+        const MeshCriteria& meshCriteria,
         bool renderOnlyOuterFaces)
 {
     // get selected leaf nodes
@@ -93,11 +90,7 @@ void MeshConverterControl::convert(
         SGLeafNode* newNode =
                 mAc->getSGControl()->create3DGeometryFrom2D(
                     static_cast<SGLeafNode*>(leafData->getNode()),
-                    facetAngle,
-                    facetSize,
-                    facetDistance,
-                    cellSize,
-                    cellRadiusEdgeRatio,
+                    meshCriteria,
                     renderOnlyOuterFaces);
 
         //TODO: save the newly created SGLeafNode* and the old Polygon
@@ -110,59 +103,6 @@ void MeshConverterControl::convert(
                             extractPolygonVisitor.polygon));
         }
     }
-
-//    class ConverterVisitor : public GeometricDataVisitor
-//    {
-//    public:
-//        ConverterVisitor(
-//                    MeshConverterControl& _control,
-//                    SGLeafNode* _leafNode,
-//                    double _cellSize,
-//                    double _cellRadiusEdgeRatio,
-//                    bool _renderOnlyOuterFaces)
-//            : control(_control)
-//            , leafNode(_leafNode)
-//            , cellSize(_cellSize)
-//            , cellRadiusEdgeRatio(_cellRadiusEdgeRatio)
-//            , renderOnlyOuterFaces(_renderOnlyOuterFaces)
-//        {
-//            control.mAc->getSGControl()->create3DGeometryFrom2D(
-//                        leafNode, cellSize, cellRadiusEdgeRatio, renderOnlyOuterFaces);
-//        }
-
-//        virtual void visit(Polygon2D& /*polygon2D*/)
-//        {
-//            // Convert this polygon2D and set the resulting Polygon3D
-//            // to as geometric data in node.
-
-////            GeometricDataFactory::createPolygon3DFromPolygon2D(polygon2D, cellSize, cellRadiusEdgeRatio);
-//            control.mAc->getSGControl()->create3DGeometryFrom2D(
-//                        leafNode, cellSize, cellRadiusEdgeRatio, renderOnlyOuterFaces);
-//        }
-
-//        virtual void visit(Polygon3D& /*polygon3D*/)
-//        {
-//            // Convert the outer 2D mesh?
-//            std::cout << "GeometricData is already Polygon3D. No conversion possible.\n";
-//        }
-
-//        virtual void visit(GeometricPoint& /*point*/)
-//        {
-//            std::cout << "Can not create Polygon3D from GeometricPoint.\n";
-//        }
-
-//        MeshConverterControl& control;
-//        SGLeafNode* leafNode;
-//        double cellSize;
-//        double cellRadiusEdgeRatio;
-//        bool renderOnlyOuterFaces;
-//    } converterVisitor(*this, , cellSize, cellRadiusEdgeRatio, renderOnlyOuterFaces);
-
-
-//    MeshConverter::instance()->generateMesh(
-//                so->getPositions(), so->getFaces(),
-//                vertices_out, outer_faces_out, faces_out, cells_out);
-//    mMeshConverter->
 }
 
 void MeshConverterControl::revert()

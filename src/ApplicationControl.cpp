@@ -20,6 +20,7 @@
 #include <ui/ModulesUIControl.h>
 #include <ui/UIControl.h>
 #include <modules/mesh_converter/MeshConverterModule.h>
+#include <modules/mesh_converter/MeshCriteria.h>
 #include <simulation/SimulationModule.h>
 #include <modules/demo_loader/Demo.h>
 #include <modules/demo_loader/DemoLoaderModule.h>
@@ -30,6 +31,7 @@
 #include <demos/MobileDemo.h>
 #include <demos/PlaneJointDemo.h>
 #include <demos/CarDemo.h>
+#include <ui/scene_graph/SGUIControl.h>
 
 
 ApplicationControl::ApplicationControl()
@@ -54,6 +56,9 @@ void ApplicationControl::initiateApplication()
     // SGControl
     mSGControl = std::make_shared<SGControl>();
 
+    // SGUIControl
+    mSGUIControl = std::make_shared<SGUIControl>();
+
     mRenderModelManager = std::make_shared<RenderModelManager>(this);
 
     mSimulationControl->setApplicationControl(this);
@@ -65,6 +70,8 @@ void ApplicationControl::initiateApplication()
     mSimulationControl->initialize();
 
     mSGControl->initialize(this);
+
+    mSGUIControl->initialize(mSGControl.get(), mUiControl.get());
 
     mUiControl->connectSignals();
 
@@ -152,19 +159,48 @@ void ApplicationControl::initiateApplication()
         virtual void load()
         {
             ac.getSimulationControl()->setGravity(Vector::Zero());
-            ac.getSimulationControl()->setStepSize(0.001);
+            ac.getSimulationControl()->setNumFEMCorrectionIterations(0);
+//            ac.getSimulationControl()->setStepSize(0.001);
+
+//            SGLeafNode* node2 = ac.mSGControl->createBox("Floor", ac.mSGControl->getSceneGraph()->getRoot(),
+//                                                      /*Vector(-5, -2, -5)*/Vector(0.0, -1.5, 0.0), 2, 2, 2, true);
+//            ac.mSGControl->createRigidBody(node2->getData(), 1.0, true);
+//            ac.mSGControl->createCollidable(node2->getData(), 1.0);
+
+//            SGLeafNode* node3 = ac.mSGControl->createBox("Floor", ac.mSGControl->getSceneGraph()->getRoot(),
+//                                                      /*Vector(-5, -2, -5)*/Vector(0.0, -0.5, 0.0), 2, 2, 2, true);
+//            ac.mSGControl->createRigidBody(node3->getData(), 1.0, true);
+//            ac.mSGControl->createCollidable(node3->getData(), 1.0);
+
+
+//            SGLeafNode* node2 = ac.mSGControl->createBox("Floor", ac.mSGControl->getSceneGraph()->getRoot(),
+//                                                      /*Vector(-5, -2, -5)*/Vector(0.0, -1.5, 0.0), 2.5, 2.5, 2.5, true);
+//            ac.mSGControl->createRigidBody(node2->getData(), 1.0, true);
+//            ac.mSGControl->createCollidable(node2->getData(), 1.0);
+
+//            SGLeafNode* node3 = ac.mSGControl->createBox("Floor", ac.mSGControl->getSceneGraph()->getRoot(),
+//                                                      /*Vector(-5, -2, -5)*/Vector(0.0, -0.5, 0.0), 2, 2, 2, true);
+//            ac.mSGControl->createRigidBody(node3->getData(), 1.0, true);
+//            ac.mSGControl->createCollidable(node3->getData(), 1.0);
+
+
 
             // some boxes:
-            for (int r = 0; r < 2; ++r)
+            for (int r = 0; r < 1; ++r)
             {
-                for (int c = 0; c < 2; ++c)
+                for (int c = 0; c < 1; ++c)
                 {
-                    SGLeafNode* node1 = ac.mSGControl->createBox("Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                                                              Vector(0.6 * c, 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
+                    double boxDim = 1.5;
+                    SGLeafNode* node1 = ac.mSGControl->createBox(
+                                "Box", ac.mSGControl->getSceneGraph()->getRoot(),
+                                Vector(0.6 * c, 0.7 * r, 0.0),
+                                boxDim, boxDim, boxDim, true);
 //                    ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
-                    ac.mSGControl->create3DGeometryFrom2D(node1, 0.15, 30);
+
+                    MeshCriteria criteria(0.0, 0.0, 0.0, 0.15, 30, true);
+                    ac.mSGControl->create3DGeometryFrom2D(node1, criteria, false);
                     ac.mSGControl->createFEMObject(node1->getData());
-                    ac.mSGControl->createCollidable(node1->getData());
+//                    ac.mSGControl->createCollidable(node1->getData());
                 }
             }
         }
@@ -201,7 +237,6 @@ void ApplicationControl::initiateApplication()
             ac.mSGControl->createRigidBody(node2->getData(), 1.0, true);
             ac.mSGControl->createCollidable(node2->getData());
 
-
             // some boxes:
             for (int r = 0; r < 4; ++r)
             {
@@ -209,10 +244,12 @@ void ApplicationControl::initiateApplication()
                 {
                     if (r == 0)
                     {
+                        MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0);
                         SGLeafNode* node1 = ac.mSGControl->createBox("Box", ac.mSGControl->getSceneGraph()->getRoot(),
                                                                   Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
-                        ac.mSGControl->create3DGeometryFrom2D(node1, 0.15, 30);
+                        ac.mSGControl->create3DGeometryFrom2D(node1, criteria);
                         ac.mSGControl->createFEMObject(node1->getData());
+//                        ac.mSGControl->createRigidBody(node1->getData(), 1.0, true);
                         ac.mSGControl->createCollidable(node1->getData());
                     }
                     else
@@ -368,6 +405,11 @@ void ApplicationControl::onExit()
 SGControl* ApplicationControl::getSGControl()
 {
     return mSGControl.get();
+}
+
+SGUIControl* ApplicationControl::getSGUIControl()
+{
+    return mSGUIControl.get();
 }
 
 SimulationControl* ApplicationControl::getSimulationControl()

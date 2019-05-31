@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>234</width>
+    <width>266</width>
     <height>444</height>
    </rect>
   </property>
@@ -57,15 +57,31 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Facet Angle</string>
+         <string>Facet Size</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QDoubleSpinBox" name="mMinFeatureEdgeAngleDeg">
+        <property name="toolTip">
+         <string>All featured edges will be preserve in the resulting mesh. Enabling this can result in a significant higher amount of tetrahedrons. Use this when the resolution of the original mesh is low and edges need to be preserved.</string>
+        </property>
+        <property name="decimals">
+         <number>5</number>
+        </property>
+        <property name="maximum">
+         <double>360.000000000000000</double>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
        <widget class="QDoubleSpinBox" name="mCellSizeBox">
+        <property name="decimals">
+         <number>5</number>
+        </property>
         <property name="maximum">
          <double>1000.000000000000000</double>
         </property>
@@ -74,8 +90,18 @@
         </property>
        </widget>
       </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Sharp Features</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
        <widget class="QDoubleSpinBox" name="mCellRadiusEdgeRatioBox">
+        <property name="decimals">
+         <number>5</number>
+        </property>
         <property name="maximum">
          <double>10000.000000000000000</double>
         </property>
@@ -91,13 +117,6 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Facet Size</string>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_8">
         <property name="text">
@@ -105,14 +124,43 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Facet Angle</string>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="1">
-       <widget class="QDoubleSpinBox" name="mFacetAngle"/>
+       <widget class="QDoubleSpinBox" name="mFacetAngle">
+        <property name="decimals">
+         <number>5</number>
+        </property>
+       </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QDoubleSpinBox" name="mFacetSize"/>
+       <widget class="QDoubleSpinBox" name="mFacetSize">
+        <property name="decimals">
+         <number>5</number>
+        </property>
+       </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QDoubleSpinBox" name="mFacetDistance"/>
+       <widget class="QDoubleSpinBox" name="mFacetDistance">
+        <property name="decimals">
+         <number>5</number>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
+       <widget class="QCheckBox" name="mSharpFeaturesEnabled">
+        <property name="toolTip">
+         <string/>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

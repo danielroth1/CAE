@@ -10,6 +10,7 @@
 #include "scene/data/geometric/Polygon3D.h"
 
 #include <iostream>
+#include <set>
 #include <vector>
 
 #include <modules/mesh_converter/MeshCriteria.h>
@@ -71,11 +72,10 @@ Polygon2D GeometricDataFactory::create2DBox(double width, double length, double 
 Polygon3D GeometricDataFactory::create3DBox(double width,
                                              double length,
                                              double height,
-                                             double cellSize,
-                                             double cellRadiusEdgeRatio)
+                                             const MeshCriteria& meshCriteria)
 {
     Polygon2D p2temp = create2DBox(width, length, height);
-    Polygon3D p3 = createPolygon3DFromPolygon2D(p2temp, cellSize, cellRadiusEdgeRatio);
+    Polygon3D p3 = createPolygon3DFromPolygon2D(p2temp, meshCriteria);
     return p3;
 }
 
@@ -223,38 +223,21 @@ Polygon2D GeometricDataFactory::create2DSphere(
 Polygon3D GeometricDataFactory::create3DSphere(
         double radius,
         int resolution,
-        double facetAngle,
-        double facetSize,
-        double facetDistance,
-        double cellSize,
-        double cellRadiusEdgeRatio)
+        const MeshCriteria& meshCriteria)
 {
     Polygon2D p2temp = create2DSphere(radius, resolution);
-    Polygon3D p3 = createPolygon3DFromPolygon2D(
-                p2temp,
-                facetAngle, facetSize, facetDistance,
-                cellSize, cellRadiusEdgeRatio);
+    Polygon3D p3 = createPolygon3DFromPolygon2D(p2temp, meshCriteria);
     return p3;
 }
 
 Polygon3D GeometricDataFactory::createPolygon3DFromPolygon2D(
         Polygon2D& p,
-        double facetAngle,
-        double facetSize,
-        double facetDistance,
-        double cellSize,
-        double cellRadiusEdgeRatio)
+        const MeshCriteria& meshCriteria)
 {
     Vectors verticesOut;
     Faces outerFacesOut;
     Faces facesOut;
     Cells cellsOut;
-    MeshCriteria criteria(
-                facetAngle,
-                facetSize,
-                facetDistance,
-                cellSize,
-                cellRadiusEdgeRatio);
     MeshConverter::instance()->generateMesh(
                 p.getPositions(),
                 p.getTopology().retrieveFaces(),
@@ -262,7 +245,65 @@ Polygon3D GeometricDataFactory::createPolygon3DFromPolygon2D(
                 outerFacesOut,
                 facesOut,
                 cellsOut,
-                criteria);
+                meshCriteria);
+
+    // check integrity
+
+    // are there faces/ cells with duplicated indices?
+    for (Face& f : facesOut)
+    {
+        if (f[0] == f[1] ||
+            f[0] == f[2] ||
+            f[1] == f[2])
+        {
+            std::cout << "face integrity error\n";
+        }
+    }
+
+    for (Cell& c : cellsOut)
+    {
+        if (c[0] == c[1] ||
+            c[0] == c[2] ||
+            c[0] == c[3] ||
+            c[1] == c[2] ||
+            c[1] == c[3] ||
+            c[2] == c[3])
+        {
+            std::cout << "cell integrity error\n";
+        }
+
+    }
+
+    // are there vertices that are not part of a cell?
+    std::set<unsigned int> verticesOfCells;
+    for (Cell& c : cellsOut)
+    {
+        for (size_t i = 0; i < 4; ++i)
+        {
+            verticesOfCells.insert(c[i]);
+        }
+    }
+    for (unsigned int i = 0; i < verticesOut.size(); ++i)
+    {
+        if (verticesOfCells.find(i) == verticesOfCells.end())
+        {
+            std::cout << "vertex integrity error\n";
+        }
+    }
+
+    if (verticesOfCells.size() != verticesOut.size())
+        std::cout << "vertex size missmatch\n";
+
+    // check if points lie on top of each other? <- should be no issue
+    // a cell is represented multiple times?
+    std::set<Cell> alreadySeenCells;
+    for (Cell& c : cellsOut)
+    {
+        if (alreadySeenCells.find(c) != alreadySeenCells.end())
+            std::cout << "error: cell occurs multiple times!\n";
+        alreadySeenCells.insert(c);
+    }
+
     return Polygon3D(verticesOut,
                      Polygon3DTopology(facesOut, outerFacesOut,
                                        cellsOut, verticesOut.size()));

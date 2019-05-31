@@ -23,6 +23,7 @@
 
 #include <modules/mesh_converter/MeshConverterControl.h>
 #include <modules/mesh_converter/MeshConverterModule.h>
+#include <modules/mesh_converter/MeshCriteria.h>
 
 
 MeshConverterUIControl::MeshConverterUIControl(MeshConverterModule* module, ApplicationControl* ac)
@@ -50,19 +51,16 @@ QWidget* MeshConverterUIControl::getWidget()
 
 void MeshConverterUIControl::onConvertButtonClicked()
 {
-    // gather all information for convertion from UI
-    // those are:
-    //  - cellSize
-    //  - cellRadiusEdgeRatio
-    double cellSize = mWidget->getCellSize();
-    double cellRadiusEdgeRatio = mWidget->getCellRadiusEdgeRatio();
-    double facetAngle = mWidget->getFacetAngle();
-    double facetSize = mWidget->getFacetSize();
-    double facetDistance = mWidget->getFacetDistance();
+    MeshCriteria meshCriteria(
+                mWidget->getFacetAngle(),
+                mWidget->getFacetSize(),
+                mWidget->getFacetDistance(),
+                mWidget->getCellSize(),
+                mWidget->getCellRadiusEdgeRatio(),
+                mWidget->isSharpFeaturesEnabled(),
+                mWidget->getMinFeatureEdgeAngleDeg());
 
-    mModule->getControl()->convert(
-                cellSize, cellRadiusEdgeRatio,
-                facetAngle, facetSize, facetDistance);
+    mModule->getControl()->convert(meshCriteria);
 }
 
 void MeshConverterUIControl::onRevertButtonClicked()

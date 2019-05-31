@@ -50,6 +50,12 @@ protected:
     // and is true for the resulting edges as well.
     std::vector<TopologyEdge> calculateEdges(const Faces& faces) const;
 
+    std::vector<TopologyVertex> mVertices;
+    std::vector<TopologyEdge> mEdges;
+    std::vector<TopologyFace> mFaces;
+
+    Faces mFacesIndices;
+
 private:
 
     void buildTopology(
@@ -62,12 +68,6 @@ private:
     TopologyEdge createEdge(ID f1, ID f2);
 
     std::pair<ID, ID> makeSmallerPair(ID i1, ID i2) const;
-
-    std::vector<TopologyVertex> mVertices;
-    std::vector<TopologyEdge> mEdges;
-    std::vector<TopologyFace> mFaces;
-
-    Faces mFacesIndices;
 };
 
 #endif // POLYGONTOPOLOGY_H

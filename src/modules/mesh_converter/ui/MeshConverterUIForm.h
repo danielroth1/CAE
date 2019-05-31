@@ -27,6 +27,8 @@ public:
         double getFacetAngle() const;
         double getFacetSize() const;
         double getFacetDistance() const;
+        bool isSharpFeaturesEnabled() const;
+        double getMinFeatureEdgeAngleDeg() const;
 
     // Methods for updatingUI
     // Signals are blocked while updating, preventing infite loops.

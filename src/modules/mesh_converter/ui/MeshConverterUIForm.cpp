@@ -41,6 +41,16 @@ double MeshConverterUIForm::getFacetDistance() const
     return ui->mFacetDistance->value();
 }
 
+bool MeshConverterUIForm::isSharpFeaturesEnabled() const
+{
+    return ui->mSharpFeaturesEnabled->checkState() == Qt::Checked;
+}
+
+double MeshConverterUIForm::getMinFeatureEdgeAngleDeg() const
+{
+    return ui->mMinFeatureEdgeAngleDeg->value();
+}
+
 void MeshConverterUIForm::updateCellSize(double cellSize)
 {
     updateDoubleSpinBox(ui->mCellSizeBox, cellSize);
