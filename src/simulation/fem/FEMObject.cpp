@@ -449,6 +449,7 @@ void FEMObject::revertPositions()
 
 void FEMObject::updateGeometricData()
 {
+    mPoly3->getPositions() = mPositions;
     // This call is necessary to inform the other modules about
     // the change in position of the underlying Polygon3D that is
     // simulated here.

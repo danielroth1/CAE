@@ -5,6 +5,7 @@
 
 #include <data_structures/DataStructures.h>
 #include <Eigen/Geometry>
+#include <rendering/RenderMaterial.h>
 
 class SceneObject;
 class RenderObjectVisitor;
@@ -63,12 +64,8 @@ public:
     virtual void setDrawMode(DrawMode dm);
     virtual DrawMode getDrawMode();
 
-    // Returns the color vector with the value (red, green, blue, alpha).
-    virtual Eigen::Vector4f& getColor();
-
-    // Sets the color of the RenderObject.
-    // \param color - vector with the values (red, green, blue, alpha).
-    virtual void setColor(Eigen::Vector4f color);
+    const RenderMaterial& getRenderMaterial() const;
+    void setRenderMaterial(const RenderMaterial& renderMaterial);
 
     virtual bool isVisible() const;
     virtual void setVisible(bool visible);
@@ -93,8 +90,7 @@ protected:
 
     DrawMode mDm;
 
-    // Ref, Green, Blue, Alpha
-    Eigen::Vector4f mColor;
+    RenderMaterial mRenderMaterial;
 
     bool mVisible;
 

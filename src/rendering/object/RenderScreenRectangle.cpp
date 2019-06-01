@@ -35,7 +35,7 @@ void RenderScreenRectangle::drawImmediate()
     const double h = VP[3];
     //const double ar = w / h;
 
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
 
     // rander selection
     glPushMatrix();
@@ -63,13 +63,13 @@ void RenderScreenRectangle::drawImmediate()
 
 void RenderScreenRectangle::drawArray()
 {
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
     // Not implemented
 }
 
 void RenderScreenRectangle::drawVBO()
 {
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
     // Not implemented
 }
 

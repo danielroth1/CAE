@@ -12,7 +12,9 @@ LinearForceRenderModel::LinearForceRenderModel(std::shared_ptr<LinearForce> line
     : mLinearForce(linearForce)
 {
     mRenderLine = std::make_shared<RenderLine>();
-    mRenderLine->setColor(Eigen::Vector4f(1.0f, 0.42f, 0.0f, 1.0f)); // orange
+    // orange
+    mRenderLine->setRenderMaterial(
+                RenderMaterial::createFromColor({1.0f, 0.42f, 0.0f, 1.0f}));
     mAlwaysUpdate = true;
 }
 

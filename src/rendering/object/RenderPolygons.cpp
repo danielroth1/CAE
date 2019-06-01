@@ -98,7 +98,6 @@ void RenderPolygons::accept(RenderObjectVisitor& /*visitor*/)
 
 void RenderPolygons::draw()
 {
-    glColor3f(0.2f, 0.5f, 0.8f);
     drawVBO();
 }
 
@@ -334,7 +333,7 @@ void RenderPolygons::drawVBO()
             if (!data->isInitialized())
                 data->initialize();
 
-            glColor4fv(data.get()->getColor().data());
+            data->glMaterial();
             // TODO: the constant datas buffers are created but
             // are they also filled with the correct data? call
             // refresh or sth.
@@ -378,7 +377,7 @@ void RenderPolygons::drawVBO()
             if (!data->isInitialized())
                 data->initialize();
 
-            glColor4fv(data.get()->getColor().data());
+            data->glMaterial();
 
             RenderPolygonsDataWS* dataWS = static_cast<RenderPolygonsDataWS*>(data.get());
 

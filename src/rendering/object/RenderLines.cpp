@@ -20,7 +20,7 @@ void RenderLines::draw()
 
 void RenderLines::drawImmediate()
 {
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
     glBegin(GL_LINES);
@@ -44,7 +44,7 @@ void RenderLines::drawImmediate()
 void RenderLines::drawArray()
 {
     glLineWidth(3);
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
 
     // draw in array mode
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -67,7 +67,7 @@ void RenderLines::drawArray()
 
 void RenderLines::drawVBO()
 {
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
     // not implemented
 }
 

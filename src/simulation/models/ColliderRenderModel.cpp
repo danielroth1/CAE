@@ -14,10 +14,13 @@ ColliderRenderModel::ColliderRenderModel(std::shared_ptr<Collider> collider)
 {
     mLineLength = 0.2f;
     mRenderLines = std::make_shared<RenderLines>();
-    mRenderLines->setColor(Eigen::Vector4f(0.71f, 1.0f, 0.0f, 1.0)); // grass-green
+    // grass-green color
+    mRenderLines->setRenderMaterial(
+                RenderMaterial::createFromColor({0.71f, 1.0f, 0.0f, 1.0}));
 
     mRenderPoints = std::make_shared<RenderPoints>();
-    mRenderPoints->setColor(Eigen::Vector4f(1.0f, 0.0f, 0.0f, 1.0));
+    mRenderPoints->setRenderMaterial(
+                RenderMaterial::createFromColor({1.0f, 0.0f, 0.0f, 1.0}));
 }
 
 void ColliderRenderModel::reset()

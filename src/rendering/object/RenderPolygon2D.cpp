@@ -40,7 +40,7 @@ void RenderPolygon2D::draw()
 
 void RenderPolygon2D::drawImmediate()
 {
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     glPushMatrix();
     glLoadMatrixf(mTransform.data());
@@ -73,7 +73,7 @@ void RenderPolygon2D::drawArray()
     if (mFaces.getData().lock()->size() == 0)
         return;
 
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
     glPushMatrix();
         glMultMatrixf(mTransform.data());
 
@@ -204,7 +204,7 @@ void RenderPolygon2D::drawVBO()
         !mFaces.isInitialized())
         return;
 
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
     glPushMatrix();
         glMultMatrixf(mTransform.data());
         glEnableClientState(GL_NORMAL_ARRAY);

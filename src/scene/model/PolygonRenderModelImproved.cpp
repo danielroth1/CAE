@@ -104,7 +104,9 @@ bool PolygonRenderModelImproved::isRenderVertexNormals() const
 void PolygonRenderModelImproved::setRenderVertexNormals(bool renderVertexNormals)
 {
     mRenderVertexNormals = renderVertexNormals;
-    revalidatePointLineRendering();
+
+    INVOKE_METHOD(PolygonRenderModelImproved, shared_from_this(),
+                  revalidatePointLineRendering, mRenderer->getDomain()); // my synchronized implementation
 }
 
 bool PolygonRenderModelImproved::isRenderFaceNormals() const
@@ -115,7 +117,8 @@ bool PolygonRenderModelImproved::isRenderFaceNormals() const
 void PolygonRenderModelImproved::setRenderFaceNormals(bool renderFaceNormals)
 {
     mRenderFaceNormals = renderFaceNormals;
-    revalidatePointLineRendering();
+    INVOKE_METHOD(PolygonRenderModelImproved, shared_from_this(),
+                  revalidatePointLineRendering, mRenderer->getDomain());
 }
 
 void PolygonRenderModelImproved::reset()
@@ -199,7 +202,9 @@ void PolygonRenderModelImproved::reset()
     }
     }
 
-    mRenderPolygonsData->setColor(Eigen::Vector4f(0.0f, 0.58f, 1.0f, 0.7f)); // teal
+    // Standard color is teal for now.
+    mRenderPolygonsData->setRenderMaterial(
+                RenderMaterial::createFromColor({0.0f, 0.58f, 1.0f, 0.7f}));
 
     getMonitors(mRenderObjectPositions,
                 mRenderObjectNormals,
@@ -246,11 +251,7 @@ void PolygonRenderModelImproved::reset()
     mFacesBufferedData->setDataChanged(true);
 
     // render normals
-    if (mRenderVertexNormals || mRenderFaceNormals)
-    {
-        mRenderLinesNormals = std::make_shared<RenderLines>();
-        mRenderPoints = std::make_shared<RenderPoints>();
-    }
+    revalidatePointLineRendering();
 
     updatePositions();
 
@@ -482,24 +483,34 @@ void PolygonRenderModelImproved::revalidatePointLineRendering()
         if (!mRenderLinesNormals)
         {
             mRenderLinesNormals = std::make_shared<RenderLines>();
+            // yellow
+            mRenderLinesNormals->setRenderMaterial(
+                        RenderMaterial::createFromColor({1.0f, 1.0f, 0.0f, 1.0f}));
             mRenderer->addRenderObject(mRenderLinesNormals);
         }
 
         if (!mRenderPoints)
         {
             mRenderPoints = std::make_shared<RenderPoints>();
+            // orange
+            mRenderPoints->setRenderMaterial(
+                        RenderMaterial::createFromColor({1.0f, 1.0f, 0.5f, 1.0f}));
             mRenderer->addRenderObject(mRenderPoints);
         }
     }
-    else
+    else if (!mRenderVertexNormals && !mRenderFaceNormals)
     {
         // renderLineNormals and renderPoints aren't needed anymore, so remove
         // them from renderer
-        if (!mRenderVertexNormals && !mRenderFaceNormals)
+        if (mRenderLinesNormals)
         {
             mRenderer->removeRenderObject(mRenderLinesNormals);
-            mRenderer->removeRenderObject(mRenderPoints);
             mRenderLinesNormals = nullptr;
+        }
+
+        if (mRenderPoints)
+        {
+            mRenderer->removeRenderObject(mRenderPoints);
             mRenderPoints = nullptr;
         }
 
@@ -546,7 +557,7 @@ void PolygonRenderModelImproved::updatePositions()
 
 void PolygonRenderModelImproved::updateNormalLines()
 {
-    if (!mRenderVertexNormals && !mRenderLinesNormals)
+    if (!mRenderPoints && !mRenderLinesNormals)
         return;
 
     float normalLineLength = 0.3f;
@@ -566,7 +577,7 @@ void PolygonRenderModelImproved::updateNormalLines()
         Eigen::Affine3f transform = mPolygon->getTransform().cast<float>();
 
         for (size_t i = 0; i < normals->size(); ++i)
-        {    
+        {
             // calculate center of face
             Vectorf source = transform * positions->at(i);
 
@@ -619,11 +630,11 @@ void PolygonRenderModelImproved::updateNormalLines()
         // correctly resized in this method and are appended.
         size_t startingIndex;
         if (mRenderVertexNormals)
-            startingIndex = lines->size();
+            startingIndex = points->size();
         else
             startingIndex = 0;
 
-        lines->resize(startingIndex + 2 * faceNormals.size());
+        lines->resize(2 * (startingIndex + faceNormals.size()));
         points->resize(startingIndex + faceNormals.size());
 
         Eigen::Affine3f transform = mPolygon->getTransform().cast<float>();
@@ -643,8 +654,8 @@ void PolygonRenderModelImproved::updateNormalLines()
             Vectorf target = source +
                     normalLineLength * faceNormals.at(i);
 
-            (*lines)[startingIndex + 2 * i] = source;
-            (*lines)[startingIndex + 2 * i + 1] = target;
+            (*lines)[2 * (startingIndex + i)] = source;
+            (*lines)[2 * (startingIndex + i) + 1] = target;
 
             (*points)[startingIndex + i] = source;
         }

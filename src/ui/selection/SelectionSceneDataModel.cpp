@@ -17,7 +17,8 @@ SelectionSceneDataModel::SelectionSceneDataModel(SelectionSceneData& selectionSc
     : mSelectionSceneData(selectionSceneData)
 {
     mRenderPoints = std::make_shared<RenderPoints>();
-    mRenderPoints->setColor(Eigen::Vector4f(0.0f, 1.0f, 0.0f, 1.0f));
+    mRenderPoints->setRenderMaterial(
+                RenderMaterial::createFromColor({0.0f, 1.0f, 0.0f, 1.0f}));
 }
 
 SelectionSceneDataModel::~SelectionSceneDataModel()

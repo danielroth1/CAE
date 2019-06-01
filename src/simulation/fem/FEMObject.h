@@ -155,7 +155,7 @@ private:
     std::shared_ptr<Polygon3D> mPoly3;
 
     // Geometric Data references
-    Vectors& mPositions;
+    Vectors mPositions;
     Vectors mPositionsPrevious;
 
     // Permanent simulation data

@@ -5,7 +5,6 @@
 
 RenderObject::RenderObject()
 {
-    mColor = Eigen::Vector4f::Ones();
     mVisible = true;
 }
 
@@ -19,14 +18,14 @@ RenderObject::DrawMode RenderObject::getDrawMode()
     return mDm;
 }
 
-Eigen::Vector4f& RenderObject::getColor()
+const RenderMaterial& RenderObject::getRenderMaterial() const
 {
-    return mColor;
+    return mRenderMaterial;
 }
 
-void RenderObject::setColor(Eigen::Vector4f color)
+void RenderObject::setRenderMaterial(const RenderMaterial& renderMaterial)
 {
-    mColor = color;
+    mRenderMaterial = renderMaterial;
 }
 
 bool RenderObject::isVisible() const

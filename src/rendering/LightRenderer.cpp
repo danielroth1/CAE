@@ -29,8 +29,8 @@ void LightRenderer::initialize()
     glLightf(GL_LIGHT0, GL_SHININESS, shininess);
     glEnable(GL_LIGHT0);
     // enable use of glColor instead of glMaterial for ambient and diffuse property
-    glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+//    glEnable(GL_COLOR_MATERIAL);
+//    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
     // white shiny specular highlights
     GLfloat specularLightMaterial[] =  { 1.0f, 1.0f, 1.0f, 1.0f };
     GLfloat shininessMaterial = 128.0f;
@@ -51,6 +51,8 @@ void LightRenderer::drawLight()
     glPushMatrix();
     glTranslatef(lp[0], lp[1], lp[2]);
     glColor3f(1.0f, 1.0f, 0.0f);
+    float color[4] = {1.0f, 1.0f, 0.0f, 1.0f};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
 //    glutSolidSphere(0.05, 64, 64);
     glPopMatrix();
 

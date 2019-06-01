@@ -19,7 +19,7 @@ void RenderLine::draw()
 
 void RenderLine::drawImmediate()
 {
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
     glBegin(GL_LINES);
     {
         auto lineLock = mLine.lock();

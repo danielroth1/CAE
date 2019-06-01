@@ -3,6 +3,8 @@
 
 #include <Eigen/Dense>
 
+#include <rendering/RenderMaterial.h>
+
 // RenderPolygonsData containts rendering data that is unique for each rendered polygon.
 // This includes the state of visibility and the color of the polygon.
 // Shared data is represented by RenderPolygonsConstantData.
@@ -20,14 +22,18 @@ public:
     virtual void refreshBuffers() = 0;
     virtual bool isInitialized() const = 0;
 
-    Eigen::Vector4f& getColor();
-    void setColor(const Eigen::Vector4f& color);
+    // Executes the glMaterial opengl methods for the specified material.
+    // Calls the identically names method of RenderMaterial.
+    void glMaterial();
 
     bool isVisible();
     void setVisible(bool visible);
 
+    const RenderMaterial& getRenderMaterial() const;
+    void setRenderMaterial(const RenderMaterial& renderMaterial);
+
 private:
-    Eigen::Vector4f mColor; // same color as for RenderPolygons
+    RenderMaterial mRenderMaterial;
     bool mVisible;
 };
 

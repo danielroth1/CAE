@@ -23,7 +23,7 @@ void RenderPoints::draw()
 
 void RenderPoints::drawImmediate()
 {
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
 
     // render selected vertices
     glPushMatrix();
@@ -63,13 +63,13 @@ void RenderPoints::drawImmediate()
 
 void RenderPoints::drawArray()
 {
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
     // Not implemented
 }
 
 void RenderPoints::drawVBO()
 {
-    glColor4fv(mColor.data());
+    mRenderMaterial.glMaterial();
     // Not implemented
 }
 

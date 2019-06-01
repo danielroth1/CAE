@@ -18,7 +18,8 @@ SelectionRectangleModel::SelectionRectangleModel(
                                                     selectionRectangle.getYStart(),
                                                     selectionRectangle.getXEnd(),
                                                     selectionRectangle.getYEnd());
-    mRenderScreenRectangle->setColor(Eigen::Vector4f(1.0f, 0.0f, 0.0f, 0.8f));
+    mRenderScreenRectangle->setRenderMaterial(
+                RenderMaterial::createFromColor({1.0f, 0.0f, 0.0f, 0.8f}));
 }
 
 SelectionRectangleModel::~SelectionRectangleModel()

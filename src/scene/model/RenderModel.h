@@ -1,6 +1,8 @@
 #ifndef RENDERMODEL_H
 #define RENDERMODEL_H
 
+#include <memory>
+
 class RenderModelVisitor;
 class RenderObject;
 class Renderer;
@@ -17,7 +19,7 @@ class Renderer;
 // RenderModel updates data with Monitors. Uses monitors
 //      lock() method to guarantee a thread safe access
 //      of the data.
-class RenderModel
+class RenderModel : public std::enable_shared_from_this<RenderModel>
 {
 public:
     // Reset data structures.
