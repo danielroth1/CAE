@@ -17,7 +17,7 @@
 #include <scene/data/geometric/Polygon3D.h>
 
 #include <scene/model/ModelFactory.h>
-#include <scene/model/PolygonRenderModelImproved.h>
+#include <scene/model/PolygonRenderModel.h>
 
 MeshConverterControl::MeshConverterControl(
         MeshConverterModule* module,
@@ -126,7 +126,7 @@ void MeshConverterControl::revert()
         // set as well.
         sceneData->setGeometricData(poly);
 
-        std::shared_ptr<PolygonRenderModelImproved> renderModel =
+        std::shared_ptr<PolygonRenderModel> renderModel =
                 ModelFactory::createPolygonRenderModelImproved(
                     mAc->getRenderModelManager(), poly, true);
         sceneData->setRenderModel(renderModel);

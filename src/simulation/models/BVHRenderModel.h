@@ -11,7 +11,7 @@ class BoundingVolume;
 class BoundingVolumeHierarchy;
 class BVSphere;
 class GeometricSphere;
-class PolygonRenderModelImproved;
+class PolygonRenderModel;
 class RenderModelManager;
 class RenderPolygon2D;
 
@@ -87,7 +87,7 @@ private:
 
         std::shared_ptr<GeometricSphere> mGeometricSphere;
 
-        std::shared_ptr<PolygonRenderModelImproved> mRenderModel;
+        std::shared_ptr<PolygonRenderModel> mRenderModel;
 
         double mRadiusPrevious;
 

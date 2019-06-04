@@ -1,6 +1,6 @@
 #include "SGQtWidgetManager.h"
 
-#include <scene/model/PolygonRenderModelImproved.h>
+#include <scene/model/PolygonRenderModel.h>
 #include <scene/model/RenderModel.h>
 #include <scene/model/RenderModelVisitor.h>
 

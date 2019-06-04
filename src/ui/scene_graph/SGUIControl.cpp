@@ -5,7 +5,7 @@
 #include <scene/scene_graph/SGControl.h>
 #include <scene/scene_graph/SGCore.h>
 
-#include <scene/model/PolygonRenderModelImproved.h>
+#include <scene/model/PolygonRenderModel.h>
 #include <scene/model/RenderModel.h>
 #include <scene/model/RenderModelVisitor.h>
 
@@ -32,7 +32,7 @@ void SGUIControl::setVisualizeFaceNormals(bool visualizeFaceNormals)
         {
 
         }
-        virtual void visit(PolygonRenderModelImproved& model)
+        virtual void visit(PolygonRenderModel& model)
         {
             model.setRenderFaceNormals(renderFaceNormals);
         }
@@ -61,7 +61,7 @@ void SGUIControl::setVisualizeVertexNormals(bool visualizeVertexNormals)
         {
 
         }
-        virtual void visit(PolygonRenderModelImproved& model)
+        virtual void visit(PolygonRenderModel& model)
         {
             model.setRenderVertexNormals(renderVertexNormals);
         }

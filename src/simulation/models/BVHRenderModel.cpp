@@ -9,7 +9,6 @@
 #include <scene/data/geometric/Polygon2D.h>
 
 #include <scene/model/PolygonRenderModel.h>
-#include <scene/model/PolygonRenderModelImproved.h>
 
 #include <rendering/Renderer.h>
 
@@ -216,7 +215,7 @@ BVHRenderModel::SphereData::SphereData(
 {
     mGeometricSphere = std::make_shared<GeometricSphere>(radius, resolution);
 
-    mRenderModel = std::make_shared<PolygonRenderModelImproved>(
+    mRenderModel = std::make_shared<PolygonRenderModel>(
                 renderModelManager,
                 mGeometricSphere->getPolygon());
 }
@@ -234,7 +233,7 @@ BVHRenderModel::SphereData::SphereData(
 
     mGeometricSphere = std::make_shared<GeometricSphere>(*geometricSphereTemplate);
     setRadius(radius);
-    mRenderModel = std::make_shared<PolygonRenderModelImproved>(
+    mRenderModel = std::make_shared<PolygonRenderModel>(
                 renderModelManager,
                 mGeometricSphere->getPolygon());
 }

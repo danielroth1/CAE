@@ -1,10 +1,16 @@
+#include <GL/glew.h>
+
 #include "ApplicationControl.h"
 #include "main_window.h"
 #include "SimulationControl.h"
 #include "RenderModelManager.h"
 
+#include <io/ImageLoader.h>
 #include <io/MeshIO.h>
+#include <rendering/Image.h>
 #include <rendering/Renderer.h>
+#include <rendering/Texture.h>
+#include <rendering/TextureUtils.h>
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/Polygon3D.h>
 #include <scene/scene_graph/SGControl.h>
@@ -12,6 +18,7 @@
 #include <scene/scene_graph/SGNodeVisitorFactory.h>
 #include <scene/scene_graph/SGTraverserFactory.h>
 #include <scene/model/ModelFactory.h>
+#include <scene/model/PolygonRenderModel.h>
 #include <scene/model/RenderModel.h>
 #include <simulation/fem/FEMObject.h>
 #include <simulation/fem/FEMSimulation.h>
@@ -184,6 +191,11 @@ void ApplicationControl::initiateApplication()
 //            ac.mSGControl->createCollidable(node3->getData(), 1.0);
 
 
+            // load some example image and set it as texture to render model
+            std::shared_ptr<Texture> texture =
+                    std::make_shared<Texture>(
+                        ImageLoader::instance()->loadBMP(
+                            "/home/daniel/objs/LibertyStatue/Liberty-PortaBronzo-1.bmp"));
 
             // some boxes:
             for (int r = 0; r < 1; ++r)
@@ -191,24 +203,72 @@ void ApplicationControl::initiateApplication()
                 for (int c = 0; c < 1; ++c)
                 {
                     double boxDim = 1.5;
-//                    SGLeafNode* node1 = ac.mSGControl->createBox(
-//                                "Box", ac.mSGControl->getSceneGraph()->getRoot(),
-//                                Vector(0.6 * c, 0.7 * r, 0.0),
-//                                boxDim, boxDim, boxDim, true);
-
-                    SGLeafNode* node1 = ac.mSGControl->createLeafNode(
+                    SGLeafNode* node1 = ac.mSGControl->createBox(
                                 "Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                                std::make_shared<Polygon3D>(
-                                    GeometricDataFactory::create3DBox(boxDim, boxDim, boxDim)),
-                                Vector(0.6 * c, 0.7 * r, 0.0), false);
+                                Vector(0.6 * c, 0.7 * r, 0.0),
+                                boxDim, boxDim, boxDim, true);
+
+//                    SGLeafNode* node2 = ac.mSGControl->createSphere(
+//                                "Sphere", ac.mSGControl->getSceneGraph()->getRoot(),
+//                                Vector(0.6 * c, 0.7 * r, 0.0), boxDim, 5
+//                                );
+
+//                    SGLeafNode* node1 = ac.mSGControl->createLeafNode(
+//                                "Box", ac.mSGControl->getSceneGraph()->getRoot(),
+//                                std::make_shared<Polygon3D>(
+//                                    GeometricDataFactory::create3DBox(boxDim, boxDim, boxDim)),
+//                                Vector(0.6 * c, 0.7 * r, 0.0), true);
+
+                    // deformable
+                    MeshCriteria criteria(0.0, 0.0, 0.0, 0.15, 30, true);
+                    ac.mSGControl->create3DGeometryFrom2D(node1, criteria, false);
+                    ac.mSGControl->createFEMObject(node1->getData());
+
+                    std::shared_ptr<PolygonRenderModel> renderModel =
+                            std::static_pointer_cast<PolygonRenderModel>(
+                                node1->getData()->getRenderModel());
+
+                    renderModel->setTexture(texture);
+                    std::shared_ptr<Polygon2D> poly =
+                            std::static_pointer_cast<Polygon2D>(
+                                node1->getData()->getGeometricData());
+
+                    std::vector<Eigen::Vector2f> textureCoordinates =
+                            TextureUtils::createSpericalTextureCoordinates<float, double>(
+                                poly->getPositions());
+
+                    std::cout << "texture coordinates:\n";
+                    for (int i = 0; i < textureCoordinates.size(); ++i)
+                    {
+                        std::cout << textureCoordinates[i].transpose() << " -> " <<
+                                     poly->getPosition(i).transpose() << "\n";
+                    }
+
+                    renderModel->setTextureCoordinates(textureCoordinates);
+                    renderModel->setTexturingEnabled(true);
 
                     // rigid
 //                    ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
 
-                    // deformable
-//                    MeshCriteria criteria(0.0, 0.0, 0.0, 0.15, 30, true);
-//                    ac.mSGControl->create3DGeometryFrom2D(node1, criteria, false);
-                    ac.mSGControl->createFEMObject(node1->getData());
+
+//                    std::shared_ptr<PolygonRenderModel> renderModel2 =
+//                            std::static_pointer_cast<PolygonRenderModel>(
+//                                node2->getData()->getRenderModel());
+
+//                    renderModel2->setTexture(texture);
+//                    std::shared_ptr<Polygon2D> poly2 =
+//                            std::static_pointer_cast<Polygon2D>(
+//                                node2->getData()->getGeometricData());
+
+//                    std::vector<Eigen::Vector2f> textureCoordinates2 =
+//                            TextureUtils::createSpericalTextureCoordinates<float, double>(
+//                                poly2->getPositions());
+
+//                    renderModel2->setTextureCoordinates(textureCoordinates2);
+//                    renderModel2->setTexturingEnabled(true);
+
+//                    // rigid
+//                    ac.mSGControl->createRigidBody(node2->getData(), 1.0, false);
 
                     // collidable
 //                    ac.mSGControl->createCollidable(node1->getData());
@@ -245,6 +305,7 @@ void ApplicationControl::initiateApplication()
             // Floor
             SGLeafNode* node2 = ac.mSGControl->createBox("Floor", ac.mSGControl->getSceneGraph()->getRoot(),
                                                       /*Vector(-5, -2, -5)*/Vector(0.0, -1.5, 0.0), 6, 0.5, 6, true);
+
             ac.mSGControl->createRigidBody(node2->getData(), 1.0, true);
             ac.mSGControl->createCollidable(node2->getData());
 

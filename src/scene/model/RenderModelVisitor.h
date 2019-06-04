@@ -2,14 +2,14 @@
 #define RENDERMODELVISITOR_H
 
 class LinearForceRenderModel;
-class PolygonRenderModelImproved;
+class PolygonRenderModel;
 
 class RenderModelVisitor
 {
 public:
     RenderModelVisitor();
 
-    virtual void visit(PolygonRenderModelImproved& model) = 0;
+    virtual void visit(PolygonRenderModel& model) = 0;
 
     virtual void visit(LinearForceRenderModel& model) = 0;
 

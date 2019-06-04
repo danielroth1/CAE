@@ -10,7 +10,6 @@
 
 #include <scene/model/ModelFactory.h>
 #include <scene/model/PolygonRenderModel.h>
-#include <scene/model/PolygonRenderModelImproved.h>
 
 #include <simulation/fem/FEMObject.h>
 #include <simulation/fem/SimulationPoint.h>
@@ -22,7 +21,6 @@
 #include <simulation/SimulationObjectFactory.h>
 #include <simulation/fem/FEMSimulation.h>
 #include <simulation/forces/LinearForce.h>
-#include <simulation/models/RigidRenderModel.h>
 #include <simulation/rigid/RigidBody.h>
 #include <ui/UIControl.h>
 #include <ui/selection/SelectionControl.h>
@@ -168,7 +166,7 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
         leafData->setGeometricData(poly3);
 
         // Render Model
-        std::shared_ptr<PolygonRenderModelImproved> renderModel =
+        std::shared_ptr<PolygonRenderModel> renderModel =
                 ModelFactory::createPolygonRenderModelImproved(
                     mAc->getRenderModelManager(), poly3, renderOnlyOuterFaces);
         leafData->setRenderModel(renderModel);
@@ -536,7 +534,7 @@ SGLeafNode* SGControl::createLeafNode(
     leafData->setGeometricData(polygon);
 
     // Render Model
-    std::shared_ptr<PolygonRenderModelImproved> renderModel =
+    std::shared_ptr<PolygonRenderModel> renderModel =
             ModelFactory::createPolygonRenderModelImproved(
                 mAc->getRenderModelManager(),
                 polygon,
