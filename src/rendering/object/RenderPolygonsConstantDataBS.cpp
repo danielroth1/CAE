@@ -4,9 +4,8 @@ RenderPolygonsConstantDataBS::RenderPolygonsConstantDataBS()
     : RenderPolygonsConstantData()
     , mPositions(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
     , mNormals(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
-    , mFaces(GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
+    , mFaces(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW)
 {
-
 }
 
 BufferedData<Eigen::Vectorf, float, 3>&

@@ -16,6 +16,12 @@ public:
 
     }
 
+    template<typename ...Args>
+    Monitor(Monitor& monitor)
+        : mData(monitor.mData)
+    {
+    }
+
     struct MonitorHelper
     {
         MonitorHelper(Monitor* monitor)

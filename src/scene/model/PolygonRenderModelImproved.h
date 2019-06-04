@@ -17,6 +17,7 @@ class RenderPoints;
 class RenderPolygons;
 class RenderPolygonsData;
 class RenderModelManager;
+class Texture;
 
 class PolygonRenderModelImproved : public RenderModel
 {
@@ -49,6 +50,21 @@ public:
 
     virtual ~PolygonRenderModelImproved() override;
 
+    // Sets the texture coordinates and sets a signal to refreshe the buffer
+    // of them.
+    void setTextureCoordinates(const std::vector<Eigen::Vector2f>& textureCoordinates);
+
+    // Sets the texture.
+    void setTexture(const std::shared_ptr<Texture> texture);
+
+    bool isTexturingEnabled() const;
+
+    // Sets texturing enables if:
+    //  - the texture was specified via setTexture.
+    //  - the texture coordinates were specified via setTextureCoordinates.
+    // If not, sets texturingEnabled false and prints a message.
+    void setTexturingEnabled(bool textureEnabled);
+
     bool isRenderOnlyOuterFaces() const;
     void setRenderOnlyOuterFaces(bool renderOnlyOuterFaces);
 
@@ -61,8 +77,7 @@ public:
     // RenderModel interface
 public:
 
-    // Resizes mRenderObjectPositions, mRenderObjectNormal
-    // Initializes mRenderObjectFaces with the faces from mPolygon
+    // Resizes positions, normals, and faces with the faces from mPolygon
     virtual void reset() override;
     virtual void update() override;
     virtual void revalidate() override;
@@ -78,15 +93,7 @@ private:
     // are stored in the parameter faces.
     std::vector<TopologyFace>* retrieveRelevantFaces();
 
-    void getMonitors(
-            Monitor<Vectorfs>*& positionsMonitor,
-            Monitor<Vectorfs>*& normalsMonitor,
-            Monitor<Faces>*& facesMonitor);
-
-    void getBufferedData(
-            BufferedData<Eigen::Vectorf, float, 3>*& positionsBufferedData,
-            BufferedData<Eigen::Vectorf, float, 3>*& normalsBufferedData,
-            BufferedData<Face, unsigned int, 3>*& facesBufferedData);
+    void initializeBufferedData();
 
     void revalidatePointLineRendering();
 
@@ -115,13 +122,10 @@ private:
     std::shared_ptr<RenderPolygons> mRenderPolygons;
     std::shared_ptr<RenderPolygonsData> mRenderPolygonsData;
 
-    Monitor<Vectorfs>* mRenderObjectPositions;
-    Monitor<Vectorfs>* mRenderObjectNormals;
-    Monitor<Faces>* mRenderObjectFaces;
-
     BufferedData<Eigen::Vectorf, float, 3>* mPositionsBufferedData;
     BufferedData<Eigen::Vectorf, float, 3>* mNormalsBufferedData;
     BufferedData<Face, unsigned int, 3>* mFacesBufferedData;
+    BufferedData<Eigen::Vector2f, float, 2>* mTexturesCoordinatesBufferedData;
 
     // Rendering vertex normals
     std::shared_ptr<RenderLines> mRenderLinesNormals;
@@ -137,6 +141,8 @@ private:
     // If this variable is true, only the outer faces of a Polygon3D are renderd.
     // If the given polygon is a Polygon2D, this variable has no effect.
     bool mRenderOnlyOuterFaces;
+
+    bool mTexturingEnabled;
 
     bool mRenderVertexNormals;
     bool mRenderFaceNormals;

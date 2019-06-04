@@ -15,16 +15,18 @@ class RenderPolygonsDataWS : public RenderPolygonsData
 public:
     RenderPolygonsDataWS();
 
+    RenderPolygonsDataWS(RenderPolygonsData& renderPolygonsData);
+
     BufferedData<Eigen::Vectorf, float, 3>& getPositionsBuffer();
     BufferedData<Eigen::Vectorf, float, 3>& getNormalsBuffer();
 
     // RenderPolygonsData interface
 public:
-    virtual void initialize();
-    virtual void cleanup();
-    virtual void createBuffers();
-    virtual void refreshBuffers();
-    virtual bool isInitialized() const;
+    virtual void initialize() override;
+    virtual void cleanup() override;
+    virtual void createBuffers() override;
+    virtual void refreshBuffers() override;
+    virtual bool isInitialized() const override;
 
 private:
     BufferedData<Eigen::Vectorf, float, 3> mPositions;

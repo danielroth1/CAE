@@ -4,6 +4,7 @@
 #define BUFFEREDDATA_CPP
 
 #include "BufferedData.h"
+#include <GL/glew.h>
 
 #include <rendering/RendererUtils.h>
 
@@ -17,6 +18,17 @@ BufferedData<T, NT, NE>::BufferedData(
     mVbo = 0;
     mInitialized = false;
     mDataChanged = true;
+}
+
+template<class T, class NT, unsigned int NE>
+BufferedData<T, NT, NE>::BufferedData(BufferedData<T, NT, NE>& bd)
+    : mData(bd.mData)
+    , mVbo(bd.mVbo)
+    , mTarget(bd.mTarget)
+    , mUsage(bd.mUsage)
+    , mInitialized(bd.mInitialized)
+    , mDataChanged(bd.mDataChanged)
+{
 }
 
 template<class T, class NT, unsigned int NE>

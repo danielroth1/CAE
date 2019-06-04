@@ -70,6 +70,8 @@ public:
 
 private:
 
+    void glEnableTexturing(RenderPolygonsData* rpd, bool texturing);
+
     Domain* mDomain;
 
     std::shared_ptr<RenderPolygonsProxy> mProxy;

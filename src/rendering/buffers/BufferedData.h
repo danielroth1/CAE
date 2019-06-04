@@ -2,8 +2,6 @@
 #define BUFFEREDDATA_H
 
 
-#include <GL/glew.h>
-
 #include <Eigen/Core>
 #include <multi_threading/Monitor.h>
 #include <vector>
@@ -25,8 +23,10 @@ public:
 
     // \param target - OpenGL target, e.g. GL_ARRAY_BUFFER, GL_ARRAY_BUFFER
     // \param usage - OpenGL usage, e.g. GL_STATIC_DRAW, GL_DYNAMIC_DRAW
-    BufferedData(GLenum target,
-                 GLenum usage);
+    BufferedData(unsigned int target,
+                 unsigned int usage);
+
+    BufferedData(BufferedData<T, NT, NE>& bd);
 
     void initialize();
 
@@ -47,10 +47,10 @@ public:
 
 private:
     Monitor<std::vector<T>> mData;
-    GLuint mVbo;
+    unsigned int mVbo;
 
-    GLenum mTarget; // e.g. GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER
-    GLenum mUsage; // e.g. GL_STATIC_DRAW, GL_DYNAMIC_DRAW
+    unsigned int mTarget; // e.g. GL_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER
+    unsigned int mUsage; // e.g. GL_STATIC_DRAW, GL_DYNAMIC_DRAW
 
     bool mInitialized;
     bool mDataChanged;

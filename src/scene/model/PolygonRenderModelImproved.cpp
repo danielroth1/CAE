@@ -49,8 +49,8 @@ PolygonRenderModelImproved::PolygonRenderModelImproved(
 
     mCurrentlyRenderedTransform.setIdentity();
 
-    // Resets mRenderObjectPositions and mRenderObjectNormals and resizes them.
-    // Initializes mRenderObjectFaces from mPolygon.
+    // Resets mPositionsBufferedData and mNormalsBufferedData and resizes them.
+    // Initializes mFacesBufferedData from mPolygon.
     reset();
     updatePositions();
 
@@ -84,6 +84,27 @@ PolygonRenderModelImproved::~PolygonRenderModelImproved()
 
     if (mRenderPolygons && mRenderPolygonsData)
         mRenderPolygons->removeRenderPolygonsData(mRenderPolygonsData);
+}
+
+void PolygonRenderModelImproved::setTextureCoordinates(
+        const std::vector<Vector2f>& textureCoordinates)
+{
+    mRenderPolygonsData->setTextureCoordinates(textureCoordinates);
+}
+
+void PolygonRenderModelImproved::setTexture(const std::shared_ptr<Texture> texture)
+{
+    mRenderPolygonsData->setTexture(texture);
+}
+
+bool PolygonRenderModelImproved::isTexturingEnabled() const
+{
+    return mRenderPolygonsData->isTexturingEnabled();
+}
+
+void PolygonRenderModelImproved::setTexturingEnabled(bool texturingEnabled)
+{
+    mRenderPolygonsData->setTexturingEnabled(texturingEnabled);
 }
 
 bool PolygonRenderModelImproved::isRenderOnlyOuterFaces() const
@@ -192,26 +213,32 @@ void PolygonRenderModelImproved::reset()
     {
     case BSWSVectors::Type::BODY_SPACE:
     {
-        mRenderPolygonsData = std::make_shared<RenderPolygonsDataBS>();
+        if (mRenderPolygonsData)
+            mRenderPolygonsData = std::make_shared<RenderPolygonsDataBS>(
+                        *mRenderPolygonsData.get());
+        else
+            mRenderPolygonsData = std::make_shared<RenderPolygonsDataBS>();
         break;
     }
     case BSWSVectors::Type::WORLD_SPACE:
     {
-        mRenderPolygonsData = std::make_shared<RenderPolygonsDataWS>();
+        if (mRenderPolygonsData)
+            mRenderPolygonsData = std::make_shared<RenderPolygonsDataWS>(
+                        *mRenderPolygonsData.get());
+        else
+            mRenderPolygonsData = std::make_shared<RenderPolygonsDataWS>();
         break;
     }
     }
 
     // Standard color is teal for now.
-    mRenderPolygonsData->setRenderMaterial(
-                RenderMaterial::createFromColor({0.0f, 0.58f, 1.0f, 0.7f}));
+//    mRenderPolygonsData->setRenderMaterial(
+//                RenderMaterial::createFromColor({0.0f, 0.58f, 1.0f, 0.7f}));
 
-    getMonitors(mRenderObjectPositions,
-                mRenderObjectNormals,
-                mRenderObjectFaces);
-    getBufferedData(mPositionsBufferedData,
-                    mNormalsBufferedData,
-                    mFacesBufferedData);
+    mRenderPolygonsData->setRenderMaterial(
+                RenderMaterial::createFromColor({1.0f, 1.0f, 1.0f, 1.0f}));
+
+    initializeBufferedData();
 
     // reset positions
     size_t size;
@@ -235,12 +262,12 @@ void PolygonRenderModelImproved::reset()
     }
     }
 
-    mRenderObjectPositions->lock()->resize(size);
-    mRenderObjectNormals->lock()->resize(size);
+    mPositionsBufferedData->getData().lock()->resize(size);
+    mNormalsBufferedData->getData().lock()->resize(size);
 
     std::vector<TopologyFace>* faces = retrieveRelevantFaces();
     {
-        auto facesLock = mRenderObjectFaces->lock();
+        auto facesLock = mFacesBufferedData->getData().lock();
         facesLock->resize(faces->size());
 
         for (size_t i = 0; i < faces->size(); ++i)
@@ -254,6 +281,9 @@ void PolygonRenderModelImproved::reset()
     revalidatePointLineRendering();
 
     updatePositions();
+
+    // reload the image
+
 
     if (replacedRenderPolygons)
         mAddedToRenderer = false;
@@ -397,47 +427,11 @@ std::vector<TopologyFace>* PolygonRenderModelImproved::retrieveRelevantFaces()
     return visitor.faces;
 }
 
-void PolygonRenderModelImproved::getMonitors(
-        Monitor<Vectorfs>*& positionsMonitor,
-        Monitor<Vectorfs>*& normalsMonitor,
-        Monitor<Faces>*& facesMonitor)
+void PolygonRenderModelImproved::initializeBufferedData()
 {
-    switch(mRenderPolygons->getType())
-    {
-    case BSWSVectors::BODY_SPACE:
-    {
-        std::shared_ptr<RenderPolygonsDataBS> dataBS =
-                std::static_pointer_cast<RenderPolygonsDataBS>(mRenderPolygonsData);
-        std::shared_ptr<RenderPolygonsConstantDataBS> constantDataBS =
-                std::static_pointer_cast<RenderPolygonsConstantDataBS>(mRenderPolygons->getConstantData());
+    mTexturesCoordinatesBufferedData =
+            &mRenderPolygonsData->getTexturesCoordinatesBufferedData();
 
-        positionsMonitor = &constantDataBS->getPositionsBuffer().getData();
-        normalsMonitor = &constantDataBS->getNormalsBuffer().getData();
-        facesMonitor = &constantDataBS->getFacesBuffer().getData();
-
-        break;
-    }
-    case BSWSVectors::WORLD_SPACE:
-    {
-        std::shared_ptr<RenderPolygonsDataWS> dataWS =
-                std::static_pointer_cast<RenderPolygonsDataWS>(mRenderPolygonsData);
-        std::shared_ptr<RenderPolygonsConstantDataWS> constantDataWS =
-                std::static_pointer_cast<RenderPolygonsConstantDataWS>(mRenderPolygons->getConstantData());
-
-        positionsMonitor = &dataWS->getPositionsBuffer().getData();
-        normalsMonitor = &dataWS->getNormalsBuffer().getData();
-        facesMonitor = &constantDataWS->getFacesBuffer().getData();
-
-        break;
-    }
-    }
-}
-
-void PolygonRenderModelImproved::getBufferedData(
-        BufferedData<Vectorf, float, 3>*& positionsBufferedData,
-        BufferedData<Vectorf, float, 3>*& normalsBufferedData,
-        BufferedData<Face, unsigned int, 3>*& facesBufferedData)
-{
     switch(mRenderPolygons->getType())
     {
     case BSWSVectors::BODY_SPACE:
@@ -450,9 +444,9 @@ void PolygonRenderModelImproved::getBufferedData(
         // set a flag so that renderer knows that refresh of buffer is
         // necessary or better, call some operation that triggers that
         // refresh once.
-        positionsBufferedData = &constantDataBS->getPositionsBuffer();
-        normalsBufferedData = &constantDataBS->getNormalsBuffer();
-        facesBufferedData = &constantDataBS->getFacesBuffer();
+        mPositionsBufferedData = &constantDataBS->getPositionsBuffer();
+        mNormalsBufferedData = &constantDataBS->getNormalsBuffer();
+        mFacesBufferedData = &constantDataBS->getFacesBuffer();
 
         break;
     }
@@ -463,9 +457,9 @@ void PolygonRenderModelImproved::getBufferedData(
         std::shared_ptr<RenderPolygonsConstantDataWS> constantDataWS =
                 std::static_pointer_cast<RenderPolygonsConstantDataWS>(mRenderPolygons->getConstantData());
 
-        positionsBufferedData = &dataWS->getPositionsBuffer();
-        normalsBufferedData = &dataWS->getNormalsBuffer();
-        facesBufferedData = &constantDataWS->getFacesBuffer();
+        mPositionsBufferedData = &dataWS->getPositionsBuffer();
+        mNormalsBufferedData = &dataWS->getNormalsBuffer();
+        mFacesBufferedData = &constantDataWS->getFacesBuffer();
 
         break;
     }
@@ -525,7 +519,7 @@ void PolygonRenderModelImproved::updatePositions()
                 mPolygon->getPositions(); // for 3d case, this are all 3d positions, but often only 2d positions are required
 
     {
-        auto positionsLock = mRenderObjectPositions->lock();
+        auto positionsLock = mPositionsBufferedData->getData().lock();
         for (size_t i = 0; i < positionsLock->size(); ++i)
         {
             if (mRenderOnlyOuterFaces && mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
@@ -540,8 +534,8 @@ void PolygonRenderModelImproved::updatePositions()
             }
         }
 
-        auto normalsLock = mRenderObjectNormals->lock();
-        auto facesLock = mRenderObjectFaces->lock();
+        auto normalsLock = mNormalsBufferedData->getData().lock();
+        auto facesLock = mFacesBufferedData->getData().lock();
         // calculate normals
         ModelUtils::calculateNormals<float>(
                     *positionsLock,
@@ -568,8 +562,8 @@ void PolygonRenderModelImproved::updateNormalLines()
         auto lines = mRenderLinesNormals->getLines().lock();
         auto points = mRenderPoints->getPoints().lock();
 
-        auto positions = mRenderObjectPositions->lock();
-        auto normals = mRenderObjectNormals->lock();
+        auto positions = mPositionsBufferedData->getData().lock();
+        auto normals = mNormalsBufferedData->getData().lock();
 
         lines->resize(2 * normals->size());
         points->resize(normals->size());
@@ -596,8 +590,8 @@ void PolygonRenderModelImproved::updateNormalLines()
         auto lines = mRenderLinesNormals->getLines().lock();
         auto points = mRenderPoints->getPoints().lock();
 
-        auto positions = mRenderObjectPositions->lock();
-        auto facesLock = mRenderObjectFaces->lock();
+        auto positions = mPositionsBufferedData->getData().lock();
+        auto facesLock = mFacesBufferedData->getData().lock();
 
         // face normals
         Vectorfs faceNormals;

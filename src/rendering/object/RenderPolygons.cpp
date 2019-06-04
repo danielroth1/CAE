@@ -8,6 +8,8 @@
 
 #include <multi_threading/Domain.h>
 
+#include <rendering/Texture.h>
+
 RenderPolygons::RenderPolygons(
         std::shared_ptr<RenderPolygonsConstantDataBS>& constantData)
     : RenderObject()
@@ -333,13 +335,21 @@ void RenderPolygons::drawVBO()
             if (!data->isInitialized())
                 data->initialize();
 
+            // Material
             data->glMaterial();
+
             // TODO: the constant datas buffers are created but
             // are they also filled with the correct data? call
             // refresh or sth.
             RenderPolygonsDataBS* dataBS =
                     static_cast<RenderPolygonsDataBS*>(data.get());
 
+            // Texturing
+            bool texturingEnabled = dataBS->isTexturingEnabled();
+            if (texturingEnabled)
+                glEnableTexturing(data.get(), true);
+
+            // Transformation matrix
             glPushMatrix();
             glMultMatrixf(dataBS->getTransform()->data());
             glDrawElements(
@@ -349,6 +359,10 @@ void RenderPolygons::drawVBO()
                         GL_UNSIGNED_INT,
                         nullptr);
             glPopMatrix();
+
+            if (texturingEnabled)
+                glEnableTexturing(data.get(), false);
+
             ++nDrawnElements;
         }
 //        std::cout << "BS: nDrawnElements = " << nDrawnElements << "/" << mData.size() << "\n";
@@ -381,12 +395,18 @@ void RenderPolygons::drawVBO()
 
             RenderPolygonsDataWS* dataWS = static_cast<RenderPolygonsDataWS*>(data.get());
 
+            // Texturing
+            bool texturingEnabled = data->isTexturingEnabled();
+            if (texturingEnabled)
+                glEnableTexturing(data.get(), true);
+
             glEnableClientState(GL_NORMAL_ARRAY);
             glEnableClientState(GL_VERTEX_ARRAY);
             dataWS->getNormalsBuffer().bindBuffer();
             glNormalPointer(GL_FLOAT, 0, nullptr);
             dataWS->getPositionsBuffer().bindBuffer();
             glVertexPointer(3, GL_FLOAT, 0, nullptr);
+
 
             glDrawElements(
                         GL_TRIANGLES,
@@ -397,6 +417,9 @@ void RenderPolygons::drawVBO()
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glDisableClientState(GL_VERTEX_ARRAY);
             glDisableClientState(GL_NORMAL_ARRAY);
+
+            if (texturingEnabled)
+                glEnableTexturing(data.get(), false);
 
         }
 
@@ -459,4 +482,22 @@ void RenderPolygons::initialize()
         data->initialize();
     }
     mConstantData->initialize();
+}
+
+void RenderPolygons::glEnableTexturing(
+        RenderPolygonsData* rpd, bool texturing)
+{
+    if (texturing)
+    {
+        glEnable(GL_TEXTURE_2D);
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        rpd->getTexturesCoordinatesBufferedData().bindBuffer();
+        glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
+        rpd->getTexture()->bind();
+    }
+    else
+    {
+        glDisable(GL_TEXTURE_2D);
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    }
 }

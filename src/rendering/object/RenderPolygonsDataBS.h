@@ -14,15 +14,17 @@ class RenderPolygonsDataBS : public RenderPolygonsData
 public:
     RenderPolygonsDataBS();
 
+    RenderPolygonsDataBS(RenderPolygonsData& rpd);
+
     Monitor<Eigen::Affine3f>& getTransform();
 
     // RenderPolygonsData interface
 public:
-    virtual void initialize();
-    virtual void cleanup();
-    virtual void createBuffers();
-    virtual void refreshBuffers();
-    virtual bool isInitialized() const;
+    virtual void initialize() override;
+    virtual void cleanup() override;
+    virtual void createBuffers() override;
+    virtual void refreshBuffers() override;
+    virtual bool isInitialized() const override;
 
 private:
     Monitor<Eigen::Affine3f> mTransform;

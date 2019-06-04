@@ -1,7 +1,7 @@
 #include "RenderPolygonsConstantDataWS.h"
 
 RenderPolygonsConstantDataWS::RenderPolygonsConstantDataWS()
-    : mFaces(GL_ELEMENT_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
+    : mFaces(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW)
 {
 
 }
