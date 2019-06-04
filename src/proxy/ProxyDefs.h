@@ -4,6 +4,18 @@
 #include <multi_threading/Domain.h>
 #include <multi_threading/Operation.h>
 
+// Invokes a method in a different domain.
+// \param className - the class name of object calling the method
+// \param callee - shared pointer to the object calling the method
+// \param function - name of the method to be called. The method is called by
+//          the callee.
+// \param domain - pointer to the Domain object
+// \param ... - method arguments WITHOUT types
+#define INVOKE_METHOD(className, callee, function, domain, ...) \
+    domain->addOperation( \
+    new Operation(std::bind([__VA_ARGS__](std::shared_ptr<className> s) { \
+            s->function(__VA_ARGS__); }, \
+                std::static_pointer_cast<className>(callee->shared_from_this()))));
 
 // A thread safe call to the given function.
 // If there is no domain, nothing happens.
