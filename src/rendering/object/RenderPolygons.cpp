@@ -8,6 +8,8 @@
 
 #include <multi_threading/Domain.h>
 
+#include <rendering/Appearance.h>
+#include <rendering/Appearances.h>
 #include <rendering/Texture.h>
 
 RenderPolygons::RenderPolygons(
@@ -199,7 +201,7 @@ void RenderPolygons::drawArray()
         RenderPolygonsConstantDataBS* constantData =
                 static_cast<RenderPolygonsConstantDataBS*>(mConstantData.get());
 
-        if (constantData->getFacesBuffer().getData().lock()->size() == 0)
+        if (constantData->getFacesBuffer().getData().unsafe().size() == 0)
             return;
 
         int drawCount = 0;
@@ -318,6 +320,9 @@ void RenderPolygons::drawVBO()
 //            !constantData->getPositionsBuffer().isInitialized())
 //            return;
 
+        int nFaces = static_cast<int>(
+                    constantData->getFacesBuffer().getData().lock()->size());
+
         glEnableClientState(GL_NORMAL_ARRAY);
         glEnableClientState(GL_VERTEX_ARRAY);
         constantData->getNormalsBuffer().bindBuffer();
@@ -335,37 +340,16 @@ void RenderPolygons::drawVBO()
             if (!data->isInitialized())
                 data->initialize();
 
-            // Material
-            data->glMaterial();
-
-            // TODO: the constant datas buffers are created but
-            // are they also filled with the correct data? call
-            // refresh or sth.
             RenderPolygonsDataBS* dataBS =
                     static_cast<RenderPolygonsDataBS*>(data.get());
 
-            // Texturing
-            bool texturingEnabled = dataBS->isTexturingEnabled();
-            if (texturingEnabled)
-                glEnableTexturing(data.get(), true);
-
-            // Transformation matrix
             glPushMatrix();
             glMultMatrixf(dataBS->getTransform()->data());
-            glDrawElements(
-                        GL_TRIANGLES,
-                        static_cast<int>(
-                            3 * constantData->getFacesBuffer().getData().unsafe().size()),
-                        GL_UNSIGNED_INT,
-                        nullptr);
+            drawTriangles(data, nFaces);
             glPopMatrix();
-
-            if (texturingEnabled)
-                glEnableTexturing(data.get(), false);
 
             ++nDrawnElements;
         }
-//        std::cout << "BS: nDrawnElements = " << nDrawnElements << "/" << mData.size() << "\n";
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -381,6 +365,9 @@ void RenderPolygons::drawVBO()
         if (!constantData->isInitialized())
             constantData->initialize();
 
+        int nFaces = static_cast<int>(
+                    constantData->getFacesBuffer().getData().lock()->size());
+
         constantData->getFacesBuffer().bindBuffer();
 
         for (const std::shared_ptr<RenderPolygonsData>& data : mData)
@@ -391,14 +378,7 @@ void RenderPolygons::drawVBO()
             if (!data->isInitialized())
                 data->initialize();
 
-            data->glMaterial();
-
             RenderPolygonsDataWS* dataWS = static_cast<RenderPolygonsDataWS*>(data.get());
-
-            // Texturing
-            bool texturingEnabled = data->isTexturingEnabled();
-            if (texturingEnabled)
-                glEnableTexturing(data.get(), true);
 
             glEnableClientState(GL_NORMAL_ARRAY);
             glEnableClientState(GL_VERTEX_ARRAY);
@@ -407,19 +387,11 @@ void RenderPolygons::drawVBO()
             dataWS->getPositionsBuffer().bindBuffer();
             glVertexPointer(3, GL_FLOAT, 0, nullptr);
 
-
-            glDrawElements(
-                        GL_TRIANGLES,
-                        static_cast<int>(3 * constantData->getFacesBuffer().getData().unsafe().size()),
-                        GL_UNSIGNED_INT,
-                        nullptr);
+            drawTriangles(data, nFaces);
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glDisableClientState(GL_VERTEX_ARRAY);
             glDisableClientState(GL_NORMAL_ARRAY);
-
-            if (texturingEnabled)
-                glEnableTexturing(data.get(), false);
 
         }
 
@@ -484,20 +456,69 @@ void RenderPolygons::initialize()
     mConstantData->initialize();
 }
 
-void RenderPolygons::glEnableTexturing(
-        RenderPolygonsData* rpd, bool texturing)
+void RenderPolygons::drawTriangles(
+        const std::shared_ptr<RenderPolygonsData>& data, int nTriangles)
 {
-    if (texturing)
+
+    std::shared_ptr<Appearances> appearances = data->getAppearances();
+
+    if (!appearances)
     {
-        glEnable(GL_TEXTURE_2D);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        rpd->getTexturesCoordinatesBufferedData().bindBuffer();
-        glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
-        rpd->getTexture()->bind();
+        glDrawElements(
+                    GL_TRIANGLES,
+                    static_cast<int>(3 * nTriangles),
+                    GL_UNSIGNED_INT,
+                    nullptr);
     }
     else
     {
-        glDisable(GL_TEXTURE_2D);
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        if (data->isTexturingEnabled())
+        {
+            // enable texturing
+            glEnable(GL_TEXTURE_2D);
+            glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+            // bind texture coordinates buffer (= uv-mapping)
+            data->getTexturesCoordinatesBufferedData().bindBuffer();
+            glTexCoordPointer(2, GL_FLOAT, 0, nullptr);
+        }
+
+        if (appearances->getSize() == 0)
+        {
+            appearances->getStandardAppearances()->bindAppearance();
+                    glDrawElements(
+                                GL_TRIANGLES,
+                                static_cast<int>(3 * nTriangles),
+                                GL_UNSIGNED_INT,
+                                nullptr);
+        }
+        else
+        {
+            int offset = 0;
+            for (size_t i = 0; i < appearances->getSize(); ++i)
+            {
+                int nTri = static_cast<int>(appearances->getOffset(i));
+                if (appearances->getSize() == 1)
+                    nTri = nTriangles;
+                std::shared_ptr<Appearance> appearance = appearances->getAppearance(i);
+
+                appearance->bindAppearance();
+
+                glDrawElements(
+                            GL_TRIANGLES,
+                            static_cast<int>(3 * nTri), // number of triangles to draw * 3
+                            GL_UNSIGNED_INT,
+                            (void*) (sizeof(GLuint) * 3 * offset)); // offset = number of triangles already drawn
+
+                offset += nTri;
+            }
+        }
+
+        if (data->isTexturingEnabled())
+        {
+            // disable texturing
+            glDisable(GL_TEXTURE_2D);
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        }
     }
 }

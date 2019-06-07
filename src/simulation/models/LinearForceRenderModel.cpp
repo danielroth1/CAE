@@ -2,6 +2,7 @@
 
 #include <scene/model/RenderModelVisitor.h>
 
+#include <rendering/RenderMaterial.h>
 #include <rendering/Renderer.h>
 
 #include <simulation/forces/LinearForce.h>

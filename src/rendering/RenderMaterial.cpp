@@ -60,8 +60,9 @@ float RenderMaterial::getShininessDefault()
     return 0.0f;
 }
 
-RenderMaterial RenderMaterial::createFromColor(const std::array<float, 4> color)
+std::shared_ptr<RenderMaterial> RenderMaterial::createFromColor(
+        const std::array<float, 4>& color)
 {
-    return RenderMaterial(
+    return std::make_shared<RenderMaterial>(
                 color, color, getSpecularDefault(), getShininessDefault());
 }

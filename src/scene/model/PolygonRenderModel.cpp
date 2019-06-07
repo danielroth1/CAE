@@ -26,6 +26,8 @@
 
 #include <scene/data/GeometricDataVisitor.h>
 
+#include <rendering/Appearance.h>
+#include <rendering/Appearances.h>
 #include <rendering/Renderer.h>
 
 #include <RenderModelManager.h>
@@ -92,9 +94,9 @@ void PolygonRenderModel::setTextureCoordinates(
     mRenderPolygonsData->setTextureCoordinates(textureCoordinates);
 }
 
-void PolygonRenderModel::setTexture(const std::shared_ptr<Texture> texture)
+void PolygonRenderModel::setAppearances(const std::shared_ptr<Appearances> appearances)
 {
-    mRenderPolygonsData->setTexture(texture);
+    mRenderPolygonsData->setAppearances(appearances);
 }
 
 bool PolygonRenderModel::isTexturingEnabled() const
@@ -235,8 +237,12 @@ void PolygonRenderModel::reset()
 //    mRenderPolygonsData->setRenderMaterial(
 //                RenderMaterial::createFromColor({0.0f, 0.58f, 1.0f, 0.7f}));
 
-    mRenderPolygonsData->setRenderMaterial(
-                RenderMaterial::createFromColor({1.0f, 1.0f, 1.0f, 1.0f}));
+    if (!mRenderPolygonsData->getAppearances())
+    {
+        mRenderPolygonsData->setAppearances(
+                    std::make_shared<Appearances>(
+                        Appearance::createAppearanceFromColor({1.0f, 1.0f, 1.0f, 1.0f})));
+    }
 
     initializeBufferedData();
 
@@ -282,12 +288,8 @@ void PolygonRenderModel::reset()
 
     updatePositions();
 
-    // reload the image
-
-
     if (replacedRenderPolygons)
         mAddedToRenderer = false;
-
 }
 
 void PolygonRenderModel::update()
@@ -341,7 +343,7 @@ void PolygonRenderModel::revalidate()
     if (mRenderPolygons->getType() == BSWSVectors::Type::BODY_SPACE)
         std::static_pointer_cast<RenderPolygonsDataBS>(mRenderPolygonsData)->getTransform()->setIdentity();
 
-    updatePositions();
+    update();
 }
 
 void PolygonRenderModel::accept(RenderModelVisitor& v)
@@ -520,6 +522,9 @@ void PolygonRenderModel::updatePositions()
 
     {
         auto positionsLock = mPositionsBufferedData->getData().lock();
+
+
+
         for (size_t i = 0; i < positionsLock->size(); ++i)
         {
             if (mRenderOnlyOuterFaces && mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
@@ -541,6 +546,10 @@ void PolygonRenderModel::updatePositions()
                     *positionsLock,
                     *facesLock,
                     *normalsLock);
+
+        if (positionsLock->size() != positions.size() ||
+            normalsLock->size() != positions.size() )
+            std::cout << "error: size missmatch\n";
     }
     mPositionsBufferedData->setDataChanged(true);
     mNormalsBufferedData->setDataChanged(true);
@@ -661,13 +670,16 @@ void PolygonRenderModel::updateNormalLines()
 
 void PolygonRenderModel::updateTransform()
 {
-    Eigen::Affine3d transform = mPolygon->getTransform();
+    if (mCurrentType == BSWSVectors::Type::BODY_SPACE)
+    {
+        std::shared_ptr<RenderPolygonsDataBS> dataBS =
+                std::static_pointer_cast<RenderPolygonsDataBS>(mRenderPolygonsData);
 
-    std::shared_ptr<RenderPolygonsDataBS> dataBS =
-            std::static_pointer_cast<RenderPolygonsDataBS>(mRenderPolygonsData);
-    auto transformLock = dataBS->getTransform().lock();
-    *transformLock = transform.cast<float>();
+        Eigen::Affine3d transform = mPolygon->getTransform();
+        auto transformLock = dataBS->getTransform().lock();
+        *transformLock = transform.cast<float>();
 
-    // set current transform to newly rendered one for future checks.
-    mCurrentlyRenderedTransform = transform;
+        // set current transform to newly rendered one for future checks.
+        mCurrentlyRenderedTransform = transform;
+    }
 }

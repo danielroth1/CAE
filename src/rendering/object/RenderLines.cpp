@@ -1,5 +1,7 @@
 #include "RenderLines.h"
 
+#include <rendering/RenderMaterial.h>
+
 using namespace Eigen;
 
 RenderLines::RenderLines()
@@ -20,7 +22,7 @@ void RenderLines::draw()
 
 void RenderLines::drawImmediate()
 {
-    mRenderMaterial.glMaterial();
+    mRenderMaterial->glMaterial();
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
     glBegin(GL_LINES);
@@ -44,7 +46,7 @@ void RenderLines::drawImmediate()
 void RenderLines::drawArray()
 {
     glLineWidth(3);
-    mRenderMaterial.glMaterial();
+    mRenderMaterial->glMaterial();
 
     // draw in array mode
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -67,7 +69,7 @@ void RenderLines::drawArray()
 
 void RenderLines::drawVBO()
 {
-    mRenderMaterial.glMaterial();
+    mRenderMaterial->glMaterial();
     // not implemented
 }
 

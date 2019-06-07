@@ -70,7 +70,7 @@ public:
 
 private:
 
-    void glEnableTexturing(RenderPolygonsData* rpd, bool texturing);
+    void drawTriangles(const std::shared_ptr<RenderPolygonsData>& data, int nTriangles);
 
     Domain* mDomain;
 

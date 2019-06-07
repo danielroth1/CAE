@@ -3,16 +3,15 @@
 #include <iostream>
 
 RenderPolygonsData::RenderPolygonsData()
-    : mTextureCoordinates(GL_ARRAY_BUFFER, GL_STATIC_DRAW)
+    : mTextureCoordinates(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
 {
     mVisible = true;
     mTexturingEnabled = false;
 }
 
 RenderPolygonsData::RenderPolygonsData(RenderPolygonsData& rpd)
-    : mRenderMaterial(rpd.mRenderMaterial)
-    , mTexture(rpd.mTexture)
-    , mTextureCoordinates(rpd.mTextureCoordinates)
+    : mAppearances(rpd.mAppearances)
+    , mTextureCoordinates(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
     , mTexturingEnabled(rpd.mTexturingEnabled)
     , mVisible(rpd.mVisible)
 {
@@ -49,11 +48,6 @@ bool RenderPolygonsData::isInitialized() const
     return mTextureCoordinates.isInitialized();
 }
 
-void RenderPolygonsData::glMaterial()
-{
-    mRenderMaterial.glMaterial();
-}
-
 BufferedData<Eigen::Vector2f, float, 2>&
 RenderPolygonsData::getTexturesCoordinatesBufferedData()
 {
@@ -70,14 +64,15 @@ void RenderPolygonsData::setVisible(bool visible)
     mVisible = visible;
 }
 
-const RenderMaterial& RenderPolygonsData::getRenderMaterial() const
+void RenderPolygonsData::setAppearances(
+        const std::shared_ptr<Appearances>& appearances)
 {
-    return mRenderMaterial;
+    mAppearances = appearances;
 }
 
-void RenderPolygonsData::setRenderMaterial(const RenderMaterial& renderMaterial)
+std::shared_ptr<Appearances> RenderPolygonsData::getAppearances() const
 {
-    mRenderMaterial = renderMaterial;
+    return mAppearances;
 }
 
 bool RenderPolygonsData::isTexturingEnabled() const
@@ -89,13 +84,9 @@ void RenderPolygonsData::setTexturingEnabled(bool texturingEnabled)
 {
     if (texturingEnabled)
     {
-        // Check if texturing can be enabled.
-
         std::string message = "";
-        if (!mTexture)
-            message += "Can not enable texture. Cuase: No texture.\n";
-        if (mTextureCoordinates.getData().unsafe().empty())
-            message += "Can not enable texture. Cuase: No texture coordinates specified.\n";
+        if (!mAppearances)
+            message += "Can not enable texturing. Cuase: No appearance.\n";
 
         if (message != "")
         {
@@ -119,14 +110,4 @@ void RenderPolygonsData::setTextureCoordinates(
     textureCoordinates->clear();
     textureCoordinates->insert(textureCoordinates->begin(), tc.begin(), tc.end());
     mTextureCoordinates.setDataChanged(true);
-}
-
-const std::shared_ptr<Texture>& RenderPolygonsData::getTexture() const
-{
-    return mTexture;
-}
-
-void RenderPolygonsData::setTexture(const std::shared_ptr<Texture>& texture)
-{
-    mTexture = texture;
 }

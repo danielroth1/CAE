@@ -5,9 +5,9 @@
 
 #include <data_structures/DataStructures.h>
 #include <Eigen/Geometry>
-#include <rendering/RenderMaterial.h>
 
 class SceneObject;
+class RenderMaterial;
 class RenderObjectVisitor;
 
 // RenderObject
@@ -64,8 +64,8 @@ public:
     virtual void setDrawMode(DrawMode dm);
     virtual DrawMode getDrawMode();
 
-    const RenderMaterial& getRenderMaterial() const;
-    void setRenderMaterial(const RenderMaterial& renderMaterial);
+    std::shared_ptr<RenderMaterial> getRenderMaterial() const;
+    void setRenderMaterial(const std::shared_ptr<RenderMaterial>& renderMaterial);
 
     virtual bool isVisible() const;
     virtual void setVisible(bool visible);
@@ -90,7 +90,7 @@ protected:
 
     DrawMode mDm;
 
-    RenderMaterial mRenderMaterial;
+    std::shared_ptr<RenderMaterial> mRenderMaterial;
 
     bool mVisible;
 

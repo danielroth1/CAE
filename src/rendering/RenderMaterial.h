@@ -2,6 +2,8 @@
 #define RENDERMATERIAL_H
 
 #include <array>
+#include <memory>
+
 
 // This class describes a material used for rendering. It has a
 // ambient, diffuse, specular, and shinines component. Use glMaterial()
@@ -33,7 +35,8 @@ public:
     // Creates a material with the specified color.
     // Sets the ambient and diffuse part to the given color and uses for
     // the others the default values.
-    static RenderMaterial createFromColor(const std::array<float, 4> color);
+    static std::shared_ptr<RenderMaterial> createFromColor(
+            const std::array<float, 4>& color);
 
 private:
     std::array<float, 4> mAmbient;

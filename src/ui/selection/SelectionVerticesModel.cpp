@@ -1,6 +1,7 @@
 #include "SelectionVerticesModel.h"
 #include "SelectionVertices.h"
 
+#include <rendering/RenderMaterial.h>
 #include <rendering/Renderer.h>
 #include <rendering/object/RenderPoints.h>
 #include <rendering/object/RenderScreenRectangle.h>

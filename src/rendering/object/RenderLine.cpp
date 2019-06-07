@@ -1,6 +1,8 @@
 #include "RenderLine.h"
 #include "RenderObjectVisitor.h"
 
+#include <rendering/RenderMaterial.h>
+
 RenderLine::RenderLine()
     : RenderObject()
 {
@@ -19,7 +21,7 @@ void RenderLine::draw()
 
 void RenderLine::drawImmediate()
 {
-    mRenderMaterial.glMaterial();
+    mRenderMaterial->glMaterial();
     glBegin(GL_LINES);
     {
         auto lineLock = mLine.lock();

@@ -8,6 +8,7 @@
 #include <rendering/buffers/BufferedData.h>
 
 
+class Appearances;
 class Texture;
 
 
@@ -31,17 +32,13 @@ public:
     virtual void refreshBuffers();
     virtual bool isInitialized() const;
 
-    // Executes the glMaterial opengl methods for the specified material.
-    // Calls the identically names method of RenderMaterial.
-    void glMaterial();
-
     BufferedData<Eigen::Vector2f, float, 2>& getTexturesCoordinatesBufferedData();
 
     bool isVisible();
     void setVisible(bool visible);
 
-    const RenderMaterial& getRenderMaterial() const;
-    void setRenderMaterial(const RenderMaterial& renderMaterial);
+    void setAppearances(const std::shared_ptr<Appearances>& appearances);
+    std::shared_ptr<Appearances> getAppearances() const;
 
     bool isTexturingEnabled() const;
     // Sets texturing enables if:
@@ -60,13 +57,9 @@ public:
     // frame.
     void setTextureCoordinates(const std::vector<Eigen::Vector2f>& tc);
 
-    const std::shared_ptr<Texture>& getTexture() const;
-    void setTexture(const std::shared_ptr<Texture>& texture);
-
 private:
-    RenderMaterial mRenderMaterial;
 
-    std::shared_ptr<Texture> mTexture;
+    std::shared_ptr<Appearances> mAppearances;
 
     BufferedData<Eigen::Vector2f, float, 2> mTextureCoordinates;
 

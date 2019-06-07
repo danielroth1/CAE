@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <rendering/RenderMaterial.h>
+
 using namespace Eigen;
 
 RenderPoints::RenderPoints()
@@ -23,7 +25,7 @@ void RenderPoints::draw()
 
 void RenderPoints::drawImmediate()
 {
-    mRenderMaterial.glMaterial();
+    mRenderMaterial->glMaterial();
 
     // render selected vertices
     glPushMatrix();
@@ -63,13 +65,13 @@ void RenderPoints::drawImmediate()
 
 void RenderPoints::drawArray()
 {
-    mRenderMaterial.glMaterial();
+    mRenderMaterial->glMaterial();
     // Not implemented
 }
 
 void RenderPoints::drawVBO()
 {
-    mRenderMaterial.glMaterial();
+    mRenderMaterial->glMaterial();
     // Not implemented
 }
 

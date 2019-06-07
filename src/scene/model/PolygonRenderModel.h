@@ -9,6 +9,7 @@
 #include <scene/data/geometric/BSWSVectors.h>
 #include <scene/data/geometric/TopologyFace.h>
 
+class Appearances;
 class GeometricDataListener;
 class Polygon;
 class RenderLines;
@@ -17,7 +18,6 @@ class RenderPoints;
 class RenderPolygons;
 class RenderPolygonsData;
 class RenderModelManager;
-class Texture;
 
 class PolygonRenderModel : public RenderModel
 {
@@ -55,7 +55,7 @@ public:
     void setTextureCoordinates(const std::vector<Eigen::Vector2f>& textureCoordinates);
 
     // Sets the texture.
-    void setTexture(const std::shared_ptr<Texture> texture);
+    void setAppearances(const std::shared_ptr<Appearances> appearances);
 
     bool isTexturingEnabled() const;
 

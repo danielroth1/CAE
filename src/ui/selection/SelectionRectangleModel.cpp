@@ -3,6 +3,7 @@
 
 #include <rendering/object/RenderScreenRectangle.h>
 
+#include <rendering/RenderMaterial.h>
 #include <rendering/Renderer.h>
 
 

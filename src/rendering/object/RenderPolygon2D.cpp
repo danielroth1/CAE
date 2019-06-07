@@ -5,6 +5,7 @@
 #include <iostream>
 #include <QDebug>
 #include <times/timing.h>
+#include <rendering/RenderMaterial.h>
 
 RenderPolygon2D::RenderPolygon2D()
     : RenderObject()
@@ -40,7 +41,7 @@ void RenderPolygon2D::draw()
 
 void RenderPolygon2D::drawImmediate()
 {
-    mRenderMaterial.glMaterial();
+    mRenderMaterial->glMaterial();
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     glPushMatrix();
     glLoadMatrixf(mTransform.data());
@@ -73,7 +74,7 @@ void RenderPolygon2D::drawArray()
     if (mFaces.getData().lock()->size() == 0)
         return;
 
-    mRenderMaterial.glMaterial();
+    mRenderMaterial->glMaterial();
     glPushMatrix();
         glMultMatrixf(mTransform.data());
 
@@ -204,7 +205,7 @@ void RenderPolygon2D::drawVBO()
         !mFaces.isInitialized())
         return;
 
-    mRenderMaterial.glMaterial();
+    mRenderMaterial->glMaterial();
     glPushMatrix();
         glMultMatrixf(mTransform.data());
         glEnableClientState(GL_NORMAL_ARRAY);

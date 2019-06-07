@@ -3,6 +3,8 @@
 
 #include <QDebug>
 
+#include <rendering/RenderMaterial.h>
+
 RenderObject::RenderObject()
 {
     mVisible = true;
@@ -18,12 +20,12 @@ RenderObject::DrawMode RenderObject::getDrawMode()
     return mDm;
 }
 
-const RenderMaterial& RenderObject::getRenderMaterial() const
+std::shared_ptr<RenderMaterial> RenderObject::getRenderMaterial() const
 {
     return mRenderMaterial;
 }
 
-void RenderObject::setRenderMaterial(const RenderMaterial& renderMaterial)
+void RenderObject::setRenderMaterial(const std::shared_ptr<RenderMaterial>& renderMaterial)
 {
     mRenderMaterial = renderMaterial;
 }

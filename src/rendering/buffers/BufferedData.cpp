@@ -58,9 +58,8 @@ template<class T, class NT, unsigned int NE>
 void BufferedData<T, NT, NE>::createBuffer()
 {
     if (mVbo == 0)
-    {
         mVbo = RendererUtils::createVBO();
-    }
+
     mInitialized = true;
 }
 
@@ -70,12 +69,13 @@ void BufferedData<T, NT, NE>::refreshBuffer()
     if (mDataChanged && mInitialized)
     {
         auto data = mData.lock();
-        RendererUtils::refreshVBO(
-                    mVbo,
-                    data->data(),
-                    NE * sizeof(NT) * data->size(),
-                    mTarget,
-                    mUsage);
+        if (mData.unsafe().size() > 0)
+            RendererUtils::refreshVBO(
+                        mVbo,
+                        mData.unsafe().data(),
+                        NE * sizeof(NT) * mData.unsafe().size(),
+                        mTarget,
+                        mUsage);
 
         mDataChanged = false;
     }

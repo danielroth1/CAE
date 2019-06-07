@@ -6,6 +6,7 @@
 #include <rendering/object/RenderLines.h>
 #include <rendering/object/RenderPoints.h>
 
+#include <rendering/RenderMaterial.h>
 #include <rendering/Renderer.h>
 
 

@@ -1,5 +1,6 @@
 #include "Polygon3DTopology.h"
 
+#include <iostream>
 #include <map>
 #include <set>
 
@@ -15,6 +16,12 @@ Polygon3DTopology::Polygon3DTopology(
     , mOuterTopology(transformTo2DIndices(outerFaces, mOuterVertexIds),
                      mOuterVertexIds.size())
 {
+    std::cout << "V = " << nVertices << ", " <<
+                 "E = " << mEdges.size() << ", " <<
+                 "F = " << mFaces.size() << ", " <<
+                 "T = " << mCells.size() << "\n";
+    std::cout << "V - E + F - T = " <<
+                 nVertices - mEdges.size() + mFaces.size() - mCells.size();
 
 }
 
