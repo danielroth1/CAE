@@ -41,6 +41,7 @@
 #include <demos/PlaneJointDemo.h>
 #include <demos/CarDemo.h>
 #include <ui/scene_graph/SGUIControl.h>
+#include <io/importers/OBJImporter.h>
 
 
 ApplicationControl::ApplicationControl()
