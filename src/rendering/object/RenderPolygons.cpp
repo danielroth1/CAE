@@ -500,6 +500,7 @@ void RenderPolygons::drawTriangles(
                 int nTri = static_cast<int>(appearances->getOffset(i));
                 if (appearances->getSize() == 1)
                     nTri = nTriangles;
+
                 std::shared_ptr<Appearance> appearance = appearances->getAppearance(i);
 
                 appearance->bindAppearance();

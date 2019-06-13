@@ -11,6 +11,12 @@ class Texture;
 class Appearance
 {
 public:
+
+    // Apperance with no texture and standard material (white).
+    Appearance();
+
+    Appearance(std::shared_ptr<RenderMaterial> renderMaterial);
+
     // Sets white as the render material.
     Appearance(std::shared_ptr<Texture> texture);
 
@@ -23,7 +29,11 @@ public:
     static std::shared_ptr<Appearance> createAppearanceFromColor(
             const std::array<float, 4>& color);
 
+    void setName(std::string name);
+    std::string getName() const;
+
 private:
+    std::string mName;
     std::shared_ptr<RenderMaterial> mRenderMaterial;
     std::shared_ptr<Texture> mTexture;
 };

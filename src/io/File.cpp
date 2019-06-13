@@ -1,13 +1,14 @@
 #include "File.h"
 
 #include <boost/filesystem.hpp>
+#include <iostream>
 
 const char File::SEPARATOR = boost::filesystem::path::preferred_separator;
 
 File::File(std::string path)
     : mPath(path)
 {
-
+    update(path);
 }
 
 bool File::exists()
@@ -15,22 +16,22 @@ bool File::exists()
     return boost::filesystem::exists(boost::filesystem::path(mPath));
 }
 
-std::string File::getPath()
+std::string File::getPath() const
 {
     return mPath;
 }
 
-std::string File::getRelativePath()
+std::string File::getRelativePath() const
 {
     return mRelativePath;
 }
 
-std::string File::getName()
+std::string File::getName() const
 {
     return mName;
 }
 
-std::vector<std::string> File::getPathParts()
+std::vector<std::string> File::getPathParts() const
 {
     return mPathParts;
 }
@@ -56,6 +57,25 @@ bool File::enterDirectiory(std::string dir)
     return exists();
 }
 
+std::ifstream File::read(bool& successful)
+{
+    std::ifstream in(getPath());
+
+    if (!exists())
+    {
+        std::cout << "Can not open file because it does not exist: " << getPath() << "\n";
+        successful = false;
+        return in;
+    }
+    if (!in.is_open())
+    {
+        std::cout << "Can not open file although it exists. Missing privilegs? " << getPath() << "\n";
+        successful = false;
+    }
+    successful = true;
+    return in;
+}
+
 void File::update(std::string path)
 {
     mPath = path;
@@ -64,7 +84,10 @@ void File::update(std::string path)
     mPathParts.clear();
     for (auto& part : boost::filesystem::path(mPath))
     {
-        mPathParts.push_back(part.c_str());
+        if (part == "/")
+            mPathParts.push_back("");
+        else
+            mPathParts.push_back(part.c_str());
     }
 
     // relative path

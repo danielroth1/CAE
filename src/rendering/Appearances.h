@@ -32,6 +32,7 @@ public:
     std::size_t getSize() const;
 
     unsigned int getOffset(std::size_t index) const;
+    std::size_t getOffsetsSize() const;
 
     std::shared_ptr<Appearance> getAppearance(std::size_t index) const;
 

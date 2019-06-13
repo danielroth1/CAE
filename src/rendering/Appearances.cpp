@@ -40,6 +40,11 @@ unsigned int Appearances::getOffset(std::size_t index) const
     return mOffsets[index];
 }
 
+std::size_t Appearances::getOffsetsSize() const
+{
+    return mOffsets.size();
+}
+
 std::shared_ptr<Appearance> Appearances::getAppearance(std::size_t index) const
 {
     return mAppearances[index];

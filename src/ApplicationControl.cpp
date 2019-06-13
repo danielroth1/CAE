@@ -7,6 +7,8 @@
 
 #include <io/ImageLoader.h>
 #include <io/MeshIO.h>
+#include <rendering/Appearance.h>
+#include <rendering/Appearances.h>
 #include <rendering/Image.h>
 #include <rendering/Renderer.h>
 #include <rendering/Texture.h>
@@ -53,6 +55,8 @@ ApplicationControl::~ApplicationControl()
 void ApplicationControl::initiateApplication()
 {
     // initiate all controls
+
+
 
     // Simulation Control
     mSimulationControl = std::make_shared<SimulationControl>();
@@ -228,7 +232,12 @@ void ApplicationControl::initiateApplication()
                             std::static_pointer_cast<PolygonRenderModel>(
                                 node1->getData()->getRenderModel());
 
-                    renderModel->setTexture(texture);
+                    std::shared_ptr<Appearances> appearances =
+                            std::make_shared<Appearances>(
+                                std::make_shared<Appearance>(texture));
+
+                    renderModel->setAppearances(appearances);
+
                     std::shared_ptr<Polygon2D> poly =
                             std::static_pointer_cast<Polygon2D>(
                                 node1->getData()->getGeometricData());
@@ -246,6 +255,7 @@ void ApplicationControl::initiateApplication()
 
                     renderModel->setTextureCoordinates(textureCoordinates);
                     renderModel->setTexturingEnabled(true);
+
 
                     // rigid
 //                    ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
@@ -358,6 +368,18 @@ void ApplicationControl::initiateApplication()
     mDemoLoaderModule->addDemo(carDemo);
 
     mDemoLoaderModule->loadDemo(emptyDemo);
+
+//    OBJImporter importer;
+//    SGNode* node = importer.importFile(
+//                File("/objs/LibertyStatue/LibertStatue.obj"),
+//                this);
+
+//    SGNode* node = importer.importFile(
+//                File("/objs/Sting-Sword-lowpoly.obj"),
+//                this);
+
+//    mSGControl->getSceneGraph()->getRoot()->addChild(node);
+
 }
 
 void ApplicationControl::createModules()

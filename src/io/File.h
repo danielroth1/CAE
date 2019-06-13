@@ -1,6 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -14,10 +15,10 @@ public:
 
     bool exists();
 
-    std::string getPath();
-    std::string getRelativePath();
-    std::string getName();
-    std::vector<std::string> getPathParts();
+    std::string getPath() const;
+    std::string getRelativePath() const;
+    std::string getName() const;
+    std::vector<std::string> getPathParts() const;
 
     // Returns true if the directory exists.
     bool goUpDirectory();
@@ -25,6 +26,8 @@ public:
     // Returns true if the directory exists and the operation
     // was sucessfull.
     bool enterDirectiory(std::string dir);
+
+    std::ifstream read(bool& successful);
 
     static const char SEPARATOR;
 

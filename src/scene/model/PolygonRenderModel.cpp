@@ -1,4 +1,5 @@
 #include "ModelUtils.h"
+#include "PolygonIndexMapping.h"
 #include "PolygonRenderModel.h"
 #include "RenderModelVisitor.h"
 
@@ -31,6 +32,8 @@
 #include <rendering/Renderer.h>
 
 #include <RenderModelManager.h>
+
+#include <data_structures/VectorIndexMapping.h>
 
 PolygonRenderModel::PolygonRenderModel(
         RenderModelManager* renderModelManager,
@@ -97,6 +100,12 @@ void PolygonRenderModel::setTextureCoordinates(
 void PolygonRenderModel::setAppearances(const std::shared_ptr<Appearances> appearances)
 {
     mRenderPolygonsData->setAppearances(appearances);
+}
+
+void PolygonRenderModel::setPolygonIndexMapping(
+        const std::shared_ptr<PolygonIndexMapping>& poylgonIndexMapping)
+{
+    mPolygonIndexMapping = poylgonIndexMapping;
 }
 
 bool PolygonRenderModel::isTexturingEnabled() const
@@ -249,23 +258,31 @@ void PolygonRenderModel::reset()
     // reset positions
     size_t size;
 
-    switch(mPolygon->getDimensionType())
+    if (mPolygonIndexMapping)
     {
-    case Polygon::DimensionType::TWO_D:
-    {
-        Polygon2D* p2 = static_cast<Polygon2D*>(mPolygon.get());
-        size = p2->getPositions().size();
-        break;
+        size = mPolygonIndexMapping->getVectorIndexMapping()->getExtendedSize();
     }
-    case Polygon::DimensionType::THREE_D:
+    else
     {
-        Polygon3D* p3 = static_cast<Polygon3D*>(mPolygon.get());
-        if (mRenderOnlyOuterFaces)
-            size = p3->getOuterPositionIds().size();
-        else
-            size = p3->getPositions().size();
+        switch(mPolygon->getDimensionType())
+        {
+        case Polygon::DimensionType::TWO_D:
+        {
+            Polygon2D* p2 = static_cast<Polygon2D*>(mPolygon.get());
+            size = p2->getPositions().size();
+
             break;
-    }
+        }
+        case Polygon::DimensionType::THREE_D:
+        {
+            Polygon3D* p3 = static_cast<Polygon3D*>(mPolygon.get());
+            if (mRenderOnlyOuterFaces)
+                size = p3->getOuterPositionIds().size();
+            else
+                size = p3->getPositions().size();
+                break;
+        }
+        }
     }
 
     mPositionsBufferedData->getData().lock()->resize(size);
@@ -276,10 +293,21 @@ void PolygonRenderModel::reset()
         auto facesLock = mFacesBufferedData->getData().lock();
         facesLock->resize(faces->size());
 
-        for (size_t i = 0; i < faces->size(); ++i)
+        if (mPolygonIndexMapping)
         {
-            facesLock->at(i) = (*faces)[i].getVertexIds();
+            for (size_t i = 0; i < faces->size(); ++i)
+            {
+                facesLock->at(i) = mPolygonIndexMapping->getFaces()[i];
+            }
         }
+        else
+        {
+            for (size_t i = 0; i < faces->size(); ++i)
+            {
+                facesLock->at(i) = (*faces)[i].getVertexIds();
+            }
+        }
+
     }
     mFacesBufferedData->setDataChanged(true);
 
@@ -523,22 +551,45 @@ void PolygonRenderModel::updatePositions()
     {
         auto positionsLock = mPositionsBufferedData->getData().lock();
 
-
-
-        for (size_t i = 0; i < positionsLock->size(); ++i)
+        if (mPolygonIndexMapping)
         {
-            if (mRenderOnlyOuterFaces && mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+            std::shared_ptr<VectorIndexMapping> vim =
+                    mPolygonIndexMapping->getVectorIndexMapping();
+
+            for (size_t i = 0; i < vim->getExtendedSize(); ++i)
             {
-                positionsLock->at(i) = positions[
-                        static_cast<Polygon3D*>(
-                            mPolygon.get())->getOuterPositionIds()[i]].cast<float>();
+                size_t index = vim->getOriginalIndex(i);
+                if (mRenderOnlyOuterFaces && mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+                {
+                    positionsLock->at(i) = positions[
+                            static_cast<Polygon3D*>(
+                                mPolygon.get())->getOuterPositionIds()[index]].cast<float>();
+                }
+                else
+                {
+                    positionsLock->at(i) = positions[index].cast<float>();
+                }
             }
-            else
+        }
+        else
+        {
+            for (size_t i = 0; i < positionsLock->size(); ++i)
             {
-                positionsLock->at(i) = positions[i].cast<float>();
+                if (mRenderOnlyOuterFaces && mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+                {
+                    positionsLock->at(i) = positions[
+                            static_cast<Polygon3D*>(
+                                mPolygon.get())->getOuterPositionIds()[i]].cast<float>();
+                }
+                else
+                {
+                    positionsLock->at(i) = positions[i].cast<float>();
+                }
             }
         }
 
+
+        // TODO: vim
         auto normalsLock = mNormalsBufferedData->getData().lock();
         auto facesLock = mFacesBufferedData->getData().lock();
         // calculate normals
@@ -585,7 +636,8 @@ void PolygonRenderModel::updateNormalLines()
             Vectorf source = transform * positions->at(i);
 
             // draw line in direction of normal
-            Vectorf target = source + normalLineLength * transform.rotation() * normals->at(i);
+            Vectorf target =
+                    source + normalLineLength * transform.rotation() * normals->at(i);
 
             (*lines)[2 * i] = source;
             (*lines)[2 * i + 1] = target;

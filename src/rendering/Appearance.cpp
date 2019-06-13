@@ -2,6 +2,18 @@
 #include "RenderMaterial.h"
 #include "Texture.h"
 
+Appearance::Appearance()
+    : Appearance(std::make_shared<RenderMaterial>())
+{
+
+}
+
+Appearance::Appearance(std::shared_ptr<RenderMaterial> renderMaterial)
+    : mRenderMaterial(renderMaterial)
+{
+
+}
+
 Appearance::Appearance(std::shared_ptr<Texture> texture)
     : mRenderMaterial(RenderMaterial::createFromColor({1.0f, 1.0f, 1.0f, 1.0f}))
     , mTexture(texture)
@@ -34,4 +46,14 @@ std::shared_ptr<Appearance> Appearance::createAppearanceFromColor(
     return std::make_shared<Appearance>(
                 RenderMaterial::createFromColor(color),
                 nullptr);
+}
+
+void Appearance::setName(std::string name)
+{
+    mName = name;
+}
+
+std::string Appearance::getName() const
+{
+    return mName;
 }

@@ -27,6 +27,20 @@ public:
 
     void glMaterial();
 
+    void setOpaquness(float opaqueness);
+
+    std::array<float, 4> getAmbient() const;
+    void setAmbient(const std::array<float, 4>& ambient);
+
+    std::array<float, 4> getDiffuse() const;
+    void setDiffuse(const std::array<float, 4>& diffuse);
+
+    std::array<float, 4> getSpecular() const;
+    void setSpecular(const std::array<float, 4>& specular);
+
+    float getShininess() const;
+    void setShininess(float shininess);
+
     static std::array<float, 4> getAmbientDefault();
     static std::array<float, 4> getDiffuseDefault();
     static std::array<float, 4> getSpecularDefault();

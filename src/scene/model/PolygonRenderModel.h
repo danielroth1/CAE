@@ -12,6 +12,7 @@
 class Appearances;
 class GeometricDataListener;
 class Polygon;
+class PolygonIndexMapping;
 class RenderLines;
 class RenderObjectFactory;
 class RenderPoints;
@@ -19,6 +20,12 @@ class RenderPolygons;
 class RenderPolygonsData;
 class RenderModelManager;
 
+// Supports texturing:
+// - allows one vertex to have multiple texture coordinates/ appearances
+//      by using a PolygonIndexMapping. Each vertex is duplicated by each
+//      additional assigned material. Duplicated vertices positions are updated
+//      in updatePositions() accordingly by using the PolygonIndexMapping.
+//
 class PolygonRenderModel : public RenderModel
 {
 public:
@@ -56,6 +63,9 @@ public:
 
     // Sets the texture.
     void setAppearances(const std::shared_ptr<Appearances> appearances);
+
+    void setPolygonIndexMapping(
+            const std::shared_ptr<PolygonIndexMapping>& polygonIndexMapping);
 
     bool isTexturingEnabled() const;
 
@@ -121,6 +131,7 @@ private:
     // Rendering the Polygon
     std::shared_ptr<RenderPolygons> mRenderPolygons;
     std::shared_ptr<RenderPolygonsData> mRenderPolygonsData;
+    std::shared_ptr<PolygonIndexMapping> mPolygonIndexMapping;
 
     BufferedData<Eigen::Vectorf, float, 3>* mPositionsBufferedData;
     BufferedData<Eigen::Vectorf, float, 3>* mNormalsBufferedData;
