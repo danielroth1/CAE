@@ -5,6 +5,8 @@
 
 #include <SimulationControl.h>
 
+#include <io/File.h>
+
 class ApplicationControl;
 class MeshCriteria;
 
@@ -29,9 +31,8 @@ public:
     // SG Insertion Methods
         // Imports the file at the specified path and stores a new
         // node to the provided children node.
-        SGLeafNode* importFileAsChild(
-                std::string path,
-                std::string name,
+        SGNode* importFileAsChild(
+                File file,
                 SGChildrenNode* childrenNode,
                 bool renderOnlyOuterFaces = true);
 

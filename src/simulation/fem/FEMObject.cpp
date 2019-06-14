@@ -309,7 +309,6 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 
 #endif
 
-    std::cout << "non zeros = " << A.nonZeros() << ", cols = " << A.cols() << ", rows = " << A.rows() << "\n";
     if (solver.info() != Eigen::Success)
     {
         std::cout << A << "\n";

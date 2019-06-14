@@ -14,6 +14,7 @@
 #include <simulation/fem/FEMObject.h>
 #include <simulation/fem/SimulationPoint.h>
 
+#include <io/importers/OBJImporter.h>
 #include <modules/mesh_converter/MeshCriteria.h>
 #include <scene/VertexCollection.h>
 #include <scene/data/GeometricDataVisitor.h>
@@ -50,16 +51,33 @@ void SGControl::clearScene()
 //    mSceneGraph->getRoot()->clear();
 }
 
-SGLeafNode* SGControl::importFileAsChild(
-        std::string path,
-        std::string name,
+SGNode* SGControl::importFileAsChild(
+        File file,
         SGChildrenNode* parent,
         bool renderOnlyOuterFaces)
 {
-    // Geometric Data
-    std::shared_ptr<Polygon2D> poly2 = std::shared_ptr<Polygon2D>(
-                MeshIO::instance()->loadOff(path.c_str()));
-    return createLeafNode(name, parent, poly2, Eigen::Vector::Zero(), renderOnlyOuterFaces);
+    std::shared_ptr<Polygon2D> poly2;
+    std::string path = file.getPath();
+    std::string extension = file.getExtension();
+    if (extension == ".off")
+    {
+        poly2 = std::shared_ptr<Polygon2D>(
+                    MeshIO::instance()->loadOff(path.c_str()));
+
+        return createLeafNode(file.getName(), parent, poly2,
+                              Eigen::Vector::Zero(), renderOnlyOuterFaces);
+    }
+    else if (extension == ".obj")
+    {
+        OBJImporter importer;
+        SGNode* node = importer.importFile(file, mAc);
+        parent->addChild(node);
+        return node;
+    }
+
+    std::cout << "Filetype " << extension << " not supported.\n";
+
+    return nullptr;
 }
 
 SGLeafNode* SGControl::createBox(

@@ -239,8 +239,9 @@ SGNode* OBJImporter::importFile(File file, ApplicationControl* ac)
         else if (word == "o")
         {
             // object name
-            std::getline(ss, word);
-            nodeName = word;
+            // Groups aren't supported at the moment
+//            std::getline(ss, word);
+//            nodeName = word;
         }
         else if (word == "v")
         {

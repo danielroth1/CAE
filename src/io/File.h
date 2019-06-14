@@ -18,6 +18,13 @@ public:
     std::string getPath() const;
     std::string getRelativePath() const;
     std::string getName() const;
+
+    // If a file is selected, returns the extension of the file where
+    // <path>/<file-name><file-extension>
+    // -> includes the ".", e.g. if path = "/urs/admin/objs/test.obj" then
+    // this method returns ".obj".
+    std::string getExtension() const;
+
     std::vector<std::string> getPathParts() const;
 
     // Returns true if the directory exists.

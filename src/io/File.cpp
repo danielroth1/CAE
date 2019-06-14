@@ -31,6 +31,11 @@ std::string File::getName() const
     return mName;
 }
 
+std::string File::getExtension() const
+{
+    return mExtension;
+}
+
 std::vector<std::string> File::getPathParts() const
 {
     return mPathParts;
@@ -102,9 +107,9 @@ void File::update(std::string path)
     // name with extension
     mNameWithExtension = mPathParts[mPathParts.size()-1];
 
-    // name
+    // extension
     mExtension = boost::filesystem::extension(mNameWithExtension);
 
-    // extension
+    // name
     mName = boost::filesystem::basename(mNameWithExtension);
 }
