@@ -62,6 +62,16 @@ const Vector& PositionData::getPosition(ID index) const
     return mPositions.getVector(index);
 }
 
+void PositionData::setPosition(ID index, const Vector& position)
+{
+    mPositions.setVector(index, position);
+}
+
+void PositionData::setPositions(const Vectors& positions)
+{
+    mPositions.setVectors(positions);
+}
+
 Affine3d& PositionData::getTransform()
 {
     return mPositions.getTransform();

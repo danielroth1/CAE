@@ -72,13 +72,22 @@ public:
     // World space
     Vectors& getVectors();
     const Vectors& getVectors() const;
+    void setVectors(const Vectors& vectors);
+
     Eigen::Vector& getVector(ID index);
     const Eigen::Vector& getVector(ID index) const;
+    void setVector(ID index, const Eigen::Vector& v);
 
     // Body space
     Eigen::Affine3d& getTransform();
+
     Vectors& getVectorsBS();
+    const Vectors& getVectorsBS() const;
+    void setVectorsBS(const Vectors& vectors);
+
     Eigen::Vector& getVectorBS(ID index);
+    const Eigen::Vector& getVectorBS(ID index) const;
+    void setVectorBS(ID index, const Eigen::Vector& v);
 
     void setTransform(const Eigen::Affine3d& transform);
 

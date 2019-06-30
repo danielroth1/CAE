@@ -3,6 +3,7 @@
 
 #include "data_structures/DataStructures.h"
 #include "Polygon.h"
+#include "Polygon2DAccessor.h"
 
 #include <memory>
 
@@ -95,6 +96,11 @@ public:
     virtual std::shared_ptr<PolygonData> getData() override;
 
     virtual PolygonTopology& getTopology() override;
+
+    // Creates and returns a Polygon2DAccessor for the outer polygon mesh.
+    // This accessor allows to access the outer polygon mesh just like a
+    // Polygon2D with its respective Polygon2DAccessor.
+    virtual std::shared_ptr<Polygon2DAccessor> createAccessor() override;
 
     virtual void changeRepresentationToBS(const Eigen::Vector& center) override;
 

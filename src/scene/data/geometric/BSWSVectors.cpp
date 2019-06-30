@@ -93,6 +93,11 @@ const Vectors& BSWSVectors::getVectors() const
     return mVectorsWS;
 }
 
+void BSWSVectors::setVectors(const Vectors& vectors)
+{
+    mVectorsWS = vectors;
+}
+
 Vector& BSWSVectors::getVector(ID index)
 {
     return mVectorsWS[index];
@@ -101,6 +106,11 @@ Vector& BSWSVectors::getVector(ID index)
 const Vector& BSWSVectors::getVector(ID index) const
 {
     return mVectorsWS[index];
+}
+
+void BSWSVectors::setVector(ID index, const Vector& v)
+{
+    mVectorsWS[index] = v;
 }
 
 Affine3d& BSWSVectors::getTransform()
@@ -113,9 +123,29 @@ Vectors& BSWSVectors::getVectorsBS()
     return *mVectorsBS;
 }
 
+const Vectors& BSWSVectors::getVectorsBS() const
+{
+    return *mVectorsBS;
+}
+
+void BSWSVectors::setVectorsBS(const Vectors& vectors)
+{
+    *mVectorsBS = vectors;
+}
+
 Vector& BSWSVectors::getVectorBS(ID index)
 {
     return (*mVectorsBS)[index];
+}
+
+const Vector& BSWSVectors::getVectorBS(ID index) const
+{
+    return (*mVectorsBS)[index];
+}
+
+void BSWSVectors::setVectorBS(ID index, const Vector& v)
+{
+    (*mVectorsBS)[index] = v;
 }
 
 void BSWSVectors::setTransform(const Affine3d& transform)

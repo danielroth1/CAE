@@ -6,6 +6,7 @@
 
 #include <scene/data/GeometricData.h>
 
+class Polygon2DAccessor;
 class PolygonData;
 class PolygonTopology;
 class TopologyFace;
@@ -39,6 +40,9 @@ public:
     void setFromWorldSpace(Vectors positionsWS);
     void setFromBodySpace(Vectors positionsBS);
 
+    // This method updates the world space positions.
+    // Call this method when in BODY_SPACE representation type
+    // and the transformation matrix changed.
     virtual void update();
 
     // Checks if the given point is inside the topology. Only tests the
@@ -62,12 +66,20 @@ public:
 
     virtual PolygonTopology& getTopology() = 0;
 
+    // Creates an accessor that allows to access this polygons outer mesh.
+    virtual std::shared_ptr<Polygon2DAccessor> createAccessor() = 0;
+
     // GeometricData interface
 public:
     virtual Type getType() const override;
 
     // Position with index
+    // Always returns the world space representation.
     virtual Vector& getPosition(size_t index) override;
+
+    // Sets the world space position. If the polygon is in body space
+    // these changes, will be overwritten after the next update() call.
+    virtual void setPosition(size_t index, const Eigen::Vector& position);
 
     // Number of positions
     virtual size_t getSize() override;
@@ -79,11 +91,6 @@ public:
 
     // Delegated PositionData methods
 public:
-
-    // This method updates the world space positions.
-    // Call this method when in BODY_SPACE representation type
-    // and the transformation matrix changed.
-    void updatePositions();
 
     BSWSVectors::Type getPositionType();
 

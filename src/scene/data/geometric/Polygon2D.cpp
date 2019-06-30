@@ -158,15 +158,18 @@ void Polygon2D::update()
     }
     else
     {
+        Vectors normalsTemp;
         ModelUtils::calculateNormals<double>(
                     mPositionData.getPositions(),
                     mData->getTopology().getFacesIndices(),
-                    mVertexNormals.getVectors());
+                    normalsTemp);
+        mVertexNormals.getVectors() = normalsTemp;
 
         ModelUtils::calculateFaceNormals<double>(
                     mPositionData.getPositions(),
                     mData->getTopology().getFacesIndices(),
-                    mFaceNormals.getVectors());
+                    normalsTemp);
+        mFaceNormals.getVectors() = normalsTemp;
     }
 }
 
@@ -198,6 +201,65 @@ std::shared_ptr<PolygonData> Polygon2D::getData()
 PolygonTopology& Polygon2D::getTopology()
 {
     return mData->getTopology();
+}
+
+std::shared_ptr<Polygon2DAccessor> Polygon2D::createAccessor()
+{
+    class Polygon2DAccessorImpl : public Polygon2DAccessor
+    {
+    public:
+        Polygon2DAccessorImpl(const std::shared_ptr<Polygon2D>& _poly2)
+            : poly2(_poly2)
+        {
+
+        }
+
+        virtual ~Polygon2DAccessorImpl() override
+        {
+
+        }
+
+        virtual size_t getSize() override
+        {
+            return poly2->getSize();
+        }
+
+        virtual void setPosition(size_t index, const Eigen::Vector& position) override
+        {
+            poly2->setPosition(index, position);
+        }
+
+        virtual Eigen::Vector& getPosition(std::size_t index) override
+        {
+            return poly2->getPosition(index);
+        }
+
+        virtual Polygon2DTopology& getTopology2D() override
+        {
+            return poly2->getTopology2D();
+        }
+
+        virtual const Polygon2DTopology& getTopology2D() const override
+        {
+            return poly2->getTopology2D();
+        }
+
+        virtual Vectors& getVertexNormals() override
+        {
+            return poly2->getVertexNormals();
+        }
+
+        virtual Vectors& getFaceNormals() override
+        {
+            return poly2->getFaceNormals();
+        }
+
+    private:
+        std::shared_ptr<Polygon2D> poly2;
+    };
+
+    return std::make_shared<Polygon2DAccessorImpl>(
+                std::dynamic_pointer_cast<Polygon2D>(shared_from_this()));
 }
 
 //void Polygon2D::changeRepresentationToBS(

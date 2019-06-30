@@ -2,6 +2,7 @@
 #define POLYGON2D_H
 
 #include "Polygon.h"
+#include "Polygon2DAccessor.h"
 #include "data_structures/DataStructures.h"
 
 class Polygon2DData;
@@ -78,6 +79,11 @@ public:
     virtual std::shared_ptr<PolygonData> getData() override;
 
     virtual PolygonTopology& getTopology() override;
+
+    // Creates and returns a Polygon2DAccessor that allows to access this object.
+    // The Polygon2DAccessor offers an interface to abstract the access to
+    // Polygon2D and outer meshes of Polygon3D.
+    virtual std::shared_ptr<Polygon2DAccessor> createAccessor() override;
 
 //    // Is this mehtod even needed?
 //    // It allows to change the representation type but requires to

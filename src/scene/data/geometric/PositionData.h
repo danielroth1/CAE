@@ -58,7 +58,24 @@ public:
     Vectors& getPositions();
     const Vectors& getPositions() const;
     Eigen::Vector& getPosition(ID index);
+
+    // If in body space representation, returns the temporary world space
+    // positions.
+    // If in world space representation, returns the regular permanent positions.
     const Eigen::Vector& getPosition(ID index) const;
+
+    // Sets the position at the given index. Use getSize() to see if the
+    // index is within range.
+    // - If in BODY_SPACE, sets the body space position. Note the difference
+    //      behavior to the getter.
+    // - If in WORLD_SPACE, sets the world space position
+    void setPosition(ID index, const Eigen::Vector& position);
+
+    // Sets all positions.
+    // - If in BODY_SPACE, sets the body space positions. Note the difference
+    //      behavior to the getter.
+    // - If in WORLD_SPACE, sets the world space positions.
+    void setPositions(const Vectors& positions);
 
     // Body space
     Eigen::Affine3d& getTransform();
@@ -134,7 +151,6 @@ public:
 private:
 
     void updateWorldSpace();
-
 
     BSWSVectors mPositions;
 

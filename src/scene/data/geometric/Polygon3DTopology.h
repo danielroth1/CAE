@@ -61,6 +61,11 @@ public:
 
         Edges retrieveOuterEdges() const;
 
+        ID to2DIndex(ID index3) const
+        {
+            return mOuterVertexIds[index3];
+        }
+
 private:
 
     // Calculates the IDs of all vertices that are part of the
@@ -87,8 +92,14 @@ private:
     // All cells.
     Cells mCells;
 
-    // To access positions, first use mOuterVertexIds to transform index from
-    // 2d to 3d representation.
+    // All indices that are stored here, are w.r.t. to the 2D representation
+    // of the outer polygon. To access the vertex position, it is necessary to
+    // transform the vertex id to 3d first, so to get the position of a vertex at <id>:
+    // mPolygon->getPosition(getOuterVertexIds()[mOuterTopology->getVertex(<id>)->getId()])
+    // or alternatively:
+    // getPosition(getOuterVertexIds()[<id>])
+    // To access outer vertex normals, ths is not necessary:
+    // mPolygon->
     Polygon2DTopology mOuterTopology;
 };
 

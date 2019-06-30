@@ -89,6 +89,11 @@ Vector& Polygon::getPosition(size_t index)
     return mPositionData.getPosition(index);
 }
 
+void Polygon::setPosition(size_t index, const Vector& position)
+{
+    mPositionData.setPosition(index, position);
+}
+
 size_t Polygon::getSize()
 {
     return mPositionData.getSize();
@@ -102,11 +107,6 @@ void Polygon::translate(const Vector& position)
 void Polygon::transform(const Affine3d& transform)
 {
     mPositionData.transform(transform);
-}
-
-void Polygon::updatePositions()
-{
-    mPositionData.update();
 }
 
 BSWSVectors::Type Polygon::getPositionType()

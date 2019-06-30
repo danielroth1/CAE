@@ -181,17 +181,22 @@ void Polygon3D::update()
     }
     else
     {
+        Vectors normalsTemp;
         ModelUtils::calculateNormals<double>(
                     calcualtePositions2DFrom3D(),
 //                    mPositionData.getPositions(),
                     mData->getTopology().getOuterTopology().getFacesIndices(),
-                    mOuterVertexNormals.getVectors());
+                    normalsTemp);
+
+        mOuterVertexNormals.getVectors() = normalsTemp;
 
         ModelUtils::calculateFaceNormals<double>(
                     calcualtePositions2DFrom3D(),
 //                    mPositionData.getPositions(),
                     mData->getTopology().getOuterTopology().getFacesIndices(),
-                    mOuterFaceNormals.getVectors());
+                    normalsTemp);
+
+        mOuterFaceNormals.getVectors() = normalsTemp;
     }
 }
 
@@ -228,6 +233,65 @@ std::shared_ptr<PolygonData> Polygon3D::getData()
 PolygonTopology& Polygon3D::getTopology()
 {
     return mData->getTopology();
+}
+
+std::shared_ptr<Polygon2DAccessor> Polygon3D::createAccessor()
+{
+    class OuterPolygon2DAccessor : public Polygon2DAccessor
+    {
+    public:
+        OuterPolygon2DAccessor(const std::shared_ptr<Polygon3D>& _poly3)
+            : poly3(_poly3)
+        {
+
+        }
+
+        virtual ~OuterPolygon2DAccessor() override
+        {
+
+        }
+
+        virtual size_t getSize() override
+        {
+            return poly3->getOuterPositionIds().size();
+        }
+
+        virtual void setPosition(size_t index, const Eigen::Vector& position) override
+        {
+            poly3->setPosition(poly3->mData->getTopology().to2DIndex(index), position);
+        }
+
+        virtual Eigen::Vector& getPosition(std::size_t index) override
+        {
+            return poly3->getPosition(poly3->mData->getTopology().to2DIndex(index));
+        }
+
+        virtual Polygon2DTopology& getTopology2D() override
+        {
+            return poly3->mData->getTopology().getOuterTopology();
+        }
+
+        virtual const Polygon2DTopology& getTopology2D() const override
+        {
+            return poly3->mData->getTopology().getOuterTopology();
+        }
+
+        virtual Vectors& getVertexNormals() override
+        {
+            return poly3->mOuterVertexNormals.getVectors();
+        }
+
+        virtual Vectors& getFaceNormals() override
+        {
+            return poly3->mOuterFaceNormals.getVectors();
+        }
+
+    private:
+        std::shared_ptr<Polygon3D> poly3;
+    };
+
+    return std::make_shared<OuterPolygon2DAccessor>(
+                std::dynamic_pointer_cast<Polygon3D>(shared_from_this()));
 }
 
 void Polygon3D::changeRepresentationToBS(const Vector& center)
