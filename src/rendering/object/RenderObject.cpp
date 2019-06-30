@@ -8,6 +8,7 @@
 RenderObject::RenderObject()
 {
     mVisible = true;
+    mRenderMaterial = RenderMaterial::createFromColor({1, 1, 1, 1});
 }
 
 void RenderObject::setDrawMode(RenderObject::DrawMode dm)
