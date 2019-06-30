@@ -179,7 +179,8 @@ void OBJImporter::createAndAddAppearance(
         std::shared_ptr<Image> image =
                 ImageLoader::instance()->loadBMP(
                     (directory.getPath() + File::SEPARATOR + textureName).c_str());
-        texture = std::make_shared<Texture>(image);
+        if (image)
+            texture = std::make_shared<Texture>(image);
     }
 
     renderMaterial->setOpaquness(opaqueness);
@@ -189,6 +190,8 @@ void OBJImporter::createAndAddAppearance(
         appearance = std::make_shared<Appearance>(renderMaterial, texture);
     else if (renderMaterial)
         appearance = std::make_shared<Appearance>(renderMaterial);
+    else
+        std::cout << "No render material, this should not happen.\n";
     appearance->setName(name);
 
     appearances.push_back(appearance);

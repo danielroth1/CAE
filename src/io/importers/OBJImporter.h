@@ -16,6 +16,9 @@ public:
     // SceneImporter interface
 public:
     virtual std::string getFileFormat() const;
+
+    // Imports the given obj file.
+    // All this way imported polygons are in world space representation.
     virtual SGNode* importFile(File file, ApplicationControl* ac);
 
 private:
