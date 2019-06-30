@@ -26,6 +26,7 @@ public:
         for (size_t i = 0; i < coordinates.size(); ++i)
         {
             Eigen::Matrix<IT, 3, 1> ver = coordinates[i] - center;
+            ver.normalize();
             RT u = static_cast<RT>(1.0f / (2 * M_PI) * atan2f(ver(2), ver(0)) + 0.5f);
             RT v = static_cast<RT>(-1.0f / M_PI * asinf(ver(1)) + 0.5f);
 //            RT u =
