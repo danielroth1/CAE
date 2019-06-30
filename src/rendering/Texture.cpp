@@ -6,12 +6,16 @@
 
 Texture::Texture(const std::shared_ptr<Image>& image)
     : mImage(image)
+    , mGenerated(false)
 {
-    mId = generateTexture(image);
 }
 
-void Texture::bind() const
+void Texture::bind()
 {
+    if (!mGenerated)
+    {
+        mId = generateTexture(mImage);
+    }
     glBindTexture(GL_TEXTURE_2D, mId);
 }
 
@@ -20,8 +24,9 @@ unsigned int Texture::getId() const
     return mId;
 }
 
-unsigned int Texture::generateTexture(const std::shared_ptr<Image>& image) const
+unsigned int Texture::generateTexture(const std::shared_ptr<Image>& image)
 {
+    mGenerated = true;
     GLuint id;
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
