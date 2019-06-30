@@ -54,13 +54,16 @@ void RenderLines::drawArray()
 
     {
         auto linesLock = mLines.lock();
-        // assign triangle data
-        glVertexPointer(3, GL_FLOAT, 0, linesLock->data());
+        if (!linesLock->empty())
+        {
+            // assign triangle data
+            glVertexPointer(3, GL_FLOAT, 0, linesLock->data());
 
-        auto indicesLock = mIndices.lock();
-        // draw triangles
-        glDrawElements(GL_LINES, static_cast<GLsizei>(indicesLock->size()*2),
-                       GL_UNSIGNED_INT, indicesLock->data());
+            auto indicesLock = mIndices.lock();
+            // draw triangles
+            glDrawElements(GL_LINES, static_cast<GLsizei>(indicesLock->size()*2),
+                           GL_UNSIGNED_INT, indicesLock->data());
+        }
     }
 
     glDisableClientState(GL_VERTEX_ARRAY);

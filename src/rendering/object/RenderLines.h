@@ -6,7 +6,13 @@
 #include <multi_threading/Monitor.h>
 
 
-
+// Needs to update lines and indicies. Use the corresponding getters for that.
+// - To render a line that follows the points in lines, fill indices like this
+//   indices = {0, 1, 1, 2, 2, ..., nPoints-1, nPoints-1}
+// - To render lines whichs points are stored after each other in the lines vector
+//   independently from each other, store the indicies like this:
+//   indicies = {0, 1, 2, 3, ..., nLines * 2 - 1}
+//   Access each lines start point with [ i * 2 ] and end point with [ i * 2 + 1 ]
 class RenderLines : public RenderObject
 {
 public:
