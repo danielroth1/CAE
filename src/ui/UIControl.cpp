@@ -93,7 +93,7 @@ void UIControl::initializeRenderer()
     mGlWidget = mMainWindow->getGlWidget();
     mRenderControl = std::make_shared<RenderControl>(mGlWidget);
     mRenderControl->getRenderer()->initialize();
-    mRenderControl->getRenderer()->enableWireframe(false);
+    mRenderControl->getRenderer()->enableWireframe(true);
     mGlWidget->setRenderer(mRenderControl->getRenderer());
 }
 
@@ -367,6 +367,9 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             for (auto it : mSelectionControl->getSelectionVertices()
                  ->getSelectedVertexCollection()->getDataVectorsMap())
             {
+                if (!it.first->getSimulationObjectRaw())
+                    continue;
+
                 for (ID id : it.second)
                 {
                     // TODO: replace with simulation/geometry references
@@ -435,6 +438,9 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             for (auto it : mSelectionControl->getSelectionVertices()
                  ->getSelectedVertexCollection()->getDataVectorsMap())
             {
+                if (!it.first->getSimulationObjectRaw())
+                    continue;
+
                 for (ID id : it.second)
                 {
                     SimulationObjectProxy(it.first->getSimulationObjectRaw()).addToPosition(avgDir, id);
@@ -609,14 +615,19 @@ void UIControl::onActForceActionTriggered(bool checked)
 
 void UIControl::onAddTruncationActionTriggered()
 {
+    // TODO: code duplicatoin in SimulationUIControl
     // For now: add truncation
     mAc->getSimulationControl()->clearTruncations();
     const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>& dvm =
-            mSelectionControl->getSelectionVertices()
+            mAc->getUIControl()->getSelectionControl()->getSelectionVertices()
             ->getSelectedVertexCollection()->getDataVectorsMap();
     for (std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>::const_iterator it = dvm.begin();
          it != dvm.end(); ++it)
     {
+        if (!it->first->getSimulationObjectRaw() ||
+            it->first->getSimulationObjectRaw()->getType() != SimulationObject::Type::FEM_OBJECT)
+            continue;
+
         mAc->getSimulationControl()->addTruncations(
                     dynamic_cast<FEMObject*>(
                         it->first->getSimulationObjectRaw()), it->second);

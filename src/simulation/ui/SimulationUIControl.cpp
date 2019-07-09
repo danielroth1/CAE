@@ -140,6 +140,10 @@ void SimulationUIControl::onTruncateButtonClicked()
     for (std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>::const_iterator it = dvm.begin();
          it != dvm.end(); ++it)
     {
+        if (!it->first->getSimulationObjectRaw() ||
+            it->first->getSimulationObjectRaw()->getType() != SimulationObject::Type::FEM_OBJECT)
+            continue;
+
         mAc->getSimulationControl()->addTruncations(
                     dynamic_cast<FEMObject*>(
                         it->first->getSimulationObjectRaw()), it->second);
