@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GeometryInfoUIForm</class>
+ <widget class="QWidget" name="GeometryInfoUIForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>266</width>
+    <height>444</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="1" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="0">
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="3" column="0">
+       <widget class="QLabel" name="mNeighboredEdgesLabel">
+        <property name="text">
+         <string>Neighbored Edges</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>select vertex</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="mNeighboredFacesLabel">
+        <property name="text">
+         <string>Neighbored Faces</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="mNeighboredEdgesComboBox"/>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="Line" name="line_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="mSelectedNodesComboBox"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="mSelectedVertexComboBox"/>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="mNeighboredFacesComboBox"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="mSelectedVerticesLabel">
+        <property name="text">
+         <string>Selected Vertices</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="mSelectedNodesLabel">
+        <property name="text">
+         <string>Selected Nodes</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QSpinBox" name="spinBox"/>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="mVertexLabel">
+        <property name="text">
+         <string>Vertex</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
