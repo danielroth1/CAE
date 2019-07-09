@@ -6,26 +6,167 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <iostream>
 #include <numeric>
 
-
-MeshInterpolatorMeshMesh::GradientDescentParameters
-MeshInterpolatorMeshMesh::GradientDescentParameters::DEFAULT_GD_PARAMS;
-
-MeshInterpolatorMeshMesh::LineSearchParameters
-MeshInterpolatorMeshMesh::LineSearchParameters::DEFAULT_LS_PARAMS;
 
 MeshInterpolatorMeshMesh::MeshInterpolatorMeshMesh(
         const std::shared_ptr<Polygon>& source,
         const std::shared_ptr<Polygon>& target)
     : MeshInterpolator (source, target)
+    , mSolved(false)
 {
-    init();
+}
+
+void MeshInterpolatorMeshMesh::solveNewton(
+        const MeshInterpolatorMeshMesh::NewtonParameters& newtonParams)
+{
+    std::function<Eigen::Vector3d(
+                Vector3d p,
+                Vector3d v[3],
+                Vector3d n[3],
+                bool& converged,
+                bool printStatistics)> f =
+            [this, newtonParams](
+            Vector3d p,
+            Vector3d v[3],
+            Vector3d n[3],
+            bool& converged,
+            bool printStatistics)
+    {
+        return this->calculateWeightsdNewton(
+                    p, v, n,
+                    Eigen::Vector4d(1.0, 0.0, 0.0, 0.0),
+                    converged,
+                    newtonParams,
+                    printStatistics);
+    };
+
+    solve(f);
+
+    // Version without lambda. Could be that this is better supported by the
+    // microsoft compiler. Is equivalent to the one above but more verbose.
+//    std::function<Eigen::Vector3d(
+//                MeshInterpolatorMeshMesh*,
+//                MeshInterpolatorMeshMesh::NewtonParameters,
+//                Vector3d p,
+//                Vector3d v[3],
+//                Vector3d n[3],
+//                bool& converged,
+//                bool printStatistics)> fTemp =
+//            [](
+//            MeshInterpolatorMeshMesh* interpolator,
+//            MeshInterpolatorMeshMesh::NewtonParameters params,
+//            Vector3d p,
+//            Vector3d v[3],
+//            Vector3d n[3],
+//            bool& converged,
+//            bool printStatistics)
+//    {
+//        return interpolator->calculateWeightsdNewton(
+//                    p, v, n,
+//                    Eigen::Vector4d(1.0, 0.0, 0.0, 0.0),
+//                    converged,
+//                    params,
+//                    printStatistics);
+//    };
+
+//    std::function<Eigen::Vector3d(
+//                Vector3d p,
+//                Vector3d v[3],
+//                Vector3d n[3],
+//                bool& converged,
+//                bool printStatistics)> f =
+//            std::bind(
+//                fTemp, this, newtonParams,
+//                std::placeholders::_1,
+//                std::placeholders::_2,
+//                std::placeholders::_3,
+//                std::placeholders::_4,
+//                std::placeholders::_5);
+}
+
+void MeshInterpolatorMeshMesh::solveNCG(
+        const MeshInterpolatorMeshMesh::NCGParameters& ncgParams,
+        const MeshInterpolatorMeshMesh::LineSearchParameters& lsParams)
+{
+    std::function<Eigen::Vector3d(
+                Vector3d p,
+                Vector3d v[3],
+                Vector3d n[3],
+                bool& converged,
+                bool printStatistics)> f =
+            [this, ncgParams, lsParams](
+            Vector3d p,
+            Vector3d v[3],
+            Vector3d n[3],
+            bool& converged,
+            bool printStatistics)
+    {
+        return this->calculateWeightsdNCG(
+                    p, v, n,
+                    Eigen::Vector4d(1.0, 0.0, 0.0, 0.0),
+                    converged,
+                    ncgParams,
+                    lsParams,
+                    printStatistics);
+    };
+
+    solve(f);
+
+    // Version without lambda. Could be that this is better supported by the
+    // microsoft compiler. Is equivalent to the one above but more verbose.
+//    std::function<Eigen::Vector3d(
+//                MeshInterpolatorMeshMesh*,
+//                MeshInterpolatorMeshMesh::NCGParameters,
+//                MeshInterpolatorMeshMesh::LineSearchParameters,
+//                Vector3d p,
+//                Vector3d v[3],
+//                Vector3d n[3],
+//                bool& converged,
+//                bool printStatistics)> fTemp =
+//            [](
+//            MeshInterpolatorMeshMesh* interpolator,
+//            MeshInterpolatorMeshMesh::NCGParameters ncgParams,
+//            MeshInterpolatorMeshMesh::LineSearchParameters lsParams,
+//            Vector3d p,
+//            Vector3d v[3],
+//            Vector3d n[3],
+//            bool& converged,
+//            bool printStatistics)
+//    {
+//        return interpolator->calculateWeightsdNCG(
+//                    p, v, n,
+//                    Eigen::Vector4d(1.0, 0.0, 0.0, 0.0),
+//                    converged,
+//                    ncgParams,
+//                    lsParams,
+//                    printStatistics);
+//    };
+
+//    std::function<Eigen::Vector3d(
+//                Vector3d p,
+//                Vector3d v[3],
+//                Vector3d n[3],
+//                bool& converged,
+//                bool printStatistics)> f =
+//            std::bind(
+//                fTemp, this, ncgParams, lsParams,
+//                std::placeholders::_1,
+//                std::placeholders::_2,
+//                std::placeholders::_3,
+//                std::placeholders::_4,
+//                std::placeholders::_5);
 }
 
 void MeshInterpolatorMeshMesh::update()
 {
+    if (!mSolved)
+    {
+        std::cout << "Tried calling MeshInterpolatorMeshMesh::update() before "
+                     "calling MeshInterpolatorMeshMesh::solveNewton().\n";
+    }
     for (size_t i = 0; i < mTargetAccessor->getSize(); ++i)
     {
         VertexInterpolation& vi = mInterpolations[i];
@@ -66,7 +207,9 @@ Vector3d MeshInterpolatorMeshMesh::getSourcePosition(size_t targetId) const
     return q;
 }
 
-void MeshInterpolatorMeshMesh::init()
+void MeshInterpolatorMeshMesh::solve(
+        const std::function<Vector3d
+        (Vector3d, Vector3d[], Vector3d[], bool&, bool)>& solverFunction)
 {
     mSource->update();
     mTarget->update();
@@ -84,9 +227,11 @@ void MeshInterpolatorMeshMesh::init()
 
     mInterpolations.reserve(mTarget->getSize());
 
-    double wbt = 1e-3; // weight bounding tolerance
+    double wnt = 1e-2; // weight normal tolerance
+    double wbt = 1e-1; // weight bounding tolerance
     double wt = 1e-2; // weight tolerance
     bool printStatistics = true;
+    bool printErrors = true;
 
     std::vector<double> errors;
 
@@ -151,33 +296,35 @@ void MeshInterpolatorMeshMesh::init()
             if (fn[5].dot(v[1] - v[0]) < 0)
                 fn[5] *= -1;
 
-//            for (size_t j = 0; j < 2; ++j)
-//            {
-//                if (fn[j].dot(v[2]) < 0)
-//                    fn[j] *= -1;
-//                if (fn[j+2].dot(v[0]) < 0)
-//                    fn[j+2] *= -1;
-//                if (fn[j+4].dot(v[1]) < 0)
-//                    fn[j+4] *= -1;
-//            }
-
             bool isInside =
-                    ((p - v[0]).dot(fn[0]) > 0 || (p - v[1]).dot(fn[1]) > 0) &&
-                    ((p - v[1]).dot(fn[2]) > 0 || (p - v[2]).dot(fn[3]) > 0) &&
-                    ((p - v[2]).dot(fn[4]) > 0 || (p - v[0]).dot(fn[5]) > 0);
+                    ((p - v[0]).dot(fn[0]) > -wnt || (p - v[1]).dot(fn[1]) > -wnt) &&
+                    ((p - v[1]).dot(fn[2]) > -wnt || (p - v[2]).dot(fn[3]) > -wnt) &&
+                    ((p - v[2]).dot(fn[4]) > -wnt || (p - v[0]).dot(fn[5]) > -wnt);
 
             if (!isInside)
             {
-//                std::cout << "is not inside so continue\n";
                 continue;
             }
 
             bool converged;
-            Eigen::Vector3d weights = calculateWeightsImprovedGD(
-                        p, v, n, Eigen::Vector4d(0.4, 0.3, 0.3, 0.0),
+
+            Eigen::Vector3d weights = solverFunction(
+                        p, v, n,
                         converged,
-                        GradientDescentParameters(10000, 1e-6),
-                        LineSearchParameters(20, 0.1, 0.25), printStatistics);
+                        printStatistics);
+
+//            Eigen::Vector3d weights = calculateWeightsdNewton(
+//                        p, v, n,
+//                        Eigen::Vector4d(1.0, 0.0, 0.0, 0.0),
+//                        converged,
+//                        NewtonParameters(10, 1e-6),
+//                        printStatistics);
+
+//            Eigen::Vector3d weights = calculateWeightsdNewton(
+//                        p, v, n, Eigen::Vector4d(1.0, 0.0, 0.0, 0.0),
+//                        converged,
+//                        NewtonParameters(10, 1e-5, 1e-6),
+//                        LineSearchParameters(20, 1.0 , 0.1, 0.25), printStatistics);
 
             // signed distance
             Eigen::Vector q = weights[0] * v[0]
@@ -187,8 +334,8 @@ void MeshInterpolatorMeshMesh::init()
                     + weights[1] * n[1]
                     + weights[2] * n[2];
             n_q.normalize();
-            Eigen::Vector r = p - q;
 
+            Eigen::Vector r = p - q;
             double sign = r.dot(n_q) < 0 ? -1 : 1;
             double distance = sign * r.norm();
 
@@ -197,14 +344,11 @@ void MeshInterpolatorMeshMesh::init()
                     distance, fId, i);
             allInterpolations.push_back(interpolation);
 
-            double error = (q + distance * n_q - p).norm();
             bool inBounds =
-//                    error < wt &&
 //                    std::abs(weights(0) + weights(1) + weights(2) - 1) < 3 * wt &&
                     -wbt <= weights[0] && weights[0] <= 1.0 + wbt &&
                     -wbt <= weights[1] && weights[1] <= 1.0 + wbt &&
                     -wbt <= weights[2] && weights[2] <= 1.0 + wbt;
-//            weights.normalize();
 
             if (converged && inBounds)
             {
@@ -231,20 +375,23 @@ void MeshInterpolatorMeshMesh::init()
         else if (!nonConvergedInterpolations.empty())
         {
             chosenInterpolations = &nonConvergedInterpolations;
-            std::cout << "warning: interpolation for vertex at " << i << "("
-                      << p.transpose() << ") did not converge.\n";
+            if (printErrors)
+                std::cout << "warning: interpolation for vertex at " << i << "("
+                          << p.transpose() << ") did not converge.\n";
         }
         else if (!outOfBoundsInterpolations.empty())
         {
             chosenInterpolations = &outOfBoundsInterpolations;
-            std::cout << "warning: interpolation for vertex at " << i << "("
-                      << p.transpose() << ") is out of bounds.\n";
+            if (printErrors)
+                std::cout << "warning: interpolation for vertex at " << i << "("
+                          << p.transpose() << ") is out of bounds.\n";
         }
         else
         {
             chosenInterpolations = &allInterpolations;
-            std::cout << "warning: interpolation for vertex at " << i << "("
-                      << p.transpose() << ") did not converge and is out of bounds.\n";
+            if (printErrors)
+                std::cout << "warning: interpolation for vertex at " << i << "("
+                          << p.transpose() << ") did not converge and is out of bounds.\n";
         }
 
         std::sort(chosenInterpolations->begin(),
@@ -257,9 +404,10 @@ void MeshInterpolatorMeshMesh::init()
 
         if (!chosenInterpolations->empty())
         {
-            mInterpolations.push_back((*chosenInterpolations)[0]);
-
             VertexInterpolation chosen = (*chosenInterpolations)[0];
+
+            mInterpolations.push_back(chosen);
+
 
             Eigen::Vector target = interpolate(chosen);
             double error = (target - p).norm();
@@ -267,18 +415,16 @@ void MeshInterpolatorMeshMesh::init()
             if (error > wt)
             {
                 errors.push_back(error);
-                std::cout << "error = " << error
-                          << ", p_orig = " << p.transpose()
-                          << ", p_proj = " << target.transpose() << "\n";
+                if (printErrors)
+                    std::cout << "error = " << error
+                              << ", p_orig = " << p.transpose()
+                              << ", p_proj = " << target.transpose() << "\n";
             }
         }
         else
         {
             std::cout << "warning: No candidate vertex found for vertex at " << i << "\n";
         }
-
-        if (printStatistics)
-            std::cout << "==============================\n";
 
     }
     std::cout << "errors size = " << errors.size() << "\n";
@@ -287,302 +433,32 @@ void MeshInterpolatorMeshMesh::init()
     {
         std::cout << errors[i] << "\n";
     }
+    mSolved = true;
 }
 
-Eigen::Vector4d MeshInterpolatorMeshMesh::calculateWeightsSimpleGD(
-        Eigen::Vector3d p,
-        Eigen::Vector3d v[3],
-        Eigen::Vector3d n[3],
-        Eigen::Vector4d weights)
-{
-    auto calcA = [](
-            const Eigen::Vector3d& p,
-            Eigen::Vector3d v[3],
-            Eigen::Vector4d weights)
-    {
-        return p - (weights[0] * v[0]
-                + weights[1] * v[1]
-                + weights[2] * v[2]);
-    };
-
-    auto calcB = [](
-            Eigen::Vector3d n[3],
-            Eigen::Vector4d weights)
-    {
-        return weights[0] * n[0]
-                + weights[1] * n[1]
-                + weights[2] * n[2];
-    };
-
-    auto calcF = [](
-            const Eigen::Vector& A,
-            const Eigen::Vector& B)
-    {
-        return A.cross(B);
-    };
-
-    auto calcF2 = [calcA, calcB](
-                Eigen::Vector3d p,
-                Eigen::Vector3d v[3],
-                Eigen::Vector3d n[3],
-                Eigen::Vector4d weights)
-    {
-        return calcA(p, v, weights).cross(calcB(n, weights));
-    };
-
-    auto calcG = [](
-            const Eigen::Vector4d& weights)
-    {
-        return weights[0] + weights[1] + weights[2] - 1;
-    };
-
-    auto calcL = [](
-            const Eigen::Vector3d& F,
-            const Eigen::Vector4d& weights,
-            double g)
-    {
-//        return static_cast<double>(F.norm() + weights[3] * weights[3] * g * g);
-        return static_cast<double>(F.norm() - weights[3] * g);
-    };
-
-    auto calcL2 = [calcF2, calcG](
-            Eigen::Vector3d p,
-            Eigen::Vector3d v[3],
-            Eigen::Vector3d n[3],
-            Eigen::Vector4d weights)
-    {
-//        double g = calcG(weights);
-//        return static_cast<double>(calcF2(p, v, n, weights).norm() +
-//                                   weights[3] * weights[3] * g * g);
-        return static_cast<double>(calcF2(p, v, n, weights).norm() -
-                                   weights[3] * calcG(weights));
-    };
-
-    // Gradient Descent
-    double error = 1.0;
-    double maxError = 1e-5;
-    for (size_t iterCount = 0; iterCount < 10; ++iterCount)
-    {
-        // convergence criterium
-        if (error < maxError)
-            break;
-
-        Eigen::Vector A = calcA(p, v, weights);
-        Eigen::Vector B = calcB(n, weights);
-
-        // calculate LGrad
-        Eigen::Vector F = calcF(A, B);
-        double g = calcG(weights);
-        double L = calcL(F, weights, g);
-
-        Eigen::Vector FGrad[3];
-        for (size_t i = 0; i < 3; ++i)
-        {
-            FGrad[i] = B.cross(v[i]) + A.cross(n[i]);
-        }
-
-        Eigen::Vector4d LGrad;
-        for (size_t i = 0; i < 3; ++i)
-        {
-            LGrad[i] = 2 * F.transpose() * FGrad[i] - weights[3];
-//            LGrad[i] = 2 * F.transpose() * FGrad[i] + 2 * weights[3] * weights[3] * g;
-        }
-        LGrad[3] = -g;
-
-//        if (weights[3] * g < 0)
-//            LGrad[3] *= -1;
-//        LGrad[3] = 2 * weights[3] * g * g;
-
-        // Perform line search to find optimal t.
-        size_t maxLineSearchIterations = 10; // line search parameter
-        double c = 0.1; // line search parameter
-        double tau = 0.25; // line search parameter
-        double m = LGrad.norm();
-        double t = 1.0;
-        double LNextMin = std::numeric_limits<double>::max();
-        double tMin = t;
-        for (size_t j = 0; j < maxLineSearchIterations; ++j)
-        {
-            t *= tau;
-            double Lnext = calcL2(p, v, n, weights - t * LGrad);
-
-            if (LNextMin > Lnext)
-            {
-                LNextMin = Lnext;
-                tMin = t;
-            }
-
-            if (std::abs(L) - std::abs(Lnext) >= c * m)
-                break;
-        }
-
-        // Gradient Descent update
-        Eigen::Vector4d delta = tMin * LGrad;
-        weights -= delta;
-
-        error = delta.norm();
-    }
-    return weights;
-}
-
-Vector3d MeshInterpolatorMeshMesh::calculateWeightsImprovedGD(
+Vector3d MeshInterpolatorMeshMesh::calculateWeightsdNCG(
         Vector3d p,
-        Vector3d v[3],
-        Vector3d n[3],
+        Vector3d v[],
+        Vector3d n[],
         Vector4d weights,
         bool& converged,
-        const GradientDescentParameters& gdParams,
-        const LineSearchParameters& lsParams,
+        const MeshInterpolatorMeshMesh::NCGParameters& ncgParams,
+        const MeshInterpolatorMeshMesh::LineSearchParameters& lsParams,
         bool printStatistics)
 {
-    auto calcA = [](
-            const Eigen::Vector3d& p,
-            Eigen::Vector3d v[3],
-            Eigen::Vector4d weights)
-    {
-        return p - (weights[0] * v[0]
-                + weights[1] * v[1]
-                + weights[2] * v[2]);
-    };
-
-    auto calcB = [](
-            Eigen::Vector3d n[3],
-            Eigen::Vector4d weights)
-    {
-        return weights[0] * n[0]
-                + weights[1] * n[1]
-                + weights[2] * n[2];
-    };
-
-    // Calculates F \in \mathbb{R}^3
-    auto calcF = [](
-            const Eigen::Vector& A,
-            const Eigen::Vector& B)
-    {
-        return A.cross(B);
-    };
-
-    // Calculates \frac{\partial f}{\partial \alpha} \in \mathbb{R}^3
-    // \param fGradReturn - return value for the three gradients.
-    auto calcFGrad = [](
-            Eigen::Vector3d v[3],
-            Eigen::Vector3d n[3],
-            const Eigen::Vector& A,
-            const Eigen::Vector& B,
-            Eigen::Vector3d fGradReturn[3])
-    {
-        for (size_t i = 0; i < 3; ++i)
-        {
-            fGradReturn[i] = B.cross(v[i]) + A.cross(n[i]);
-        }
-    };
-
-    // Calculates \frac{\partial L}{\partial \alpha, \lambda} \in \mathbb{R}^4
-    // \Returns Eigen::Vector4d
-    auto calcLGrad = [](
-            const Eigen::Vector3d& F,
-            Eigen::Vector3d fGrad[3],
-            const Eigen::Vector4d& weights)
-    {
-        Eigen::Vector3d partialF;
-        for (Eigen::Index i = 0; i < 3; ++i)
-        {
-            partialF(i) = 2 * F.transpose() * fGrad[i] + weights[3];
-        }
-        double partialLambda = weights[0] + weights[1] + weights[2] - 1;
-        Eigen::Vector4d returnValue;
-        returnValue << partialF, partialLambda;
-        return returnValue;
-    };
-
-    // Calculates \frac{\partial F}{\partial \alpha\alpha} \in \mathbb{R}^{3,3,3}
-    // \param returnValue - Eigen::Vector3d[3][3]
-    auto calcFGradGrad = [](
-            Eigen::Vector3d v[3],
-            Eigen::Vector3d n[3],
-            Eigen::Vector3d returnValue[3][3])
-    {
-        // TODO: symmetric, can be optimized
-        for (Eigen::Index i = 0; i < 3; ++i)
-        {
-            for (Eigen::Index j = 0; j < 3; ++j)
-            {
-                returnValue[i][j] = n[i].cross(v[j]) + n[j].cross(v[i]);
-            }
-        }
-    };
-
-    // Calculates \frac{\partial L}{\partial \alpha\alpha} \in \mathbb{R}^{3,3}.
-    // \Returns Eigen::Matrix3d
-    auto calcLGradGrad = [](
-            const Eigen::Vector3d& F,
-            Eigen::Vector3d FGrad[3],
-            Eigen::Vector3d FGradGrad[3][3])
-    {
-        Eigen::Matrix3d returnValue;
-        for (Eigen::Index i = 0; i < 3; ++i)
-        {
-            for (Eigen::Index j = 0; j < 3; ++j)
-            {
-                returnValue(i, j) = 2 * (
-                            static_cast<double>(FGrad[i].transpose() * FGrad[j]) +
-                            static_cast<double>(F.transpose() * FGradGrad[i][j]));
-            }
-        }
-        return returnValue;
-    };
-
-    // Calculates the function h \in \mathbb{R}
-    auto calcH = [](const Eigen::Vector4d& LGrad)
-    {
-        return LGrad(0) * LGrad(0)
-                + LGrad(1) * LGrad(1)
-                + LGrad(2) * LGrad(2)
-                + LGrad(3) * LGrad(3);
-    };
-
-    // Calculates \frac{\partial h}{\partial \alpha\lambda} \in \mathbb{R}^4
-    auto calcHGrad = [](
-            const Eigen::Vector4d& LGrad,
-            const Eigen::Matrix3d& LGradGrad)
-    {
-        Eigen::Vector4d returnValue;
-        for (Eigen::Index i = 0; i < 3; ++i)
-        {
-            returnValue(i) = 2 * (LGrad(0) * LGradGrad(0, i)
-                                  + LGrad(1) * LGradGrad(1, i)
-                                  + LGrad(2) * LGradGrad(2, i)
-                                  + LGrad(3));
-        }
-        returnValue(3) = 2 * (LGrad(0) + LGrad(1) + LGrad(2));
-        return returnValue;
-    };
-
-    // Returns double
-    // Same as calcH but all in one method.
-    auto calcH2 = [&calcA, &calcB, &calcF, &calcFGrad, &calcLGrad, &calcH](
-            const Vector3d& p,
-            Vector3d v[3],
-            Vector3d n[3],
-            const Vector4d& weights)
-    {
-        Eigen::Vector A = calcA(p, v, weights);
-        Eigen::Vector B = calcB(n, weights);
-        Eigen::Vector F = calcF(A, B);
-
-        Eigen::Vector3d FGrad[3];
-        calcFGrad(v, n, A, B, FGrad);
-
-        Eigen::Vector4d LGrad = calcLGrad(F, FGrad, weights);
-        return calcH(LGrad);
-    };
-
     converged = false;
+
+    Eigen::Vector4d s; // search direction
+
+    Eigen::Vector4d deltaX;
+    Eigen::Vector4d deltaXPrev;
+
+    size_t iterationsSinceLastReset = 0;
 
     // Gradient Descent
     double error = 1.0;
     size_t iterTotal = 0;
-    for (size_t iterCount = 0; iterCount < gdParams.maxIterations; ++iterCount)
+    for (size_t iterCount = 0; iterCount < ncgParams.maxIterations; ++iterCount)
     {
         ++iterTotal;
         Eigen::Vector A = calcA(p, v, weights);
@@ -603,15 +479,41 @@ Vector3d MeshInterpolatorMeshMesh::calculateWeightsImprovedGD(
 
         Eigen::Vector4d HGrad = calcHGrad(LGrad, LGradGrad);
 
+        deltaX = -HGrad;
+
+        if (iterCount == 0 ||
+            iterationsSinceLastReset == ncgParams.conjugateIterationResetThreshold)
+        {
+            s = deltaX;
+            iterationsSinceLastReset = 0;
+        }
+        else
+        {
+            double beta = deltaX.dot(deltaX - deltaXPrev) / deltaXPrev.norm();
+            if (beta < 1e-8)
+            {
+                s = deltaX;
+                iterationsSinceLastReset = 0;
+            }
+            else
+            {
+                s = deltaX + beta * s;
+                iterationsSinceLastReset++;
+            }
+        }
+
+        Eigen::Vector4d dir = s.normalized(); // search direction
         // Perform line search to find optimal t.
-        double m = HGrad.norm();
-        double t = 2.0;
+        double m = dir.dot(deltaX);
+        // 1 / lsParams.tau because to counteract the multiplication in the
+        // first iteration.
+        double t = 1 / lsParams.tau * lsParams.initialStepSize;
         double HNextMin = std::numeric_limits<double>::max();
         double tMin = t;
         for (size_t j = 0; j < lsParams.maxIterations; ++j)
         {
             t *= lsParams.tau;
-            double Hnext = calcH2(p, v, n, weights - t * HGrad);
+            double Hnext = calcH2(p, v, n, weights + t * dir);
 
             if (HNextMin > Hnext)
             {
@@ -624,15 +526,108 @@ Vector3d MeshInterpolatorMeshMesh::calculateWeightsImprovedGD(
         }
 
         // Gradient Descent update
-        Eigen::Vector4d delta = tMin * HGrad;
-        weights -= delta;
+        Eigen::Vector4d delta = tMin * dir;
+        weights += delta;
 
         error = delta.norm();
 
+        // improved convergence criterium
+        Eigen::Vector pProj = interpolate(p, v, n,
+                                          Eigen::Vector3d(weights(0),
+                                                          weights(1),
+                                                          weights(2)));
+        double projError = (p - pProj).norm();
+
         // convergence criterium
-        if (error < gdParams.accuracy)
+        if (projError < ncgParams.maxProjectionError)
         {
             converged = true;
+            break;
+        }
+
+        // non-convergence criterium
+        if (error < ncgParams.minUpdateStepSize)
+        {
+            converged = true;
+            break;
+        }
+
+        deltaXPrev = deltaX;
+    }
+
+    if (printStatistics)
+    {
+        std::cout << "Iterations: " << iterTotal
+                  << ", error: " << error
+                  << ", lambda: " << weights[3]
+                  << ", weights: " << weights(0) << ", " << weights(1) << ", " << weights(2)
+                  << "\n";
+    }
+    return Eigen::Vector3d(weights(0), weights(1), weights(2));
+}
+
+Vector3d MeshInterpolatorMeshMesh::calculateWeightsdNewton(
+        Vector3d p,
+        Vector3d v[3],
+        Vector3d n[3],
+        Vector4d _weights,
+        bool& converged,
+        const MeshInterpolatorMeshMesh::NewtonParameters& newtonParams,
+        bool printStatistics)
+{
+    converged = false;
+
+    // Gradient Descent
+    double error = 1.0;
+    size_t iterTotal = 0;
+
+    Vector3d weights = Vector3d(_weights(0), _weights(1), _weights(2));
+    for (size_t iterCount = 0; iterCount < newtonParams.maxIterations; ++iterCount)
+    {
+        ++iterTotal;
+        Eigen::Vector A = calcA(p, v, weights);
+        Eigen::Vector B = calcB(n, weights);
+        Eigen::Vector F = calcF(A, B);
+
+        // calc f
+        double g = weights[0] + weights[1] + weights[2] - 1;
+        Eigen::Vector4d f;
+        f << F, g;
+
+        // calc fGrad
+        Eigen::Vector3d FGrad[3];
+        calcFGrad(v, n, A, B, FGrad);
+        Eigen::Matrix<double, 4, 3> fGrad;
+        fGrad << FGrad[0](0), FGrad[1](0), FGrad[2](0),
+                FGrad[0](1), FGrad[1](1), FGrad[2](1),
+                FGrad[0](2), FGrad[1](2), FGrad[2](2),
+                1, 1, 1;
+
+        // calc pseudo inverse
+        Eigen::Matrix3d m = (fGrad.transpose() * fGrad);
+        Eigen::Matrix3d mInv = m.inverse();
+
+        // update
+        Eigen::Vector delta = -mInv * fGrad.transpose() * f;
+
+        weights += delta;
+
+        // improved convergence criterium
+        Eigen::Vector pProj = interpolate(p, v, n,
+                                          Eigen::Vector3d(weights(0),
+                                                          weights(1),
+                                                          weights(2)));
+        double projError = (p - pProj).norm();
+
+        if (projError < newtonParams.maxProjectionError)
+        {
+            converged = true;
+            break;
+        }
+
+        if (error < newtonParams.minUpdateStepSize)
+        {
+            converged = false;
             break;
         }
     }
@@ -641,7 +636,6 @@ Vector3d MeshInterpolatorMeshMesh::calculateWeightsImprovedGD(
     {
         std::cout << "Iterations: " << iterTotal
                   << ", error: " << error
-                  << ", lambda: " << weights[3]
                   << ", weights: " << weights(0) << ", " << weights(1) << ", " << weights(2)
                   << "\n";
     }
@@ -669,4 +663,25 @@ Vector3d MeshInterpolatorMeshMesh::interpolate(
     n_q.normalize();
 
     return q + interpolation.mDistance * n_q;
+}
+
+Vector3d MeshInterpolatorMeshMesh::interpolate(
+        const Eigen::Vector3d& p,
+        Vector3d v[],
+        Vector3d n[],
+        const Vector3d& weights)
+{
+    Eigen::Vector q = weights[0] * v[0]
+            + weights[1] * v[1]
+            + weights[2] * v[2];
+    Eigen::Vector n_q = weights[0] * n[0]
+            + weights[1] * n[1]
+            + weights[2] * n[2];
+    n_q.normalize();
+
+    Eigen::Vector r = p - q;
+    double sign = r.dot(n_q) < 0 ? -1 : 1;
+    double distance = sign * r.norm();
+
+    return q + distance * n_q;
 }
