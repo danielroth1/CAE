@@ -598,9 +598,9 @@ void PolygonRenderModel::updatePositions()
                     *facesLock,
                     *normalsLock);
 
-        if (positionsLock->size() != positions.size() ||
-            normalsLock->size() != positions.size() )
-            std::cout << "error: size missmatch\n";
+//        if (positionsLock->size() != positions.size() ||
+//            normalsLock->size() != positions.size() )
+//            std::cout << "error: size missmatch\n";
     }
     mPositionsBufferedData->setDataChanged(true);
     mNormalsBufferedData->setDataChanged(true);

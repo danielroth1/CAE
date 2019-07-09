@@ -15,7 +15,7 @@ public:
     SelectionListener();
     virtual ~SelectionListener();
 
-    virtual void onSceneNodeSelected(const std::shared_ptr<SceneData>&) = 0;
+    virtual void onSceneNodeSelected(const std::shared_ptr<SceneData>& sd) = 0;
 
     virtual void onSelectedSceneNodesChanged(
             const std::set<std::shared_ptr<SceneData>>& sd) = 0;
