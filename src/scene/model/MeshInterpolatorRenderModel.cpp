@@ -3,6 +3,7 @@
 #include <rendering/object/RenderLines.h>
 #include <rendering/object/RenderPoints.h>
 
+#include <rendering/RenderMaterial.h>
 #include <rendering/Renderer.h>
 
 #include <scene/data/geometric/MeshInterpolator.h>
@@ -52,6 +53,9 @@ void MeshInterpolatorRenderModel::reset()
 
     mRenderLines = std::make_shared<RenderLines>();
     mRenderPoints = std::make_shared<RenderPoints>();
+
+    mRenderLines->setRenderMaterial(
+                RenderMaterial::createFromColor({1.0f, 0.5f, 0.0f, 1.0f}));
 
     {
         auto indices = mRenderLines->getIndices().lock();
