@@ -46,6 +46,7 @@
 #include <demos/CarDemo.h>
 #include <demos/InterpolationMeshMeshDemo.h>
 #include <demos/TexturingDemo.h>
+#include <demos/InterpolationFEMDemo.h>
 #include <ui/scene_graph/SGUIControl.h>
 #include <io/importers/OBJImporter.h>
 #include <modules/geometry_info/GeometryInfoModule.h>
@@ -280,6 +281,7 @@ void ApplicationControl::initiateApplication()
     std::shared_ptr<InterpolationMeshMeshDemo> interpolationDemo =
             std::make_shared<InterpolationMeshMeshDemo>(this);
     mDemoLoaderModule->addDemo(interpolationDemo);
+    mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMDemo>(this));
     mDemoLoaderModule->addDemo(std::make_shared<TexturingDemo>(this));
 
     mDemoLoaderModule->loadDemo(emptyDemo);

@@ -156,15 +156,16 @@ public:
             const NCGParameters& ncgParams = NCGParameters(),
             const LineSearchParameters& lsParams = LineSearchParameters());
 
+    // Calls geometricDataChanged() of target.
     virtual void update() override;
-
-    // Returns the id of the source vertex w.r.t. the target vertex with the
-    // given id.
-    virtual size_t getSourceFaceId(size_t targetId) const override;
 
     // Returns the position of the source vertex that correspondons to the
     // target vertex with the given id.
     virtual Eigen::Vector3d getSourcePosition(size_t targetId) const override;
+
+    // Returns the id of the source vertex w.r.t. the target vertex with the
+    // given id.
+    virtual size_t getSourceFaceId(size_t targetId) const;
 
 private:
 

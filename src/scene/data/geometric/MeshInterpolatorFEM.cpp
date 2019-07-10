@@ -1,21 +1,129 @@
 #include "MeshInterpolatorFEM.h"
 #include "Polygon.h"
+#include "Polygon3D.h"
+#include "Polygon3DTopology.h"
 
 #include <algorithm>
 #include <iostream>
 
 MeshInterpolatorFEM::MeshInterpolatorFEM(
-        const std::shared_ptr<Polygon>& source,
-        const std::shared_ptr<Polygon>& target,
-        std::size_t numRelevantVertices)
+        const std::shared_ptr<Polygon3D>& source,
+        const std::shared_ptr<Polygon>& target)
     : MeshInterpolator (source, target)
-    , mNumRelevantVertices(numRelevantVertices)
+    , mSource3(source)
+    , mSolved(false)
 {
-    init();
+
+}
+
+void MeshInterpolatorFEM::solve()
+{
+    mSource->update();
+    mTarget->update();
+
+    if (mSource->getPositionType() == BSWSVectors::Type::BODY_SPACE &&
+        mTarget->getPositionType() == BSWSVectors::Type::WORLD_SPACE)
+    {
+        mTarget->changeRepresentationToBS(mTarget->calculateCenterVertex());
+    }
+    else if (mSource->getPositionType() == BSWSVectors::Type::WORLD_SPACE &&
+             mTarget->getPositionType() == BSWSVectors::Type::BODY_SPACE)
+    {
+        mTarget->changeRepresentationToWS();
+    }
+
+    mInterpolations.clear();
+    mInterpolations.reserve(mTarget->getSize());
+
+    bool printErrors = true;
+    double wt = 0.001; // weight tolerance
+    std::array<Vector, 4> v; // vertices
+    Eigen::Vector4d bary; // baryzentric coordinatees
+//    std::array<double, 4> bary; // baryzentric coordinatees
+    // Fill mRelevantSourceVertices.
+    for (std::size_t i = 0; i < mTarget->getSize(); ++i)
+    {
+        Eigen::Vector p = mTarget->getPosition(i);
+
+        // filter out elements that do not contain vertex
+
+        // if there are vertices wihtout elemnt, we need to find the element
+        // with the closest distance to the vertex.
+
+        std::vector<VertexInterpolation> candidateInterpolations;
+
+        for (size_t j = 0; j < mSource3->getTopology3D().getCells().size(); ++j)
+        {
+            Cell& c = mSource3->getTopology3D().getCells()[j];
+
+            // Vertex positions
+            v[0] = mSource3->getPosition(c[0]);
+            v[1] = mSource3->getPosition(c[1]);
+            v[2] = mSource3->getPosition(c[2]);
+            v[3] = mSource3->getPosition(c[3]);
+
+            Vector r1 = v[1] - v[0];
+            Vector r2 = v[2] - v[0];
+            Vector r3 = v[3] - v[0];
+
+            Vector r4 = v[2] - v[1];
+            Vector r5 = v[1] - v[3];
+
+            double J = r1.cross(r2).dot(r3);
+
+//            double volume = J / 6.0;
+
+            Vector center = 0.25 * (v[0] + v[1] + v[2] + v[3]);
+
+            bary[0] = 0.25 + (p - center).dot(r4.cross(r5) / J);
+            bary[1] = 0.25 + (p - center).dot(r2.cross(r3) / J);
+            bary[2] = 0.25 + (p - center).dot(r3.cross(r1) / J);
+            bary[3] = 0.25 + (p - center).dot(r1.cross(r2) / J);
+
+            VertexInterpolation vi(bary, j, i);
+            if (-wt < bary[0] && bary[0] < 1 + wt &&
+                -wt < bary[1] && bary[1] < 1 + wt &&
+                -wt < bary[2] && bary[2] < 1 + wt &&
+                -wt < bary[3] && bary[3] < 1 + wt)
+            {
+                candidateInterpolations.push_back(vi);
+            }
+        }
+
+        if (!candidateInterpolations.empty())
+        {
+            if (printErrors && candidateInterpolations.size() > 1)
+            {
+                std::cout << "warning: multiple candidate interpolations found for "
+                             "vertex with index " << i << ".\n";
+            }
+
+            VertexInterpolation vi = candidateInterpolations[0];
+            mInterpolations.push_back(vi);
+
+            std::cout << "Adds interpolation with "
+                      << "weights = "
+                      << vi.mWeights(0) << ", " << vi.mWeights(1) << ", "
+                      << vi.mWeights(2) << ", " << vi.mWeights(3) << "\n";
+        }
+        else if (printErrors)
+        {
+            std::cerr << "no interpolation found for vertex with index " << i << ".\n";
+        }
+    }
+
+    mSolved = true;
 }
 
 void MeshInterpolatorFEM::update()
 {
+    if (!mSolved)
+    {
+        std::cout << "Tried calling MeshInterpolatorMeshMesh::update() before "
+                     "calling MeshInterpolatorMeshMesh::solveNewton().\n";
+        return;
+    }
+
     // position type must be the same
     if (mSource->getPositionType() !=
         mTarget->getPositionType())
@@ -39,14 +147,7 @@ void MeshInterpolatorFEM::update()
         for (size_t i = 0; i < mTarget->getPositions().size(); ++i)
         {
             // Calculate interpolated vertex
-            Eigen::Vector interpolatedPosition = Eigen::Vector::Zero();
-
-            for (size_t j = 0; j < mNumRelevantVertices; ++j)
-            {
-                interpolatedPosition +=
-                        mWeights[i][j] * mSource->getPosition(mRelevantSourceVertices[i][j]);
-            }
-
+            Eigen::Vector interpolatedPosition = interpolate(mInterpolations[i]);
             mTarget->setPosition(i, interpolatedPosition);
         }
 
@@ -54,63 +155,23 @@ void MeshInterpolatorFEM::update()
     }
     }
 
+    mTarget->geometricDataChanged();
 }
 
-void MeshInterpolatorFEM::init()
+Vector3d MeshInterpolatorFEM::getSourcePosition(size_t targetId) const
 {
-    mRelevantSourceVertices.clear();
-    mWeights.clear();
-
-    mRelevantSourceVertices.reserve(mTarget->getSize());
-    mWeights.reserve(mTarget->getSize());
-
-    // Fill mRelevantSourceVertices.
-    for (std::size_t i = 0; i < mTarget->getSize(); ++i)
-    {
-        Eigen::Vector targetPos = mTarget->getPosition(i);
-
-        std::vector<std::pair<double, std::size_t>> distIndexPairs;
-
-        // Gather the closest mNumRelevantVertices.
-        for (std::size_t j = 0; j < mSource->getSize(); ++j)
-        {
-            Eigen::Vector sourcePos = mSource->getPosition(i);
-            Eigen::Vector dir = targetPos - sourcePos;
-            double distance = dir.norm();
-            distIndexPairs.push_back(std::make_pair(distance, j));
-        }
-
-        // Sort distIndexPairs so that indices whose vertices have the smallest
-        // distance are at the start of the vector.
-        std::sort(distIndexPairs.begin(),
-                  distIndexPairs.end(),
-                  [](const std::pair<double, std::size_t>& p1,
-                  const std::pair<double, std::size_t>& p2)
-        {
-            return p1.first < p2.first;
-        });
-
-        // Extract the first mNumRelevantVertices.
-        std::vector<std::size_t> relevantVertexIndices;
-        relevantVertexIndices.reserve(mNumRelevantVertices);
-        for (std::size_t j = 0; j < mNumRelevantVertices; ++j)
-        {
-            relevantVertexIndices.push_back(distIndexPairs[j].second);
-        }
-        mRelevantSourceVertices.push_back(relevantVertexIndices);
-
-        // Insert the normalized weights of the first mNumRelevantVertices.
-        // By using normalized weights, a simple linear kernel is applied.
-        std::vector<double> weights;
-        weights.reserve(mNumRelevantVertices);
-        double totalWeight = 0.0;
-        for (std::size_t j = 0; j < mNumRelevantVertices; ++j)
-        {
-            totalWeight += distIndexPairs[i].first;
-        }
-        for (std::size_t j = 0; j < mNumRelevantVertices; ++j)
-        {
-            weights.push_back(distIndexPairs[i].first / totalWeight);
-        }
-    }
+    return interpolate(mInterpolations[targetId]);
 }
+
+Vector3d MeshInterpolatorFEM::interpolate(
+        const MeshInterpolatorFEM::VertexInterpolation& vi) const
+{
+    Cell& c = mSource3->getTopology3D().getCells()[vi.mSourceCellIndex];
+    Vector3d v = Vector3d::Zero();
+    for (size_t i = 0; i < 4; ++i)
+    {
+        v += vi.mWeights[static_cast<Eigen::Index>(i)] * mSource3->getPosition(c[i]);
+    }
+    return v;
+}
+

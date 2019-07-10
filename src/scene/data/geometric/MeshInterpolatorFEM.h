@@ -4,26 +4,65 @@
 
 #include "MeshInterpolator.h"
 
+class Polygon3D;
+class VertexInterpolation;
+
 class MeshInterpolatorFEM : public MeshInterpolator
 {
 public:
-    MeshInterpolatorFEM(const std::shared_ptr<Polygon>& source,
-                        const std::shared_ptr<Polygon>& target,
-                        std::size_t numRelevantVertices);
+    MeshInterpolatorFEM(const std::shared_ptr<Polygon3D>& source,
+                        const std::shared_ptr<Polygon>& target);
 
+    void solve();
+
+    // MeshInterpolator interface
+public:
+    // Calls geometricDataChanged() of target.
     virtual void update() override;
+    virtual Eigen::Vector3d getSourcePosition(size_t targetId) const override;
 
 private:
-    void init();
 
-    std::size_t mNumRelevantVertices;
+    // There is one per point of the high res mesh.
+    struct VertexInterpolation
+    {
+        VertexInterpolation()
+            : mAssigned(false)
+        {
 
-    // Is of size mNumTargetSize, mNumRelevantVertices.
-    // Stored indices are w.r.t. source vertices.
-    std::vector<std::vector<std::size_t>> mRelevantSourceVertices;
+        }
 
-    // Is of size mNumTargetSize, mNumRelevantVertices.
-    std::vector<std::vector<double>> mWeights;
+        VertexInterpolation(Eigen::Vector4d weights,
+                            std::size_t sourceCellIndex,
+                            std::size_t targetVertexId)
+            : mWeights(weights)
+            , mSourceCellIndex(sourceCellIndex)
+            , mTargetVertexId(targetVertexId)
+            , mAssigned(true)
+        {
+
+        }
+
+        // Baryzentric cooridnates w.r.t. a finite element of the low res mesh.
+        Eigen::Vector4d mWeights;
+
+        // The id of the corresponding cell on the low res mesh.
+        std::size_t mSourceCellIndex;
+
+        std::size_t mTargetVertexId;
+
+        bool mAssigned;
+    };
+
+    Eigen::Vector3d interpolate(const VertexInterpolation& vi) const;
+
+    std::shared_ptr<Polygon3D> mSource3;
+
+    bool mSolved;
+
+    // Baryzentric cooridnates w.r.t. the low res mesh.
+    // There is one per point of the high res mesh.
+    std::vector<VertexInterpolation> mInterpolations;
 };
 
 #endif // MESHINTERPOLATORFEM_H

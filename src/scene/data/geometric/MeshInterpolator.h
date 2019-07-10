@@ -21,10 +21,6 @@ public:
 
     virtual void update() = 0;
 
-    // Returns the id of the source vertex w.r.t. the target vertex with the
-    // given id.
-    virtual size_t getSourceFaceId(size_t targetId) const = 0;
-
     // Returns the position of the source vertex that correspondons to the
     // target vertex with the given id.
     virtual Eigen::Vector3d getSourcePosition(size_t targetId) const = 0;

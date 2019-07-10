@@ -226,6 +226,10 @@ void FiniteElement::updateCauchyStressStrain()
 
 void FiniteElement::updateDnx()
 {
+    // As described in
+    // http://www.iue.tuwien.ac.at/phd/nentchev/node30.html and
+    // http://www.iue.tuwien.ac.at/phd/nentchev/node31.html
+
     Vector r1 = mFemObj->x(mCell[1]) - mFemObj->x(mCell[0]);
     Vector r2 = mFemObj->x(mCell[2]) - mFemObj->x(mCell[0]);
     Vector r3 = mFemObj->x(mCell[3]) - mFemObj->x(mCell[0]);

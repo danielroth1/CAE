@@ -166,6 +166,7 @@ void MeshInterpolatorMeshMesh::update()
     {
         std::cout << "Tried calling MeshInterpolatorMeshMesh::update() before "
                      "calling MeshInterpolatorMeshMesh::solveNewton().\n";
+        return;
     }
     for (size_t i = 0; i < mTargetAccessor->getSize(); ++i)
     {
@@ -191,11 +192,6 @@ void MeshInterpolatorMeshMesh::update()
     mTarget->geometricDataChanged();
 }
 
-size_t MeshInterpolatorMeshMesh::getSourceFaceId(size_t targetId) const
-{
-    return mInterpolations[targetId].mSourceFaceId;
-}
-
 Vector3d MeshInterpolatorMeshMesh::getSourcePosition(size_t targetId) const
 {
     const VertexInterpolation& vi = mInterpolations[targetId];
@@ -205,6 +201,11 @@ Vector3d MeshInterpolatorMeshMesh::getSourcePosition(size_t targetId) const
             + vi.mWeights[1] * mSourceAccessor->getPosition(f[1])
             + vi.mWeights[2] * mSourceAccessor->getPosition(f[2]);
     return q;
+}
+
+size_t MeshInterpolatorMeshMesh::getSourceFaceId(size_t targetId) const
+{
+    return mInterpolations[targetId].mSourceFaceId;
 }
 
 void MeshInterpolatorMeshMesh::solve(
@@ -225,13 +226,14 @@ void MeshInterpolatorMeshMesh::solve(
         mTarget->changeRepresentationToWS();
     }
 
+    mInterpolations.clear();
     mInterpolations.reserve(mTarget->getSize());
 
     double wnt = 1e-2; // weight normal tolerance
     double wbt = 1e-1; // weight bounding tolerance
     double wt = 1e-2; // weight tolerance
-    bool printStatistics = true;
-    bool printErrors = true;
+    bool printStatistics = false;
+    bool printErrors = false;
 
     std::vector<double> errors;
 
