@@ -11,7 +11,7 @@ public:
 
     enum class Type
     {
-        VERTEX, EDGE, FACE
+        VERTEX, EDGE, FACE, CELL
     };
 
     ID getID() const;

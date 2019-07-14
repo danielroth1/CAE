@@ -36,11 +36,11 @@ FEMObject::FEMObject(
 
     // Initialize finite elements
     double v = 0.45;
-    double E = 5e+4;
+    double E = 5e+3;
     ElasticMaterial material;
     material.setFromYoungsPoisson(E, v);
 
-    const Cells& cells = poly3->getTopology3D().getCells();
+    const Cells& cells = poly3->getTopology3D().getCellIds();
     mFiniteElements.reserve(cells.size());
     for (unsigned int i = 0; i < cells.size(); ++i)
     {

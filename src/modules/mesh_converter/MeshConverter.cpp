@@ -26,6 +26,7 @@
 #include <Eigen/Dense>
 
 // std
+#include <set>
 #include <vector>
 
 // CGAL feature detection
@@ -232,21 +233,37 @@ bool generateMeshFromCGALPolyhedron(
     // Tetrahedra
     //-------------------------------------------------------
 
+    auto sortedFace = [](std::array<unsigned int, 3> f)
+    {
+        std::sort(f.begin(), f.end());
+        return f;
+    };
+
+    std::set<std::array<unsigned int, 3>> addedSortedFacets;
+    auto addFaceIfNotContains = [&sortedFace, &facets_out, &addedSortedFacets](
+            std::array<unsigned int, 3> f)
+    {
+        std::array<unsigned int, 3> sortedF = sortedFace(f);
+        if (addedSortedFacets.find(sortedF) == addedSortedFacets.end())
+        {
+            addedSortedFacets.insert(sortedF);
+            facets_out.push_back(f);
+        }
+    };
+
     for (Cell_iterator cit = c3t3.cells_in_complex_begin();
-            cit != c3t3.cells_in_complex_end(); ++cit) {
-        std::array<unsigned int, 4> vertex;
-        for (int i = 0; i < 4; i++)
-            vertex[i] = V[cit->vertex(i)];
-        cells_out.push_back(vertex);
-        std::array<unsigned int, 3> v;
-        v[0] = vertex[0]; v[1] = vertex[1]; v[2] = vertex[2];
-        add_if_not_contains<unsigned int, 3>(facets_out, v);
-        v[0] = vertex[0]; v[1] = vertex[1]; v[2] = vertex[3];
-        add_if_not_contains<unsigned int, 3>(facets_out, v);
-        v[0] = vertex[0]; v[1] = vertex[2]; v[2] = vertex[3];
-        add_if_not_contains<unsigned int, 3>(facets_out, v);
-        v[0] = vertex[1]; v[1] = vertex[2]; v[2] = vertex[3];
-        add_if_not_contains<unsigned int, 3>(facets_out, v);
+            cit != c3t3.cells_in_complex_end(); ++cit)
+    {
+        std::array<unsigned int, 4> f;
+        for (unsigned int i = 0; i < 4; i++)
+            f[i] = static_cast<unsigned int>(V[cit->vertex(static_cast<int>(i))]);
+
+        cells_out.push_back(f);
+
+        addFaceIfNotContains({f[0], f[1], f[2]});
+        addFaceIfNotContains({f[0], f[1], f[3]});
+        addFaceIfNotContains({f[0], f[2], f[3]});
+        addFaceIfNotContains({f[1], f[2], f[3]});
     }
 
     // correct the triangle indices
@@ -284,22 +301,38 @@ bool generateMeshFromCGALPolyhedron(
             }
         }
 
-        if (found)
+        if (!found)
+        {
+            std::cout << "Did not find cell for outer triangle.\n";
+        }
+        else
         {
             Eigen::Vector3d r_1 = vertices_out[facet[1]] - vertices_out[facet[0]];
             Eigen::Vector3d r_2 = vertices_out[facet[2]] - vertices_out[facet[0]];
             Eigen::Vector3d r_3 = vertices_out[other_vertex_id] - vertices_out[facet[0]];
             std::cout << "other_vertex_id = " << other_vertex_id << "\n";
 
-            if (r_1.cross(r_2).normalized().dot(r_3) > 0) { // TODO
+            if (r_1.cross(r_2).normalized().dot(r_3) > 0)
+            {
                 unsigned int temp = facet[1];
                 facet[1] = facet[2];
                 facet[2] = temp;
             }
         }
-        else
+
+        // is this face part of all faces?
+        bool found2 = false;
+        for (size_t j = 0; j < facets_out.size(); ++j)
         {
-            std::cout << "Did not find neighbored cell for outer triangle.\n";
+            if (sortedFace(facets_out[j]) == sortedFace(facet))
+            {
+                found2 = true;
+                break;
+            }
+        }
+        if (!found2)
+        {
+            std::cout << "Outer face is not part of all faces.\n";
         }
     }
 

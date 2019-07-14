@@ -258,12 +258,12 @@ std::shared_ptr<Polygon2DAccessor> Polygon3D::createAccessor()
 
         virtual void setPosition(size_t index, const Eigen::Vector& position) override
         {
-            poly3->setPosition(poly3->mData->getTopology().to2DIndex(index), position);
+            poly3->setPosition(poly3->mData->getTopology().to3DVertexIndex(index), position);
         }
 
         virtual Eigen::Vector& getPosition(std::size_t index) override
         {
-            return poly3->getPosition(poly3->mData->getTopology().to2DIndex(index));
+            return poly3->getPosition(poly3->mData->getTopology().to3DVertexIndex(index));
         }
 
         virtual Polygon2DTopology& getTopology2D() override

@@ -13,8 +13,13 @@ public:
 
     std::array<unsigned int, 3>& getVertexIds();
     const std::array<unsigned int, 3>& getVertexIds() const;
+
     std::array<unsigned int, 3>& getEdgeIds();
     const std::array<unsigned int, 3>& getEdgeIds() const;
+
+    std::vector<ID>& getCellIds();
+    const std::vector<ID>& getCellIds() const;
+
     std::vector<ID>& getAdjacentFaces();
     const std::vector<ID>& getAdjacentFaces() const;
 
@@ -25,6 +30,7 @@ public:
 private:
     std::array<unsigned int, 3> mVertices;
     std::array<unsigned int, 3> mEdges;
+    std::vector<ID> mCells;
 
     std::vector<ID> mAdjacentFaces;
 };

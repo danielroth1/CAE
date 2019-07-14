@@ -2,6 +2,7 @@
 #define POLYGON3DTOPOLOGY_H
 
 #include "Polygon2DTopology.h"
+#include "TopologyCell.h"
 
 #include <data_structures/DataStructures.h>
 
@@ -22,7 +23,9 @@ public:
             const Cells& cells,
             ID nVertices);
 
-    Cells& getCells();
+    Cells& getCellIds();
+
+    std::vector<TopologyCell>& getCells();
 
     // Outer topology methods
         // Outer topology represents the topology of the outer mesh. All its
@@ -36,6 +39,11 @@ public:
         // that is w.r.t. ALL vertices.
         std::vector<unsigned int>& getOuterVertexIds();
         void setOuterVertexIds(const std::vector<unsigned int>& outerVertexIds);
+
+        // Maps each index that is w.r.t. OUTER vertices to an index
+        // that is w.r.t. ALL vertices.
+        std::vector<unsigned int>& getOuterFaceIds();
+        void setOuterFaceIds(const std::vector<unsigned int>& outerFaceIds);
 
         // Returns outer edges. Stored indices are w.r.t. to OUTER vertices.
         // Use getOuterVertexIds()[index] to obtain an index for the vector
@@ -61,12 +69,20 @@ public:
 
         Edges retrieveOuterEdges() const;
 
-        ID to2DIndex(ID index3) const
+        ID to3DVertexIndex(ID index3) const
         {
             return mOuterVertexIds[index3];
         }
 
+        ID to3DFaceIndex(ID index3) const
+        {
+            return mOuterFaceIds[index3];
+        }
+
 private:
+
+    // Adds the cell information to the topology.
+    void init();
 
     // Calculates the IDs of all vertices that are part of the
     // outer hull, which are all vertices that are obtained by
@@ -84,13 +100,21 @@ private:
             const Faces& faces,
             const std::vector<unsigned int>& outerVertexIds) const;
 
+    // size = number of outer vertices
+    // stores for each outer vertex the corresponding id of all vertices
     std::vector<unsigned int> mOuterVertexIds;
+
+    // size = number of outer face
+    // stores for each outer face the corresponding id of all faces
+    std::vector<unsigned int> mOuterFaceIds;
 
     // Outer faces whichs indices point to all positions
     Faces mOuterFacesIndices3D;
 
     // All cells.
-    Cells mCells;
+    Cells mCellIds;
+
+    std::vector<TopologyCell> mCells;
 
     // All indices that are stored here, are w.r.t. to the 2D representation
     // of the outer polygon. To access the vertex position, it is necessary to

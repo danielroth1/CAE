@@ -27,6 +27,16 @@ const std::vector<ID>& TopologyVertex::getFaceIds() const
     return mFaces;
 }
 
+std::vector<ID>& TopologyVertex::getCellIds()
+{
+    return mCells;
+}
+
+const std::vector<ID>& TopologyVertex::getCellIds() const
+{
+    return mCells;
+}
+
 TopologyFeature::Type TopologyVertex::getType() const
 {
     return Type::VERTEX;

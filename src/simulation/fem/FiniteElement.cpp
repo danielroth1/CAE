@@ -83,8 +83,8 @@ void FiniteElement::updateRotation()
     Matrix3d C = Matrix3d::Identity();
     C(2,2) = det;
     mR = svd.matrixU() * C * svd.matrixV().transpose();
-    if (det < 0)
-        std::cout << "inversion detected! det = " << det << "\n";
+//    if (det < 0)
+//        std::cout << "inversion detected! det = " << det << "\n";
 
 }
 

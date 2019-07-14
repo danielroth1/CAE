@@ -3,8 +3,10 @@
 
 
 #include "MeshInterpolator.h"
+#include <data_structures/DataStructures.h>
 
 class Polygon3D;
+class TopologyFace;
 class VertexInterpolation;
 
 class MeshInterpolatorFEM : public MeshInterpolator
@@ -55,6 +57,12 @@ private:
     };
 
     Eigen::Vector3d interpolate(const VertexInterpolation& vi) const;
+
+    Eigen::Vector4d calculateBaryzentricCoordinates(
+            const Cell& c, const Eigen::Vector& p) const;
+
+    Eigen::Vector3d calculateBaryzentricCoordinates(
+            const TopologyFace& f, const Eigen::Vector& p) const;
 
     std::shared_ptr<Polygon3D> mSource3;
 

@@ -28,6 +28,16 @@ const std::vector<ID>& TopologyEdge::getFaceIds() const
     return mFaces;
 }
 
+std::vector<ID>& TopologyEdge::getCellIds()
+{
+    return mCells;
+}
+
+const std::vector<ID>& TopologyEdge::getCellIds() const
+{
+    return mCells;
+}
+
 ID TopologyEdge::getOtherFaceId(ID faceId)
 {
     return faceId == mFaces[0] ? mFaces[1] : mFaces[0];

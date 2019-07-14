@@ -12,8 +12,12 @@ public:
 
     std::vector<ID>& getVertexIds();
     const std::vector<ID>& getVertexIds() const;
+
     std::vector<ID>& getFaceIds();
     const std::vector<ID>& getFaceIds() const;
+
+    std::vector<ID>& getCellIds();
+    const std::vector<ID>& getCellIds() const;
 
     ID getOtherFaceId(ID faceId);
 
@@ -24,6 +28,7 @@ public:
 private:
     std::vector<ID> mVertices;
     std::vector<ID> mFaces;
+    std::vector<ID> mCells;
 };
 
 #endif // TOPOLOGYEDGE_H

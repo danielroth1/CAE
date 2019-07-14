@@ -26,6 +26,16 @@ const std::array<unsigned int, 3>& TopologyFace::getEdgeIds() const
     return mEdges;
 }
 
+std::vector<ID>& TopologyFace::getCellIds()
+{
+    return mCells;
+}
+
+const std::vector<ID>& TopologyFace::getCellIds() const
+{
+    return mCells;
+}
+
 std::vector<ID>& TopologyFace::getAdjacentFaces()
 {
     return mAdjacentFaces;

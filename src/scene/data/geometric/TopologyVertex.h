@@ -14,6 +14,8 @@ public:
     const std::vector<ID>& getEdgeIds() const;
     std::vector<ID>& getFaceIds();
     const std::vector<ID>& getFaceIds() const;
+    std::vector<ID>& getCellIds();
+    const std::vector<ID>& getCellIds() const;
 
     // TopologyFeature interface
 public:
@@ -22,6 +24,9 @@ public:
 private:
     std::vector<ID> mEdges;
     std::vector<ID> mFaces;
+
+    // For Topology3D
+    std::vector<ID> mCells;
 };
 
 #endif // TOPOLOGYVERTEX_H
