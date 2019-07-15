@@ -522,7 +522,9 @@ void SimulationControl::step()
     mRigidSimulation->integratePositions(mStepSize);
     mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
 
+    START_TIMING_SIMULATION("CollisionManager::udpateAll()");
     mCollisionManager->updateAll();
+    STOP_TIMING_SIMULATION;
 
     // collision detection on x + x^{FEM}
     START_TIMING_SIMULATION("CollisionManager::collideAll()");
@@ -533,7 +535,7 @@ void SimulationControl::step()
     mImpulseConstraintSolver->initializeCollisionConstraints(
                 mCollisionManager->getCollider()->getCollisions(),
                 mStepSize,
-                0.2, // Restitution (bounciness factor))
+                0.0, // Restitution (bounciness factor))
                 0.0, // static friction
                 0.01); // dynamic friction
 
@@ -552,13 +554,24 @@ void SimulationControl::step()
             mFEMSimulation->revertSolverStep(); // x, v + v^{col}
 
             // solve on x, v + v^{col}
-            mFEMSimulation->solve(mStepSize, true); // x + x^{FEM}, v + v^{FEM}
+            START_TIMING_SIMULATION("CollisionManager::solve_FEM");
+            mFEMSimulation->solve(mStepSize, false); // x + x^{FEM}, v + v^{FEM}
+            STOP_TIMING_SIMULATION;
+
+//            mImpulseConstraintSolver->initializeCollisionConstraints(
+//                        mCollisionManager->getCollider()->getCollisions(),
+//                        mStepSize,
+//                        0.0, // Restitution (bounciness factor))
+//                        0.0, // static friction
+//                        0.01); // dynamic friction
 
             mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
+            START_TIMING_SIMULATION("CollisionManager::solve_constraints");
             mImpulseConstraintSolver->solveConstraints(
                         mMaxNumConstraintSolverIterations,
                         mMaxConstraintError); // x, v + v^{FEM} + v^{col}
+            STOP_TIMING_SIMULATION;
         }
     }
 
@@ -570,8 +583,10 @@ void SimulationControl::step()
     mRigidSimulation->applyDamping();
     mFEMSimulation->applyDamping();
 
+    START_TIMING_SIMULATION("CollisionManager::publish()");
     mRigidSimulation->publish();
     mFEMSimulation->publish();
+    STOP_TIMING_SIMULATION;
 
     STOP_TIMING_SIMULATION;
 }
