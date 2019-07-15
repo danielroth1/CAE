@@ -80,6 +80,11 @@ public:
     // - forces
     // - stiffness matrix
     // => call updateCorotatedFEM()
+    // \param firstStep - if true, the whole solver step is computed
+    //      if false, the matrix assembling and linear solver factorization
+    //      from the last time when this methos was called with firstStep = true
+    //      is reused. Typically, this kind of iterations are basically free since
+    //      they are hundert times faster.
     void solveFEM(double stepSize, bool corotated, bool firstStep = true);
 
     // Performs:
@@ -153,6 +158,9 @@ private:
     // Polygon3D
     // Is used to inform other modules about updates in the data.
     std::shared_ptr<Polygon3D> mPoly3;
+
+    // The linear solver
+    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>, Eigen::Lower> mSolver;
 
     // Geometric Data references
     Vectors mPositions;

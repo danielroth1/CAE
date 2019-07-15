@@ -22,13 +22,19 @@ void Truncation::truncateByRemoving(
         Eigen::SparseMatrix<double>& ATrunc,
         Eigen::VectorXd& bTrunc)
 {
+    truncateByRemoving(A, ATrunc);
+    truncateByRemoving(b, bTrunc);
+}
+
+void Truncation::truncateByRemoving(
+        const Eigen::SparseMatrix<double>& A,
+        Eigen::SparseMatrix<double>& ATrunc)
+{
     ID size = static_cast<ID>(A.rows());
     ID sizeTrunc = size - 3 * static_cast<ID>(mTruncatedIds.size());
 
     ATrunc = Eigen::SparseMatrix<double>(
                 static_cast<long>(sizeTrunc),
-                static_cast<long>(sizeTrunc));
-    bTrunc = VectorXd::Zero(
                 static_cast<long>(sizeTrunc));
 
     std::vector<Triplet<double>> coefficients;
@@ -45,7 +51,6 @@ void Truncation::truncateByRemoving(
             k += 2;
             continue;
         }
-        bTrunc(k - 3 * static_cast<long>(kTrunc)) = b(k);
 
         ID rTrunc = 0;
         for (SparseMatrix<double>::InnerIterator it(A,k); it; ++it)
@@ -78,6 +83,34 @@ void Truncation::truncateByRemoving(
 
     ATrunc.setZero();
     ATrunc.setFromTriplets(coefficients.begin(), coefficients.end());
+}
+
+void Truncation::truncateByRemoving(
+        const VectorXd& b,
+        VectorXd& bTrunc)
+{
+    ID size = static_cast<ID>(b.rows());
+    ID sizeTrunc = size - 3 * static_cast<ID>(mTruncatedIds.size());
+
+    bTrunc = VectorXd::Zero(
+                static_cast<long>(sizeTrunc));
+
+    std::vector<Triplet<double>> coefficients;
+    coefficients.reserve(static_cast<ID>(sizeTrunc) *
+                         static_cast<ID>(sizeTrunc));
+
+    ID kTrunc = 0;
+
+    for (unsigned int k=0; k < size; ++k)
+    {
+        if (kTrunc < mTruncatedIds.size() && k >= mTruncatedIds[kTrunc] * 3)
+        {
+            kTrunc += 1;
+            k += 2;
+            continue;
+        }
+        bTrunc(k - 3 * static_cast<long>(kTrunc)) = b(k);
+    }
 }
 
 void Truncation::truncateBySettingZero(

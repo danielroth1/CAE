@@ -57,8 +57,8 @@ void CollisionConstraint::initialize(double stepSize)
                 mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB());
 
 
-//    double positionCorrection = 0.2 * std::max(0.0, (mCollision.getPointA() - mCollision.getPointB()).dot(n) / stepSize);
-    double positionCorrection = 0.0;//-std::max(0.0, (mCollision.getPointB() - mCollision.getPointA()).dot(n) / stepSize);
+    double positionCorrection = 0.2 * std::max(0.0, (mCollision.getPointA() - mCollision.getPointB()).dot(n) / stepSize);
+//    double positionCorrection = -std::max(0.0, (mCollision.getPointB() - mCollision.getPointA()).dot(n) / stepSize);
     if (positionCorrection > 1e-10)
         std::cout << "position correction = " << positionCorrection << "\n";
     Eigen::Vector uRel = u1 - u2;

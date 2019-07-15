@@ -248,11 +248,6 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
     if (mTruncation->getTruncatedVectorIds().size() == mPositions.size())
         return;
 
-    if (!firstStep)
-    {
-        updateElasticForces();
-    }
-
     // map velocities to eigen struct
     unsigned int size = static_cast<unsigned int>(mVelocities.size());
 
@@ -264,7 +259,6 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
     SparseMatrix<double>& K = mKCorot;
     if (!corotated)
         K = mK;
-    SparseMatrix<double> A = mM + timeStep * timeStep * K;
     VectorXd b;
 //    if (firstStep)
 //    {
@@ -279,58 +273,58 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 //        b = mM * (vPrev - v) + timeStep * (f - K * (timeStep * v + uPrev - u));
 //    }
 
-    // good truncation
-    //Truncation truncation(A, b, mTruncatedVectorIds);
-
-//        std::cout << A << "\n";
-    SparseMatrix<double> ACopy = A;
-    VectorXd bCopy = b;
-    mTruncation->truncateByRemoving(ACopy, bCopy, A, b);
-
     START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver");
-    SimplicialLDLT<SparseMatrix<double>, Eigen::Lower> solver;
-    A = A.transpose();
-    A.makeCompressed();
-    VectorXd sol(size*3);
+    if (firstStep)
+    {
+        SparseMatrix<double> A = mM + timeStep * timeStep * K;
+        SparseMatrix<double> ACopy = A;
+        mTruncation->truncateByRemoving(ACopy, A);
+
+        A = A.transpose();
+        A.makeCompressed();
 
 #if 1
-    solver.analyzePattern(A);
-    if (solver.info() != Eigen::Success)
-        std::cerr << "Solver: analyzePattern failed.\n";
+        // if solver is sparse LU
+//        solver.analyzePattern(A);
+//        if (!solver.lastErrorMessage().empty())
+//            printf("EigenErrorMessage[analyzePattern]: %s\n", solver.lastErrorMessage().c_str());
+//        solver.factorize(A);
+//        if (!solver.lastErrorMessage().empty())
+//            fprintf(stderr, "EigenErrorMessage[factorize]: %s\n", solver.lastErrorMessage().c_str());
 
-    START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::factorize");
-    solver.factorize(A);
-    STOP_TIMING_SIMULATION;
+        mSolver.analyzePattern(A);
+        if (mSolver.info() != Eigen::Success)
+            std::cerr << "Solver: analyzePattern failed.\n";
+
+        START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::factorize");
+        mSolver.factorize(A);
+        STOP_TIMING_SIMULATION;
 #else
 
-    START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::factorize");
-    solver.compute(A);
-    STOP_TIMING_SIMULATION;
+        START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::factorize");
+        solver.compute(A);
+        STOP_TIMING_SIMULATION;
 
 #endif
+    }
 
-    if (solver.info() != Eigen::Success)
+    if (mSolver.info() != Eigen::Success)
     {
-        std::cout << A << "\n";
         std::cerr << "Solver: factorize failed.\n";
     }
 
-//    SparseLU<SparseMatrix<double>> solver;
-//    VectorXd sol(size*3);
-//    solver.analyzePattern(A);
-//    if (!solver.lastErrorMessage().empty())
-//        printf("EigenErrorMessage[analyzePattern]: %s\n", solver.lastErrorMessage().c_str());
-//    solver.factorize(A);
-//    if (!solver.lastErrorMessage().empty())
-//        fprintf(stderr, "EigenErrorMessage[factorize]: %s\n", solver.lastErrorMessage().c_str());
+    VectorXd bCopy = b;
+    mTruncation->truncateByRemoving(bCopy, b);
+
+    VectorXd sol(size*3);
 
     START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::solve");
-    sol = solver.solve(b);
+    sol = mSolver.solve(b);
     STOP_TIMING_SIMULATION;
 
     sol = mTruncation->createOriginal(sol);
 
-    STOP_TIMING_SIMULATION;
+    STOP_TIMING_SIMULATION; // SimulationControl::solveFEM()::linSolver
 
     // update the velocities
     VectorXd::Map(mDeltaV[0].data(), size * 3) = sol;
@@ -340,7 +334,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 
     integratePositions(timeStep);
 
-    STOP_TIMING_SIMULATION;
+    STOP_TIMING_SIMULATION; // SimulationControl::solveFEM
 
 //    std::cout << "norm = " << sol.norm() << "\n";
 

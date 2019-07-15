@@ -34,6 +34,16 @@ public:
             Eigen::SparseMatrix<double>& ATrunc,
             Eigen::VectorXd& bTrunc);
 
+    // truncateByRemoving but only for the vector
+    void truncateByRemoving(
+            const Eigen::SparseMatrix<double>& A,
+            Eigen::SparseMatrix<double>& ATrunc);
+
+    // truncateByRemoving but only for the vector
+    void truncateByRemoving(
+            const Eigen::VectorXd& b,
+            Eigen::VectorXd& bTrunc);
+
     // Truncates A by making all entries of all rows and columns at truncated
     // vector ids zero. Use createTruncatedMatrixA() for a more efficient
     // approach that reduces the system of equations.
