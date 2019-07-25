@@ -490,6 +490,35 @@ Vector& FEMObject::f_el(unsigned int i)
     return mForcesEl[i];
 }
 
+void FEMObject::setYoungsModulus(double youngsModulus)
+{
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        fe.getMaterial().setFromYoungsPoisson(
+                    youngsModulus,
+                    fe.getMaterial().getPoissonRatio());
+    }
+}
+
+void FEMObject::setPoissonRatio(double poissonRatio)
+{
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        fe.getMaterial().setFromYoungsPoisson(
+                    fe.getMaterial().getYoungsModulus(),
+                    poissonRatio);
+    }
+}
+
+void FEMObject::setElasticMaterial(const ElasticMaterial& material)
+{
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        fe.setMaterial(material);
+    }
+
+}
+
 Vectors& FEMObject::getInitialPositions()
 {
     return mInitialPositions;

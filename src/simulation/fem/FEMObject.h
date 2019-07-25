@@ -106,6 +106,10 @@ public:
     Eigen::Vector& v(unsigned int i);
     Eigen::Vector& f_el(unsigned int i);
 
+    void setYoungsModulus(double youngsModulus);
+    void setPoissonRatio(double poissonRatio);
+    void setElasticMaterial(const ElasticMaterial& material);
+
     // Getters
     Vectors& getInitialPositions();
     Vectors& getPositions();

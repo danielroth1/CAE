@@ -15,6 +15,13 @@ FiniteElement::FiniteElement(
 {
     mDensity = 100.0;
     mCell = cell;
+    mStiffnessMatrixDirty = false;
+}
+
+void FiniteElement::setMaterial(ElasticMaterial material)
+{
+    mMaterial = material;
+    mStiffnessMatrixDirty = true;
 }
 
 std::array<Vector, 4>& FiniteElement::getElasticForces()
@@ -40,6 +47,11 @@ std::array<std::array<Matrix3d, 4>, 4> FiniteElement::getKCorot()
 std::array<double, 4> FiniteElement::getM()
 {
     return mM;
+}
+
+ElasticMaterial& FiniteElement::getMaterial()
+{
+    return mMaterial;
 }
 
 Vector FiniteElement::u(size_t i)
@@ -105,7 +117,7 @@ void FiniteElement::updateStiffnessMatrix(bool corotated)
 {
     if (corotated)
         updateCorotatedStiffnessMatrix();
-    else
+    else if (mStiffnessMatrixDirty)
         updateLinearStiffnessMatrix();
 }
 

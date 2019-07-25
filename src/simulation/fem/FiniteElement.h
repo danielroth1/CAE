@@ -13,12 +13,17 @@ class FiniteElement
 public:
     FiniteElement(FEMObject* so, Cell cell, ElasticMaterial material);
 
+    // Forces an update of the stiffness matrix if Linear FEM (not corotated)
+    // is used for simulation.
+    void setMaterial(ElasticMaterial material);
+
     // Getters
     std::array<Eigen::Vector, 4>& getElasticForces();
     std::array<unsigned int, 4>& getCell();
     std::array<std::array<Eigen::Matrix3d, 4>, 4> getK();
     std::array<std::array<Eigen::Matrix3d, 4>, 4> getKCorot();
     std::array<double, 4> getM();
+    ElasticMaterial& getMaterial();
 
     // Updates the stiffness matrix w.r.t. the initial configuration.
     void initialize();
@@ -100,6 +105,10 @@ private:
     std::array<double, 4> mM;
     double mDensity;
     double mVolume;
+
+    // This flag is only relevant for the Linear FEM simulation (not corotated).
+    // Is true if the stiffnessmatrix requires an update.
+    bool mStiffnessMatrixDirty;
 };
 
 #endif // FINITEELEMENT_H
