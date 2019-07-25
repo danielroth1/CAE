@@ -36,7 +36,7 @@ void CarDemo::load()
     SGLeafNode* floor = mAc.getSGControl()->createBox(
                 "Floor",
                 mAc.getSGControl()->getSceneGraph()->getRoot(),
-                Vector(0.0, -2.5, 0.0), 12, 0.5, 12, true);
+                Vector(0.0, -4.5, 0.0), 12, 0.5, 12, true);
     mAc.getSGControl()->createRigidBody(floor->getData(), 1.0, true);
     mAc.getSGControl()->createCollidable(floor->getData());
 
@@ -64,6 +64,7 @@ void CarDemo::createCar(
                 width, height, length);
     std::shared_ptr<RigidBody> hullRigid = mSg->createRigidBody(
                 hull->getData(), 5.0, false);
+//    mSg->createCollidable(hull->getData());//, 0.05);
 
     // create 4 tires
     for (int i = 0; i < 4; ++i)
@@ -129,10 +130,11 @@ void CarDemo::createTire(
                 name,
                 parent,
                 tirePolyLf,
+                Eigen::Vector::Zero(),
                 true);
     std::shared_ptr<RigidBody> rigid =
             mSg->createRigidBody(tire->getData(), 1.0, false);
-    mSg->createCollidable(tire->getData(), 0.2);
+    mSg->createCollidable(tire->getData());//, 0.2);
 
     // spring
     SimulationPointRef source = SimulationPointRef(
