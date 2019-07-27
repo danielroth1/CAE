@@ -10,14 +10,19 @@ ElasticMaterial::ElasticMaterial()
 
 void ElasticMaterial::setFromLame(double lameMu, double lameLambda)
 {
-    // TODO: implement this
+    mLameMu = lameMu;
+    mLameLambda = lameLambda;
+    mYoungsModulus = lameMu * (3 * lameLambda + 2 * lameMu) /
+            (lameLambda + lameMu);
+    mPoissonRatio = lameLambda / (2 * (lameLambda + lameMu));
 }
 
 void ElasticMaterial::setFromYoungsPoisson(
         double youngsModulus,
         double poissonRatio)
 {
-
+    mYoungsModulus = youngsModulus;
+    mPoissonRatio = poissonRatio;
     mLameMu = youngsModulus /
             (2 * (1 + poissonRatio));
     mLameLambda = youngsModulus * poissonRatio /

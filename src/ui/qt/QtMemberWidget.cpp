@@ -18,7 +18,24 @@ QtMemberWidget<T>::QtMemberWidget(
 template<class T>
 QtMemberWidget<T>::~QtMemberWidget()
 {
+}
 
+template<class T>
+bool QtMemberWidget<T>::hasOwner() const
+{
+    return mMemberAccessor->hasOwner();
+}
+
+template<class T>
+void* QtMemberWidget<T>::getOwner()
+{
+    return mMemberAccessor->getOwner();
+}
+
+template<class T>
+void QtMemberWidget<T>::setOwner(void* owner)
+{
+    mMemberAccessor->setOwner(owner);
 }
 
 #endif // QTMEMBERWIDGET_CPP

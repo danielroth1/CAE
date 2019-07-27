@@ -43,12 +43,13 @@ std::shared_ptr<MemberAccessor<T>>
 MemberAccessorFactory::createGetterSetter(
         std::function<T (ObjType*)> getter,
         std::function<void (ObjType*, T)> setter,
+        T defaultValue,
         ObjType* object,
         Domain* domain)
 {
     std::shared_ptr<MemberAccessor<T>> accessor =
             std::make_shared<MemberAccessorGetterSetter<T, ObjType>>(
-                getter, setter, object);
+                getter, setter, defaultValue, object);
 
     return createSyncedIfDomain(accessor, domain);
 }

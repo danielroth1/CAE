@@ -6,16 +6,16 @@
 #include "MemberAccessorGetterSetter.h"
 
 
-template<class T, class ObjType>
-MemberAccessorGetterSetter<T, ObjType>::MemberAccessorGetterSetter(
-        std::function<T (ObjType*)> getter,
-        std::function<void (ObjType*, T)> setter,
-        ObjType* object)
-    : mGetter(getter)
+template<class T, class OwnerType>
+MemberAccessorGetterSetter<T, OwnerType>::MemberAccessorGetterSetter(
+        std::function<T (OwnerType*)> getter,
+        std::function<void (OwnerType*, T)> setter,
+        T defaultValue,
+        OwnerType* owner)
+    : OwnerMemberAccessor<T> (defaultValue, owner)
+    , mGetter(getter)
     , mSetter(setter)
-    , mObject(object)
 {
-
 }
 
 template<class T, class ObjType>
@@ -24,29 +24,31 @@ MemberAccessorGetterSetter<T, ObjType>::~MemberAccessorGetterSetter()
 
 }
 
-template<class T, class ObjType>
-void MemberAccessorGetterSetter<T, ObjType>::setObject(ObjType* object)
+template<class T, class OwnerType>
+T MemberAccessorGetterSetter<T, OwnerType>::getData()
 {
-    mObject = object;
-}
-
-template<class T, class ObjType>
-ObjType* MemberAccessorGetterSetter<T, ObjType>::getObject()
-{
-    return mObject;
-}
-
-template<class T, class ObjType>
-T MemberAccessorGetterSetter<T, ObjType>::getData()
-{
-    return mGetter(mObject);
+    if (!this->getOwner())
+        return this->getDefaultValue();
+    return mGetter(getOwnerWithType());
 }
 
 template<class T, class ObjType>
 void MemberAccessorGetterSetter<T, ObjType>::setData(T data)
 {
-    if (mObject)
-        mSetter(mObject, data);
+    if (this->getOwner())
+        mSetter(getOwnerWithType(), data);
+}
+
+template<class T, class OwnerType>
+void MemberAccessorGetterSetter<T, OwnerType>::setOwnerWithType(OwnerType* owner)
+{
+    this->setOwner(owner);
+}
+
+template<class T, class OwnerType>
+OwnerType* MemberAccessorGetterSetter<T, OwnerType>::getOwnerWithType()
+{
+    return static_cast<OwnerType*>(this->getOwner());
 }
 
 #endif // MEMBERACCESSORGETTERSETTER_CPP

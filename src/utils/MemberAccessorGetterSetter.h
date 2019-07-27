@@ -2,35 +2,37 @@
 #define MEMBERACCESSORGETTERSETTER_H
 
 #include "MemberAccessor.h"
+#include "OwnerMemberAccessor.h"
 
 #include <functional>
 
 
 // It is recommended to use \class MemberAccessorFactory to create the accessor.
-template <class T, class ObjType>
-class MemberAccessorGetterSetter : public MemberAccessor<T>
+template <class T, class OwnerType>
+class MemberAccessorGetterSetter : public OwnerMemberAccessor<T>
 {
 public:
     MemberAccessorGetterSetter(
-            std::function<T(ObjType*)> getter,
-            std::function<void(ObjType*, T)> setter,
-            ObjType* object = nullptr);
+            std::function<T(OwnerType*)> getter,
+            std::function<void(OwnerType*, T)> setter,
+            T defaultValue,
+            OwnerType* object = nullptr);
 
     virtual ~MemberAccessorGetterSetter();
 
-    void setObject(ObjType* object);
+    // MemberAccessor
+public:
+    virtual T getData();
+    virtual void setData(T data);
 
-    ObjType* getObject();
-
-    virtual T getData() override;
-
-    virtual void setData(T data) override;
+    // OwnerMemberAccessor
+public:
+    void setOwnerWithType(OwnerType* owner);
+    OwnerType* getOwnerWithType();
 
 private:
-    std::function<T(ObjType*)> mGetter;
-    std::function<void(ObjType*, T)> mSetter;
-
-    ObjType* mObject;
+    std::function<T(OwnerType*)> mGetter;
+    std::function<void(OwnerType*, T)> mSetter;
 };
 
 #include "MemberAccessorGetterSetter.cpp"

@@ -497,7 +497,17 @@ void FEMObject::setYoungsModulus(double youngsModulus)
         fe.getMaterial().setFromYoungsPoisson(
                     youngsModulus,
                     fe.getMaterial().getPoissonRatio());
+        fe.initialize();
     }
+}
+
+double FEMObject::getYoungsModulus()
+{
+    if (!mFiniteElements.empty())
+    {
+        return mFiniteElements[0].getMaterial().getYoungsModulus();
+    }
+    return 0.0;
 }
 
 void FEMObject::setPoissonRatio(double poissonRatio)
@@ -510,13 +520,30 @@ void FEMObject::setPoissonRatio(double poissonRatio)
     }
 }
 
+double FEMObject::getPoissonRatio()
+{
+    if (!mFiniteElements.empty())
+    {
+        return mFiniteElements[0].getMaterial().getPoissonRatio();
+    }
+    return 0.0;
+}
+
 void FEMObject::setElasticMaterial(const ElasticMaterial& material)
 {
     for (FiniteElement& fe : mFiniteElements)
     {
         fe.setMaterial(material);
     }
+}
 
+ElasticMaterial FEMObject::getElasticMaterial()
+{
+    if (!mFiniteElements.empty())
+    {
+        return mFiniteElements[0].getMaterial();
+    }
+    return ElasticMaterial();
 }
 
 Vectors& FEMObject::getInitialPositions()

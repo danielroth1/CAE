@@ -21,6 +21,10 @@ public:
 
     virtual ~QtMemberWidget();
 
+    bool hasOwner() const override;
+    void* getOwner() override;
+    void setOwner(void* owner) override;
+
 protected:    
 
     std::shared_ptr<MemberAccessor<T>> mMemberAccessor;

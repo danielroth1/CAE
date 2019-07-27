@@ -16,7 +16,11 @@ public:
     virtual ~AbstractQtMemberWidget();
 
     // Updates the widget with the data value.
-    virtual void update();
+    void update();
+
+    virtual bool hasOwner() const = 0;
+    virtual void* getOwner() = 0;
+    virtual void setOwner(void* owner) = 0;
 
 protected slots:
     // Only call this in the qt thread.

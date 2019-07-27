@@ -46,8 +46,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>211</width>
-        <height>359</height>
+        <width>197</width>
+        <height>374</height>
        </rect>
       </property>
       <attribute name="label">
@@ -81,24 +81,44 @@
           <property name="bottomMargin">
            <number>9</number>
           </property>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="pushButton_3">
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QtMembersWidget" name="mMembersWidget" native="true"/>
-          </item>
-          <item row="1" column="0" colspan="2">
+          <item row="3" column="0" colspan="2">
            <widget class="Line" name="line_6">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
-          <item row="6" column="0" colspan="2">
+          <item row="0" column="0">
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>Simulate</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0" colspan="2">
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QtMembersWidget" name="mMembersWidget" native="true"/>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="Line" name="line_5">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0" colspan="2">
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
              <number>0</number>
@@ -175,34 +195,21 @@
             </widget>
            </widget>
           </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="Line" name="line_5">
+          <item row="11" column="0" colspan="2">
+           <widget class="Line" name="line_4">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QPushButton" name="pushButton">
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pushButton_3">
             <property name="text">
-             <string>Simulate</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
+             <string>Reset</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="Line" name="line_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0" colspan="2">
+          <item row="8" column="0" colspan="2">
            <widget class="QGroupBox" name="groupBox">
             <property name="title">
              <string>Creation</string>
@@ -220,24 +227,24 @@
              <property name="bottomMargin">
               <number>0</number>
              </property>
-             <item row="0" column="0">
-              <widget class="QPushButton" name="mCreateFEMObject">
-               <property name="text">
-                <string>Deformable</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
+             <item row="2" column="1">
               <widget class="QPushButton" name="mButtonCreateRigidBody">
                <property name="text">
                 <string>Rigid Body</string>
                </property>
               </widget>
              </item>
-             <item row="3" column="0">
+             <item row="5" column="0">
               <widget class="QPushButton" name="mButtonCollidable">
                <property name="text">
                 <string>Collidable</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QPushButton" name="mCreateFEMObject">
+               <property name="text">
+                <string>Deformable</string>
                </property>
               </widget>
              </item>
@@ -245,10 +252,15 @@
            </widget>
           </item>
           <item row="7" column="0" colspan="2">
-           <widget class="Line" name="line_4">
+           <widget class="Line" name="line">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
+           </widget>
+          </item>
+          <item row="6" column="0" colspan="2">
+           <widget class="QtMembersWidget" name="mFEMObjectMembersWidget" native="true">
+            <layout class="QVBoxLayout" name="verticalLayout"/>
            </widget>
           </item>
          </layout>

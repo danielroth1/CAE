@@ -3,6 +3,8 @@
 
 #include <simulation/SimulationControlListener.h>
 
+#include <ui/selection/SelectionListener.h>
+
 class ApplicationControl;
 class GeometricData;
 class QWidget;
@@ -11,7 +13,8 @@ class SceneLeafData;
 class SimulationModule;
 class SimulationUIWidget;
 
-class SimulationUIControl : public SimulationControlListener
+class SimulationUIControl : public SimulationControlListener,
+        public SelectionListener
 {
 public:
     SimulationUIControl(SimulationModule* module,
@@ -44,11 +47,16 @@ public:
     virtual void onSimulationObjectAdded(SimulationObject* so);
     virtual void onSimulationObjectRemoved(SimulationObject* so);
 
-    // SimulationControlListener interface
-public:
     virtual void onConstraintAdded(SimulationObject* so);
     virtual void onConstraintRemoved(SimulationObject* so);
 
+    // SelectionListener interface
+public:
+    virtual void onSceneNodeSelected(const std::shared_ptr<SceneData>& sd);
+    virtual void onSelectedSceneNodesChanged(
+            const std::set<std::shared_ptr<SceneData> >& sd);
+    virtual void onSelectedVerticesChanged(
+            const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID> >& sv);
 };
 
 #endif // SIMULATIONUICONTROL_H

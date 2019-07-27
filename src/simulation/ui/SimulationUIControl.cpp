@@ -41,12 +41,14 @@ void SimulationUIControl::init(QWidget* parent)
 {
     mWidget = new SimulationUIWidget(this, parent);
     mAc->getSimulationControl()->addListener(this);
+    mAc->getUIControl()->getSelectionControl()->addListener(this);
 
     mWidget->getMembersWidget()->addBool(
                 "Simulation Paused",
                 MemberAccessorFactory::createGetterSetter<bool, SimulationControl>(
                     &SimulationControl::isSimulationPaused,
                     &SimulationControl::setSimulationPaused,
+                    true,
                     mAc->getSimulationControl(),
                     mAc->getSimulationControl()->getDomain()));
 
@@ -55,6 +57,7 @@ void SimulationUIControl::init(QWidget* parent)
                 MemberAccessorFactory::createGetterSetter<double, SimulationControl>(
                     &SimulationControl::getStepSize,
                     &SimulationControl::setStepSize,
+                    0.01,
                     mAc->getSimulationControl(),
                     mAc->getSimulationControl()->getDomain()),
                 1e-5, 10.0, 0.01, 4);
@@ -64,6 +67,7 @@ void SimulationUIControl::init(QWidget* parent)
                 MemberAccessorFactory::createGetterSetter<double, SimulationControl>(
                     &SimulationControl::getMaxConstraintError,
                     &SimulationControl::setMaxConstraintError,
+                    0.0,
                     mAc->getSimulationControl(),
                     mAc->getSimulationControl()->getDomain()),
                 0.0, 1.0, 1e-5, 7);
@@ -73,6 +77,7 @@ void SimulationUIControl::init(QWidget* parent)
                 MemberAccessorFactory::createGetterSetter<int, SimulationControl>(
                     &SimulationControl::getMaxNumConstraintSolverIterations,
                     &SimulationControl::setMaxNumConstraintSolverIterations,
+                    1,
                     mAc->getSimulationControl(),
                     mAc->getSimulationControl()->getDomain()),
                 0, 100, 1);
@@ -82,6 +87,7 @@ void SimulationUIControl::init(QWidget* parent)
                 MemberAccessorFactory::createGetterSetter<int, SimulationControl>(
                     &SimulationControl::getNumFEMCorrectionIterations,
                     &SimulationControl::setNumFEMCorrectionIterations,
+                    1,
                     mAc->getSimulationControl(),
                     mAc->getSimulationControl()->getDomain()),
                 0, 100, 1);
@@ -91,6 +97,7 @@ void SimulationUIControl::init(QWidget* parent)
                 MemberAccessorFactory::createGetterSetter<Eigen::Vector3d, SimulationControl>(
                     &SimulationControl::getGravity,
                     &SimulationControl::setGravity,
+                    Eigen::Vector3d::Zero(),
                     mAc->getSimulationControl(),
                     mAc->getSimulationControl()->getDomain()),
                 -100.0, 100.0, 1.0);
@@ -100,6 +107,7 @@ void SimulationUIControl::init(QWidget* parent)
                 MemberAccessorFactory::createGetterSetter<bool, SimulationControl>(
                     &SimulationControl::getInvertNormalsIfNecessary,
                     &SimulationControl::setInvertNormalsIfNecessary,
+                    true,
                     mAc->getSimulationControl(),
                     mAc->getSimulationControl()->getDomain()));
 
@@ -108,6 +116,7 @@ void SimulationUIControl::init(QWidget* parent)
                 MemberAccessorFactory::createGetterSetter<bool, SGUIControl>(
                     &SGUIControl::isVisualizeFaceNormals,
                     &SGUIControl::setVisualizeFaceNormals,
+                    false,
                     mAc->getSGUIControl(),
                     mAc->getSimulationControl()->getDomain()));
 
@@ -116,8 +125,31 @@ void SimulationUIControl::init(QWidget* parent)
                 MemberAccessorFactory::createGetterSetter<bool, SGUIControl>(
                     &SGUIControl::isVisualizeVertexNormals,
                     &SGUIControl::setVisualizeVertexNormals,
+                    false,
                     mAc->getSGUIControl(),
                     mAc->getSimulationControl()->getDomain()));
+
+//    mWidget->getOwnerMemberWidget()->...
+    mWidget->getFEMObjectMembersWidget()->addDouble(
+                "Youngs Modulus",
+                MemberAccessorFactory::createGetterSetter<double, FEMObject>(
+                    &FEMObject::getYoungsModulus,
+                    &FEMObject::setYoungsModulus,
+                    1e-3,
+                    nullptr,
+                    mAc->getSimulationControl()->getDomain()),
+                0.0, 1e+5, 100.0, 3);
+
+    mWidget->getFEMObjectMembersWidget()->addDouble(
+                "Poisson Ratio",
+                MemberAccessorFactory::createGetterSetter<double, FEMObject>(
+                    &FEMObject::getPoissonRatio,
+                    &FEMObject::setPoissonRatio,
+                    1e-3,
+                    nullptr,
+                    mAc->getSimulationControl()->getDomain()),
+                0.0, 0.499, 0.05, 4);
+
 }
 
 QWidget* SimulationUIControl::getWidget()
@@ -248,4 +280,36 @@ void SimulationUIControl::onConstraintAdded(SimulationObject* /*so*/)
 void SimulationUIControl::onConstraintRemoved(SimulationObject* /*so*/)
 {
     // TODO: implement what happens in the UI when a constraint is removed
+}
+
+void SimulationUIControl::onSceneNodeSelected(
+        const std::shared_ptr<SceneData>& sd)
+{
+    if (sd->isLeafData())
+    {
+        std::shared_ptr<SceneLeafData> leafData =
+                std::static_pointer_cast<SceneLeafData>(sd);
+        std::shared_ptr<SimulationObject> so = leafData->getSimulationObject();
+        if (so && so->getType() == SimulationObject::Type::FEM_OBJECT)
+        {
+            std::shared_ptr<FEMObject> femObj =
+                    std::static_pointer_cast<FEMObject>(so);
+            mWidget->getFEMObjectMembersWidget()->setOwner(femObj.get());
+            mWidget->getFEMObjectMembersWidget()->updateValues();
+        }
+    }
+}
+
+void SimulationUIControl::onSelectedSceneNodesChanged(
+        const std::set<std::shared_ptr<SceneData> >& sd)
+{
+    // No multiselect simulation object support right now.
+    if (!sd.empty())
+        onSceneNodeSelected(*sd.begin());
+}
+
+void SimulationUIControl::onSelectedVerticesChanged(
+        const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID> >& /*sv*/)
+{
+    // Nothing to do here.
 }

@@ -18,6 +18,14 @@ QtMembersWidget::~QtMembersWidget()
 
 }
 
+void QtMembersWidget::updateValues()
+{
+    for (AbstractQtMemberWidget* qtMemberWidget : mMemberWidgets)
+    {
+        qtMemberWidget->update();
+    }
+}
+
 void QtMembersWidget::addBool(
         std::string name,
         const std::shared_ptr<MemberAccessor<bool>>& memberAccessor)
@@ -91,4 +99,31 @@ void QtMembersWidget::addVectorDouble(
     mLayout->addWidget(memberWidget, row, 1);
 
     memberWidget->update();
+}
+
+bool QtMembersWidget::hasOwner() const
+{
+    for (AbstractQtMemberWidget* qtMemberWidget : mMemberWidgets)
+    {
+        if (!qtMemberWidget->hasOwner())
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void* QtMembersWidget::getOwner()
+{
+    if (!mMemberWidgets.empty())
+        return mMemberWidgets[0];
+    return nullptr;
+}
+
+void QtMembersWidget::setOwner(void* owner)
+{
+    for (AbstractQtMemberWidget* qtMemberWidget : mMemberWidgets)
+    {
+        qtMemberWidget->setOwner(owner);
+    }
 }

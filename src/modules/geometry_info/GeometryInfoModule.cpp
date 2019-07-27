@@ -27,7 +27,7 @@ void GeometryInfoModule::initUI(QWidget* parent)
 
 void GeometryInfoModule::finalize()
 {
-
+    mControl->finalize();
 }
 
 std::string GeometryInfoModule::getName()

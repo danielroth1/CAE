@@ -40,6 +40,8 @@ public:
 
     QtMembersWidget* getMembersWidget();
 
+    QtMembersWidget* getFEMObjectMembersWidget();
+
 private slots:
     void on_pushButton_toggled(bool checked);
 

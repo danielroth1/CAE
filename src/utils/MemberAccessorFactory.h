@@ -31,6 +31,7 @@ public:
     static std::shared_ptr<MemberAccessor<T>> createGetterSetter(
             std::function<T(ObjType*)> getter,
             std::function<void(ObjType*, T)> setter,
+            T defaultValue,
             ObjType* object = nullptr,
             Domain* domain = nullptr);
 
