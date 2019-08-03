@@ -29,12 +29,12 @@ public:
 
     // MemberAccessor methods
 public:
-    virtual void* getOwner();
-    virtual void setOwner(void* owner);
 
     virtual T getData() override;
 
     virtual void setData(T data) override;
+
+    virtual MemberAccessorType getType() const;
 
 private:
     Domain* mDomain;

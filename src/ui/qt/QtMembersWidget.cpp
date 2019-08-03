@@ -101,29 +101,7 @@ void QtMembersWidget::addVectorDouble(
     memberWidget->update();
 }
 
-bool QtMembersWidget::hasOwner() const
+const std::vector<AbstractQtMemberWidget*>& QtMembersWidget::getMemberWidgets()
 {
-    for (AbstractQtMemberWidget* qtMemberWidget : mMemberWidgets)
-    {
-        if (!qtMemberWidget->hasOwner())
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-void* QtMembersWidget::getOwner()
-{
-    if (!mMemberWidgets.empty())
-        return mMemberWidgets[0];
-    return nullptr;
-}
-
-void QtMembersWidget::setOwner(void* owner)
-{
-    for (AbstractQtMemberWidget* qtMemberWidget : mMemberWidgets)
-    {
-        qtMemberWidget->setOwner(owner);
-    }
+    return mMemberWidgets;
 }

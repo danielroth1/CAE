@@ -7,6 +7,9 @@
 #include <functional>
 
 
+// todo: implement this class
+
+
 // It is recommended to use \class MemberAccessorFactory to create the accessor.
 template <class T, class OwnerType>
 class MemberAccessorGetterSetter : public OwnerMemberAccessor<T>
@@ -22,13 +25,13 @@ public:
 
     // MemberAccessor
 public:
-    virtual T getData();
-    virtual void setData(T data);
+    virtual T getData(size_t ownerIndex);
+    virtual void setData(T data, size_t ownerIndex);
 
     // OwnerMemberAccessor
 public:
-    void setOwnerWithType(OwnerType* owner);
-    OwnerType* getOwnerWithType();
+    void addOwnerWithType(OwnerType* owner);
+    OwnerType* getOwnerWithType(size_t ownerIndex);
 
 private:
     std::function<T(OwnerType*)> mGetter;

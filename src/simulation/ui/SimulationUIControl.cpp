@@ -20,6 +20,7 @@
 #include <simulation/SimulationObjectFactory.h>
 #include <simulation/rigid/RigidBody.h>
 #include <scene/model/RenderModel.h>
+#include <ui/qt/AbstractQtMemberWidget.h>
 #include <ui/qt/QtMembersWidget.h>
 #include <utils/MemberAccessorFactory.h>
 #include <simulation/collision_detection/CollisionManager.h>
@@ -285,31 +286,58 @@ void SimulationUIControl::onConstraintRemoved(SimulationObject* /*so*/)
 void SimulationUIControl::onSceneNodeSelected(
         const std::shared_ptr<SceneData>& sd)
 {
-    if (sd->isLeafData())
-    {
-        std::shared_ptr<SceneLeafData> leafData =
-                std::static_pointer_cast<SceneLeafData>(sd);
-        std::shared_ptr<SimulationObject> so = leafData->getSimulationObject();
-        if (so && so->getType() == SimulationObject::Type::FEM_OBJECT)
-        {
-            std::shared_ptr<FEMObject> femObj =
-                    std::static_pointer_cast<FEMObject>(so);
-            mWidget->getFEMObjectMembersWidget()->setOwner(femObj.get());
-            mWidget->getFEMObjectMembersWidget()->updateValues();
-        }
-    }
+    std::vector<std::shared_ptr<SceneData>> sdsVec;
+    sdsVec.push_back(sd);
+    onSelectedSceneNodesChanged(sdsVec);
 }
 
 void SimulationUIControl::onSelectedSceneNodesChanged(
-        const std::set<std::shared_ptr<SceneData> >& sd)
+        const std::set<std::shared_ptr<SceneData> >& sds)
 {
-    // No multiselect simulation object support right now.
-    if (!sd.empty())
-        onSceneNodeSelected(*sd.begin());
+    std::vector<std::shared_ptr<SceneData>> sdsVec;
+    sdsVec.reserve(sds.size());
+    for (const std::shared_ptr<SceneData>& sd : sds)
+    {
+        sdsVec.push_back(sd);
+    }
+    onSelectedSceneNodesChanged(sdsVec);
 }
 
 void SimulationUIControl::onSelectedVerticesChanged(
         const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID> >& /*sv*/)
 {
     // Nothing to do here.
+}
+
+void SimulationUIControl::onSelectedSceneNodesChanged(
+        const std::vector<std::shared_ptr<SceneData> >& sds)
+{
+    for (AbstractQtMemberWidget* w :
+         mWidget->getFEMObjectMembersWidget()->getMemberWidgets())
+    {
+        w->clearOwners();
+    }
+
+    for (const std::shared_ptr<SceneData>& sd : sds)
+    {
+        if (sd->isLeafData())
+        {
+            std::shared_ptr<SceneLeafData> leafData =
+                    std::static_pointer_cast<SceneLeafData>(sd);
+            std::shared_ptr<SimulationObject> so = leafData->getSimulationObject();
+            if (so && so->getType() == SimulationObject::Type::FEM_OBJECT)
+            {
+                std::shared_ptr<FEMObject> femObj =
+                        std::static_pointer_cast<FEMObject>(so);
+
+    //            mWidget->getFEMObjectMembersWidget()->setOwner(femObj.get());
+                for (AbstractQtMemberWidget* w :
+                     mWidget->getFEMObjectMembersWidget()->getMemberWidgets())
+                {
+                    w->addOwner(femObj.get());
+                }
+                mWidget->getFEMObjectMembersWidget()->updateValues();
+            }
+        }
+    }
 }

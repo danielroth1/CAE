@@ -40,6 +40,13 @@ void QtMemberWidgetInteger::updateSlot()
 {
     // Blocking the signals to prevent infinite callback loops.
     mSpinBox->blockSignals(true);
-    mSpinBox->setValue(mMemberAccessor->getData());
+    if (!isAccessorValuesIdentical())
+    {
+        mSpinBox->clear();
+    }
+    else
+    {
+        mSpinBox->setValue(mMemberAccessor->getData());
+    }
     mSpinBox->blockSignals(false);
 }

@@ -57,6 +57,9 @@ public:
             const std::set<std::shared_ptr<SceneData> >& sd);
     virtual void onSelectedVerticesChanged(
             const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID> >& sv);
+
+private:
+    void onSelectedSceneNodesChanged(const std::vector<std::shared_ptr<SceneData>>& sds);
 };
 
 #endif // SIMULATIONUICONTROL_H

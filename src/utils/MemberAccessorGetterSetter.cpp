@@ -25,30 +25,28 @@ MemberAccessorGetterSetter<T, ObjType>::~MemberAccessorGetterSetter()
 }
 
 template<class T, class OwnerType>
-T MemberAccessorGetterSetter<T, OwnerType>::getData()
+T MemberAccessorGetterSetter<T, OwnerType>::getData(size_t ownerIndex)
 {
-    if (!this->getOwner())
-        return this->getDefaultValue();
-    return mGetter(getOwnerWithType());
-}
-
-template<class T, class ObjType>
-void MemberAccessorGetterSetter<T, ObjType>::setData(T data)
-{
-    if (this->getOwner())
-        mSetter(getOwnerWithType(), data);
+    return mGetter(getOwnerWithType(ownerIndex));
 }
 
 template<class T, class OwnerType>
-void MemberAccessorGetterSetter<T, OwnerType>::setOwnerWithType(OwnerType* owner)
+void MemberAccessorGetterSetter<T, OwnerType>::setData(T data, size_t ownerIndex)
 {
-    this->setOwner(owner);
+    mSetter(getOwnerWithType(ownerIndex), data);
 }
 
 template<class T, class OwnerType>
-OwnerType* MemberAccessorGetterSetter<T, OwnerType>::getOwnerWithType()
+void MemberAccessorGetterSetter<T, OwnerType>::addOwnerWithType(OwnerType* owner)
 {
-    return static_cast<OwnerType*>(this->getOwner());
+    this->addOwner(static_cast<OwnerType*>(owner));
+}
+
+template<class T, class OwnerType>
+OwnerType* MemberAccessorGetterSetter<T, OwnerType>::getOwnerWithType(
+        size_t ownerIndex)
+{
+    return static_cast<OwnerType*>(this->getOwners()[ownerIndex]);
 }
 
 #endif // MEMBERACCESSORGETTERSETTER_CPP

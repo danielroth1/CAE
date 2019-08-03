@@ -47,7 +47,15 @@ void QtMemberWidgetVectorDouble::updateSlot()
         QDoubleSpinBox* spinBox = mSpinBoxes[i];
 
         spinBox->blockSignals(true);
-        spinBox->setValue(mMemberAccessor->getData()(i));
+
+        if (!isAccessorValuesIdentical())
+        {
+            spinBox->clear();
+        }
+        else
+        {
+            spinBox->setValue(mMemberAccessor->getData()(i));
+        }
         spinBox->blockSignals(false);
     }
 }

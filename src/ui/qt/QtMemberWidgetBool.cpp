@@ -1,4 +1,4 @@
-#include "QtMemberWidgetBool.h"
+﻿#include "QtMemberWidgetBool.h"
 
 #include <QCheckBox>
 #include <QVBoxLayout>
@@ -32,9 +32,19 @@ void QtMemberWidgetBool::checkBoxStateChanged(int state)
 
 void QtMemberWidgetBool::updateSlot()
 {
+    // check here for multiple owners?
+    // can this be done in a more abstract way?
+
     mCheckBox->blockSignals(true); // Blocking the signals to prevent infinite callback loops.
-    mCheckBox->setCheckState(
-                mMemberAccessor->getData() ? Qt::CheckState::Checked :
-                                             Qt::CheckState::Unchecked);
+    if (!isAccessorValuesIdentical())
+    {
+        mCheckBox->setCheckState(Qt::CheckState::PartiallyChecked);
+    }
+    else
+    {
+        mCheckBox->setCheckState(
+                    mMemberAccessor->getData() ? Qt::CheckState::Checked :
+                                                 Qt::CheckState::Unchecked);
+    }
     mCheckBox->blockSignals(false);
 }

@@ -5,6 +5,7 @@
 
 #include "MemberAccessor.h"
 
+
 template<class T>
 MemberAccessor<T>::MemberAccessor()
 {
@@ -18,21 +19,15 @@ MemberAccessor<T>::~MemberAccessor()
 }
 
 template<class T>
-bool MemberAccessor<T>::hasOwner() const
+bool MemberAccessor<T>::operator==(const MemberAccessor<T>& a)
 {
-    return false;
+    return getData() == a.getData();
 }
 
 template<class T>
-void* MemberAccessor<T>::getOwner()
+MemberAccessorType MemberAccessor<T>::getType() const
 {
-    return nullptr;
-}
-
-template<class T>
-void MemberAccessor<T>::setOwner(void* /*owner*/)
-{
-    // do nothing
+    return MemberAccessorType::MEMBER_ACCESSOR;
 }
 
 #endif // MEMBERACCESSOR_CPP

@@ -63,22 +63,26 @@ public:
             double singleStep = 1.0,
             int precision = 3);
 
-    // Returns true if all member widgets have an owner.
-    bool hasOwner() const;
-
     // Returns the owner of the first QtMemberWidget. If there is no
     // QtMemberWidget, returns nullptr.
-    void* getOwner();
+//    void* getOwner();
 
     // Sets the given owner as owner of all QtMemberWidgtes.
     // Does not call update() to update the widgets entries for
     // the new owner.
-    void setOwner(void* owner);
+//    void setOwner(void* owner);
+
+    bool hasWidgets(void* owner);
+
+    const std::vector<AbstractQtMemberWidget*>& getMemberWidgets();
 
 private:
+
     QGridLayout* mLayout;
 
     std::vector<AbstractQtMemberWidget*> mMemberWidgets;
+
+    std::map<void*, std::vector<AbstractQtMemberWidget*>> mOwnerToMemberWidgets;
 };
 
 #endif // QTMEMBERSWIDGET_H

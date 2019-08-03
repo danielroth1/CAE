@@ -8,6 +8,7 @@
 #include "MemberAccessorGetter.h"
 #include "MemberAccessorGetterSetter.h"
 #include "SyncedMemberAccessor.h"
+#include "SyncedOwnerMemberAccessor.h"
 
 
 #endif // MEMBERACCESSORFACTORY_H
@@ -61,7 +62,17 @@ MemberAccessorFactory::createSyncedIfDomain(
         Domain* domain)
 {
     if (domain)
-        return std::make_shared<SyncedMemberAccessor<T>>(domain, accessor);
+    {
+        if (accessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR)
+        {
+            return std::make_shared<SyncedOwnerMemberAccessor<T> >(
+                        domain, std::static_pointer_cast<OwnerMemberAccessor<T> >(accessor));
+        }
+        else
+        {
+            return std::make_shared<SyncedMemberAccessor<T>>(domain, accessor);
+        }
+    }
 
     return accessor;
 }

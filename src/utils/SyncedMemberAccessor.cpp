@@ -24,29 +24,6 @@ SyncedMemberAccessor<T>::~SyncedMemberAccessor()
 }
 
 template<class T>
-void* SyncedMemberAccessor<T>::getOwner()
-{
-    return mMemberAccessor->getOwner();
-}
-
-template<class T>
-void SyncedMemberAccessor<T>::setOwner(void* owner)
-{
-    // Commented out for now because setting the owner is usually not a
-    // critical operation since it doesn't affect the data that is accessed.
-//    if (mDomain)
-//    {
-//        // create an operation and add it to the operation queue
-//        std::function<void()> f = [this, owner](){mMemberAccessor->setOwner(owner);};
-//        mDomain->addOperation(new Operation(f));
-//    }
-//    else
-//    {
-        mMemberAccessor->setOwner(owner);
-//    }
-}
-
-template<class T>
 T SyncedMemberAccessor<T>::getData()
 {
     return mMemberAccessor->getData();
@@ -65,6 +42,12 @@ void SyncedMemberAccessor<T>::setData(T data)
     {
         mMemberAccessor->setData(data);
     }
+}
+
+template<class T>
+MemberAccessorType SyncedMemberAccessor<T>::getType() const
+{
+    return mMemberAccessor->getType();
 }
 
 #endif // SYNCEDMEMBERACCESSOR_CPP
