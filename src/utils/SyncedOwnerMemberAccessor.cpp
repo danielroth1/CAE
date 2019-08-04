@@ -19,6 +19,12 @@ SyncedOwnerMemberAccessor<T>::SyncedOwnerMemberAccessor(
 }
 
 template<class T>
+bool SyncedOwnerMemberAccessor<T>::operator==(MemberAccessorInterface<T>& a)
+{
+    return *mAccessor.get() == a;
+}
+
+template<class T>
 T SyncedOwnerMemberAccessor<T>::getData()
 {
     return mAccessor->getData();

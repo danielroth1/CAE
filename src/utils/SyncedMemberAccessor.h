@@ -20,26 +20,30 @@ class Domain;
 // in which the data is accessed.
 //
 template<class T>
-class SyncedMemberAccessor : public MemberAccessor<T>
+class SyncedMemberAccessor : public virtual MemberAccessorInterface<T>
 {
 public:
-    SyncedMemberAccessor(Domain* domain, std::shared_ptr<MemberAccessor<T>> memberAccessor);
+    SyncedMemberAccessor(
+            Domain* domain,
+            const std::shared_ptr<MemberAccessorInterface<T>>& memberAccessor);
 
     virtual ~SyncedMemberAccessor() override;
 
     // MemberAccessor methods
 public:
 
+    virtual bool operator==(MemberAccessorInterface<T>& a) override;
+
     virtual T getData() override;
 
     virtual void setData(T data) override;
 
-    virtual MemberAccessorType getType() const;
+    virtual MemberAccessorType getType() const override;
 
 private:
     Domain* mDomain;
 
-    std::shared_ptr<MemberAccessor<T>> mMemberAccessor;
+    std::shared_ptr<MemberAccessorInterface<T>> mMemberAccessor;
 };
 
 #include "SyncedMemberAccessor.cpp"

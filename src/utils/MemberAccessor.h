@@ -24,7 +24,8 @@ public:
 
     // MemberAccessorInterface interface
 public:
-    virtual bool operator==(MemberAccessor<T>& a);
+
+    virtual bool operator==(MemberAccessorInterface<T>& a);
 
     virtual T getData() = 0;
 

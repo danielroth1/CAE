@@ -16,25 +16,26 @@ public:
 
     // MemberAccessor interface
 public:
-    virtual T getData();
-    virtual void setData(T data);
-    virtual MemberAccessorType getType() const;
+    virtual bool operator==(MemberAccessorInterface<T>& a) override;
+    virtual T getData() override;
+    virtual void setData(T data) override;
+    virtual MemberAccessorType getType() const override;
 
     // OwnerMemberAccessor interface
 public:
-    virtual T getData(size_t ownerIndex);
-    virtual void setData(T data, size_t ownerIndex);
 
-    virtual size_t getNumOwners() const;
-    virtual const std::vector<void*>& getOwners() const;
-    virtual void setOwners(const std::vector<void*>& owners);
-    virtual void addOwner(void* owner);
-    virtual void removeOwner(void* owner);
-    virtual void clearOwners();
-    virtual void setData(const std::vector<T>& data);
-    virtual T getDefaultValue();
-    virtual void setDefaultValue(T defaultValue);
-    virtual bool isAccessorValuesIdentical();
+    virtual T getData(size_t ownerIndex) override;
+    virtual void setData(T data, size_t ownerIndex) override;
+    virtual size_t getNumOwners() const override;
+    virtual const std::vector<void*>& getOwners() const override;
+    virtual void setOwners(const std::vector<void*>& owners) override;
+    virtual void addOwner(void* owner) override;
+    virtual void removeOwner(void* owner) override;
+    virtual void clearOwners() override;
+    virtual void setData(const std::vector<T>& data) override;
+    virtual T getDefaultValue() override;
+    virtual void setDefaultValue(T defaultValue) override;
+    virtual bool isAccessorValuesIdentical() override;
 
 private:
     Domain* mDomain;

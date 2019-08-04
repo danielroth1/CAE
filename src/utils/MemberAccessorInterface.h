@@ -13,7 +13,7 @@ public:
     MemberAccessorInterface();
     virtual ~MemberAccessorInterface();
 
-    virtual bool operator==(MemberAccessorInterface<T>& a);
+    virtual bool operator==(MemberAccessorInterface<T>& a) = 0;
 
     virtual T getData() = 0;
 

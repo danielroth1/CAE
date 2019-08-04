@@ -19,7 +19,7 @@ MemberAccessor<T>::~MemberAccessor()
 }
 
 template<class T>
-bool MemberAccessor<T>::operator==(MemberAccessor<T>& a)
+bool MemberAccessor<T>::operator==(MemberAccessorInterface<T>& a)
 {
     return getData() == a.getData();
 }

@@ -17,10 +17,4 @@ MemberAccessorInterface<T>::~MemberAccessorInterface()
 
 }
 
-template<class T>
-bool MemberAccessorInterface<T>::operator==(MemberAccessorInterface<T>& a)
-{
-    return getData() == a.getData();
-}
-
 #endif // MEMBERACCESSORINTERFACE_CPP

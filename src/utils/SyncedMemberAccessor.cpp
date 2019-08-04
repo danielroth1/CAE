@@ -11,7 +11,7 @@
 template<class T>
 SyncedMemberAccessor<T>::SyncedMemberAccessor(
         Domain* domain,
-        std::shared_ptr<MemberAccessor<T>> memberAccessor)
+        const std::shared_ptr<MemberAccessorInterface<T>>& memberAccessor)
     : mDomain(domain)
     , mMemberAccessor(memberAccessor)
 {
@@ -21,6 +21,12 @@ template<class T>
 SyncedMemberAccessor<T>::~SyncedMemberAccessor()
 {
 
+}
+
+template<class T>
+bool SyncedMemberAccessor<T>::operator==(MemberAccessorInterface<T>& a)
+{
+    return *mMemberAccessor.get() == a;
 }
 
 template<class T>
