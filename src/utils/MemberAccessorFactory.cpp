@@ -17,10 +17,11 @@ template<class T>
 std::shared_ptr<MemberAccessorInterface<T>>
 MemberAccessorFactory::createDirect(
         T* data,
+        const std::shared_ptr<std::function<bool(T, T)>>& comparator,
         Domain* domain)
 {
     std::shared_ptr<MemberAccessor<T>> accessor =
-            std::make_shared<MemberAccessorDirect<T>>(data);
+            std::make_shared<MemberAccessorDirect<T>>(data, comparator);
 
     return createSyncedIfDomain(accessor, domain);
 }
@@ -30,11 +31,12 @@ std::shared_ptr<MemberAccessorInterface<T>>
 MemberAccessorFactory::createGetter(
         std::function<T&(ObjType*)> getterRef,
         ObjType* object,
+        const std::shared_ptr<std::function<bool(T, T)>>& comparator,
         Domain* domain)
 {
     std::shared_ptr<MemberAccessor<T>> accessor =
             std::make_shared<MemberAccessorGetter<T, ObjType>>(
-                getterRef, object);
+                getterRef, object, comparator);
 
     return createSyncedIfDomain(accessor, domain);
 }
@@ -46,11 +48,12 @@ MemberAccessorFactory::createGetterSetter(
         std::function<void (ObjType*, T)> setter,
         T defaultValue,
         ObjType* object,
+        const std::shared_ptr<std::function<bool(T, T)>>& comparator,
         Domain* domain)
 {
     std::shared_ptr<MemberAccessor<T>> accessor =
             std::make_shared<MemberAccessorGetterSetter<T, ObjType>>(
-                getter, setter, defaultValue, object);
+                getter, setter, defaultValue, object, comparator);
 
     return createSyncedIfDomain(accessor, domain);
 }
@@ -75,4 +78,44 @@ MemberAccessorFactory::createSyncedIfDomain(
     }
 
     return accessor;
+}
+
+std::shared_ptr<std::function<bool (bool, bool)> >
+MemberAccessorFactory::createBoolComparator()
+{
+    return std::make_shared<std::function<bool (bool, bool)> >(
+                [](bool a, bool b)
+    {
+        return a == b;
+    });
+}
+
+std::shared_ptr<std::function<bool (int, int)> >
+MemberAccessorFactory::createIntComparator()
+{
+    return std::make_shared<std::function<bool (int, int)> >(
+                [](int a, int b)
+    {
+        return a == b;
+    });
+}
+
+std::shared_ptr<std::function<bool (double, double)> >
+MemberAccessorFactory::createDoubleComparator(double precision)
+{
+    return std::make_shared<std::function<bool (double, double)> >(
+                [precision](double a, double b)
+    {
+        return std::abs(a - b) < precision;
+    });
+}
+
+std::shared_ptr<std::function<bool (Eigen::Vector3d, Eigen::Vector3d)> >
+MemberAccessorFactory::createVectorDoubleComparator(double precision)
+{
+    return std::make_shared<std::function<bool(Eigen::Vector3d, Eigen::Vector3d)> >(
+                [precision](Eigen::Vector3d a, Eigen::Vector3d b)
+    {
+        return a.isApprox(b, precision);
+    });
 }

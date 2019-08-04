@@ -19,7 +19,8 @@ public:
             std::function<T(OwnerType*)> getter,
             std::function<void(OwnerType*, T)> setter,
             T defaultValue,
-            OwnerType* object = nullptr);
+            OwnerType* object = nullptr,
+            const std::shared_ptr<std::function<bool(T, T)>>& comparator = nullptr);
 
     virtual ~MemberAccessorGetterSetter();
 

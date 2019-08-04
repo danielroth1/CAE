@@ -8,8 +8,10 @@
 template<class T, class ObjType>
 MemberAccessorGetter<T, ObjType>::MemberAccessorGetter(
         std::function<T&(ObjType*)> getterRef,
-        ObjType* object)
-    : mGetterRef(getterRef)
+        ObjType* object,
+        const std::shared_ptr<std::function<bool(T, T)>>& comparator)
+    : MemberAccessor<T> (comparator)
+    , mGetterRef(getterRef)
     , mObject(object)
 {
 

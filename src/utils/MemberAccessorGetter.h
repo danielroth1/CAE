@@ -15,7 +15,8 @@ public:
     // a reference. The data is set with that reference.
     MemberAccessorGetter(
             std::function<T&(ObjType*)> getterRef,
-            ObjType* object = nullptr);
+            ObjType* object = nullptr,
+            const std::shared_ptr<std::function<bool(T, T)>>& comparator = nullptr);
 
     virtual ~MemberAccessorGetter() override;
 

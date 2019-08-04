@@ -8,8 +8,12 @@
 
 
 template<class T>
-OwnerMemberAccessor<T>::OwnerMemberAccessor(T defaultValue, void* owner)
-    : mDefaultValue(defaultValue)
+OwnerMemberAccessor<T>::OwnerMemberAccessor(
+        T defaultValue,
+        void* owner,
+        const std::shared_ptr<std::function<bool(T, T)>>& comparator)
+    : MemberAccessor<T> (comparator)
+    , mDefaultValue(defaultValue)
 {
     if (owner)
         addOwner(owner);

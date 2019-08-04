@@ -51,6 +51,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &SimulationControl::setSimulationPaused,
                     true,
                     mAc->getSimulationControl(),
+                    MemberAccessorFactory::createBoolComparator(),
                     mAc->getSimulationControl()->getDomain()));
 
     mWidget->getMembersWidget()->addDouble(
@@ -60,6 +61,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &SimulationControl::setStepSize,
                     0.01,
                     mAc->getSimulationControl(),
+                    MemberAccessorFactory::createDoubleComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 1e-5, 10.0, 0.01, 4);
 
@@ -70,6 +72,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &SimulationControl::setMaxConstraintError,
                     0.0,
                     mAc->getSimulationControl(),
+                    MemberAccessorFactory::createDoubleComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 0.0, 1.0, 1e-5, 7);
 
@@ -80,6 +83,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &SimulationControl::setMaxNumConstraintSolverIterations,
                     1,
                     mAc->getSimulationControl(),
+                    MemberAccessorFactory::createIntComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 0, 100, 1);
 
@@ -90,6 +94,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &SimulationControl::setNumFEMCorrectionIterations,
                     1,
                     mAc->getSimulationControl(),
+                    MemberAccessorFactory::createIntComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 0, 100, 1);
 
@@ -100,6 +105,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &SimulationControl::setGravity,
                     Eigen::Vector3d::Zero(),
                     mAc->getSimulationControl(),
+                    MemberAccessorFactory::createVectorDoubleComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 -100.0, 100.0, 1.0);
 
@@ -110,6 +116,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &SimulationControl::setInvertNormalsIfNecessary,
                     true,
                     mAc->getSimulationControl(),
+                    MemberAccessorFactory::createBoolComparator(),
                     mAc->getSimulationControl()->getDomain()));
 
     mWidget->getMembersWidget()->addBool(
@@ -119,6 +126,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &SGUIControl::setVisualizeFaceNormals,
                     false,
                     mAc->getSGUIControl(),
+                    MemberAccessorFactory::createBoolComparator(),
                     mAc->getSimulationControl()->getDomain()));
 
     mWidget->getMembersWidget()->addBool(
@@ -128,9 +136,9 @@ void SimulationUIControl::init(QWidget* parent)
                     &SGUIControl::setVisualizeVertexNormals,
                     false,
                     mAc->getSGUIControl(),
+                    MemberAccessorFactory::createBoolComparator(),
                     mAc->getSimulationControl()->getDomain()));
 
-//    mWidget->getOwnerMemberWidget()->...
     mWidget->getFEMObjectMembersWidget()->addDouble(
                 "Youngs Modulus",
                 MemberAccessorFactory::createGetterSetter<double, FEMObject>(
@@ -138,6 +146,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &FEMObject::setYoungsModulus,
                     1e-3,
                     nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 0.0, 1e+5, 100.0, 3);
 
@@ -148,6 +157,7 @@ void SimulationUIControl::init(QWidget* parent)
                     &FEMObject::setPoissonRatio,
                     1e-3,
                     nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 0.0, 0.499, 0.05, 4);
 

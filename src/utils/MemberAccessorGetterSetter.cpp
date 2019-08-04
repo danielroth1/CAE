@@ -11,8 +11,9 @@ MemberAccessorGetterSetter<T, OwnerType>::MemberAccessorGetterSetter(
         std::function<T (OwnerType*)> getter,
         std::function<void (OwnerType*, T)> setter,
         T defaultValue,
-        OwnerType* owner)
-    : OwnerMemberAccessor<T> (defaultValue, owner)
+        OwnerType* owner,
+        const std::shared_ptr<std::function<bool(T, T)>>& comparator)
+    : OwnerMemberAccessor<T> (defaultValue, owner, comparator)
     , mGetter(getter)
     , mSetter(setter)
 {

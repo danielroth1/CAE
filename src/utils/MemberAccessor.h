@@ -3,6 +3,7 @@
 
 #include "MemberAccessorInterface.h"
 #include <functional>
+#include <memory>
 
 // A MemberAccessor<T> provides functionality to access the data of variables
 // of class T.
@@ -19,7 +20,10 @@ class MemberAccessor : public virtual MemberAccessorInterface<T>
 {
 public:
 
-    MemberAccessor();
+    // \param comparator - equality comparator for the accessed data. Is used
+    //      in the operation== method.
+    MemberAccessor(
+            const std::shared_ptr<std::function<bool(T, T)>>& comparator = nullptr);
     virtual ~MemberAccessor();
 
     // MemberAccessorInterface interface
@@ -34,6 +38,9 @@ public:
     // Returns the Accessor type. Use this to distinguish between different
     // MemberAccessor implementations.
     virtual MemberAccessorType getType() const;
+
+protected:
+    std::shared_ptr<std::function<bool(T, T)>> mEqualityComparator;
 };
 
 #include "MemberAccessor.cpp"

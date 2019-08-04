@@ -6,8 +6,11 @@
 #include "MemberAccessorDirect.h"
 
 template<class T>
-MemberAccessorDirect<T>::MemberAccessorDirect(T* data)
-    : mDataPtr(data)
+MemberAccessorDirect<T>::MemberAccessorDirect(
+        T* data,
+        const std::shared_ptr<std::function<bool(T, T)>>& comparator)
+    : MemberAccessor<T> (comparator)
+    , mDataPtr(data)
 {
 
 }

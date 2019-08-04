@@ -7,7 +7,9 @@
 
 
 template<class T>
-MemberAccessor<T>::MemberAccessor()
+MemberAccessor<T>::MemberAccessor(
+        const std::shared_ptr<std::function<bool(T, T)>>& equalityComparator)
+    : mEqualityComparator(equalityComparator)
 {
 
 }
@@ -21,7 +23,10 @@ MemberAccessor<T>::~MemberAccessor()
 template<class T>
 bool MemberAccessor<T>::operator==(MemberAccessorInterface<T>& a)
 {
-    return getData() == a.getData();
+    if (mEqualityComparator)
+        return (*mEqualityComparator)(getData(), a.getData());
+    else
+        return getData() == a.getData();
 }
 
 template<class T>

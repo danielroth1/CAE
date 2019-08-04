@@ -9,7 +9,9 @@ template <class T>
 class MemberAccessorDirect : public MemberAccessor<T>
 {
 public:
-    MemberAccessorDirect(T* data);
+    MemberAccessorDirect(
+            T* data,
+            const std::shared_ptr<std::function<bool(T, T)>>& comparator = nullptr);
 
     virtual ~MemberAccessorDirect() override;
 

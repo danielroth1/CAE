@@ -13,7 +13,12 @@ class OwnerMemberAccessor : public virtual OwnerMemberAccessorInterface<T>,
 {
 public:
     // \param T defaultValue - this value is returned if owner is nullptr.
-    OwnerMemberAccessor(T defaultValue, void* owner = nullptr);
+    // \param comparator - equality comparator for the accessed data. Is used
+    //      in the operation== method.
+    OwnerMemberAccessor(
+            T defaultValue,
+            void* owner = nullptr,
+            const std::shared_ptr<std::function<bool(T, T)>>& comparator = nullptr);
     virtual ~OwnerMemberAccessor() override;
 
     // MemberAccessor
