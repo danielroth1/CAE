@@ -4,7 +4,7 @@
 #include <QVBoxLayout>
 
 QtMemberWidgetInteger::QtMemberWidgetInteger(
-        const std::shared_ptr<MemberAccessor<int>>& memberAccessor,
+        const std::shared_ptr<MemberAccessorInterface<int>>& memberAccessor,
         QWidget* parent,
         int min,
         int max,

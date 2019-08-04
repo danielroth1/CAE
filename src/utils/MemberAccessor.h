@@ -1,13 +1,8 @@
 #ifndef MEMBERACCESSOR_H
 #define MEMBERACCESSOR_H
 
+#include "MemberAccessorInterface.h"
 #include <functional>
-
-
-enum class MemberAccessorType
-{
-    MEMBER_ACCESSOR, OWNER_MEMBER_ACCESSOR
-};
 
 // A MemberAccessor<T> provides functionality to access the data of variables
 // of class T.
@@ -20,21 +15,21 @@ enum class MemberAccessorType
 // - OWNER_MEMBER_ACCESSOR: Accesses
 // One MemberAccessor can access multiple variables
 template <class T>
-class MemberAccessor
+class MemberAccessor : public virtual MemberAccessorInterface<T>
 {
 public:
 
     MemberAccessor();
     virtual ~MemberAccessor();
 
-    bool operator==(const MemberAccessor<T>& a);
+    // MemberAccessorInterface interface
+public:
+    virtual bool operator==(MemberAccessor<T>& a);
 
     virtual T getData() = 0;
 
     virtual void setData(T data) = 0;
 
-    // AbstractQtmemberWidget interface
-public:
     // Returns the Accessor type. Use this to distinguish between different
     // MemberAccessor implementations.
     virtual MemberAccessorType getType() const;

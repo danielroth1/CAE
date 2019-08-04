@@ -13,7 +13,7 @@ class QtMemberWidgetDouble : public QtMemberWidget<double>
 public:
 
     explicit QtMemberWidgetDouble(
-            const std::shared_ptr<MemberAccessor<double>>& memberAccessor,
+            const std::shared_ptr<MemberAccessorInterface<double>>& memberAccessor,
             QWidget* parent = nullptr,
             double min = 0.0,
             double max = 100.0,

@@ -28,7 +28,7 @@ void QtMembersWidget::updateValues()
 
 void QtMembersWidget::addBool(
         std::string name,
-        const std::shared_ptr<MemberAccessor<bool>>& memberAccessor)
+        const std::shared_ptr<MemberAccessorInterface<bool>>& memberAccessor)
 {
     int row = mLayout->rowCount();
 
@@ -45,7 +45,7 @@ void QtMembersWidget::addBool(
 
 void QtMembersWidget::addInteger(
         std::string name,
-        const std::shared_ptr<MemberAccessor<int>>& memberAccessor,
+        const std::shared_ptr<MemberAccessorInterface<int>>& memberAccessor,
         int min,
         int max,
         int singleStep)
@@ -62,7 +62,7 @@ void QtMembersWidget::addInteger(
 
 void QtMembersWidget::addDouble(
         std::string name,
-        const std::shared_ptr<MemberAccessor<double>>& memberAccessor,
+        const std::shared_ptr<MemberAccessorInterface<double>>& memberAccessor,
         double min,
         double max,
         double singleStep,
@@ -82,7 +82,7 @@ void QtMembersWidget::addDouble(
 
 void QtMembersWidget::addVectorDouble(
         std::string name,
-        const std::shared_ptr<MemberAccessor<Eigen::Vector3d>>& memberAccessor,
+        const std::shared_ptr<MemberAccessorInterface<Eigen::Vector3d>>& memberAccessor,
         double min,
         double max,
         double singleStep,

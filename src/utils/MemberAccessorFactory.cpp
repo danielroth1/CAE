@@ -14,7 +14,7 @@
 #endif // MEMBERACCESSORFACTORY_H
 
 template<class T>
-std::shared_ptr<MemberAccessor<T>>
+std::shared_ptr<MemberAccessorInterface<T>>
 MemberAccessorFactory::createDirect(
         T* data,
         Domain* domain)
@@ -26,7 +26,7 @@ MemberAccessorFactory::createDirect(
 }
 
 template<class T, class ObjType>
-std::shared_ptr<MemberAccessor<T>>
+std::shared_ptr<MemberAccessorInterface<T>>
 MemberAccessorFactory::createGetter(
         std::function<T&(ObjType*)> getterRef,
         ObjType* object,
@@ -40,7 +40,7 @@ MemberAccessorFactory::createGetter(
 }
 
 template<class T, class ObjType>
-std::shared_ptr<MemberAccessor<T>>
+std::shared_ptr<MemberAccessorInterface<T>>
 MemberAccessorFactory::createGetterSetter(
         std::function<T (ObjType*)> getter,
         std::function<void (ObjType*, T)> setter,
@@ -56,17 +56,17 @@ MemberAccessorFactory::createGetterSetter(
 }
 
 template<class T>
-std::shared_ptr<MemberAccessor<T>>
+std::shared_ptr<MemberAccessorInterface<T>>
 MemberAccessorFactory::createSyncedIfDomain(
         const std::shared_ptr<MemberAccessor<T>>& accessor,
         Domain* domain)
 {
     if (domain)
     {
-        if (accessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR)
+        if (accessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR_INTERFACE)
         {
             return std::make_shared<SyncedOwnerMemberAccessor<T> >(
-                        domain, std::static_pointer_cast<OwnerMemberAccessor<T> >(accessor));
+                        domain, std::dynamic_pointer_cast<OwnerMemberAccessorInterface<T> >(accessor));
         }
         else
         {

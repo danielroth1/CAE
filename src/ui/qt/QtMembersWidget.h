@@ -38,18 +38,18 @@ public:
 
     void addBool(
             std::string name,
-            const std::shared_ptr<MemberAccessor<bool>>& memberAccessor);
+            const std::shared_ptr<MemberAccessorInterface<bool>>& memberAccessor);
 
     void addInteger(
             std::string name,
-            const std::shared_ptr<MemberAccessor<int>>& memberAccessor,
+            const std::shared_ptr<MemberAccessorInterface<int>>& memberAccessor,
             int min = 0,
             int max = 100,
             int singleStep = 1);
 
     void addDouble(
             std::string name,
-            const std::shared_ptr<MemberAccessor<double>>& memberAccessor,
+            const std::shared_ptr<MemberAccessorInterface<double>>& memberAccessor,
             double min = 0.0,
             double max = 100.0,
             double singleStep = 1.0,
@@ -57,7 +57,7 @@ public:
 
     void addVectorDouble(
             std::string name,
-            const std::shared_ptr<MemberAccessor<Eigen::Vector3d>>& memberAccessor,
+            const std::shared_ptr<MemberAccessorInterface<Eigen::Vector3d>>& memberAccessor,
             double min = 0.0,
             double max = 100.0,
             double singleStep = 1.0,

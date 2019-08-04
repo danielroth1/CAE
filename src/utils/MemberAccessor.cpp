@@ -19,7 +19,7 @@ MemberAccessor<T>::~MemberAccessor()
 }
 
 template<class T>
-bool MemberAccessor<T>::operator==(const MemberAccessor<T>& a)
+bool MemberAccessor<T>::operator==(MemberAccessor<T>& a)
 {
     return getData() == a.getData();
 }
@@ -27,7 +27,7 @@ bool MemberAccessor<T>::operator==(const MemberAccessor<T>& a)
 template<class T>
 MemberAccessorType MemberAccessor<T>::getType() const
 {
-    return MemberAccessorType::MEMBER_ACCESSOR;
+    return MemberAccessorType::MEMBER_ACCESSOR_INTERFACE;
 }
 
 #endif // MEMBERACCESSOR_CPP

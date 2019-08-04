@@ -13,7 +13,7 @@ class QtMemberWidgetInteger : public QtMemberWidget<int>
 public:
 
     explicit QtMemberWidgetInteger(
-            const std::shared_ptr<MemberAccessor<int>>& memberAccessor,
+            const std::shared_ptr<MemberAccessorInterface<int>>& memberAccessor,
             QWidget* parent = nullptr,
             int min = 0,
             int max = 100,

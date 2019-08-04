@@ -12,9 +12,8 @@
 template<class T>
 SyncedOwnerMemberAccessor<T>::SyncedOwnerMemberAccessor(
         Domain* domain,
-        const std::shared_ptr<OwnerMemberAccessor<T>>& accessor)
-    : OwnerMemberAccessor<T> (accessor->getDefaultValue())
-    , mDomain(domain)
+        const std::shared_ptr<OwnerMemberAccessorInterface<T>>& accessor)
+    : mDomain(domain)
     , mAccessor(accessor)
 {
 }

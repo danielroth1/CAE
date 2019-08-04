@@ -12,7 +12,7 @@ class QtMemberWidgetBool : public QtMemberWidget<bool>
 
 public:
     explicit QtMemberWidgetBool(
-            const std::shared_ptr<MemberAccessor<bool>>& memberAccessor,
+            const std::shared_ptr<MemberAccessorInterface<bool>>& memberAccessor,
             QWidget* parent = nullptr);
 
     virtual ~QtMemberWidgetBool() override;

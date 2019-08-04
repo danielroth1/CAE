@@ -1,18 +1,18 @@
 #ifndef SYNCEDOWNERMEMBERACCESSOR_H
 #define SYNCEDOWNERMEMBERACCESSOR_H
 
-#include "OwnerMemberAccessor.h"
+#include "OwnerMemberAccessorInterface.h"
 #include <memory>
 
 class Domain;
 
 template<class T>
-class SyncedOwnerMemberAccessor : public OwnerMemberAccessor<T>
+class SyncedOwnerMemberAccessor : public OwnerMemberAccessorInterface<T>
 {
 public:
     SyncedOwnerMemberAccessor(
             Domain* domain,
-            const std::shared_ptr<OwnerMemberAccessor<T>>& accessor);
+            const std::shared_ptr<OwnerMemberAccessorInterface<T>>& accessor);
 
     // MemberAccessor interface
 public:
@@ -38,7 +38,7 @@ public:
 
 private:
     Domain* mDomain;
-    std::shared_ptr<OwnerMemberAccessor<T>> mAccessor;
+    std::shared_ptr<OwnerMemberAccessorInterface<T>> mAccessor;
 };
 
 #include "SyncedOwnerMemberAccessor.cpp"

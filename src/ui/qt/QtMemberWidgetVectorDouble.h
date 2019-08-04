@@ -15,7 +15,7 @@ class QtMemberWidgetVectorDouble : public QtMemberWidget<Eigen::Vector3d>
 public:
 
     explicit QtMemberWidgetVectorDouble(
-            const std::shared_ptr<MemberAccessor<Eigen::Vector3d>>& memberAccessor,
+            const std::shared_ptr<MemberAccessorInterface<Eigen::Vector3d>>& memberAccessor,
             QWidget* parent = nullptr,
             double min = 0.0,
             double max = 1000.0,

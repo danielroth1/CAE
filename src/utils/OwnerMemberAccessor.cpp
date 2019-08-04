@@ -47,7 +47,7 @@ void OwnerMemberAccessor<T>::setData(T data)
 template<class T>
 MemberAccessorType OwnerMemberAccessor<T>::getType() const
 {
-    return MemberAccessorType::OWNER_MEMBER_ACCESSOR;
+    return MemberAccessorType::OWNER_MEMBER_ACCESSOR_INTERFACE;
 }
 
 template<class T>

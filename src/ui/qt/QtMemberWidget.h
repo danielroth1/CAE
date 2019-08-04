@@ -3,7 +3,7 @@
 
 #include "AbstractQtMemberWidget.h"
 
-#include <utils/MemberAccessor.h>
+#include <utils/MemberAccessorInterface.h>
 
 #include <memory>
 #include <QWidget>
@@ -16,7 +16,7 @@ class QtMemberWidget : public AbstractQtMemberWidget
 public:
 
     QtMemberWidget(
-            const std::shared_ptr<MemberAccessor<T>>& memberAccessor,
+            const std::shared_ptr<MemberAccessorInterface<T>>& memberAccessor,
             QWidget* parent = nullptr);
 
     virtual ~QtMemberWidget() override;
@@ -35,7 +35,7 @@ public:
 
 protected:    
 
-    std::shared_ptr<MemberAccessor<T>> mMemberAccessor;
+    std::shared_ptr<MemberAccessorInterface<T>> mMemberAccessor;
 };
 
 #include "QtMemberWidget.cpp"

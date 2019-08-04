@@ -2,12 +2,14 @@
 #define OWNERMEMBERACCESSOR_H
 
 #include "MemberAccessor.h"
+#include "OwnerMemberAccessorInterface.h"
 
 #include <vector>
 
 // Abstract class for accessors that store one owner.
 template <class T>
-class OwnerMemberAccessor : public MemberAccessor<T>
+class OwnerMemberAccessor : public virtual OwnerMemberAccessorInterface<T>,
+        public MemberAccessor<T>
 {
 public:
     // \param T defaultValue - this value is returned if owner is nullptr.
@@ -28,8 +30,8 @@ public:
     // MemberAccessor implementations.
     MemberAccessorType getType() const override;
 
+    // OwnerMemberAccessorInterface
 public:
-
     virtual T getData(size_t ownerIndex) = 0;
 
     virtual void setData(T data, size_t ownerIndex) = 0;

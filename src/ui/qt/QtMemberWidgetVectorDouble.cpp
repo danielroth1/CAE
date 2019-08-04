@@ -4,7 +4,7 @@
 #include <QVBoxLayout>
 
 QtMemberWidgetVectorDouble::QtMemberWidgetVectorDouble(
-        const std::shared_ptr<MemberAccessor<Eigen::Vector3d>>& memberAccessor,
+        const std::shared_ptr<MemberAccessorInterface<Eigen::Vector3d>>& memberAccessor,
         QWidget* parent,
         double min,
         double max,

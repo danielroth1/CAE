@@ -4,7 +4,7 @@
 #include <QVBoxLayout>
 
 QtMemberWidgetDouble::QtMemberWidgetDouble(
-        const std::shared_ptr<MemberAccessor<double>>& memberAccessor,
+        const std::shared_ptr<MemberAccessorInterface<double>>& memberAccessor,
         QWidget* parent,
         double min,
         double max,

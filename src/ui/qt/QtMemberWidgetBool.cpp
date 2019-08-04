@@ -4,7 +4,7 @@
 #include <QVBoxLayout>
 
 QtMemberWidgetBool::QtMemberWidgetBool(
-        const std::shared_ptr<MemberAccessor<bool>>& memberAccessor,
+        const std::shared_ptr<MemberAccessorInterface<bool>>& memberAccessor,
         QWidget* parent)
     : QtMemberWidget<bool>(memberAccessor, parent)
 {

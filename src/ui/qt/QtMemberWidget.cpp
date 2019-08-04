@@ -9,7 +9,7 @@
 
 template<class T>
 QtMemberWidget<T>::QtMemberWidget(
-        const std::shared_ptr<MemberAccessor<T>>& memberAccessor,
+        const std::shared_ptr<MemberAccessorInterface<T>>& memberAccessor,
         QWidget* parent)
     : AbstractQtMemberWidget(parent)
     , mMemberAccessor(memberAccessor)
@@ -37,10 +37,10 @@ MemberAccessorType QtMemberWidget<T>::getType() const
 template<class T>
 const std::vector<void*>* QtMemberWidget<T>::getOwners() const
 {
-    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR)
+    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR_INTERFACE)
     {
-        return &(std::static_pointer_cast<OwnerMemberAccessor<T> >(mMemberAccessor)
-                ->getOwners());
+        return &(std::dynamic_pointer_cast<OwnerMemberAccessorInterface<T> >(
+                     mMemberAccessor)->getOwners());
     }
     else
     {
@@ -52,9 +52,9 @@ const std::vector<void*>* QtMemberWidget<T>::getOwners() const
 template<class T>
 void QtMemberWidget<T>::setOwners(const std::vector<void*>& owners)
 {
-    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR)
+    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR_INTERFACE)
     {
-        std::static_pointer_cast<OwnerMemberAccessor<T> >(mMemberAccessor)
+        std::dynamic_pointer_cast<OwnerMemberAccessorInterface<T> >(mMemberAccessor)
                 ->setOwners(owners);
     }
     else
@@ -66,9 +66,9 @@ void QtMemberWidget<T>::setOwners(const std::vector<void*>& owners)
 template<class T>
 void QtMemberWidget<T>::addOwner(void* owner)
 {
-    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR)
+    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR_INTERFACE)
     {
-        std::static_pointer_cast<OwnerMemberAccessor<T> >(mMemberAccessor)
+        std::dynamic_pointer_cast<OwnerMemberAccessorInterface<T> >(mMemberAccessor)
                 ->addOwner(owner);
     }
     else
@@ -80,9 +80,9 @@ void QtMemberWidget<T>::addOwner(void* owner)
 template<class T>
 void QtMemberWidget<T>::removeOwner(void* owner)
 {
-    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR)
+    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR_INTERFACE)
     {
-        std::static_pointer_cast<OwnerMemberAccessor<T> >(mMemberAccessor)
+        std::dynamic_pointer_cast<OwnerMemberAccessorInterface<T> >(mMemberAccessor)
                 ->removeOwner(owner);
     }
     else
@@ -94,9 +94,9 @@ void QtMemberWidget<T>::removeOwner(void* owner)
 template<class T>
 void QtMemberWidget<T>::clearOwners()
 {
-    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR)
+    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR_INTERFACE)
     {
-        std::static_pointer_cast<OwnerMemberAccessor<T> >(mMemberAccessor)
+        std::dynamic_pointer_cast<OwnerMemberAccessorInterface<T> >(mMemberAccessor)
                 ->clearOwners();
     }
     else
@@ -108,9 +108,9 @@ void QtMemberWidget<T>::clearOwners()
 template<class T>
 bool QtMemberWidget<T>::isAccessorValuesIdentical()
 {
-    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR)
+    if (mMemberAccessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR_INTERFACE)
     {
-        return std::static_pointer_cast<OwnerMemberAccessor<T> >(mMemberAccessor)
+        return std::dynamic_pointer_cast<OwnerMemberAccessorInterface<T> >(mMemberAccessor)
                 ->isAccessorValuesIdentical();
     }
     return true;
