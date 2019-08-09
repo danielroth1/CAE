@@ -3,6 +3,13 @@
 
 #include "MemberAccessor.h"
 
+#include "MemberAccessorDirect.h"
+#include "MemberAccessorFactory.h"
+#include "MemberAccessorGetter.h"
+#include "MemberAccessorGetterSetter.h"
+#include "SyncedMemberAccessor.h"
+#include "SyncedOwnerMemberAccessor.h"
+
 #include <Eigen/Core>
 #include <memory>
 
@@ -28,7 +35,13 @@ public:
     static std::shared_ptr<MemberAccessorInterface<T>> createDirect(
             T* data,
             const std::shared_ptr<std::function<bool(T, T)>>& comparator = nullptr,
-            Domain* domain = nullptr);
+            Domain* domain = nullptr)
+    {
+        std::shared_ptr<MemberAccessor<T>> accessor =
+                std::make_shared<MemberAccessorDirect<T>>(data, comparator);
+
+        return createSyncedIfDomain(accessor, domain);
+    }
 
     // Creates a MemberAccessorGetter. This member accessors allows the access of the
     // data via a getter. Use it if only a getter is known or to restrict the
@@ -43,7 +56,14 @@ public:
             std::function<T&(ObjType*)> getterRef,
             ObjType* object = nullptr,
             const std::shared_ptr<std::function<bool(T, T)>>& comparator = nullptr,
-            Domain* domain = nullptr);
+            Domain* domain = nullptr)
+    {
+        std::shared_ptr<MemberAccessor<T>> accessor =
+                std::make_shared<MemberAccessorGetter<T, ObjType>>(
+                    getterRef, object, comparator);
+
+        return createSyncedIfDomain(accessor, domain);
+    }
 
     // Creates a MemberAccessorGetterSetter. This member accessor allows the access
     // of the data via a getter and a setter. This accessor should be preferred
@@ -61,30 +81,77 @@ public:
             T defaultValue,
             ObjType* object = nullptr,
             const std::shared_ptr<std::function<bool(T, T)>>& comparator = nullptr,
-            Domain* domain = nullptr);
+            Domain* domain = nullptr)
+    {
+        std::shared_ptr<MemberAccessor<T>> accessor =
+                std::make_shared<MemberAccessorGetterSetter<T, ObjType>>(
+                    getter, setter, defaultValue, object, comparator);
+
+        return createSyncedIfDomain(accessor, domain);
+    }
 
     // Creates a SyncedMemberAccessor if domain != nullptr, else
     // returns \param accessor.
     template<class T>
     static std::shared_ptr<MemberAccessorInterface<T>> createSyncedIfDomain(
             const std::shared_ptr<MemberAccessor<T>>& accessor,
-            Domain* domain = nullptr);
+            Domain* domain = nullptr)
+    {
+        if (domain)
+        {
+            if (accessor->getType() == MemberAccessorType::OWNER_MEMBER_ACCESSOR_INTERFACE)
+            {
+                return std::make_shared<SyncedOwnerMemberAccessor<T> >(
+                            domain, std::dynamic_pointer_cast<OwnerMemberAccessorInterface<T> >(accessor));
+            }
+            else
+            {
+                return std::make_shared<SyncedMemberAccessor<T>>(domain, accessor);
+            }
+        }
+
+        return accessor;
+    }
 
     static std::shared_ptr<std::function<bool (bool, bool)> >
-    createBoolComparator();
+    createBoolComparator()
+    {
+        return std::make_shared<std::function<bool (bool, bool)> >(
+                    [](bool a, bool b)
+        {
+            return a == b;
+        });
+    }
 
     static std::shared_ptr<std::function<bool (int, int)> >
-    createIntComparator();
+    createIntComparator()
+    {
+        return std::make_shared<std::function<bool (int, int)> >(
+                    [](int a, int b)
+        {
+            return a == b;
+        });
+    }
 
-    static std::shared_ptr<std::function<bool(double, double)>>
-    createDoubleComparator(double precision = 1e-12);
+    static std::shared_ptr<std::function<bool(double, double)> >
+    createDoubleComparator(double precision = 1e-12)
+    {
+        return std::make_shared<std::function<bool (double, double)> >(
+                    [precision](double a, double b)
+        {
+            return std::abs(a - b) < precision;
+        });
+    }
 
     static std::shared_ptr<std::function<bool (Eigen::Vector3d, Eigen::Vector3d)> >
-    createVectorDoubleComparator(double precision = 1e-12);
-
-
+    createVectorDoubleComparator(double precision = 1e-12)
+    {
+        return std::make_shared<std::function<bool(Eigen::Vector3d, Eigen::Vector3d)> >(
+                    [precision](Eigen::Vector3d a, Eigen::Vector3d b)
+        {
+            return a.isApprox(b, precision);
+        });
+    }
 };
-
-#include "MemberAccessorFactory.cpp"
 
 #endif // MEMBERACCESSORFACTORY_H

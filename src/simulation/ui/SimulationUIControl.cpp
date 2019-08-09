@@ -19,9 +19,12 @@
 #include <scene/data/geometric/Polygon3D.h>
 #include <simulation/SimulationObjectFactory.h>
 #include <simulation/rigid/RigidBody.h>
+#include <scene/model/PolygonRenderModel.h>
 #include <scene/model/RenderModel.h>
+#include <scene/model/RenderModelVisitor.h>
 #include <ui/qt/AbstractQtMemberWidget.h>
 #include <ui/qt/QtMembersWidget.h>
+#include <ui/qt/QtOwnersMembersWidget.h>
 #include <utils/MemberAccessorFactory.h>
 #include <simulation/collision_detection/CollisionManager.h>
 #include <ui/scene_graph/SGUIControl.h>
@@ -139,7 +142,14 @@ void SimulationUIControl::init(QWidget* parent)
                     MemberAccessorFactory::createBoolComparator(),
                     mAc->getSimulationControl()->getDomain()));
 
-    mWidget->getFEMObjectMembersWidget()->addDouble(
+    QtOwnersMembersWidget* omw = mWidget->getOwnersMembersWidget();
+    // SimulationObjects
+    QtMembersWidget* femWidget = omw->registerMembersWidget("FEMObject");
+    QtMembersWidget* rigidBodyWidget = omw->registerMembersWidget("RigidBody");
+    // RenderModels
+    QtMembersWidget* polyModelWidget = omw->registerMembersWidget("PolygonRenderModel");
+
+    femWidget->addDouble(
                 "Youngs Modulus",
                 MemberAccessorFactory::createGetterSetter<double, FEMObject>(
                     &FEMObject::getYoungsModulus,
@@ -150,7 +160,7 @@ void SimulationUIControl::init(QWidget* parent)
                     mAc->getSimulationControl()->getDomain()),
                 0.0, 1e+5, 100.0, 3);
 
-    mWidget->getFEMObjectMembersWidget()->addDouble(
+    femWidget->addDouble(
                 "Poisson Ratio",
                 MemberAccessorFactory::createGetterSetter<double, FEMObject>(
                     &FEMObject::getPoissonRatio,
@@ -160,6 +170,51 @@ void SimulationUIControl::init(QWidget* parent)
                     MemberAccessorFactory::createDoubleComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 0.0, 0.499, 0.05, 4);
+
+    rigidBodyWidget->addBool(
+                "Static",
+                MemberAccessorFactory::createGetterSetter<bool, RigidBody>(
+                    &RigidBody::isStatic,
+                    &RigidBody::setStatic,
+                    false,
+                    nullptr,
+                    nullptr,
+                    mAc->getSimulationControl()->getDomain()));
+
+    rigidBodyWidget->addDouble(
+                "Mass",
+                MemberAccessorFactory::createGetterSetter<double, RigidBody>(
+                    &RigidBody::getMass,
+                    &RigidBody::setMass,
+                    1e-3,
+                    nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                1e-5, 1e+5, 0.1, 5);
+
+    // No domain needed. The render models already thread safety.
+    polyModelWidget->addBool(
+                "Render Face Normals",
+                MemberAccessorFactory::createGetterSetter<bool, PolygonRenderModel>(
+                    &PolygonRenderModel::isRenderFaceNormals,
+                    &PolygonRenderModel::setRenderFaceNormals,
+                    false, nullptr, nullptr, nullptr));
+
+    polyModelWidget->addBool(
+                "Render Vertex Normals",
+                MemberAccessorFactory::createGetterSetter<bool, PolygonRenderModel>(
+                    &PolygonRenderModel::isRenderVertexNormals,
+                    &PolygonRenderModel::setRenderVertexNormals,
+                    false, nullptr, nullptr, nullptr));
+
+    polyModelWidget->addBool(
+                "Only Outer Triangles",
+                MemberAccessorFactory::createGetterSetter<bool, PolygonRenderModel>(
+                    &PolygonRenderModel::isRenderOnlyOuterFaces,
+                    &PolygonRenderModel::setRenderOnlyOuterFaces,
+                    false, nullptr, nullptr, nullptr));
+
+    omw->revalidate();
 
 }
 
@@ -322,11 +377,14 @@ void SimulationUIControl::onSelectedVerticesChanged(
 void SimulationUIControl::onSelectedSceneNodesChanged(
         const std::vector<std::shared_ptr<SceneData> >& sds)
 {
-    for (AbstractQtMemberWidget* w :
-         mWidget->getFEMObjectMembersWidget()->getMemberWidgets())
-    {
-        w->clearOwners();
-    }
+    QtOwnersMembersWidget* omw = mWidget->getOwnersMembersWidget();
+    QtMembersWidget* femWidget = omw->getMembersWidget("FEMObject");
+    QtMembersWidget* rigidWidget = omw->getMembersWidget("RigidBody");
+    QtMembersWidget* polyModelWidget = omw->getMembersWidget("PolygonRenderModel");
+
+    femWidget->clearOwners();
+    rigidWidget->clearOwners();
+    polyModelWidget->clearOwners();
 
     for (const std::shared_ptr<SceneData>& sd : sds)
     {
@@ -334,19 +392,66 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
         {
             std::shared_ptr<SceneLeafData> leafData =
                     std::static_pointer_cast<SceneLeafData>(sd);
-            std::shared_ptr<SimulationObject> so = leafData->getSimulationObject();
-            if (so && so->getType() == SimulationObject::Type::FEM_OBJECT)
-            {
-                std::shared_ptr<FEMObject> femObj =
-                        std::static_pointer_cast<FEMObject>(so);
 
-    //            mWidget->getFEMObjectMembersWidget()->setOwner(femObj.get());
-                for (AbstractQtMemberWidget* w :
-                     mWidget->getFEMObjectMembersWidget()->getMemberWidgets())
+            // RenderModels
+            std::shared_ptr<RenderModel> rm = leafData->getRenderModel();
+            if (rm)
+            {
+                class RMV : public RenderModelVisitor
                 {
-                    w->addOwner(femObj.get());
+                public:
+                    RMV(QtMembersWidget* _polyModel)
+                        : polyModel(_polyModel)
+                    {
+
+                    }
+
+                    void visit(PolygonRenderModel& model)
+                    {
+                        polyModel->addOwner(&model);
+                        polyModel->updateValues();
+                    }
+
+                    void visit(LinearForceRenderModel& /*model*/)
+                    {
+
+                    }
+
+                private:
+                    QtMembersWidget* polyModel;
+                } visitor(polyModelWidget);
+                rm->accept(visitor);
+            }
+
+            // SimulationObjects
+            std::shared_ptr<SimulationObject> so = leafData->getSimulationObject();
+            if (so)
+            {
+                switch (so->getType())
+                {
+                case SimulationObject::Type::FEM_OBJECT:
+                {
+                    std::shared_ptr<FEMObject> femObj =
+                            std::static_pointer_cast<FEMObject>(so);
+
+                    femWidget->addOwner(femObj.get());
+                    femWidget->updateValues();
+                    break;
                 }
-                mWidget->getFEMObjectMembersWidget()->updateValues();
+                case SimulationObject::Type::RIGID_BODY:
+                {
+                    std::shared_ptr<RigidBody> rigid =
+                            std::static_pointer_cast<RigidBody>(so);
+                    rigidWidget->addOwner(rigid.get());
+                    rigidWidget->updateValues();
+                    break;
+                }
+                case SimulationObject::Type::SIMULATION_POINT:
+                {
+                    break;
+                }
+                }
+
             }
         }
     }

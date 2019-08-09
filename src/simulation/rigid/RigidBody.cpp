@@ -272,6 +272,11 @@ void RigidBody::setRotationalDamping(double rotationalDamping)
     mRotationalDamping = rotationalDamping;
 }
 
+void RigidBody::setMass(double mass)
+{
+    mMass = mass;
+}
+
 void RigidBody::setStatic(bool s)
 {
     mStatic = s;

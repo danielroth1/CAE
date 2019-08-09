@@ -133,9 +133,9 @@ QtMembersWidget* SimulationUIWidget::getMembersWidget()
     return mUi->mMembersWidget;
 }
 
-QtMembersWidget* SimulationUIWidget::getFEMObjectMembersWidget()
+QtOwnersMembersWidget* SimulationUIWidget::getOwnersMembersWidget()
 {
-    return mUi->mFEMObjectMembersWidget;
+    return mUi->mOwnersMembersWidget;
 }
 
 void SimulationUIWidget::on_pushButton_toggled(bool checked)

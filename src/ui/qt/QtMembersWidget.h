@@ -76,13 +76,14 @@ public:
 
     const std::vector<AbstractQtMemberWidget*>& getMemberWidgets();
 
+    void clearOwners();
+    void addOwner(void* owner);
+
 private:
 
     QGridLayout* mLayout;
 
     std::vector<AbstractQtMemberWidget*> mMemberWidgets;
-
-    std::map<void*, std::vector<AbstractQtMemberWidget*>> mOwnerToMemberWidgets;
 };
 
 #endif // QTMEMBERSWIDGET_H

@@ -97,6 +97,7 @@ public:
         void setTranslationalDamping(double translationalDamping);
         void setRotationalDamping(double rotationalDamping);
 
+        void setMass(double mass);
         void setStatic(bool s);
 
     // Getters

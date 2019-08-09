@@ -59,6 +59,9 @@ public:
             const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID> >& sv);
 
 private:
+
+    // Go over all selected scene nodes and inform the QtMemberWidgets that
+    // update the ui elements over changed owners.
     void onSelectedSceneNodesChanged(const std::vector<std::shared_ptr<SceneData>>& sds);
 };
 

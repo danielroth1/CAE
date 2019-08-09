@@ -8,6 +8,7 @@
 
 class Constraint;
 class QtMembersWidget;
+class QtOwnersMembersWidget;
 class SimulationObject;
 class SimulationUIControl;
 
@@ -40,7 +41,7 @@ public:
 
     QtMembersWidget* getMembersWidget();
 
-    QtMembersWidget* getFEMObjectMembersWidget();
+    QtOwnersMembersWidget* getOwnersMembersWidget();
 
 private slots:
     void on_pushButton_toggled(bool checked);

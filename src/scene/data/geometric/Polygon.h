@@ -15,6 +15,7 @@ class TopologyFeature;
 class Polygon : public GeometricData
 {
 public:
+
     enum class DimensionType
     {
         TWO_D, THREE_D

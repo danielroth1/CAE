@@ -17,6 +17,7 @@ class TopologyFeature;
 class Polygon2D : public Polygon
 {
 public:
+
     // Constructor for world space position data
     // Calculates normals.
     Polygon2D(const Vectors& positionsWS,

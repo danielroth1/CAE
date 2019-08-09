@@ -105,3 +105,19 @@ const std::vector<AbstractQtMemberWidget*>& QtMembersWidget::getMemberWidgets()
 {
     return mMemberWidgets;
 }
+
+void QtMembersWidget::clearOwners()
+{
+    for (AbstractQtMemberWidget* w : mMemberWidgets)
+    {
+        w->clearOwners();
+    }
+}
+
+void QtMembersWidget::addOwner(void* owner)
+{
+    for (AbstractQtMemberWidget* w : mMemberWidgets)
+    {
+        w->addOwner(owner);
+    }
+}
