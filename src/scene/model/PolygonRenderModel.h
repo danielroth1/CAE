@@ -76,6 +76,8 @@ public:
     void setTexturingEnabled(bool textureEnabled);
 
     bool isRenderOnlyOuterFaces() const;
+    // Sets the flag for rendering only outer faces and resets() to make the
+    // changes take effect.
     void setRenderOnlyOuterFaces(bool renderOnlyOuterFaces);
 
     bool isRenderVertexNormals() const;
@@ -142,9 +144,6 @@ private:
     std::shared_ptr<RenderLines> mRenderLinesNormals;
     std::shared_ptr<RenderPoints> mRenderPoints;
 
-    // Detecting transformation changes
-    Eigen::Affine3d mCurrentlyRenderedTransform;
-    Eigen::Vector mCurrentlyRenderedCenter;
     BSWSVectors::Type mCurrentType;
 
     bool mRequiresUpdate;
@@ -157,6 +156,10 @@ private:
 
     bool mRenderVertexNormals;
     bool mRenderFaceNormals;
+
+    // Detecting transformation changes
+    Eigen::Affine3d mCurrentlyRenderedTransform;
+    Eigen::Vector mCurrentlyRenderedCenter;
 };
 
 #endif // POLYGONRENDERMODELIMPROVED_H

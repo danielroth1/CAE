@@ -125,7 +125,11 @@ bool PolygonRenderModel::isRenderOnlyOuterFaces() const
 
 void PolygonRenderModel::setRenderOnlyOuterFaces(bool renderOnlyOuterFaces)
 {
-    mRenderOnlyOuterFaces = renderOnlyOuterFaces;
+    if (mRenderOnlyOuterFaces != renderOnlyOuterFaces)
+    {
+        mRenderOnlyOuterFaces = renderOnlyOuterFaces;
+        reset();
+    }
 }
 
 bool PolygonRenderModel::isRenderVertexNormals() const
@@ -276,11 +280,17 @@ void PolygonRenderModel::reset()
         case Polygon::DimensionType::THREE_D:
         {
             Polygon3D* p3 = static_cast<Polygon3D*>(mPolygon.get());
+
             if (mRenderOnlyOuterFaces)
+            {
                 size = p3->getOuterPositionIds().size();
+            }
             else
+            {
                 size = p3->getPositions().size();
-                break;
+            }
+
+            break;
         }
         }
     }
@@ -316,7 +326,7 @@ void PolygonRenderModel::reset()
 
     updatePositions();
 
-    if (replacedRenderPolygons)
+//    if (replacedRenderPolygons)
         mAddedToRenderer = false;
 }
 
