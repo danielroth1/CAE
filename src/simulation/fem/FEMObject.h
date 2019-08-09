@@ -169,7 +169,7 @@ private:
     std::shared_ptr<Polygon3D> mPoly3;
 
     // The linear solver
-    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>, Eigen::Lower> mSolver;
+    Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> mSolver;
 
     // Geometric Data references
     Vectors mPositions;

@@ -244,7 +244,7 @@ void FEMObject::solveFEMExplicitly(double timeStep, bool corotated)
 
 void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 {
-    START_TIMING_SIMULATION("SimulationControl::solveFEM()");
+    START_TIMING_SIMULATION("FEMObject::solveFEM()");
     if (mTruncation->getTruncatedVectorIds().size() == mPositions.size())
         return;
 
@@ -273,17 +273,23 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 //        b = mM * (vPrev - v) + timeStep * (f - K * (timeStep * v + uPrev - u));
 //    }
 
-    START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver");
+    START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver");
     if (firstStep)
     {
-        SparseMatrix<double> A = mM + timeStep * timeStep * K;
-        SparseMatrix<double> ACopy = A;
-        mTruncation->truncateByRemoving(ACopy, A);
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::first");
+        SparseMatrix<double> AOriginal = mM + timeStep * timeStep * K;
+        SparseMatrix<double> A;
+        mTruncation->truncateByRemoving(AOriginal, A);
 
-        A = A.transpose();
-        A.makeCompressed();
+//        std::cout << A.nonZeros() << ", " << A.rows() << ", " << A.cols() << "\n";
 
-#if 1
+//        SparseMatrix<float> C = A.cast<float>();
+        // A is symmetric so no transposition required
+//        A = A.transpose();
+//        A.makeCompressed();
+        STOP_TIMING_SIMULATION;
+
+#if 0
         // if solver is sparse LU
 //        solver.analyzePattern(A);
 //        if (!solver.lastErrorMessage().empty())
@@ -292,17 +298,17 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 //        if (!solver.lastErrorMessage().empty())
 //            fprintf(stderr, "EigenErrorMessage[factorize]: %s\n", solver.lastErrorMessage().c_str());
 
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze_factorize");
         mSolver.analyzePattern(A);
         if (mSolver.info() != Eigen::Success)
             std::cerr << "Solver: analyzePattern failed.\n";
 
-        START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::factorize");
         mSolver.factorize(A);
         STOP_TIMING_SIMULATION;
 #else
 
-        START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::factorize");
-        solver.compute(A);
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
+        mSolver.compute(A);
         STOP_TIMING_SIMULATION;
 
 #endif
@@ -318,13 +324,13 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 
     VectorXd sol(size*3);
 
-    START_TIMING_SIMULATION("SimulationControl::solveFEM()::linSolver::solve");
+    START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::solve");
     sol = mSolver.solve(b);
     STOP_TIMING_SIMULATION;
 
     sol = mTruncation->createOriginal(sol);
 
-    STOP_TIMING_SIMULATION; // SimulationControl::solveFEM()::linSolver
+    STOP_TIMING_SIMULATION; // FEMObject::solveFEM()::linSolver
 
     // update the velocities
     VectorXd::Map(mDeltaV[0].data(), size * 3) = sol;
@@ -334,7 +340,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 
     integratePositions(timeStep);
 
-    STOP_TIMING_SIMULATION; // SimulationControl::solveFEM
+    STOP_TIMING_SIMULATION; // FEMObject::solveFEM
 
 //    std::cout << "norm = " << sol.norm() << "\n";
 
@@ -640,13 +646,18 @@ void FEMObject::updateElasticForces()
 
 void FEMObject::updateStiffnessMatrix(bool corotated)
 {
+    START_TIMING_SIMULATION("FEMObject::updateStiffnessMatrix()");
     for (FiniteElement& fe : mFiniteElements)
     {
         if (corotated)
             fe.updateRotation();
         fe.updateStiffnessMatrix(corotated);
     }
+    STOP_TIMING_SIMULATION;
+
+    START_TIMING_SIMULATION("FEMObject::assembleStiffnessMatrix()");
     assembleStiffnessMatrix(corotated);
+    STOP_TIMING_SIMULATION;
 }
 
 void FEMObject::updateMassMatrix()
