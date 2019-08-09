@@ -159,7 +159,7 @@ namespace times
                 {
                     std::cout << "...";
                 }
-                std::cout << name << ": " << averageTime << " /  " << totalTime << " / " << nCalls << std::endl;
+                std::cout << name << ": " << averageTime * 1000 << "(ms) /  " << totalTime << " / " << nCalls << std::endl;
             }
         }
 
