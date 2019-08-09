@@ -573,12 +573,12 @@ void SimulationControl::step()
                         mMaxConstraintError); // x, v + v^{FEM} + v^{col}
             STOP_TIMING_SIMULATION;
         }
+
+        // x, v + v^{FEM} + v^{col}
+        mRigidSimulation->integratePositions(mStepSize);
+        mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{col}, v + v^{FEM} + v^{col}
     }
 
-    // x, v + v^{FEM} + v^{col}
-
-    mRigidSimulation->integratePositions(mStepSize);
-    mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{col}, v + v^{FEM} + v^{col}
 
     mRigidSimulation->applyDamping();
     mFEMSimulation->applyDamping();
