@@ -5,6 +5,7 @@
 #include "Polygon3DDataWS.h"
 #include "Polygon3DTopology.h"
 
+#include <iostream>
 #include <scene/data/GeometricDataVisitor.h>
 #include <scene/model/ModelUtils.h>
 #include <set>
@@ -33,6 +34,8 @@ Polygon3D::Polygon3D(
                 faceNormals);
 
     mOuterFaceNormals.initializeFromWorldSpace(faceNormals);
+
+    fixOuterTriangleIndexOrder();
 }
 
 Polygon3D::Polygon3D(
@@ -58,6 +61,8 @@ Polygon3D::Polygon3D(
                 faceNormals);
 
     mOuterFaceNormals.initializeFromWorldSpace(faceNormals);
+
+    fixOuterTriangleIndexOrder();
 }
 
 Polygon3D::Polygon3D(
@@ -84,6 +89,8 @@ Polygon3D::Polygon3D(
                                                 Eigen::Affine3d(transform.linear()));
     mOuterFaceNormals.initializeFromBodySpace(&dataBS->getOuterFaceNormalsBS(),
                                               Eigen::Affine3d(transform.linear()));
+
+    fixOuterTriangleIndexOrder();
 }
 
 Polygon3D::Polygon3D(
@@ -110,6 +117,8 @@ Polygon3D::Polygon3D(
                                                 Eigen::Affine3d(transform.linear()));
     mOuterFaceNormals.initializeFromBodySpace(&dataBS->getOuterFaceNormalsBS(),
                                               Eigen::Affine3d(transform.linear()));
+
+    fixOuterTriangleIndexOrder();
 }
 
 Polygon3D::~Polygon3D()
@@ -341,6 +350,72 @@ void Polygon3D::setTransform(const Affine3d& transform)
 
     mOuterVertexNormals.setTransform(Affine3d(transform.rotation()));
     mOuterFaceNormals.setTransform(Affine3d(transform.rotation()));
+}
+
+void Polygon3D::fixOuterTriangleIndexOrder()
+{
+    Polygon3DTopology& topology = mData->getTopology();
+
+    int fixedFacesCounter = 0;
+
+    for (TopologyFace& outerFace2D : topology.getOuterTopology().getFaces())
+    {
+        ID face3DId = topology.to3DFaceIndex(outerFace2D.getID());
+        TopologyFace& face3D = topology.getFace(face3DId);
+
+        if (face3D.getCellIds().empty())
+            continue;
+
+        TopologyCell& cell = topology.getCells()[face3D.getCellIds()[0]];
+        Cell& c = cell.getVertexIds();
+        Face& f = face3D.getVertexIds();
+
+        // find the id of the (inner) vertex that is part of the tetrahedron
+        // but not the outer triangle.
+        ID innerVertexId;
+        bool found = false;
+        for (size_t i = 0; i < 4; ++i)
+        {
+            if (std::find(f.begin(), f.end(), c[i]) == f.end())
+            {
+                innerVertexId = c[i];
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            std::cerr << "Error: detected cell with duplicated indices.\n";
+            continue;
+        }
+
+        Vector r1 = mPositionData.getPosition(f[1]) -
+                mPositionData.getPosition(f[0]);
+        Vector r2 = mPositionData.getPosition(f[2]) -
+                mPositionData.getPosition(f[0]);
+        Vector r3 = mPositionData.getPosition(innerVertexId) -
+                mPositionData.getPosition(f[0]);
+
+        // Reverts the face indices so that its normal:
+        // (x2 - x0).cross(x1 - x0).normalized()
+        // points in the other direction.
+        auto revertFace = [](Face& f)
+        {
+            unsigned int temp = f[1];
+            f[1] = f[2];
+            f[2] = temp;
+        };
+
+        if (r1.cross(r2).normalized().dot(r3) > 0)
+        {
+            revertFace(f);
+            revertFace(outerFace2D.getVertexIds());
+            revertFace(topology.getOuterFacesIndices3D()[outerFace2D.getID()]);
+
+            ++fixedFacesCounter;
+        }
+    }
+    std::cout << "Fixed " << fixedFacesCounter << " faces.\n";
 }
 
 bool Polygon3D::isInside(ID faceId, const Vector& point,

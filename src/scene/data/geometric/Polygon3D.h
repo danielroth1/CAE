@@ -108,6 +108,30 @@ public:
 
     virtual void setTransform(const Eigen::Affine3d& transform) override;
 
+    // This method is called in the constructor already. It only must be
+    // called again, after the face id order of the outer topology was
+    // changed.
+    //
+    // Fixes the outer triangle index order in a way that the following
+    // equation is always fulfilled: It is
+    // (x_1 - x_0).cross(x_2 - x_0).normalized().dot(x_inner - x_0) < 0
+    // where (x_0, x_1, x_2, x_inner) is the single tetrahedron that contains
+    // the outer triangle (x_0, x_1, x_2).
+    //
+    // x_inner is vertex of the tetrahedron that is not part of this outer
+    // triangle. It can be part of another one, e.g. a Polygon that is only
+    // a single tetrahedron. Then every vertex is part of the outer hull.
+    //
+    // This equation guarantees that the vertices of an outer triangle are
+    // always ordered in a way so that the normal that points outside the
+    // tetrahedron (and therefore the polygon) is always:
+    // (x_1 - x_0).cross(x_2 - x_0).normalized()
+    //
+    // The ability to know whats out and inside is important for certain
+    // tasks like collision detection.
+    //
+    void fixOuterTriangleIndexOrder();
+
 protected:
 
     bool isInside(ID faceId,

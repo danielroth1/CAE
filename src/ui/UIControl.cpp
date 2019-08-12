@@ -701,7 +701,7 @@ void UIControl::onLoadFileSGNodeActionTriggered(QTreeWidgetItemWrapper* item)
             // Start path dialog
             FileDialog fileDialog(ui.mMainWindow);
             std::vector<File> filePaths = fileDialog.getOpenFileNames(
-                        "Load File", "*.off *.obj");
+                        "Load File", "*.off *.obj *.tet");
 
             // Create new leaf nodes that shares the name with the imported file
             for (File& f : filePaths)

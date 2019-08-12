@@ -15,6 +15,7 @@
 #include <simulation/fem/SimulationPoint.h>
 
 #include <io/importers/OBJImporter.h>
+#include <io/importers/TetImporter.h>
 #include <modules/mesh_converter/MeshCriteria.h>
 #include <scene/VertexCollection.h>
 #include <scene/data/GeometricDataVisitor.h>
@@ -70,6 +71,13 @@ SGNode* SGControl::importFileAsChild(
     else if (extension == ".obj")
     {
         OBJImporter importer;
+        SGNode* node = importer.importFile(file, mAc);
+        parent->addChild(node);
+        return node;
+    }
+    else if (extension == ".tet")
+    {
+        TetImporter importer;
         SGNode* node = importer.importFile(file, mAc);
         parent->addChild(node);
         return node;

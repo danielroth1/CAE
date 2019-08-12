@@ -7,6 +7,22 @@
 class IOUtils
 {
 public:
+
+    template <class Type>
+    static Type readNumber(std::stringstream& ss)
+    {
+        Type num;
+        ss >> num;
+        return num;
+    }
+
+    template <class Type>
+    static void readNumber(std::stringstream& ss, Type& numOut)
+    {
+        ss >> numOut;
+        return numOut;
+    }
+
     template <class Type, unsigned int n>
     static void readVector(std::stringstream& ss, Eigen::Matrix<Type, n, 1>& vOut)
     {
