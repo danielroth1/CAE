@@ -4,6 +4,7 @@
 #include <iostream>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QMetaObject>
 
 QtOwnersMembersWidget::QtOwnersMembersWidget(QWidget* parent)
     : QWidget (parent)
@@ -14,25 +15,11 @@ QtOwnersMembersWidget::QtOwnersMembersWidget(QWidget* parent)
 
 void QtOwnersMembersWidget::revalidate()
 {
-    // remove all elements from the widget
-    for (const std::shared_ptr<MembersWidgetsProperties>& p : mAddedProperties)
-    {
-        layout()->removeWidget(p->mMembersWidget);
-        // TOOD: remove them correctly.
-        // for now: only call revalidate() once after all member widgets were
-        // added.
-    }
-    mAddedProperties.clear();
-
-    // add them in the correct order
-    for (const std::shared_ptr<MembersWidgetsProperties>& p : mProperties)
-    {
-        layout()->addWidget(p->mMembersWidget);
-    }
-    mAddedProperties = mProperties;
+    QMetaObject::invokeMethod(this, "revalidateSlot");
 }
 
-QtMembersWidget* QtOwnersMembersWidget::registerMembersWidget(const std::string& name)
+QtMembersWidget* QtOwnersMembersWidget::registerMembersWidget(
+        const std::string& name)
 {
     QtMembersWidget* membersWidget = new QtMembersWidget(
                 static_cast<QWidget*>(parent()));
@@ -50,6 +37,7 @@ QtMembersWidget* QtOwnersMembersWidget::registerMembersWidget(const std::string&
     std::shared_ptr<MembersWidgetsProperties> p =
             std::make_shared<MembersWidgetsProperties>();
     p->mVisible = true;
+    p->mAdded = false;
     p->mMembersWidget = membersWidget;
 
     mPropertiesMap[name] = p;
@@ -87,4 +75,23 @@ QtMembersWidget* QtOwnersMembersWidget::getMembersWidget(const std::string& name
 bool QtOwnersMembersWidget::isVisible(const std::string& name)
 {
     return mPropertiesMap[name]->mVisible;
+}
+
+void QtOwnersMembersWidget::revalidateSlot()
+{
+    // Add all widgets that are not already.
+    for (const std::shared_ptr<MembersWidgetsProperties>& p : mProperties)
+    {
+        if (!p->mAdded)
+        {
+            layout()->addWidget(p->mMembersWidget);
+            p->mAdded = true;
+        }
+    }
+
+    // add them in the correct order
+    for (const std::shared_ptr<MembersWidgetsProperties>& p : mProperties)
+    {
+        p->mMembersWidget->setVisible(p->mVisible);
+    }
 }

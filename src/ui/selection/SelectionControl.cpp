@@ -280,7 +280,6 @@ void SelectionControl::finalizeSelection(ViewFrustum& viewFrustum)
 
         void visit(SGLeafNode* leafNode)
         {
-            // TODO: are all leaf nodes iterated?
             sc.finalizeSelection(leafNode->getData(), viewFrustum);
         }
 
@@ -288,6 +287,30 @@ void SelectionControl::finalizeSelection(ViewFrustum& viewFrustum)
         ViewFrustum& viewFrustum;
     } visitor(*this, viewFrustum);
     traverser.traverse(visitor);
+
+    switch(mSelectionType)
+    {
+    case SELECT_SCENE_NODES:
+    {
+        for (auto it : mSelectionListeners)
+        {
+            it->onSelectedSceneNodesChanged(mSelectionSceneData->getSceneData());
+        }
+        break;
+    }
+    case SELECT_VERTICES:
+    {
+        for (auto it : mSelectionListeners)
+        {
+            it->onSelectedVerticesChanged(
+                        mSelectionVertices->getSelectedVertexCollection()->getDataVectorsMap());
+        }
+        break;
+    }
+    case UNDEFINED:
+        break;
+    }
+
 
     std::cout << mSelectionVertices->getSelectedVertexCollection()->getDataVectorsMap().size() << std::endl;
 
@@ -353,8 +376,6 @@ void SelectionControl::finalizeSelection(
                         mSelectionRectangle->getYEnd());
             break;
         }
-        for (auto it : mSelectionListeners)
-            it->onSelectedSceneNodesChanged(mSelectionSceneData->getSceneData());
 
         break;
     case SELECT_VERTICES:
@@ -371,9 +392,6 @@ void SelectionControl::finalizeSelection(
                         mSelectionRectangle->getYEnd());
             break;
         }
-        for (auto it : mSelectionListeners)
-            it->onSelectedVerticesChanged(
-                        mSelectionVertices->getSelectedVertexCollection()->getDataVectorsMap());
 
         break;
     case UNDEFINED:

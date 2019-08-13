@@ -149,6 +149,10 @@ void SimulationUIControl::init(QWidget* parent)
     // RenderModels
     QtMembersWidget* polyModelWidget = omw->registerMembersWidget("PolygonRenderModel");
 
+    omw->setMembersWidgetVisible("FEMObject", false);
+    omw->setMembersWidgetVisible("RigidBody", false);
+    omw->setMembersWidgetVisible("PolygonRenderModel", false);
+
     femWidget->addDouble(
                 "Youngs Modulus",
                 MemberAccessorFactory::createGetterSetter<double, FEMObject>(
@@ -386,6 +390,10 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
     rigidWidget->clearOwners();
     polyModelWidget->clearOwners();
 
+    omw->setMembersWidgetVisible("FEMObject", false);
+    omw->setMembersWidgetVisible("RigidBody", false);
+    omw->setMembersWidgetVisible("PolygonRenderModel", false);
+
     for (const std::shared_ptr<SceneData>& sd : sds)
     {
         if (sd->isLeafData())
@@ -400,8 +408,10 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
                 class RMV : public RenderModelVisitor
                 {
                 public:
-                    RMV(QtMembersWidget* _polyModel)
+                    RMV(QtMembersWidget* _polyModel,
+                        QtOwnersMembersWidget* _omw)
                         : polyModel(_polyModel)
+                        , omw(_omw)
                     {
 
                     }
@@ -410,6 +420,7 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
                     {
                         polyModel->addOwner(&model);
                         polyModel->updateValues();
+                        omw->setMembersWidgetVisible("PolygonRenderModel", true);
                     }
 
                     void visit(LinearForceRenderModel& /*model*/)
@@ -419,7 +430,8 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
 
                 private:
                     QtMembersWidget* polyModel;
-                } visitor(polyModelWidget);
+                    QtOwnersMembersWidget* omw;
+                } visitor(polyModelWidget, omw);
                 rm->accept(visitor);
             }
 
@@ -436,6 +448,7 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
 
                     femWidget->addOwner(femObj.get());
                     femWidget->updateValues();
+                    omw->setMembersWidgetVisible("FEMObject", true);
                     break;
                 }
                 case SimulationObject::Type::RIGID_BODY:
@@ -444,6 +457,7 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
                             std::static_pointer_cast<RigidBody>(so);
                     rigidWidget->addOwner(rigid.get());
                     rigidWidget->updateValues();
+                    omw->setMembersWidgetVisible("RigidBody", true);
                     break;
                 }
                 case SimulationObject::Type::SIMULATION_POINT:
@@ -455,4 +469,6 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
             }
         }
     }
+
+    omw->revalidate();
 }

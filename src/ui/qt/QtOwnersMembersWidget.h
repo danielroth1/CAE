@@ -72,19 +72,19 @@ public:
     // \param name - the name that was used in registerMembersWidget()
     bool isVisible(const std::string& name);
 
+private slots:
+    void revalidateSlot();
+
 private:
     struct MembersWidgetsProperties
     {
         QtMembersWidget* mMembersWidget;
         bool mVisible;
+        bool mAdded;
     };
 
     std::map<std::string, std::shared_ptr<MembersWidgetsProperties>> mPropertiesMap;
     std::vector<std::shared_ptr<MembersWidgetsProperties>> mProperties;
-
-    // Properties that are added to the widget. After a revalidate() call this
-    // is equivalent to mProperties.
-    std::vector<std::shared_ptr<MembersWidgetsProperties>> mAddedProperties;
 };
 
 #endif // QTOWNERSMEMBERSWIDGET_H
