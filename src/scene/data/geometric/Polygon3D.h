@@ -110,7 +110,8 @@ public:
 
     // This method is called in the constructor already. It only must be
     // called again, after the face id order of the outer topology was
-    // changed.
+    // changed. It calls synchronizeTriangleIndexOrder() at the start so that
+    // doesn't has to be done.
     //
     // Fixes the outer triangle index order in a way that the following
     // equation is always fulfilled: It is
@@ -130,7 +131,12 @@ public:
     // The ability to know whats out and inside is important for certain
     // tasks like collision detection.
     //
-    void fixOuterTriangleIndexOrder();
+    // \param printInfo - print the number of fixed triangles indices.
+    void fixOuterTriangleIndexOrder(bool printInfo = false);
+
+    // Synchronize indices so that the vertex index order of outer triangles
+    // and their global counter part is the same.
+    void synchronizeTriangleIndexOrder();
 
 protected:
 

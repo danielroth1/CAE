@@ -273,6 +273,16 @@ bool generateMeshFromCGALPolyhedron(
     for (size_t i = 0; i < outer_facets_out.size(); ++i) {
         std::array<unsigned int, 3>& facet = outer_facets_out[i];
 
+        // =====================================================================
+        // Disclaimer:
+        // This code part is responsible for fixing the vertex index order of
+        // each outer triangle so that the normal that points outside the
+        // polygon can be calculated in a consistent way. The same is already
+        // done in the constructor of Polygon3D so this part may be removed.
+        // It is left here for the case that one doesn't want to create a
+        // Polygon3D afterwards. It could be removed for the future to slightly
+        // improve the performance.
+
         // find the outer facet (tetrahedron) that contains this triangle
         // note, that since this is an outer triangle, there is only a single tetrahedron
         // that containts it.
@@ -319,6 +329,8 @@ bool generateMeshFromCGALPolyhedron(
                 facet[2] = temp;
             }
         }
+
+        // =====================================================================
 
         // is this face part of all faces?
         bool found2 = false;

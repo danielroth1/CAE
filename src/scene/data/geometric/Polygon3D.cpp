@@ -352,9 +352,11 @@ void Polygon3D::setTransform(const Affine3d& transform)
     mOuterFaceNormals.setTransform(Affine3d(transform.rotation()));
 }
 
-void Polygon3D::fixOuterTriangleIndexOrder()
+void Polygon3D::fixOuterTriangleIndexOrder(bool printInfo)
 {
     Polygon3DTopology& topology = mData->getTopology();
+
+    synchronizeTriangleIndexOrder();
 
     int fixedFacesCounter = 0;
 
@@ -415,7 +417,29 @@ void Polygon3D::fixOuterTriangleIndexOrder()
             ++fixedFacesCounter;
         }
     }
-    std::cout << "Fixed " << fixedFacesCounter << " faces.\n";
+
+    if (printInfo)
+        std::cout << "Fixed " << fixedFacesCounter << " faces.\n";
+}
+
+void Polygon3D::synchronizeTriangleIndexOrder()
+{
+    Polygon3DTopology& topology = mData->getTopology();
+
+    for (TopologyFace& outerFace2D : topology.getOuterTopology().getFaces())
+    {
+        ID face3DId = topology.to3DFaceIndex(outerFace2D.getID());
+        TopologyFace& face3D = topology.getFace(face3DId);
+
+        for (size_t i = 0; i < 3; ++i)
+        {
+            unsigned int index3d =
+                    static_cast<unsigned int>(
+                        topology.to3DVertexIndex(outerFace2D.getVertexIds()[i]));
+            face3D.getVertexIds()[i] = index3d;
+            topology.getOuterFacesIndices3D()[outerFace2D.getID()][i] = index3d;
+        }
+    }
 }
 
 bool Polygon3D::isInside(ID faceId, const Vector& point,
