@@ -30,6 +30,7 @@
 #include <ui/scene_graph/SGUIControl.h>
 
 #include <simulation/fem/FEMObject.h>
+#include <simulation/fem/FEMSimulation.h>
 
 
 SimulationUIControl::SimulationUIControl(
@@ -318,6 +319,30 @@ void SimulationUIControl::onCreateCollidableClicked()
         else
         {
             std::cout << "Selected node has no geometry." << std::endl;
+        }
+    }
+}
+
+void SimulationUIControl::onPrintStiffnessMatrixClicked()
+{
+    for (const std::shared_ptr<SceneData>& sd :
+         mAc->getUIControl()->getSelectionControl()->getSelectedSceneData())
+    {
+        if (sd->isLeafData())
+        {
+            std::shared_ptr<SceneLeafData> leafData =
+                    std::static_pointer_cast<SceneLeafData>(sd);
+            std::shared_ptr<SimulationObject> so = leafData->getSimulationObject();
+            if (so->getType() == SimulationObject::FEM_OBJECT)
+            {
+                std::shared_ptr<FEMObject> femObj =
+                        std::static_pointer_cast<FEMObject>(so);
+
+                mAc->getSimulationControl()->getFEMSimulation()->
+                        printStiffnessMatrix(femObj.get());
+                // 40 char seperator
+                std::cout << "========================================\n";
+            }
         }
     }
 }

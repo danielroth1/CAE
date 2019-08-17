@@ -230,3 +230,8 @@ void SimulationUIWidget::on_mButtonCollidable_clicked()
 {
     mUiControl->onCreateCollidableClicked();
 }
+
+void SimulationUIWidget::on_mPrintStiffnessMatrixButton_clicked()
+{
+    mUiControl->onPrintStiffnessMatrixClicked();
+}

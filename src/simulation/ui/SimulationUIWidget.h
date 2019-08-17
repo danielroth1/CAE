@@ -64,6 +64,8 @@ private slots:
 
     void on_mButtonCollidable_clicked();
 
+    void on_mPrintStiffnessMatrixButton_clicked();
+
 private:
     void renderCollisionSpheres();
 

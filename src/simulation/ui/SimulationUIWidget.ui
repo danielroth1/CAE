@@ -39,13 +39,13 @@
    <item row="0" column="0" rowspan="3">
     <widget class="QToolBox" name="toolBox">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="mPageSimulate">
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-15</y>
         <width>197</width>
         <height>374</height>
        </rect>
@@ -415,6 +415,13 @@
                     </size>
                    </property>
                   </spacer>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QPushButton" name="mPrintStiffnessMatrixButton">
+                   <property name="text">
+                    <string>Print Stiffness Matrix</string>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </widget>

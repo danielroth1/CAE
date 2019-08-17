@@ -132,6 +132,8 @@ public:
 
     std::shared_ptr<Polygon3D> getPolygon();
 
+    const Eigen::SparseMatrix<double>& getStiffnessMatrix(bool corot);
+
     // SimulationObject interface
 public:
     virtual Eigen::Vector& getPosition(size_t id) override;
@@ -197,12 +199,31 @@ private:
     std::vector<FiniteElement> mFiniteElements;
 
     std::vector<Eigen::Triplet<double>> mCoefficients;
+
+    // Contains the linear part of the global system matrix. If corotated is
+    // enabled, is used to update mKCorot.
     Eigen::SparseMatrix<double> mK;
+
+    // Contains the global system matrix if corotated fem is enabled. Is updated
+    // in each time step.
     Eigen::SparseMatrix<double> mKCorot;
     std::vector<Eigen::Triplet<double>> mMassCoef;
     Eigen::SparseMatrix<double> mM;
 
     std::shared_ptr<Truncation> mTruncation;
+
+    Eigen::SparseMatrix<double> mGlobalMatrix;
+
+    // This matrix is used to update the values of each FiniteElement.
+    Eigen::SparseMatrix<Eigen::Matrix3d> mGlobalMatrix3ds;
+
+    // One entry for each FiniteElement. Contains the index of the
+    // corresponding Matrix3d in the SparseMatrix<Matrix3d>.
+    std::vector<int> mSparseMatrixMatrix3dIndices;
+
+    // One entry for each FiniteElement. Constains the 9 indices of the
+    // corresponding 3d matrix of the FiniteElement in the SparseMatrix<double>.
+    std::vector<std::array<std::array<int, 3>, 3> > mSparseMatrixDoubleIndices;
 
 };
 

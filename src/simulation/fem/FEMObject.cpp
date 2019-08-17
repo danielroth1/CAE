@@ -175,10 +175,18 @@ void FEMObject::setId(ID id)
 
 void FEMObject::initializeFEM()
 {
+    // initialize the gloabl SparseMatrix<Matrix3d> which is filled for
+    // each finite element and the global SparseMatrix<double> which
+    // is filled by the SparseMatrix<Matrix3d> and then used in the
+    // solver step.
+
+
+
     // initializes getMassMatrix(), getStiffnessMatirx()
     for (FiniteElement& fe : mFiniteElements)
         fe.initialize();
-    updateStiffnessMatrix(false);
+    updateFEM(false);
+//    updateStiffnessMatrix(false);
     updateMassMatrix();
 }
 
@@ -289,7 +297,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 //        A.makeCompressed();
         STOP_TIMING_SIMULATION;
 
-#if 0
+#if 1
         // if solver is sparse LU
 //        solver.analyzePattern(A);
 //        if (!solver.lastErrorMessage().empty())
@@ -298,11 +306,14 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 //        if (!solver.lastErrorMessage().empty())
 //            fprintf(stderr, "EigenErrorMessage[factorize]: %s\n", solver.lastErrorMessage().c_str());
 
-        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze_factorize");
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze");
         mSolver.analyzePattern(A);
+        STOP_TIMING_SIMULATION;
+
         if (mSolver.info() != Eigen::Success)
             std::cerr << "Solver: analyzePattern failed.\n";
 
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
         mSolver.factorize(A);
         STOP_TIMING_SIMULATION;
 #else
@@ -345,7 +356,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 //    std::cout << "norm = " << sol.norm() << "\n";
 
     // truncation test
-    // truncation TODO: not working because of zero columns
+    // truncation: not working because of zero columns
 //    SparseMatrix<double> A_trunc = A;
 //    VectorXd b_trunc = b;
 //    Truncation truncation(A_trunc, b_trunc, mTruncatedVectorIds);
@@ -375,7 +386,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 //            for (unsigned int c = 0; c < mPositions.size()*3; ++c)
 //            {
 //                unsigned int c_global = c;
-//                // TODO: inefficient but sufficient for now
+//                // inefficient but sufficient for now
 //                if (r_global == c_global)
 //                    A.coeffRef(r_global, c_global) = 1.0;
 //                else
@@ -458,7 +469,6 @@ void FEMObject::updateGeometricData()
 
 void FEMObject::applyImpulse(ID vertexIndex, const Vector& impulse)
 {
-    // TODO: error somewhere here, NAN
     // calculate masses of each vertex (itearte over finite elements)
     if (mMasses[vertexIndex] > 0)
         mVelocities[vertexIndex] += 1 / mMasses[vertexIndex] * impulse;
@@ -607,6 +617,14 @@ std::shared_ptr<Polygon3D> FEMObject::getPolygon()
     return mPoly3;
 }
 
+const Eigen::SparseMatrix<double>& FEMObject::getStiffnessMatrix(bool corot)
+{
+    if (corot)
+        return mKCorot;
+    else
+        return mK;
+}
+
 Vector& FEMObject::getPosition(size_t id)
 {
     return mPositions[id];
@@ -639,9 +657,13 @@ void FEMObject::initializeStiffnessMatrix()
 
 void FEMObject::updateElasticForces()
 {
+    START_TIMING_SIMULATION("FEMObject::updateElasticForces:1")
     for (FiniteElement& fe : mFiniteElements)
         fe.updateCorotatedForces();
+    STOP_TIMING_SIMULATION;
+    START_TIMING_SIMULATION("FEMObject::updateElasticForces:2")
     assembleElasticForces();
+    STOP_TIMING_SIMULATION;
 }
 
 void FEMObject::updateStiffnessMatrix(bool corotated)
@@ -740,7 +762,6 @@ void FEMObject::assembleStiffnessMatrix(bool corotated)
 //                        else
 //                            value = fe.getK()[a][b](i,k);
 
-//                        // TODO: pay attention to when
 //                        // a, cell[a], a * 3, cell[a] * 3 is called
 //                        // -> * 3 is used if the structure saved double values
 //                        // it is not used if it uses Matrix3d or Vector3d
@@ -770,12 +791,9 @@ void FEMObject::assembleStiffnessMatrix(bool corotated)
 //        mK.setFromTriplets(mCoefficients.begin(), mCoefficients.end());
 //    }
 
-//    std::cout << "only upper:\n";
-//    std::cout << mKCorot << "\n";
-
-
+    START_TIMING_SIMULATION("FEMObject::assembleStiffnessMatrix:1");
     mCoefficients.clear();
-    mCoefficients.reserve(mFiniteElements.size() * 144);
+    mCoefficients.resize(mFiniteElements.size() * 144);
     for (FiniteElement& fe : mFiniteElements)
     {
         std::array<unsigned int, 4> cell = fe.getCell();
@@ -804,7 +822,6 @@ void FEMObject::assembleStiffnessMatrix(bool corotated)
                         else
                             value = fe.getK()[a][b](i,k);
 
-                        // TODO: pay attention to when
                         // a, cell[a], a * 3, cell[a] * 3 is called
                         // -> * 3 is used if the structure saved double values
                         // it is not used if it uses Matrix3d or Vector3d
@@ -821,7 +838,9 @@ void FEMObject::assembleStiffnessMatrix(bool corotated)
             }
         }
     }
+    STOP_TIMING_SIMULATION;
 
+    START_TIMING_SIMULATION("FEMObject::assembleStiffnessMatrix:2");
     // update sparse matrix
     if (corotated)
     {
@@ -833,4 +852,5 @@ void FEMObject::assembleStiffnessMatrix(bool corotated)
         mK.setZero();
         mK.setFromTriplets(mCoefficients.begin(), mCoefficients.end());
     }
+    STOP_TIMING_SIMULATION;
 }

@@ -45,6 +45,7 @@ public:
     void removeTruncation(FEMObject* femObject, const std::vector<ID>& vectorIDs);
     void clearTruncation();
 
+    void printStiffnessMatrix(FEMObject* femObject);
 
     // Call this before calling solve.
     void initializeStep();
@@ -97,7 +98,15 @@ PROXY_CLASS_DERIVED(FEMSimulationProxy, FEMSimulation, SimulationProxy, mFEMSimu
                            PL(FEMObject* femObject, const std::vector<ID>& vectorIDs),
                            PL(femObject, vectorIDs))
 
+            PROXY_FUNCTION(FEMSimulation, mFEMSimulation, removeTruncation,
+                           PL(FEMObject* femObject, const std::vector<ID>& vectorIDs),
+                           PL(femObject, vectorIDs))
+
             PROXY_FUNCTION(FEMSimulation, mFEMSimulation, clearTruncation, , )
+
+            PROXY_FUNCTION(FEMSimulation, mFEMSimulation, printStiffnessMatrix,
+                           PL(FEMObject* femObject),
+                           PL(femObject))
             )
 
 #endif // FEMSIMULATION_H

@@ -91,6 +91,11 @@ void FEMSimulation::clearTruncation()
         fo->getTruncation()->getTruncatedVectorIds().clear();
 }
 
+void FEMSimulation::printStiffnessMatrix(FEMObject* femObject)
+{
+    std::cout << femObject->getStiffnessMatrix(true) << "\n";
+}
+
 void FEMSimulation::initializeStep()
 {
     for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)

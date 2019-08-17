@@ -35,8 +35,12 @@ public:
     void onRemoveSimulationObjectClicked();
     void onCreateCollidableClicked();
 
+    // Prints the corotated stiffness matrices of all selected FEMObjects.
+    void onPrintStiffnessMatrixClicked();
+
     void onChangeCollisionRenderingLevel(int level);
     void onEnableCollisionRendering(bool enable);
+
 
     SimulationModule* mModule;
     ApplicationControl* mAc;
