@@ -20,9 +20,9 @@ public:
     // Getters
     std::array<Eigen::Vector, 4>& getElasticForces();
     std::array<unsigned int, 4>& getCell();
-    std::array<std::array<Eigen::Matrix3d, 4>, 4> getK();
-    std::array<std::array<Eigen::Matrix3d, 4>, 4> getKCorot();
-    std::array<double, 4> getM();
+    const std::array<std::array<Eigen::Matrix3d, 4>, 4>& getK();
+    const std::array<std::array<Eigen::Matrix3d, 4>, 4>& getKCorot();
+    const std::array<double, 4>& getM();
     ElasticMaterial& getMaterial();
 
     // Updates the stiffness matrix w.r.t. the initial configuration.

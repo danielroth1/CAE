@@ -4,6 +4,7 @@
 
 
 #include <data_structures/DataStructures.h>
+#include <data_structures/SparseMatrix33.h>
 #include "FiniteElement.h"
 #include <Eigen/Sparse>
 #include <simulation/SimulationObject.h>
@@ -198,15 +199,13 @@ private:
     Vectors mDeltaV;
     std::vector<FiniteElement> mFiniteElements;
 
-    std::vector<Eigen::Triplet<double>> mCoefficients;
-
     // Contains the linear part of the global system matrix. If corotated is
     // enabled, is used to update mKCorot.
-    Eigen::SparseMatrix<double> mK;
+    SparseMatrix33 mK;
 
     // Contains the global system matrix if corotated fem is enabled. Is updated
     // in each time step.
-    Eigen::SparseMatrix<double> mKCorot;
+    SparseMatrix33 mKCorot;
     std::vector<Eigen::Triplet<double>> mMassCoef;
     Eigen::SparseMatrix<double> mM;
 

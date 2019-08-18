@@ -34,17 +34,17 @@ std::array<unsigned int, 4>& FiniteElement::getCell()
     return mCell;
 }
 
-std::array<std::array<Matrix3d, 4>, 4> FiniteElement::getK()
+const std::array<std::array<Matrix3d, 4>, 4>& FiniteElement::getK()
 {
     return mK;
 }
 
-std::array<std::array<Matrix3d, 4>, 4> FiniteElement::getKCorot()
+const std::array<std::array<Matrix3d, 4>, 4>& FiniteElement::getKCorot()
 {
     return mKCorot;
 }
 
-std::array<double, 4> FiniteElement::getM()
+const std::array<double, 4>& FiniteElement::getM()
 {
     return mM;
 }

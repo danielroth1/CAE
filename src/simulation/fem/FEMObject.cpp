@@ -24,6 +24,10 @@ FEMObject::FEMObject(
     : SimulationObject(domain)
     , mPoly3(poly3)
     , mPositions(poly3->getPositions())
+    , mK(static_cast<Eigen::Index>(mPositions.size()),
+         static_cast<Eigen::Index>(mPositions.size()))
+    , mKCorot(static_cast<Eigen::Index>(mPositions.size()),
+              static_cast<Eigen::Index>(mPositions.size()))
 {
     mInitialPositions.resize(mPositions.size());
     std::copy(mPositions.begin(), mPositions.end(), mInitialPositions.begin());
@@ -59,8 +63,6 @@ FEMObject::FEMObject(
     SimulationUtils::resizeVectorWithZeros(mDeltaV, nVertices);
 
     // Initialize other FEM values
-    mK = SparseMatrix<double>(nVertices*3, nVertices*3);
-    mKCorot = SparseMatrix<double>(nVertices*3, nVertices*3);
     mM = SparseMatrix<double>(nVertices*3, nVertices*3);
     mK.setZero();
     mKCorot.setZero();
@@ -90,6 +92,8 @@ FEMObject::FEMObject(
     std::copy(mPositions.begin(), mPositions.end(), mInitialPositions.begin());
 
     mTruncation = std::make_shared<Truncation>();
+
+    initializeStiffnessMatrix();
 }
 
 FEMObject::~FEMObject()
@@ -264,9 +268,9 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
     VectorXd f = VectorXd::Map(mForcesExt[0].data(), size * 3)
             - VectorXd::Map(mForcesEl[0].data(), size * 3);
 
-    SparseMatrix<double>& K = mKCorot;
+    SparseMatrix<double>& K = mKCorot.getMatrix();
     if (!corotated)
-        K = mK;
+        K = mK.getMatrix();
     VectorXd b;
 //    if (firstStep)
 //    {
@@ -620,9 +624,9 @@ std::shared_ptr<Polygon3D> FEMObject::getPolygon()
 const Eigen::SparseMatrix<double>& FEMObject::getStiffnessMatrix(bool corot)
 {
     if (corot)
-        return mKCorot;
+        return mKCorot.getMatrix();
     else
-        return mK;
+        return mK.getMatrix();
 }
 
 Vector& FEMObject::getPosition(size_t id)
@@ -652,6 +656,24 @@ GeometricData* FEMObject::getGeometricData()
 
 void FEMObject::initializeStiffnessMatrix()
 {
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        std::array<unsigned int, 4> cell = fe.getCell();
+        for (unsigned int a = 0; a < 4; ++a)
+        {
+            Eigen::Index rSub = cell[a];
+            for (unsigned int b = 0; b < 4; ++b)
+            {
+                Eigen::Index cSub = cell[b];
+                mKCorot.addSubMatrix(rSub, cSub);
+                mK.addSubMatrix(rSub, cSub);
+            }
+        }
+    }
+
+    mK.assemble();
+    mKCorot.assemble();
+
     updateStiffnessMatrix(false);
 }
 
@@ -732,125 +754,41 @@ void FEMObject::assembleStiffnessMatrix(bool corotated)
     // this is a 12x12 matrix with the elements at
     // r = a * 3 + i
     // c = b * 3 + k
-//    mCoefficients.clear();
-//    mCoefficients.reserve(mFiniteElements.size() * 144);
-//    for (FiniteElement& fe : mFiniteElements)
-//    {
-//        std::array<unsigned int, 4> cell = fe.getCell();
-//        for (unsigned int a = 0; a < 4; ++a)
-//        {
-//            size_t r_major = cell[a] * 3;
-//            for (unsigned int b = 0; b < 4; ++b)
-//            {
-//                size_t c_major = cell[b] * 3;
-//                if (r_major > c_major)
-//                    continue;
 
-//                bool diagonal = r_major == c_major;
+    if (corotated)
+        mKCorot.setZero();
+    else
+        mK.setZero();
 
-//                for (unsigned int i = 0; i < 3; ++i)
-//                {
-//                    size_t r = r_major + i;
-
-//                    unsigned int kStart = diagonal ? i : 0;
-//                    for (unsigned int k = kStart; k < 3; ++k)
-//                    {
-//                        size_t c = c_major + k;
-//                        double value;
-//                        if (corotated)
-//                            value = fe.getKCorot()[a][b](i,k);
-//                        else
-//                            value = fe.getK()[a][b](i,k);
-
-//                        // a, cell[a], a * 3, cell[a] * 3 is called
-//                        // -> * 3 is used if the structure saved double values
-//                        // it is not used if it uses Matrix3d or Vector3d
-//                        // -> a is used if the structure saves local values
-//                        // cell[a] is used if the structure saved global values
-//                        // a*3+i => FEM with double array
-//                        // a => FEM with Matrix3d or Vector3d
-//                        // cell[a] * 3 + i => global with double array
-//                        // cell[a] => global with Matrix3d or Vector3d
-
-//                        mCoefficients.push_back(Triplet<double>(r, c, value));
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-//    // update sparse matrix
-//    if (corotated)
-//    {
-//        mKCorot.setZero();
-//        mKCorot.setFromTriplets(mCoefficients.begin(), mCoefficients.end());
-//    }
-//    else
-//    {
-//        mK.setZero();
-//        mK.setFromTriplets(mCoefficients.begin(), mCoefficients.end());
-//    }
-
-    START_TIMING_SIMULATION("FEMObject::assembleStiffnessMatrix:1");
-    mCoefficients.clear();
-    mCoefficients.resize(mFiniteElements.size() * 144);
     for (FiniteElement& fe : mFiniteElements)
     {
         std::array<unsigned int, 4> cell = fe.getCell();
         for (unsigned int a = 0; a < 4; ++a)
         {
-            size_t r_major = cell[a] * 3;
+            Eigen::Index r_major = cell[a];
             for (unsigned int b = 0; b < 4; ++b)
             {
-                size_t c_major = cell[b] * 3;
-//                if (r_major > c_major)
-//                    continue;
+                Eigen::Index c_major = cell[b];
 
-                bool diagonal = r_major == c_major;
-
-                for (unsigned int i = 0; i < 3; ++i)
+                if (corotated)
                 {
-                    size_t r = r_major + i;
+                    const std::array<Eigen::Index, 3>& colIndices =
+                            mKCorot.getColumnIndices(r_major, c_major);
 
-                    unsigned int kStart = diagonal ? i : 0;
-                    for (unsigned int k = 0; k < 3; ++k)
-                    {
-                        size_t c = c_major + k;
-                        double value;
-                        if (corotated)
-                            value = fe.getKCorot()[a][b](i,k);
-                        else
-                            value = fe.getK()[a][b](i,k);
+                    mKCorot.addColumn(colIndices[0], fe.getKCorot()[a][b].col(0));
+                    mKCorot.addColumn(colIndices[1], fe.getKCorot()[a][b].col(1));
+                    mKCorot.addColumn(colIndices[2], fe.getKCorot()[a][b].col(2));
+                }
+                else
+                {
+                    const std::array<Eigen::Index, 3>& colIndices =
+                            mK.getColumnIndices(r_major, c_major);
 
-                        // a, cell[a], a * 3, cell[a] * 3 is called
-                        // -> * 3 is used if the structure saved double values
-                        // it is not used if it uses Matrix3d or Vector3d
-                        // -> a is used if the structure saves local values
-                        // cell[a] is used if the structure saved global values
-                        // a*3+i => FEM with double array
-                        // a => FEM with Matrix3d or Vector3d
-                        // cell[a] * 3 + i => global with double array
-                        // cell[a] => global with Matrix3d or Vector3d
-
-                        mCoefficients.push_back(Triplet<double>(r, c, value));
-                    }
+                    mK.addColumn(colIndices[0], fe.getK()[a][b].col(0));
+                    mK.addColumn(colIndices[1], fe.getK()[a][b].col(1));
+                    mK.addColumn(colIndices[2], fe.getK()[a][b].col(2));
                 }
             }
         }
     }
-    STOP_TIMING_SIMULATION;
-
-    START_TIMING_SIMULATION("FEMObject::assembleStiffnessMatrix:2");
-    // update sparse matrix
-    if (corotated)
-    {
-        mKCorot.setZero();
-        mKCorot.setFromTriplets(mCoefficients.begin(), mCoefficients.end());
-    }
-    else
-    {
-        mK.setZero();
-        mK.setFromTriplets(mCoefficients.begin(), mCoefficients.end());
-    }
-    STOP_TIMING_SIMULATION;
 }
