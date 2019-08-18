@@ -54,27 +54,27 @@ ElasticMaterial& FiniteElement::getMaterial()
     return mMaterial;
 }
 
-Vector FiniteElement::u(size_t i)
+const Vector& FiniteElement::u(size_t i)
 {
     return mFemObj->getDisplacements()[mCell[i]];
 }
 
-Vector FiniteElement::x(size_t i)
+const Vector& FiniteElement::x(size_t i)
 {
     return mFemObj->getInitialPositions()[mCell[i]];
 }
 
-Vector FiniteElement::y(size_t i)
+const Vector& FiniteElement::y(size_t i)
 {
     return mFemObj->getPositions()[mCell[i]];
 }
 
-Vector FiniteElement::v(size_t i)
+const Vector& FiniteElement::v(size_t i)
 {
     return mFemObj->getVelocities()[mCell[i]];
 }
 
-Vector FiniteElement::f(size_t i)
+const Vector& FiniteElement::f(size_t i)
 {
     return mFemObj->getElasticForces()[mCell[i]];
 }
@@ -174,13 +174,11 @@ void FiniteElement::updateCorotatedForces()
 //    updateRotation(); // TODO: if not already done
     for (size_t a = 0; a < 4; ++a)
     {
-        mForces[a] = Vector::Zero();
+        mForces[a].setZero();
         for (size_t b = 0; b < 4; ++b)
         {
             mForces[a] += mR * mK[a][b] *
                     (mR.transpose() * y(b) - x(b));
-//            f(a) += mR * mK[a][b] *
-//                    (mR.transpose() * y(b) - x(b));
         }
     }
 }
@@ -197,18 +195,6 @@ void FiniteElement::updateLinearForces()
             // directly globally updates them this way
             // but this is not wanted here
             //f(a) += mK[a][b] * u(b);
-        }
-    }
-}
-
-void FiniteElement::updateGlobalValues()
-{
-    for (size_t a = 0; a < 4; ++a)
-    {
-        f(a) += mForces[a];
-        for (size_t b = 0; b < 4; ++b)
-        {
-
         }
     }
 }

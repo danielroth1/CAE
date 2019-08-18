@@ -216,19 +216,6 @@ private:
 
     std::shared_ptr<Truncation> mTruncation;
 
-    Eigen::SparseMatrix<double> mGlobalMatrix;
-
-    // This matrix is used to update the values of each FiniteElement.
-    Eigen::SparseMatrix<Eigen::Matrix3d> mGlobalMatrix3ds;
-
-    // One entry for each FiniteElement. Contains the index of the
-    // corresponding Matrix3d in the SparseMatrix<Matrix3d>.
-    std::vector<int> mSparseMatrixMatrix3dIndices;
-
-    // One entry for each FiniteElement. Constains the 9 indices of the
-    // corresponding 3d matrix of the FiniteElement in the SparseMatrix<double>.
-    std::vector<std::array<std::array<int, 3>, 3> > mSparseMatrixDoubleIndices;
-
 };
 
 #endif // FEMOBJECT_H

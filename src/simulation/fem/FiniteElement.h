@@ -60,10 +60,6 @@ public:
         // F += K[a][b] * u(b);
         void updateLinearForces();
 
-    // not implemented
-    void updateGlobalValues();
-
-
 private:
 
     // calculates the deformation gradient F
@@ -79,15 +75,15 @@ private:
     void updateDny();
 
     // deformation u = y - x
-    Eigen::Vector u(size_t i);
+    const Eigen::Vector& u(size_t i);
     // initial position x
-    Eigen::Vector x(size_t i);
+    const Eigen::Vector& x(size_t i);
     // current position y
-    Eigen::Vector y(size_t i);
+    const Eigen::Vector& y(size_t i);
     // velocity v
-    Eigen::Vector v(size_t i);
+    const Eigen::Vector& v(size_t i);
     // forces f
-    Eigen::Vector f(size_t i);
+    const Eigen::Vector& f(size_t i);
 
     FEMObject* mFemObj;
     std::array<unsigned int, 4> mCell;
