@@ -674,7 +674,34 @@ void FEMObject::initializeStiffnessMatrix()
     mK.assemble();
     mKCorot.assemble();
 
-    updateStiffnessMatrix(false);
+    // initialize mKColPtrs and mKCorotColPtrs
+    mKColPtrs.clear();
+    mKCorotColPtrs.clear();
+
+    mKColPtrs.reserve(mFiniteElements.size());
+    mKCorotColPtrs.reserve(mFiniteElements.size());
+
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        FEColumnPtrs ptrs;
+        FEColumnPtrs ptrsCorot;
+        std::array<unsigned int, 4> cell = fe.getCell();
+        for (unsigned int a = 0; a < 4; ++a)
+        {
+            Eigen::Index r_major = cell[a];
+            for (unsigned int b = 0; b < 4; ++b)
+            {
+                Eigen::Index c_major = cell[b];
+                ptrs[a][b] = mK.createColumnPtrs(r_major, c_major);
+                ptrsCorot[a][b] = mKCorot.createColumnPtrs(r_major, c_major);
+            }
+        }
+        mKColPtrs.push_back(ptrs);
+        mKCorotColPtrs.push_back(ptrsCorot);
+    }
+
+//    updateStiffnessMatrix(false);
+    updateFEM(false);
 }
 
 void FEMObject::updateElasticForces()
@@ -760,34 +787,34 @@ void FEMObject::assembleStiffnessMatrix(bool corotated)
     else
         mK.setZero();
 
-    for (FiniteElement& fe : mFiniteElements)
+    for (size_t i = 0; i < mFiniteElements.size(); ++i)
     {
-        std::array<unsigned int, 4> cell = fe.getCell();
+        FiniteElement& fe = mFiniteElements[i];
+        const FEColumnPtrs& ptrs = corotated ? mKCorotColPtrs[i] : mKColPtrs[i];
+
         for (unsigned int a = 0; a < 4; ++a)
         {
-            Eigen::Index r_major = cell[a];
             for (unsigned int b = 0; b < 4; ++b)
             {
-                Eigen::Index c_major = cell[b];
-
                 if (corotated)
                 {
-                    const std::array<Eigen::Index, 3>& colIndices =
-                            mKCorot.getColumnIndices(r_major, c_major);
-
-                    mKCorot.addColumn(colIndices[0], fe.getKCorot()[a][b].col(0));
-                    mKCorot.addColumn(colIndices[1], fe.getKCorot()[a][b].col(1));
-                    mKCorot.addColumn(colIndices[2], fe.getKCorot()[a][b].col(2));
+                    Eigen::Map<Eigen::Vector3d>(ptrs[a][b][0]) +=
+                            fe.getKCorot()[a][b].col(0);
+                    Eigen::Map<Eigen::Vector3d>(ptrs[a][b][1]) +=
+                            fe.getKCorot()[a][b].col(1);
+                    Eigen::Map<Eigen::Vector3d>(ptrs[a][b][2]) +=
+                            fe.getKCorot()[a][b].col(2);
                 }
                 else
                 {
-                    const std::array<Eigen::Index, 3>& colIndices =
-                            mK.getColumnIndices(r_major, c_major);
-
-                    mK.addColumn(colIndices[0], fe.getK()[a][b].col(0));
-                    mK.addColumn(colIndices[1], fe.getK()[a][b].col(1));
-                    mK.addColumn(colIndices[2], fe.getK()[a][b].col(2));
+                    Eigen::Map<Eigen::Vector3d>(ptrs[a][b][0]) +=
+                            fe.getK()[a][b].col(0);
+                    Eigen::Map<Eigen::Vector3d>(ptrs[a][b][1]) +=
+                            fe.getK()[a][b].col(1);
+                    Eigen::Map<Eigen::Vector3d>(ptrs[a][b][2]) +=
+                            fe.getK()[a][b].col(2);
                 }
+
             }
         }
     }

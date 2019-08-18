@@ -145,6 +145,8 @@ public:
 
 private:
 
+    typedef std::array<std::array<std::array<double*, 3>, 4>, 4> FEColumnPtrs;
+
     void initializeStiffnessMatrix();
 
     // TOOD: assembling and calculating can be combined?
@@ -202,10 +204,13 @@ private:
     // Contains the linear part of the global system matrix. If corotated is
     // enabled, is used to update mKCorot.
     SparseMatrix33 mK;
+    std::vector<FEColumnPtrs> mKColPtrs;
 
     // Contains the global system matrix if corotated fem is enabled. Is updated
     // in each time step.
     SparseMatrix33 mKCorot;
+    std::vector<FEColumnPtrs> mKCorotColPtrs;
+
     std::vector<Eigen::Triplet<double>> mMassCoef;
     Eigen::SparseMatrix<double> mM;
 

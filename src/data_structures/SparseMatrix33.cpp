@@ -101,6 +101,19 @@ const std::array<Eigen::Index, 3>& SparseMatrix33::getColumnIndices(
     return mIndexMap[std::make_pair(row, column)];
 }
 
+std::array<double*, 3> SparseMatrix33::createColumnPtrs(
+        Eigen::Index row, Eigen::Index column)
+{
+    std::array<double*, 3> columnPtrs;
+    const std::array<Eigen::Index, 3>& indices =
+            getColumnIndices(row, column);
+    double* valuePtr = mMatrix.valuePtr();
+    columnPtrs[0] = &(valuePtr[indices[0]]);
+    columnPtrs[1] = &(valuePtr[indices[1]]);
+    columnPtrs[2] = &(valuePtr[indices[2]]);
+    return columnPtrs;
+}
+
 void SparseMatrix33::addColumn(
         Eigen::Index internalColumnIndex,
         const Eigen::Vector3d& column)
