@@ -33,6 +33,9 @@
 SGControl::SGControl()
 {
     mSceneGraph = new SGSceneGraph();
+    mSceneGraph->getRoot()->setData(std::make_shared<SceneData>(
+                                        mSceneGraph->getRoot()));
+    mSceneGraph->addTreeListener(this);
 }
 
 void SGControl::initialize(ApplicationControl* ac)
@@ -583,4 +586,58 @@ SGSceneGraph* SGControl::getSceneGraph()
 SGNode* SGControl::getSceneNodeByName(std::string name)
 {
     return mSceneGraph->getRoot()->searchNodeByName(name);
+}
+
+void SGControl::notifyLeafDataChanged(SGNode* /*source*/,
+                                      std::shared_ptr<SceneLeafData>& /*data*/)
+{
+
+}
+
+void SGControl::notifyChildAdded(SGNode* /*source*/, SGNode* childNode)
+{
+    if (childNode->isLeaf())
+    {
+        SGLeafNode* leafNode = static_cast<SGLeafNode*>(childNode);
+        if (!leafNode->getData())
+        {
+            leafNode->setData(std::make_shared<SceneLeafData>(leafNode));
+        }
+    }
+    else
+    {
+        SGChildrenNode* childrenNode = static_cast<SGChildrenNode*>(childNode);
+        if (!childrenNode->getData())
+        {
+            childrenNode->setData(std::make_shared<SceneData>(childrenNode));
+        }
+    }
+}
+
+void SGControl::notifyChildRemoved(SGNode* /*source*/, SGNode* /*childNode*/)
+{
+
+}
+
+void SGControl::notifyChildrenDataChanged(SGNode* /*source*/,
+                                          std::shared_ptr<SceneData>& /*data*/)
+{
+
+}
+
+void SGControl::notifyParentChanged(SGNode* /*source*/, SGNode* /*parent*/)
+{
+
+}
+
+void SGControl::notifyNameChanged(SGNode* /*source*/, std::string /*name*/)
+{
+
+}
+
+void SGControl::notifyTreeChanged(SGNode* /*source*/,
+                                  Tree<std::shared_ptr<SceneData>,
+                                  std::shared_ptr<SceneLeafData> >* /*tree*/)
+{
+
 }

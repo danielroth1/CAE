@@ -10,6 +10,9 @@ SGQtWidgetManager::SGQtWidgetManager(QTreeWidget* treeWidget)
 {
     mVisualizeFaceNormals = false;
     mVisualizeVertexNormals = false;
+
+    QWidget::connect(mTreeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
+                     this, SLOT(itemChangedSlot(QTreeWidgetItem*, int)));
 }
 
 void SGQtWidgetManager::registerNewSceneGraph(SGSceneGraph* sceneGraph)
@@ -68,27 +71,25 @@ QTreeWidgetItem* SGQtWidgetManager::get(SGNode* node)
 
 void SGQtWidgetManager::addNode(SGNode* node)
 {
-    if (node->getParent() == nullptr)
-    {
-        // root node
-        QTreeWidgetItem* item = new QTreeWidgetItem(mTreeWidget);
-        item->setText(0, QString::fromStdString(node->getName()));
-        item->flags().setFlag(Qt::ItemFlag::ItemIsEditable, true);
-        // add to bidirectional map
-        mBidirectionalMap.add(item, node);
-    }
+    QTreeWidgetItem* item;
+    if (node->getParent() != nullptr)
+        item = new QTreeWidgetItem();
     else
+        item = new QTreeWidgetItem(mTreeWidget); // root node
+
+    item->setText(0, QString::fromStdString(node->getName()));
+    item->flags().setFlag(Qt::ItemFlag::ItemIsEditable, true);
+    item->setCheckState(0, Qt::Checked); // enable check box
+
+    // add to parent
+    if (node->getParent() != nullptr)
     {
-        // update ui
         QTreeWidgetItem* parentItem =
                 mBidirectionalMap.get(node->getParent());
-        QTreeWidgetItem* childItem = new QTreeWidgetItem();
-        childItem->setText(0, QString::fromStdString(node->getName()));
-        childItem->flags().setFlag(Qt::ItemFlag::ItemIsEditable, true);
-        parentItem->addChild(childItem);
-        // add to bidirectional map
-        mBidirectionalMap.add(childItem, node);
+        parentItem->addChild(item);
     }
+
+    mBidirectionalMap.add(item, node);
 }
 
 void SGQtWidgetManager::removeNode(SGNode* node)
@@ -135,4 +136,59 @@ void SGQtWidgetManager::notifyTreeChanged(SGNode* /*source*/, SGSceneGraph* /*tr
     // whenever a node refers to the scene graph as tree, it can be
     // assumed that that node is also a node of the scene graph
 
+}
+
+void SGQtWidgetManager::itemChangedSlot(QTreeWidgetItem* item, int /*count*/)
+{
+    SGNode* node = mBidirectionalMap.get(item);
+    bool visible = item->checkState(0) == Qt::CheckState::Checked;
+    setVisibilitySceneNode(node, visible);
+}
+
+void SGQtWidgetManager::setVisibilitySceneNode(SGNode* node, bool visible)
+{
+    if (node)
+    {
+        QTreeWidgetItem* item = mBidirectionalMap.get(node);
+        if (node->isLeaf())
+        {
+            SGLeafNode* leafNode = static_cast<SGLeafNode*>(node);
+            leafNode->getData()->setVisible(visible);
+        }
+        else
+        {
+            SGChildrenNode* childrenNode = static_cast<SGChildrenNode*>(node);
+            childrenNode->getData()->setVisibleRecoursive(visible);
+
+        }
+
+        // Update check boxes.
+        SceneData::Visibility visibility = visible ? SceneData::Visibility::VISIBLE :
+                                                     SceneData::Visibility::INVISIBLE;
+        setVisibiltyCheckBox(item, visibility, true);
+    }
+}
+
+void SGQtWidgetManager::setVisibiltyCheckBox(
+        QTreeWidgetItem* item,
+        SceneData::Visibility visibility,
+        bool includeSubtree)
+{
+    Qt::CheckState checkState;
+    if (visibility == SceneData::Visibility::VISIBLE)
+        checkState = Qt::Checked;
+    else if (visibility == SceneData::Visibility::INVISIBLE)
+        checkState = Qt::Unchecked;
+    else if (visibility == SceneData::Visibility::UNDEFINED)
+        checkState = Qt::PartiallyChecked;
+
+    item->setCheckState(0, checkState);
+
+    if (includeSubtree)
+    {
+        for (int i = 0; i < item->childCount(); ++i)
+        {
+            setVisibiltyCheckBox(item->child(i), visibility, true);
+        }
+    }
 }

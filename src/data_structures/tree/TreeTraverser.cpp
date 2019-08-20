@@ -18,6 +18,7 @@ TreeTraverser<T, L>::TreeTraverser(Node<T, L>* root)
 {
     mFilter = nullptr;
     mCurrentChildId = 0;
+    mEndSearchEarly = false;
 //    mStack.push(0);
 }
 
@@ -66,6 +67,9 @@ Node<T, L>* TreeTraverser<T, L>::end()
 template <class T, class L>
 Node<T, L>* TreeTraverser<T, L>::next()
 {
+    if (mEndSearchEarly)
+        return nullptr;
+
     class TreeVisitor : public NodeVisitor<T, L>
     {
     public:
@@ -235,6 +239,12 @@ template <class T, class L>
 size_t TreeTraverser<T, L>::getCurrentLevel() const
 {
     return mStack.size();
+}
+
+template<class T, class L>
+void TreeTraverser<T, L>::setEndSearchEarly(bool endSearch)
+{
+    mEndSearchEarly = endSearch;
 }
 
 // Tree Iterator

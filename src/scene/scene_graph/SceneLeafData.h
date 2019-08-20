@@ -25,17 +25,25 @@ public:
 
     virtual ~SceneLeafData() override;
 
+    // SceneData methods
+public:
     virtual void accept(SceneDataVisitor* visitor) override;
 
     virtual bool isLeafData() override;
 
     // Setters
+    // Sets the visibility of the RenderModel. If there is none, does nothing.
+    void setVisible(bool visible);
     void setGeometricData(std::shared_ptr<GeometricData> geometricData);
     void setSimulationObject(std::shared_ptr<SimulationObject> simulationObject);
     void setRenderModel(std::shared_ptr<RenderModel> renderModel);
 
     // Getters
 //    Eigen::Vector& getPosition(ID vertexID);
+
+    // Returns the visibility of the RenderModel. If there is none, returns
+    // false.
+    virtual bool isVisible();
 
     // Returns raw pointer, use this for non-ownership access
     GeometricData* getGeometricDataRaw();

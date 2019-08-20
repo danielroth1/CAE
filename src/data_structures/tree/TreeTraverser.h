@@ -79,6 +79,10 @@ public:
 
     size_t getCurrentLevel() const;
 
+    // Ends the search early. This can be usefull to prevent iterating over the
+    // remaing graph if the desired result was already found.
+    void setEndSearchEarly(bool endEarly);
+
 private:
     // Node Visitor
 
@@ -99,6 +103,8 @@ private:
     Node<T, L>* mCurrentNode;
     unsigned int mCurrentChildId;
     TraverserStrategy mCurrentStrategy;
+
+    bool mEndSearchEarly;
 };
 
 

@@ -29,6 +29,12 @@ bool SceneLeafData::isLeafData()
     return true;
 }
 
+void SceneLeafData::setVisible(bool visible)
+{
+    if (mRenderModel)
+        mRenderModel->setVisible(visible);
+}
+
 void SceneLeafData::setGeometricData(std::shared_ptr<GeometricData> geometricData)
 {
     mGeometricData = geometricData;
@@ -48,6 +54,14 @@ void SceneLeafData::setRenderModel(std::shared_ptr<RenderModel> renderModel)
 //{
 //    return mGeometricData->getPosition(vertexID);
 //}
+
+bool SceneLeafData::isVisible()
+{
+    if (mRenderModel)
+        return mRenderModel->isVisible();
+    else
+        return false;
+}
 
 GeometricData* SceneLeafData::getGeometricDataRaw()
 {

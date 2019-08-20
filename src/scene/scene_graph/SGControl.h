@@ -15,7 +15,7 @@ class MeshCriteria;
 // consistency, especially in the case that the scene graph is removed.
 // Not all control duties are implemented here. Events that adapt the
 // scene graph can be caught with a SGTreeListener.
-class SGControl
+class SGControl : public SGTreeListener
 {
 public:
     SGControl();
@@ -146,10 +146,32 @@ public:
 
         SGNode* getSceneNodeByName(std::string name);
 
+    // LeafNodeListener interface
+    public:
+        virtual void notifyLeafDataChanged(SGNode* source,
+                                           std::shared_ptr<SceneLeafData>& data);
+
+    // ChildrenNodeListener interface
+    public:
+        virtual void notifyChildAdded(SGNode* source, SGNode* childNode);
+        virtual void notifyChildRemoved(SGNode* source, SGNode* childNode);
+        virtual void notifyChildrenDataChanged(SGNode* source,
+                                               std::shared_ptr<SceneData>& data);
+
+    // NodeListener interface
+    public:
+        virtual void notifyParentChanged(SGNode* source, SGNode* parent);
+        virtual void notifyNameChanged(SGNode* source, std::string name);
+        virtual void notifyTreeChanged(SGNode* source,
+                                       Tree<std::shared_ptr<SceneData>,
+                                       std::shared_ptr<SceneLeafData>>* tree);
+
 private:
 
     ApplicationControl* mAc;
     SGSceneGraph* mSceneGraph;
+
+
 };
 
 #endif // SGCONTROL_H
