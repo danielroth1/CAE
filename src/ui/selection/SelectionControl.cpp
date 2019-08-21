@@ -10,7 +10,6 @@
 
 #include <rendering/ViewFrustum.h>
 #include <ApplicationControl.h>
-#include <scene/VertexCollection.h>
 #include <scene/data/GeometricData.h>
 #include <scene/scene_graph/SGTraverserFactory.h>
 
@@ -132,7 +131,7 @@ void SelectionControl::selectSceneNode(SGNode* node)
     switch (mSelectionType)
     {
     case SELECT_SCENE_NODES:
-        mSelectionSceneData->getSceneData().clear();
+        mSelectionSceneData->clear();
         break;
     case SELECT_VERTICES:
     {
@@ -163,15 +162,14 @@ void SelectionControl::selectSceneNode(SGNode* node)
             switch (sc.mSelectionType)
             {
             case SELECT_SCENE_NODES:
-                sc.mSelectionSceneData->getSceneData().insert(data);
+                sc.mSelectionSceneData->insert(data);
                 break;
             case SELECT_VERTICES:
             {
                 GeometricData* gd = data->getGeometricDataRaw();
                 for (ID i = 0; i < gd->getSize(); ++i)
                 {
-                    sc.mSelectionVertices->getSelectedVertexCollection()
-                            ->addVertex(data, i);
+                    sc.mSelectionVertices->addVertex(data, i);
                 }
                 break;
             }
@@ -303,7 +301,7 @@ void SelectionControl::finalizeSelection(ViewFrustum& viewFrustum)
         for (auto it : mSelectionListeners)
         {
             it->onSelectedVerticesChanged(
-                        mSelectionVertices->getSelectedVertexCollection()->getDataVectorsMap());
+                        mSelectionVertices->getDataVectorsMap());
         }
         break;
     }
@@ -312,7 +310,7 @@ void SelectionControl::finalizeSelection(ViewFrustum& viewFrustum)
     }
 
 
-    std::cout << mSelectionVertices->getSelectedVertexCollection()->getDataVectorsMap().size() << std::endl;
+    std::cout << mSelectionVertices->getDataVectorsMap().size() << std::endl;
 
     // Disable selection rectangle
     switch (mSelectionMode)

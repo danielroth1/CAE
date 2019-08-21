@@ -6,7 +6,6 @@
 #include <scene/data/GeometricDataVisitor.h>
 #include <scene/scene_graph/SceneDataVisitor.h>
 #include <scene/scene_graph/SceneLeafData.h>
-#include <scene/VertexCollection.h>
 #include <GL/glu.h>
 #include <cmath>
 #include <iostream>

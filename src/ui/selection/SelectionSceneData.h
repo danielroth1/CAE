@@ -14,10 +14,13 @@ public:
     SelectionSceneData();
     virtual ~SelectionSceneData() override;
 
-    std::set<std::shared_ptr<SceneData>>& getSceneData();
+    const std::set<std::shared_ptr<SceneData>>& getSceneData() const;
+
+    void insert(const std::shared_ptr<SceneData>& sceneData);
 
     // Selection interface
 public:
+
     virtual void clear() override;
 
     virtual void updateSelectionByRectangle(

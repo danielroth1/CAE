@@ -17,7 +17,6 @@
 #include <io/importers/OBJImporter.h>
 #include <io/importers/TetImporter.h>
 #include <modules/mesh_converter/MeshCriteria.h>
-#include <scene/VertexCollection.h>
 #include <scene/data/GeometricDataVisitor.h>
 #include <scene/data/simulation/FEMData.h>
 #include <simulation/SimulationObjectFactory.h>
@@ -533,10 +532,9 @@ void SGControl::removeNode(SGNode* node)
                 rm->removeFromRenderer(control.mAc->getUIControl()->getRenderer());
             }
 
-            VertexCollection* vc =
-                    control.mAc->getUIControl()->getSelectionControl()->getSelectionVertices()
-                    ->getSelectedVertexCollection();
-            vc->removeVertices(leafNode->getData());
+            SelectionVertices* sv = control.mAc->getUIControl()->
+                    getSelectionControl()->getSelectionVertices();
+            sv->removeVertices(leafNode->getData());
         }
 
         SGControl& control;

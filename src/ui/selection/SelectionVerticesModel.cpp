@@ -5,7 +5,6 @@
 #include <rendering/Renderer.h>
 #include <rendering/object/RenderPoints.h>
 #include <rendering/object/RenderScreenRectangle.h>
-#include <scene/VertexCollection.h>
 #include <scene/data/GeometricDataVisitor.h>
 #include <scene/data/geometric/GeometricPoint.h>
 #include <scene/data/geometric/Polygon2D.h>
@@ -34,7 +33,7 @@ void SelectionVerticesModel::updatePoints()
         return;
 
     // TODO: way too many dependencies
-    const DataVectorsMap& map = mSelection.getSelectedVertexCollection()->getDataVectorsMap();
+    const DataVectorsMap& map = mSelection.getDataVectorsMap();
     for (auto it = map.begin(); it != map.end(); ++it)
     {
         for (ID id : it->second)

@@ -14,8 +14,6 @@ public:
 
     virtual ~SelectionVertices() override;
 
-    VertexCollection* getSelectedVertexCollection();
-
     void clear() override;
 
     // Adds the vertices that are inside the 3D
@@ -33,6 +31,26 @@ public:
             ViewFrustum* viewFrustum,
             int x,
             int y) override;
+
+    // VertexCollection delegated methods
+public:
+    // Adder
+    void addVertex(
+            const std::shared_ptr<SceneLeafData>& leafData,
+            ID vertexID);
+    void addVertices(
+            const std::shared_ptr<SceneLeafData>& leafData,
+            std::vector<ID>& vectors);
+
+    // Remover
+    void removeVertex(
+            const std::shared_ptr<SceneLeafData>& leafData,
+            ID vertexID);
+    void removeVertices(
+            const std::shared_ptr<SceneLeafData>& leafData);
+
+    // Getter
+    const DataVectorsMap& getDataVectorsMap() const;
 
 private:
     void updateSelectedVertices(

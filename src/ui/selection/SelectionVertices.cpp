@@ -24,11 +24,6 @@ SelectionVertices::~SelectionVertices()
     //        delete it;
 }
 
-VertexCollection* SelectionVertices::getSelectedVertexCollection()
-{
-    return mVertexCollection.get();
-}
-
 void SelectionVertices::clear()
 {
     mVertexCollection->clear();
@@ -103,6 +98,35 @@ void SelectionVertices::updateSelectionByRay(
     sr.setRectangle(x - range, y - range,
                     x + range, y + range);
     updateSelectionByRectangle(leafData, viewFrustum, sr);
+}
+
+void SelectionVertices::addVertex(
+        const std::shared_ptr<SceneLeafData>& leafData, ID vertexID)
+{
+    mVertexCollection->addVertex(leafData, vertexID);
+}
+
+void SelectionVertices::addVertices(
+        const std::shared_ptr<SceneLeafData>& leafData, std::vector<ID>& vectors)
+{
+    mVertexCollection->addVertices(leafData, vectors);
+}
+
+void SelectionVertices::removeVertex(
+        const std::shared_ptr<SceneLeafData>& leafData, ID vertexID)
+{
+    mVertexCollection->removeVertex(leafData, vertexID);
+}
+
+void SelectionVertices::removeVertices(
+        const std::shared_ptr<SceneLeafData>& leafData)
+{
+    mVertexCollection->removeVertices(leafData);
+}
+
+const DataVectorsMap& SelectionVertices::getDataVectorsMap() const
+{
+    return mVertexCollection->getDataVectorsMap();
 }
 
 //void SelectionVertices::updateSelectedGroups(

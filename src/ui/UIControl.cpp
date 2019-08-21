@@ -13,7 +13,6 @@
 #include <QListWidgetItem>
 #include <qtreewidget.h>
 #include "rendering/Renderer.h"
-#include <scene/VertexCollection.h>
 #include <scene/data/SimulationData.h>
 #include <scene/data/simulation/FEMData.h>
 #include <scene/scene_graph/SGCore.h>
@@ -231,8 +230,8 @@ void UIControl::mouseReleaseEvent(QMouseEvent *event)
         Vector avg( 0.0, 0.0, 0.0 );
         size_t count = 0;
 
-        for (auto& it : mSelectionControl->getSelectionVertices()
-             ->getSelectedVertexCollection()->getDataVectorsMap())
+        for (auto& it :
+             mSelectionControl->getSelectionVertices()->getDataVectorsMap())
         {
             // linear force acts from each selected vertex to the point where clicked
             // where the z coordinate of the clicked point is the average of z coordinates
@@ -263,8 +262,8 @@ void UIControl::mouseReleaseEvent(QMouseEvent *event)
 
         // create a geometric point/ simulation point, and reference it with
         // SimulationPointRef
-        for (auto& it : mSelectionControl->getSelectionVertices()
-             ->getSelectedVertexCollection()->getDataVectorsMap())
+        for (auto& it :
+             mSelectionControl->getSelectionVertices()->getDataVectorsMap())
         {
             // linear force acts from each selected vertex to the point where clicked
             // where the z coordinate of the clicked point is the average of z coordinates
@@ -364,8 +363,8 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             // move every vertex by the same amount
             Vector avg = Vector::Zero();
             size_t count = 0;
-            for (auto it : mSelectionControl->getSelectionVertices()
-                 ->getSelectedVertexCollection()->getDataVectorsMap())
+            for (auto it :
+                 mSelectionControl->getSelectionVertices()->getDataVectorsMap())
             {
                 if (!it.first->getSimulationObjectRaw())
                     continue;
@@ -421,7 +420,7 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             Vector avgDir = avgTo - avg;
 
 
-//            for (auto it : mSelection->getSelectedVertexCollection()->getDataVectorsMap())
+//            for (auto it : mSelection->getDataVectorsMap())
 //            {
 //                for (ID id : it.second)
 //                {
@@ -435,8 +434,8 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             // Position update of vertex.
             // This should be modeled differently and should
             // at least be handled in the simulation class.
-            for (auto it : mSelectionControl->getSelectionVertices()
-                 ->getSelectedVertexCollection()->getDataVectorsMap())
+            for (auto it :
+                 mSelectionControl->getSelectionVertices()->getDataVectorsMap())
             {
                 if (!it.first->getSimulationObjectRaw())
                     continue;
@@ -560,8 +559,7 @@ void UIControl::onGroupItemClicked(QListWidgetItem *item)
     {
         for (ID vID : it.second)
         {
-            mSelectionControl->getSelectionVertices()
-                    ->getSelectedVertexCollection()->addVertex(it.first, vID);
+            mSelectionControl->getSelectionVertices()->addVertex(it.first, vID);
         }
     }
 }
@@ -575,7 +573,7 @@ void UIControl::onCreateGroupActionTriggered()
 {
     // create vertex group
     VertexGroup* vg = mVgManager->createVertexGroup(
-                mSelectionControl->getSelectionVertices()->getSelectedVertexCollection()->getDataVectorsMap());
+                mSelectionControl->getSelectionVertices()->getDataVectorsMap());
 
 //    mSelectionControl->getSelection()->getSelectedVertexGroups().insert(vg);
 
@@ -620,7 +618,7 @@ void UIControl::onAddTruncationActionTriggered()
     mAc->getSimulationControl()->clearTruncations();
     const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>& dvm =
             mAc->getUIControl()->getSelectionControl()->getSelectionVertices()
-            ->getSelectedVertexCollection()->getDataVectorsMap();
+            ->getDataVectorsMap();
     for (std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>::const_iterator it = dvm.begin();
          it != dvm.end(); ++it)
     {

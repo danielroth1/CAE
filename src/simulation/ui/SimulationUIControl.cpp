@@ -13,7 +13,6 @@
 
 #include <scene/scene_graph/SGCore.h>
 #include <scene/scene_graph/SceneData.h>
-#include <scene/VertexCollection.h>
 #include <scene/data/GeometricData.h>
 #include <scene/data/GeometricDataVisitor.h>
 #include <scene/data/geometric/Polygon3D.h>
@@ -239,7 +238,7 @@ void SimulationUIControl::onTruncateButtonClicked()
     mAc->getSimulationControl()->clearTruncations();
     const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>& dvm =
             mAc->getUIControl()->getSelectionControl()->getSelectionVertices()
-            ->getSelectedVertexCollection()->getDataVectorsMap();
+            ->getDataVectorsMap();
     for (std::map<std::shared_ptr<SceneLeafData>, std::vector<ID>>::const_iterator it = dvm.begin();
          it != dvm.end(); ++it)
     {

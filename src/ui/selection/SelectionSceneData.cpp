@@ -18,9 +18,14 @@ SelectionSceneData::~SelectionSceneData()
 
 }
 
-std::set<std::shared_ptr<SceneData>>& SelectionSceneData::getSceneData()
+const std::set<std::shared_ptr<SceneData> >& SelectionSceneData::getSceneData() const
 {
     return mSceneDatas;
+}
+
+void SelectionSceneData::insert(const std::shared_ptr<SceneData>& sceneData)
+{
+    mSceneDatas.insert(sceneData);
 }
 
 void SelectionSceneData::clear()
