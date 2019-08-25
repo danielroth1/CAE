@@ -36,6 +36,8 @@ public:
     // QWidget interface
 protected:
     virtual void closeEvent(QCloseEvent* event);
+    virtual void keyPressEvent(QKeyEvent* event);
+    virtual void keyReleaseEvent(QKeyEvent* event);
 
 private slots:
     // none

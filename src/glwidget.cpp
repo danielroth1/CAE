@@ -8,9 +8,10 @@
 #include <math.h>
 #include <QKeyEvent>
 
-#include "key_manager.h"
 #include "constants.h"
-#include "ui/UIControl.h"
+
+#include <ui/KeyManager.h>
+#include <ui/UIControl.h>
 #include <rendering/Renderer.h>
 
 #include <iostream>
@@ -32,8 +33,8 @@ GLWidget::~GLWidget()
 
 void GLWidget::setDefaults()
 {
-    mMouseSensitivy = 1.0;
-    mMovementSpeed = 0.2;
+    mMouseSensitivy = 1.0f;
+    mMovementSpeed = 0.2f;
     mMousePos = QPointF(0.0, 0.0);
     mAngle = QPointF(0.0, -15.0);
     mCameraPos = QVector3D(0.0, 1.5f, 5.5f);
@@ -94,15 +95,15 @@ void GLWidget::resizeGL(int width, int height)
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(65.0, (float)width / (float)height, 0.1, 10000);
+    gluPerspective(65.0, static_cast<double>(width) / height,
+                   0.1, 10000);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
 
-void GLWidget::keyPressEvent(QKeyEvent *keyEvent)
+void GLWidget::keyPressEvent(QKeyEvent* keyEvent)
 {
-    KeyManager::keyDownEvent(keyEvent);
-    mUiControl->keyPressEvent(keyEvent);;
+    mUiControl->keyPressEvent(keyEvent);
 
     if (keyEvent->key() == Qt::Key::Key_W)
         mCameraPos += mMovementSpeed * mCameraDir;
@@ -128,6 +129,8 @@ void GLWidget::keyPressEvent(QKeyEvent *keyEvent)
     {
         mCameraPos[1] -= mMovementSpeed;
     }
+
+    QWidget::keyPressEvent(keyEvent);
 //    update();
 //    switch (keyEvent->type()) {
 //    case Qt::Key::Key_W: // up
@@ -142,30 +145,34 @@ void GLWidget::keyPressEvent(QKeyEvent *keyEvent)
 
 }
 
-void GLWidget::keyReleaseEvent(QKeyEvent *keyEvent)
+void GLWidget::keyReleaseEvent(QKeyEvent* keyEvent)
 {
-    KeyManager::keyReleaseEvent(keyEvent);
+    QWidget::keyReleaseEvent(keyEvent);
 }
 
-void GLWidget::mousePressEvent(QMouseEvent *event)
+void GLWidget::mousePressEvent(QMouseEvent* event)
 {
     mMousePos = event->localPos();
     mUiControl->mousePressEvent(event);
+
+    QWidget::mousePressEvent(event);
 }
 
-void GLWidget::mouseReleaseEvent(QMouseEvent *event)
+void GLWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     mUiControl->mouseReleaseEvent(event);
+
+    QWidget::mouseReleaseEvent(event);
 }
 
-void GLWidget::mouseMoveEvent(QMouseEvent *event)
+void GLWidget::mouseMoveEvent(QMouseEvent* event)
 {
     qreal x = event->localPos().x();
     qreal y = event->localPos().y();
     if (event->buttons() == Qt::LeftButton)
     {
-        mAngle.rx() = fmod(mAngle.x() + (x - mMousePos.x() * mMouseSensitivy), 360.0);
-        mAngle.ry() -= (y - mMousePos.y()) * mMouseSensitivy;
+        mAngle.rx() = fmod(mAngle.x() + (x - mMousePos.x() * static_cast<double>(mMouseSensitivy)), 360.0);
+        mAngle.ry() -= (y - mMousePos.y()) * static_cast<double>(mMouseSensitivy);
         mAngle.ry() = max(-70.0, min(70.0, mAngle.y()));
 
         angleToDir();
@@ -176,11 +183,13 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     }
     if (event->buttons() == Qt::MiddleButton)
     {
-        mCameraPos[0] += 0.2 * (x - mMousePos.x()) * mMouseSensitivy;
-        mCameraPos[1] -= 0.2 * (y - mMousePos.y()) * mMouseSensitivy;
+        mCameraPos[0] += static_cast<float>(0.2 * (x - mMousePos.x()) * static_cast<double>(mMouseSensitivy));
+        mCameraPos[1] -= static_cast<float>(0.2 * (y - mMousePos.y()) * static_cast<double>(mMouseSensitivy));
     }
     mMousePos = event->localPos();
     mUiControl->mouseMoveEvent(event);
+
+    QWidget::mouseMoveEvent(event);
 }
 
 void GLWidget::paintGL()
@@ -196,8 +205,12 @@ void GLWidget::paintGL()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
         QVector3D cameraLookAt = mCameraPos + mCameraDir;
-        gluLookAt(mCameraPos.x(), mCameraPos.y(), mCameraPos.z(),
-                  cameraLookAt.x(), cameraLookAt.y(), cameraLookAt.z(),
+        gluLookAt(static_cast<double>(mCameraPos.x()),
+                  static_cast<double>(mCameraPos.y()),
+                  static_cast<double>(mCameraPos.z()),
+                  static_cast<double>(cameraLookAt.x()),
+                  static_cast<double>(cameraLookAt.y()),
+                  static_cast<double>(cameraLookAt.z()),
                   0.0, 1.0, 0.0);
         mUiControl->handleProjectionUpdated();
         STOP_TIMING_RENDERING;

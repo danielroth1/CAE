@@ -179,13 +179,6 @@ void FEMObject::setId(ID id)
 
 void FEMObject::initializeFEM()
 {
-    // initialize the gloabl SparseMatrix<Matrix3d> which is filled for
-    // each finite element and the global SparseMatrix<double> which
-    // is filled by the SparseMatrix<Matrix3d> and then used in the
-    // solver step.
-
-
-
     // initializes getMassMatrix(), getStiffnessMatirx()
     for (FiniteElement& fe : mFiniteElements)
         fe.initialize();
@@ -249,9 +242,6 @@ void FEMObject::solveFEMExplicitly(double timeStep, bool corotated)
     VectorXd::Map(mDisplacements[0].data(), size * 3) =
             VectorXd::Map(mPositions[0].data(), size * 3) -
             VectorXd::Map(mInitialPositions[0].data(), size * 3);
-
-    //std::cout << "u: " << VectorXd::Map(mDisplacements[0].data(), size * 3).norm() << "\n";
-
 }
 
 void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
@@ -292,8 +282,6 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
         SparseMatrix<double> AOriginal = mM + timeStep * timeStep * K;
         SparseMatrix<double> A;
         mTruncation->truncateByRemoving(AOriginal, A);
-
-//        std::cout << A.nonZeros() << ", " << A.rows() << ", " << A.cols() << "\n";
 
 //        SparseMatrix<float> C = A.cast<float>();
         // A is symmetric so no transposition required

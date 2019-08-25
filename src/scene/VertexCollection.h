@@ -23,6 +23,7 @@ public:
     void addVertices(
             const std::shared_ptr<SceneLeafData>& leafData,
             std::vector<ID>& vectors);
+    void addVertices(const DataVectorsMap& dvm);
 
     // Remover
     void removeVertex(
@@ -30,6 +31,10 @@ public:
             ID vertexID);
     void removeVertices(
             const std::shared_ptr<SceneLeafData>& leafData);
+    void removeVertices(
+            const std::shared_ptr<SceneLeafData>& leafData,
+            std::vector<ID>& vectors);
+    void removeVertices(const DataVectorsMap& dvm);
 
     // Getter
     const DataVectorsMap& getDataVectorsMap() const;

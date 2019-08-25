@@ -16,6 +16,7 @@ class SelectionSceneData;
 class SelectionSceneDataModel;
 class SelectionVertices;
 class SelectionVerticesModel;
+class VertexCollection;
 class ViewFrustum;
 
 // Controls Selection and SelectionModel.
@@ -102,9 +103,17 @@ public:
 private:
 
     // General Methods
+        void updateSelection(
+                const std::set<std::shared_ptr<SceneData>>& sceneDatas,
+                const VertexCollection& vc);
+
+        // Fills either sceneDatas if mSelectionType == SELECT_SCENE_NODES or
+        // vc if mSelectionType == SELECT_VERTICES.
         void finalizeSelection(
                 const std::shared_ptr<SceneLeafData>& leafData,
-                ViewFrustum& viewFrustum);
+                ViewFrustum& viewFrustum,
+                std::set<std::shared_ptr<SceneData>>& sceneDatas,
+                VertexCollection& vc);
 
     // SelectionRectangle
         // Initiates a new seleciton rectangle at the given position.

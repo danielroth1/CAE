@@ -3,6 +3,8 @@
 
 #include "Selection.h"
 
+#include <scene/VertexCollection.h>
+
 class SelectionRectangle;
 class VertexCollection;
 
@@ -14,23 +16,29 @@ public:
 
     virtual ~SelectionVertices() override;
 
-    void clear() override;
-
-    // Adds the vertices that are inside the 3D
-    // view frustum to the vertex collection.
-    virtual void updateSelectionByRectangle(
+    // Adds the vertices that are inside the 3D view frustum to the given
+    // VertexCollection vcOut.
+    void calculateSelectionByRectangle(
             const std::shared_ptr<SceneLeafData>& leafData,
             ViewFrustum* viewFrustum,
-            SelectionRectangle& rectangle) override;
+            SelectionRectangle& rectangle,
+            VertexCollection& vcOut) const;
 
     // TODO: implement this method
-    // Adds the vertices that are within a certain
-    // range of a at x, y casted ray.
-    virtual void updateSelectionByRay(
+    // Adds the vertices that are within a certain range of a at x, y casted
+    // ray to the given VertexCollection vcOut.
+    void calculateSelectionByRay(
             const std::shared_ptr<SceneLeafData>& leafData,
             ViewFrustum* viewFrustum,
             int x,
-            int y) override;
+            int y,
+            VertexCollection& vcOut) const;
+
+    void updateSelectedVertices(const VertexCollection& vc);
+
+    // Selection interface
+public:
+    void clear() override;
 
     // VertexCollection delegated methods
 public:
@@ -53,15 +61,8 @@ public:
     const DataVectorsMap& getDataVectorsMap() const;
 
 private:
-    void updateSelectedVertices(
-            const std::shared_ptr<SceneLeafData>& leafData,
-            ViewFrustum* viewFrustum);
 
-    // TODO: implement this
-    // updates selected vertex groups
-//    void updateSelectedGroups(SceneLeafData* leafData, ViewFrustum* viewFrustum);
-
-    std::unique_ptr<VertexCollection> mVertexCollection;
+    VertexCollection mVertexCollection;
 };
 
 #endif // SELECTIONVERTICES_H

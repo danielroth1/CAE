@@ -128,26 +128,19 @@ void SelectionControl::clearSelectionMode()
 
 void SelectionControl::selectSceneNode(SGNode* node)
 {
-    switch (mSelectionType)
-    {
-    case SELECT_SCENE_NODES:
-        mSelectionSceneData->clear();
-        break;
-    case SELECT_VERTICES:
-    {
-        mSelectionVertices->clear();
-        break;
-    }
-    case UNDEFINED:
-        break;
-    }
+    std::set<std::shared_ptr<SceneData>> sceneDatas;
+    VertexCollection vc;
 
     SGTraverser traverser = SGTraverserFactory::createDefaultSGTraverser(node);
     class Visitor : public SGNodeVisitor
     {
     public:
-        Visitor(SelectionControl& _sc)
+        Visitor(SelectionControl& _sc,
+                std::set<std::shared_ptr<SceneData>>& _sd,
+                VertexCollection& _vc)
             : sc(_sc)
+            , sceneDatas(_sd)
+            , vc(_vc)
         {
         }
 
@@ -162,14 +155,14 @@ void SelectionControl::selectSceneNode(SGNode* node)
             switch (sc.mSelectionType)
             {
             case SELECT_SCENE_NODES:
-                sc.mSelectionSceneData->insert(data);
+                sceneDatas.insert(data);
                 break;
             case SELECT_VERTICES:
             {
                 GeometricData* gd = data->getGeometricDataRaw();
                 for (ID i = 0; i < gd->getSize(); ++i)
                 {
-                    sc.mSelectionVertices->addVertex(data, i);
+                    vc.addVertex(data, i);
                 }
                 break;
             }
@@ -182,9 +175,13 @@ void SelectionControl::selectSceneNode(SGNode* node)
         }
 
         SelectionControl& sc;
-    } visitor(*this);
+        std::set<std::shared_ptr<SceneData>>& sceneDatas;
+        VertexCollection& vc;
+    } visitor(*this, sceneDatas, vc);
 
     traverser.traverse(visitor);
+
+    updateSelection(visitor.sceneDatas, visitor.vc);
 
     updateModels();
 }
@@ -261,30 +258,40 @@ const SelectionRectangle* SelectionControl::getSelectionRectangle() const
 
 void SelectionControl::finalizeSelection(ViewFrustum& viewFrustum)
 {
-    // if no shift is pressed
-    clearSelection();
+    std::set<std::shared_ptr<SceneData>> sceneDatas;
+    VertexCollection vc;
 
     // update selected vertices
-    // TODO: simpler way of traversing scene leaf nodes?
     SGTraverser traverser = mAc->getSGControl()->createSceneGraphTraverser();
     class SelectionVisitor : public SGNodeVisitorImpl
     {
     public:
-        SelectionVisitor(SelectionControl& _sc, ViewFrustum& _viewFrustum)
+        SelectionVisitor(SelectionControl& _sc,
+                         ViewFrustum& _viewFrustum,
+                         std::set<std::shared_ptr<SceneData>>& _sceneDatas,
+                         VertexCollection& _vc)
             : sc(_sc)
             , viewFrustum(_viewFrustum)
+            , sceneDatas(_sceneDatas)
+            , vc(_vc)
         {
         }
 
         void visit(SGLeafNode* leafNode)
         {
-            sc.finalizeSelection(leafNode->getData(), viewFrustum);
+            sc.finalizeSelection(leafNode->getData(), viewFrustum, sceneDatas, vc);
         }
 
         SelectionControl& sc;
         ViewFrustum& viewFrustum;
-    } visitor(*this, viewFrustum);
+
+        std::set<std::shared_ptr<SceneData>>& sceneDatas;
+        VertexCollection& vc;
+
+    } visitor(*this, viewFrustum, sceneDatas, vc);
     traverser.traverse(visitor);
+
+    updateSelection(sceneDatas, vc);
 
     switch(mSelectionType)
     {
@@ -308,9 +315,6 @@ void SelectionControl::finalizeSelection(ViewFrustum& viewFrustum)
     case UNDEFINED:
         break;
     }
-
-
-    std::cout << mSelectionVertices->getDataVectorsMap().size() << std::endl;
 
     // Disable selection rectangle
     switch (mSelectionMode)
@@ -353,9 +357,28 @@ void SelectionControl::removeListener(SelectionListener* listener)
     }
 }
 
+void SelectionControl::updateSelection(
+        const std::set<std::shared_ptr<SceneData> >& sceneDatas,
+        const VertexCollection& vc)
+{
+    switch (mSelectionType)
+    {
+    case SELECT_SCENE_NODES:
+        mSelectionSceneData->updateSelection(sceneDatas);
+        break;
+    case SELECT_VERTICES:
+        mSelectionVertices->updateSelectedVertices(vc);
+        break;
+    case UNDEFINED:
+        break;
+    }
+}
+
 void SelectionControl::finalizeSelection(
         const std::shared_ptr<SceneLeafData>& leafData,
-        ViewFrustum& viewFrustum)
+        ViewFrustum& viewFrustum,
+        std::set<std::shared_ptr<SceneData>>& sceneDatas,
+        VertexCollection& vc)
 {
     switch(mSelectionType)
     {
@@ -364,14 +387,16 @@ void SelectionControl::finalizeSelection(
         switch (mSelectionMode)
         {
         case RECTANGLE:
-            mSelectionSceneData->updateSelectionByRectangle(
-                        leafData, &viewFrustum, *mSelectionRectangle.get());
+            mSelectionSceneData->calculateSelectionByRectangle(
+                        leafData, &viewFrustum, *mSelectionRectangle.get(),
+                        sceneDatas);
             break;
         case RAY:
-            mSelectionSceneData->updateSelectionByRay(
+            mSelectionSceneData->calculateSelectionByRay(
                         leafData, &viewFrustum,
                         mSelectionRectangle->getXEnd(),
-                        mSelectionRectangle->getYEnd());
+                        mSelectionRectangle->getYEnd(),
+                        sceneDatas);
             break;
         }
 
@@ -380,14 +405,14 @@ void SelectionControl::finalizeSelection(
         switch (mSelectionMode)
         {
         case RECTANGLE:
-            mSelectionVertices->updateSelectionByRectangle(
-                        leafData, &viewFrustum, *mSelectionRectangle.get());
+            mSelectionVertices->calculateSelectionByRectangle(
+                        leafData, &viewFrustum, *mSelectionRectangle.get(), vc);
             break;
         case RAY:
-            mSelectionVertices->updateSelectionByRay(
+            mSelectionVertices->calculateSelectionByRay(
                         leafData, &viewFrustum,
                         mSelectionRectangle->getXEnd(),
-                        mSelectionRectangle->getYEnd());
+                        mSelectionRectangle->getYEnd(), vc);
             break;
         }
 

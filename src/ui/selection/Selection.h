@@ -32,16 +32,6 @@ public:
     // the vertex collection. Vertex grouops are not removed.
     virtual void clear() = 0;
 
-    virtual void updateSelectionByRectangle(
-            const std::shared_ptr<SceneLeafData>& leafData,
-            ViewFrustum* viewFrustum,
-            SelectionRectangle& rectangle) = 0;
-
-    virtual void updateSelectionByRay(
-            const std::shared_ptr<SceneLeafData>& leafData,
-            ViewFrustum* viewFrustum,
-            int x, int y) = 0;
-
 protected:
 
 //    std::set<VertexGroup*> mVertexGroups;

@@ -20,7 +20,11 @@ void VertexCollection::addVertex(
     DataVectorsMap::iterator it = mDataVectorsMap.find(leafData);
     if (it != mDataVectorsMap.end())
     {
-        it->second.push_back(vertexID);
+        auto it2 = std::find(it->second.begin(), it->second.end(), vertexID);
+        if (it2 == it->second.end())
+        {
+            it->second.push_back(vertexID);
+        }
     }
     else
     {
@@ -37,11 +41,27 @@ void VertexCollection::addVertices(
     DataVectorsMap::iterator it = mDataVectorsMap.find(leafData);
     if (it != mDataVectorsMap.end())
     {
-        it->second.insert(it->second.end(), vectors.begin(), vectors.end());
+        for (ID i : vectors)
+        {
+            auto it2 = std::find(it->second.begin(), it->second.end(), i);
+            if (it2 == it->second.end())
+            {
+                it->second.push_back(i);
+            }
+        }
+//        it->second.insert(it->second.end(), vectors.begin(), vectors.end());
     }
     else
     {
         mDataVectorsMap[leafData] = vectors;
+    }
+}
+
+void VertexCollection::addVertices(const DataVectorsMap& dvm)
+{
+    for (auto p : dvm)
+    {
+        addVertices(p.first, p.second);
     }
 }
 
@@ -60,6 +80,32 @@ void VertexCollection::removeVertices(
         const std::shared_ptr<SceneLeafData>& leafData)
 {
     mDataVectorsMap.erase(leafData);
+}
+
+void VertexCollection::removeVertices(
+        const std::shared_ptr<SceneLeafData>& leafData,
+        std::vector<ID>& vectors)
+{
+    DataVectorsMap::iterator it = mDataVectorsMap.find(leafData);
+    if (it != mDataVectorsMap.end())
+    {
+        for (ID id : vectors)
+        {
+            auto it2 = std::find(it->second.begin(), it->second.end(), id);
+            if (it2 != it->second.end())
+            {
+                it->second.erase(it2);
+            }
+        }
+    }
+}
+
+void VertexCollection::removeVertices(const DataVectorsMap& dvm)
+{
+    for (auto p : dvm)
+    {
+        removeVertices(p.first, p.second);
+    }
 }
 
 const DataVectorsMap& VertexCollection::getDataVectorsMap() const

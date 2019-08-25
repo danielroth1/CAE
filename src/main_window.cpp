@@ -7,6 +7,10 @@
 #include "ApplicationControl.h"
 #include <ui/scene_graph/QTreeWidgetItemWrapper.h>
 
+#include <QKeyEvent>
+
+#include <ui/KeyManager.h>
+
 MainWindow::MainWindow(ApplicationControl* ac, QWidget* parent)
     : QMainWindow(parent)
     , mAc(ac)
@@ -43,6 +47,16 @@ void MainWindow::closeEvent(QCloseEvent* event)
 {
     mAc->onExit();
     QMainWindow::closeEvent(event);
+}
+
+void MainWindow::keyPressEvent(QKeyEvent* event)
+{
+    KeyManager::instance()->keyDownEvent(event);
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent* event)
+{
+    KeyManager::instance()->keyReleaseEvent(event);
 }
 
 void MainWindow::setUIControl(UIControl *uiControl)

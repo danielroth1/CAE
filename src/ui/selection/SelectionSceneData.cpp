@@ -8,6 +8,8 @@
 
 #include <scene/data/GeometricData.h>
 
+#include <ui/KeyManager.h>
+
 SelectionSceneData::SelectionSceneData()
 {
 
@@ -18,25 +20,44 @@ SelectionSceneData::~SelectionSceneData()
 
 }
 
-const std::set<std::shared_ptr<SceneData> >& SelectionSceneData::getSceneData() const
+const std::set<std::shared_ptr<SceneData> >&
+SelectionSceneData::getSceneData() const
 {
     return mSceneDatas;
 }
 
-void SelectionSceneData::insert(const std::shared_ptr<SceneData>& sceneData)
+void SelectionSceneData::updateSelection(
+        const std::set<std::shared_ptr<SceneData>>& sceneDatas)
 {
-    mSceneDatas.insert(sceneData);
+    if (!KeyManager::instance()->isShiftDown() &&
+        !KeyManager::instance()->isCtrlDown())
+        clear();
+
+    for (const std::shared_ptr<SceneData>& sd : sceneDatas)
+    {
+        if (KeyManager::instance()->isShiftDown())
+        {
+            // add element
+            mSceneDatas.insert(sd);
+        }
+        else if (KeyManager::instance()->isCtrlDown())
+        {
+            // remove element
+            mSceneDatas.erase(sd);
+        }
+        else
+        {
+            // clear elements, then add
+            mSceneDatas.insert(sd);
+        }
+    }
 }
 
-void SelectionSceneData::clear()
-{
-    mSceneDatas.clear();
-}
-
-void SelectionSceneData::updateSelectionByRectangle(
+void SelectionSceneData::calculateSelectionByRectangle(
         const std::shared_ptr<SceneLeafData>& leafData,
         ViewFrustum* viewFrustum,
-        SelectionRectangle& rectangle)
+        SelectionRectangle& rectangle,
+        std::set<std::shared_ptr<SceneData>>& selectionOut) const
 {
     GeometricData* gd = leafData->getGeometricDataRaw();
     for (ID i = 0; i < gd->getSize(); ++i)
@@ -44,17 +65,23 @@ void SelectionSceneData::updateSelectionByRectangle(
         Vector& v = gd->getPosition(i);
         if (rectangle.testVertex(v, viewFrustum))
         {
-            mSceneDatas.insert(leafData);
+            selectionOut.insert(leafData);
         }
     }
 
 }
 
-void SelectionSceneData::updateSelectionByRay(
+void SelectionSceneData::calculateSelectionByRay(
         const std::shared_ptr<SceneLeafData>& /*leafData*/,
         ViewFrustum* /*viewFrustum*/,
         int /*x*/,
-        int /*y*/)
+        int /*y*/,
+        std::set<std::shared_ptr<SceneData>>& /*selectionOut*/) const
 {
 
+}
+
+void SelectionSceneData::clear()
+{
+    mSceneDatas.clear();
 }

@@ -56,8 +56,8 @@ private:
     QVector3D mCameraDir;
     QPointF mMousePos;
     QPointF mAngle; // (x, y) camera angle in degree
-    qreal mMouseSensitivy;
-    qreal mMovementSpeed;
+    float mMouseSensitivy;
+    float mMovementSpeed;
 
     Renderer* mRenderer;
     UIControl* mUiControl;
