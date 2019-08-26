@@ -14,9 +14,9 @@ void LightRenderer::initialize()
 {
     // set lighting and material
     float factorGlobal = 0.0f;
-    float factorAmbient = 0.5f;
-    float factorDiffuse = 1.0f;
-    float factorSpecular = 0.1f;
+    float factorAmbient = 0.30f;
+    float factorDiffuse = 0.55f;
+    float factorSpecular = 0.15f;
     GLfloat global_ambient[] = { factorGlobal, factorGlobal, factorGlobal, factorGlobal };
     GLfloat ambientLight[] =   { factorAmbient, factorAmbient, factorAmbient, factorAmbient };
     GLfloat diffuseLight[] =   { factorDiffuse, factorDiffuse, factorDiffuse, factorDiffuse };
@@ -46,15 +46,15 @@ void LightRenderer::drawLight()
                      mLightPosition(2), 0.0f };
     glLightfv(GL_LIGHT0, GL_POSITION, lp);
 
-    glDisable(GL_LIGHTING);
+//    glDisable(GL_LIGHTING);
     // draw yellow sphere for light source
-    glPushMatrix();
-    glTranslatef(lp[0], lp[1], lp[2]);
-    glColor3f(1.0f, 1.0f, 0.0f);
-    float color[4] = {1.0f, 1.0f, 0.0f, 1.0f};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
+//    glPushMatrix();
+//    glTranslatef(lp[0], lp[1], lp[2]);
+//    glColor3f(1.0f, 1.0f, 0.0f);
+//    float color[4] = {1.0f, 1.0f, 0.0f, 1.0f};
+//    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
 //    glutSolidSphere(0.05, 64, 64);
-    glPopMatrix();
+//    glPopMatrix();
 
     glEnable(GL_LIGHTING);
 }

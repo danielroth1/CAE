@@ -1,6 +1,7 @@
 #ifndef RENDERCONTROL_H
 #define RENDERCONTROL_H
 
+#include <data_structures/DataStructures.h>
 #include <memory>
 
 class Domain;
@@ -18,6 +19,9 @@ public:
     RenderControl(GLWidget* glWidget);
 
     void handlePreRenderingStep();
+
+    Eigen::Vector3f getHeadlightPosition() const;
+    void setHeadlightPosition(const Eigen::Vector3f& pos);
 
     Renderer* getRenderer();
     RendererProxy* getRendererProxy();

@@ -131,18 +131,6 @@ void GLWidget::keyPressEvent(QKeyEvent* keyEvent)
     }
 
     QWidget::keyPressEvent(keyEvent);
-//    update();
-//    switch (keyEvent->type()) {
-//    case Qt::Key::Key_W: // up
-//        break;
-//    case Qt::Key::Key_S: // down
-//        break;
-//    case Qt::Key::Key_A: // left
-//        break;
-//    case Qt::Key::Key_D: // right
-//        break;
-//    }
-
 }
 
 void GLWidget::keyReleaseEvent(QKeyEvent* keyEvent)

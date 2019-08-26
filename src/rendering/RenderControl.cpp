@@ -2,6 +2,8 @@
 #include "RenderThread.h"
 #include "Renderer.h"
 
+#include <glwidget.h>
+
 
 RenderControl::RenderControl(GLWidget* glWidget)
     : mGlWidget(glWidget)
@@ -18,7 +20,26 @@ RenderControl::RenderControl(GLWidget* glWidget)
 
 void RenderControl::handlePreRenderingStep()
 {
+    // head light
+    QVector3D pos = mGlWidget->getCameraPos();
+    QVector3D dir = mGlWidget->getCameraDir();
+
+    float distance = 1.0f;
+    mRenderer->setLightPosition(
+                Eigen::Vector3f(pos.x(), pos.y(), pos.z()) -
+                distance * Eigen::Vector3f(dir.x(), dir.y(), dir.z()));
+
     mRenderer->handlePreRenderingStep();
+}
+
+Eigen::Vector3f RenderControl::getHeadlightPosition() const
+{
+    return mRenderer->getLightPosition();
+}
+
+void RenderControl::setHeadlightPosition(const Eigen::Vector3f& pos)
+{
+    mRenderer->setLightPosition(pos);
 }
 
 Renderer* RenderControl::getRenderer()

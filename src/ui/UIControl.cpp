@@ -515,9 +515,14 @@ void UIControl::handleRemoveGroupButtonPressed()
     // TODO: implement this
 }
 
-ViewFrustum *UIControl::getViewFrustum()
+ViewFrustum* UIControl::getViewFrustum()
 {
     return mViewFrustum;
+}
+
+RenderControl* UIControl::getRenderControl()
+{
+    return mRenderControl.get();
 }
 
 Renderer* UIControl::getRenderer()

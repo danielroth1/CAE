@@ -13,7 +13,6 @@ class LightRenderer;
 class RendererProxy;
 class RenderObject;
 class RenderObjectFactory;
-class RenderSelection;
 
 Q_DECLARE_METATYPE(std::shared_ptr<RenderObject>)
 
@@ -41,22 +40,18 @@ public:
     // This method is completely thread safe.
     void removeRenderObject(std::shared_ptr<RenderObject> ro);
 
-    void setRenderSelection(RenderSelection* rs);
+    Eigen::Vector3f getLightPosition() const;
+    void setLightPosition(const Eigen::Vector3f& pos);
 
     std::shared_ptr<RenderObjectFactory>& getRenderObjectFactory();
-
-//public slots:
-    void addRenderObjectSlot(std::shared_ptr<RenderObject> ro);
-    void removeRenderObjectSlot(std::shared_ptr<RenderObject> ro);
-    void setRenderSelectionSlot(RenderSelection* rs);
 
     // Prints info about currently number of rendered triangles/ vertices
     void printInfo();
 
-//signals:
-//    void addRenderOjectSignal(std::shared_ptr<RenderObject> ro);
-//    void removeRenderObjectSignal(std::shared_ptr<RenderObject> ro);
-//    void setRenderSelectionSignal(RenderSelection* rs);
+//public slots:
+    void addRenderObjectSlot(std::shared_ptr<RenderObject> ro);
+    void removeRenderObjectSlot(std::shared_ptr<RenderObject> ro);
+    void setLightPositionSlot(Eigen::Vector3f pos);
 
 private:
 
@@ -81,6 +76,9 @@ PROXY_CLASS(RendererProxy, Renderer, mR,
             PROXY_FUNCTION(Renderer, mR, removeRenderObjectSlot,
                            PL(std::shared_ptr<RenderObject> ro),
                            PL(ro))
+            PROXY_FUNCTION(Renderer, mR, setLightPositionSlot,
+                           PL(Eigen::Vector3f pos),
+                           PL(pos))
             )
 
 #endif // RENDERER_H

@@ -92,38 +92,19 @@ void Renderer::removeRenderObject(std::shared_ptr<RenderObject> ro)
     mProxy->removeRenderObjectSlot(ro);
 }
 
+Vector3f Renderer::getLightPosition() const
+{
+    return mLightRenderer->getLightPosition();
+}
+
+void Renderer::setLightPosition(const Vector3f& pos)
+{
+    mProxy->setLightPositionSlot(pos);
+}
+
 std::shared_ptr<RenderObjectFactory>& Renderer::getRenderObjectFactory()
 {
     return mFactory;
-}
-
-void Renderer::addRenderObjectSlot(std::shared_ptr<RenderObject> ro)
-{
-//    mGLWidget->makeCurrent();
-//    std::cout << "SLOT: add to renderer\n";
-
-    START_TIMING_RENDERING("Renderer::addRenderObjectSlot");
-    auto it = std::find(mRenderObjects.begin(), mRenderObjects.end(), ro);
-    if (it == mRenderObjects.end())
-    {
-        mRenderObjects.push_back(ro);
-        ro->createBuffers();
-    }
-    STOP_TIMING_RENDERING;
-
-//    printInfo();
-}
-
-void Renderer::removeRenderObjectSlot(std::shared_ptr<RenderObject> ro)
-{
-//    mGLWidget->makeCurrent();
-    // TODO: is the RenderObject really removed?
-    auto it = std::find(mRenderObjects.begin(), mRenderObjects.end(), ro);
-    if (it != mRenderObjects.end())
-    {
-        mRenderObjects.erase(it);
-        std::cout << "size = " << mRenderObjects.size() << std::endl;
-    }
 }
 
 void Renderer::printInfo()
@@ -170,4 +151,37 @@ void Renderer::printInfo()
     }
 
     std::cout << "#Vertices: " << v.nVertices << ", #Triangles: " << v.nTriangles << std::endl;
+}
+
+void Renderer::addRenderObjectSlot(std::shared_ptr<RenderObject> ro)
+{
+//    mGLWidget->makeCurrent();
+//    std::cout << "SLOT: add to renderer\n";
+
+    START_TIMING_RENDERING("Renderer::addRenderObjectSlot");
+    auto it = std::find(mRenderObjects.begin(), mRenderObjects.end(), ro);
+    if (it == mRenderObjects.end())
+    {
+        mRenderObjects.push_back(ro);
+        ro->createBuffers();
+    }
+    STOP_TIMING_RENDERING;
+
+//    printInfo();
+}
+
+void Renderer::removeRenderObjectSlot(std::shared_ptr<RenderObject> ro)
+{
+//    mGLWidget->makeCurrent();
+    auto it = std::find(mRenderObjects.begin(), mRenderObjects.end(), ro);
+    if (it != mRenderObjects.end())
+    {
+        mRenderObjects.erase(it);
+        std::cout << "size = " << mRenderObjects.size() << std::endl;
+    }
+}
+
+void Renderer::setLightPositionSlot(Eigen::Vector3f pos)
+{
+    mLightRenderer->setLightPosition(pos);
 }

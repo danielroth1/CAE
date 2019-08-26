@@ -82,6 +82,7 @@ public:
 
     // Getter
     ViewFrustum* getViewFrustum();
+    RenderControl* getRenderControl();
     Renderer* getRenderer();
     ModulesUIControl* getModulesUIControl();
     SelectionControl* getSelectionControl();
