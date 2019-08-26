@@ -23,6 +23,8 @@ public:
             bool renderPointsEnablded = true,
             bool renderLinesEnablded = true);
 
+    virtual ~MeshInterpolatorRenderModel() override;
+
     void setRenderPointsEnabled(bool renderPointsEnabled);
     bool isRenderPointsEnabled() const;
 
@@ -31,12 +33,12 @@ public:
 
     // RenderModel interface
 public:
-    virtual void reset();
-    virtual void update();
-    virtual void revalidate();
-    virtual void accept(RenderModelVisitor& v);
-    virtual void addToRenderer(Renderer* renderer);
-    virtual void removeFromRenderer(Renderer* renderer);
+    virtual void reset() override;
+    virtual void update() override;
+    virtual void revalidate() override;
+    virtual void accept(RenderModelVisitor& v) override;
+    virtual void addToRenderer(Renderer* renderer) override;
+    virtual void removeFromRenderer(Renderer* renderer) override;
 
 private:
 

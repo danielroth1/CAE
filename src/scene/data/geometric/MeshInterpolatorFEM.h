@@ -15,6 +15,8 @@ public:
     MeshInterpolatorFEM(const std::shared_ptr<Polygon3D>& source,
                         const std::shared_ptr<Polygon>& target);
 
+    virtual ~MeshInterpolatorFEM() override;
+
     void solve();
 
     // MeshInterpolator interface

@@ -142,6 +142,8 @@ public:
     MeshInterpolatorMeshMesh(const std::shared_ptr<Polygon>& source,
                              const std::shared_ptr<Polygon>& target);
 
+    virtual ~MeshInterpolatorMeshMesh() override;
+
     // Use Newtons method to solve the nonlinear equations. This is the
     // prefered solver because it converges a lot faster compared to NCG.
     void solveNewton(const NewtonParameters& newtonParams = NewtonParameters());

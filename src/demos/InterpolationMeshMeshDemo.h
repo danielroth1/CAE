@@ -5,6 +5,7 @@
 #include <scene/scene_graph/SGControl.h>
 
 class ApplicationControl;
+class GeometricDataListener;
 class MeshInterpolatorMeshMesh;
 class MeshInterpolatorRenderModel;
 
@@ -26,6 +27,8 @@ private:
 
     std::shared_ptr<MeshInterpolatorMeshMesh> mInterpolator;
     std::shared_ptr<MeshInterpolatorRenderModel> mInterpolatorModel;
+
+    std::shared_ptr<GeometricDataListener> mListener;
 
     ApplicationControl* mAc;
 };

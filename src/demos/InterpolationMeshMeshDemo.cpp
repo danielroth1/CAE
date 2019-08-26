@@ -296,16 +296,19 @@ void InterpolationMeshMeshDemo::addInterpolation(
         std::shared_ptr<MeshInterpolatorRenderModel> renderModel;
     };
 
-    std::shared_ptr<mInterpolatorModelUpdater> updater =
-            std::make_shared<mInterpolatorModelUpdater>(
+    mListener = std::make_shared<mInterpolatorModelUpdater>(
                 mInterpolator,
                 mInterpolatorModel);
 
     sourceNode->getData()->getGeometricData()->addGeometricDataListener(
-                updater);
+                mListener);
 }
 
 void InterpolationMeshMeshDemo::unload()
 {
-
+    mInterpolator->getSource()->removeGeometricDataListener(mListener.get());
+    mInterpolator = nullptr;
+    mInterpolatorModel->removeFromRenderer(mAc->getUIControl()->getRenderer());
+    mInterpolatorModel = nullptr;
+    mListener = nullptr;
 }

@@ -16,6 +16,11 @@ MeshInterpolatorFEM::MeshInterpolatorFEM(
 
 }
 
+MeshInterpolatorFEM::~MeshInterpolatorFEM()
+{
+
+}
+
 void MeshInterpolatorFEM::solve()
 {
     mSource->update();

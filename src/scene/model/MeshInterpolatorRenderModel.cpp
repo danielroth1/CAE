@@ -23,6 +23,11 @@ MeshInterpolatorRenderModel::MeshInterpolatorRenderModel(
     reset();
 }
 
+MeshInterpolatorRenderModel::~MeshInterpolatorRenderModel()
+{
+
+}
+
 void MeshInterpolatorRenderModel::setRenderPointsEnabled(bool renderPointsEnabled)
 {
     mRenderPointsEnabled = renderPointsEnabled;

@@ -19,6 +19,11 @@ MeshInterpolatorMeshMesh::MeshInterpolatorMeshMesh(
 {
 }
 
+MeshInterpolatorMeshMesh::~MeshInterpolatorMeshMesh()
+{
+
+}
+
 void MeshInterpolatorMeshMesh::solveNewton(
         const MeshInterpolatorMeshMesh::NewtonParameters& newtonParams)
 {
