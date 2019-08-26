@@ -31,6 +31,8 @@ void RenderScreenRectangle::draw()
 
 void RenderScreenRectangle::drawImmediate()
 {
+    setPolygonMode();
+
     int* VP = mViewFrustum.getViewPort();
     const double w = VP[2];
     const double h = VP[3];
@@ -64,12 +66,14 @@ void RenderScreenRectangle::drawImmediate()
 
 void RenderScreenRectangle::drawArray()
 {
+    setPolygonMode();
     mRenderMaterial->glMaterial();
     // Not implemented
 }
 
 void RenderScreenRectangle::drawVBO()
 {
+    setPolygonMode();
     mRenderMaterial->glMaterial();
     // Not implemented
 }

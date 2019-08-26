@@ -21,6 +21,7 @@ SelectionRectangleModel::SelectionRectangleModel(
                                                     selectionRectangle.getYEnd());
     mRenderScreenRectangle->setRenderMaterial(
                 RenderMaterial::createFromColor({1.0f, 0.0f, 0.0f, 0.8f}));
+    mRenderScreenRectangle->setWireframeEnabled(true);
 }
 
 SelectionRectangleModel::~SelectionRectangleModel()

@@ -9,6 +9,7 @@ RenderObject::RenderObject()
 {
     mVisible = true;
     mRenderMaterial = RenderMaterial::createFromColor({1, 1, 1, 1});
+    mWireframeEnabled = false;
 }
 
 void RenderObject::setDrawMode(RenderObject::DrawMode dm)
@@ -41,14 +42,19 @@ void RenderObject::setVisible(bool visible)
     mVisible = visible;
 }
 
+bool RenderObject::isWireframeEnabled() const
+{
+    return mWireframeEnabled;
+}
+
+void RenderObject::setWireframeEnabled(bool wireframeEnabled)
+{
+    mWireframeEnabled = wireframeEnabled;
+}
+
 Eigen::Affine3f& RenderObject::getTransform()
 {
     return mTransform;
-}
-
-RenderObject::~RenderObject()
-{
-
 }
 
 void RenderObject::translate(const Eigen::Vector3d& v)
@@ -79,4 +85,17 @@ void RenderObject::scale(const Eigen::Vector3d& v)
 void RenderObject::scale(const Eigen::Vector3f& v)
 {
     mTransform.scale(v);
+}
+
+RenderObject::~RenderObject()
+{
+
+}
+
+void RenderObject::setPolygonMode()
+{
+    if (mWireframeEnabled)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

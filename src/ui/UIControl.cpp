@@ -92,7 +92,6 @@ void UIControl::initializeRenderer()
     mGlWidget = mMainWindow->getGlWidget();
     mRenderControl = std::make_shared<RenderControl>(mGlWidget);
     mRenderControl->getRenderer()->initialize();
-    mRenderControl->getRenderer()->enableWireframe(true);
     mGlWidget->setRenderer(mRenderControl->getRenderer());
 }
 

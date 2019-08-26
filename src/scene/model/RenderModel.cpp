@@ -32,11 +32,22 @@ void RenderModel::setVisible(bool visible)
     mVisible = visible;
 }
 
+bool RenderModel::isWireframeEnabled() const
+{
+    return mWireframeEnabled;
+}
+
+void RenderModel::setWireframeEnabled(bool wireframeEnabled)
+{
+    mWireframeEnabled = wireframeEnabled;
+}
+
 RenderModel::RenderModel()
 {
     mAddedToRenderer = false;
     mAlwaysUpdate = false;
     mVisible = true;
+    mWireframeEnabled = false;
 }
 
 RenderModel::~RenderModel()

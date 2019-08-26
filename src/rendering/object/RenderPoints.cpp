@@ -25,6 +25,8 @@ void RenderPoints::draw()
 
 void RenderPoints::drawImmediate()
 {
+    setPolygonMode();
+
     mRenderMaterial->glMaterial();
 
     // render selected vertices
@@ -65,12 +67,14 @@ void RenderPoints::drawImmediate()
 
 void RenderPoints::drawArray()
 {
+    setPolygonMode();
     mRenderMaterial->glMaterial();
     // Not implemented
 }
 
 void RenderPoints::drawVBO()
 {
+    setPolygonMode();
     mRenderMaterial->glMaterial();
     // Not implemented
 }

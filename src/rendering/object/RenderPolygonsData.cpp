@@ -7,6 +7,7 @@ RenderPolygonsData::RenderPolygonsData()
 {
     mVisible = true;
     mTexturingEnabled = false;
+    mWireframeEnabled = false;
 }
 
 RenderPolygonsData::RenderPolygonsData(RenderPolygonsData& rpd)
@@ -14,6 +15,7 @@ RenderPolygonsData::RenderPolygonsData(RenderPolygonsData& rpd)
     , mTextureCoordinates(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW)
     , mTexturingEnabled(rpd.mTexturingEnabled)
     , mVisible(rpd.mVisible)
+    , mWireframeEnabled(rpd.mWireframeEnabled)
 {
 
 }
@@ -54,7 +56,7 @@ RenderPolygonsData::getTexturesCoordinatesBufferedData()
     return mTextureCoordinates;
 }
 
-bool RenderPolygonsData::isVisible()
+bool RenderPolygonsData::isVisible() const
 {
     return mVisible;
 }
@@ -62,6 +64,16 @@ bool RenderPolygonsData::isVisible()
 void RenderPolygonsData::setVisible(bool visible)
 {
     mVisible = visible;
+}
+
+bool RenderPolygonsData::isWireframeEnabled() const
+{
+    return mWireframeEnabled;
+}
+
+void RenderPolygonsData::setWireframeEnabled(bool wireframeEnabled)
+{
+    mWireframeEnabled = wireframeEnabled;
 }
 
 void RenderPolygonsData::setAppearances(
@@ -110,4 +122,12 @@ void RenderPolygonsData::setTextureCoordinates(
     textureCoordinates->clear();
     textureCoordinates->insert(textureCoordinates->begin(), tc.begin(), tc.end());
     mTextureCoordinates.setDataChanged(true);
+}
+
+void RenderPolygonsData::setPolygonMode() const
+{
+    if (mWireframeEnabled)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

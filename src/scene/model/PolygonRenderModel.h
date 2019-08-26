@@ -97,6 +97,7 @@ public:
     virtual void addToRenderer(Renderer* renderer) override;
     virtual void removeFromRenderer(Renderer* renderer) override;
     virtual void setVisible(bool visible) override;
+    virtual void setWireframeEnabled(bool wireframeEnabled) override;
 
 private:
 

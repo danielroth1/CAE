@@ -30,8 +30,6 @@ public:
 
     void initialize();
 
-    void enableWireframe(bool enable);
-
     // This function is called with an active GL context.
     // Processes all operations that require the GL context.
     void handlePreRenderingStep();
@@ -68,8 +66,6 @@ private:
 
     std::vector<std::shared_ptr<RenderObject>> mRenderObjects;
 
-    bool mEnableWireframe;
-
     std::shared_ptr<RendererProxy> mProxy;
 
     std::shared_ptr<LightRenderer> mLightRenderer;
@@ -79,9 +75,6 @@ private:
 };
 
 PROXY_CLASS(RendererProxy, Renderer, mR,
-            PROXY_FUNCTION(Renderer, mR, enableWireframe,
-                           PL(bool enable),
-                           PL(enable))
             PROXY_FUNCTION(Renderer, mR, addRenderObjectSlot,
                            PL(std::shared_ptr<RenderObject> ro),
                            PL(ro))

@@ -122,6 +122,8 @@ void RenderPolygons::drawImmediate()
 
         for (const std::shared_ptr<RenderPolygonsData>& data : mData)
         {
+            data->setPolygonMode();
+
             RenderPolygonsDataBS* dataBS = static_cast<RenderPolygonsDataBS*>(data.get());
 
             glMultMatrixf(dataBS->getTransform()->data());
@@ -159,6 +161,8 @@ void RenderPolygons::drawImmediate()
 
         for (const std::shared_ptr<RenderPolygonsData>& data : mData)
         {
+            data->setPolygonMode();
+
             RenderPolygonsDataWS* dataWS =
                     static_cast<RenderPolygonsDataWS*>(data.get());
 
@@ -192,8 +196,6 @@ void RenderPolygons::drawImmediate()
 
 void RenderPolygons::drawArray()
 {
-
-
     switch(mType)
     {
     case BSWSVectors::BODY_SPACE:
@@ -209,6 +211,9 @@ void RenderPolygons::drawArray()
         {
             if (!data->isInitialized() || !data->isVisible())
                 continue;
+
+            data->setPolygonMode();
+
             ++drawCount;
 
             RenderPolygonsDataBS* dataBS = static_cast<RenderPolygonsDataBS*>(data.get());
@@ -260,6 +265,8 @@ void RenderPolygons::drawArray()
         {
             if (!data->isInitialized() || !data->isVisible())
                 continue;
+
+            data->setPolygonMode();
 
             RenderPolygonsDataWS* dataBS =
                     static_cast<RenderPolygonsDataWS*>(data.get());
@@ -340,6 +347,8 @@ void RenderPolygons::drawVBO()
             if (!data->isInitialized())
                 data->initialize();
 
+            data->setPolygonMode();
+
             RenderPolygonsDataBS* dataBS =
                     static_cast<RenderPolygonsDataBS*>(data.get());
 
@@ -377,6 +386,8 @@ void RenderPolygons::drawVBO()
 
             if (!data->isInitialized())
                 data->initialize();
+
+            data->setPolygonMode();
 
             RenderPolygonsDataWS* dataWS = static_cast<RenderPolygonsDataWS*>(data.get());
 
@@ -459,6 +470,7 @@ void RenderPolygons::initialize()
 void RenderPolygons::drawTriangles(
         const std::shared_ptr<RenderPolygonsData>& data, int nTriangles)
 {
+    data->setPolygonMode();
 
     std::shared_ptr<Appearances> appearances = data->getAppearances();
 

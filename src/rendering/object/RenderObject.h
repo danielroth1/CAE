@@ -70,6 +70,12 @@ public:
     virtual bool isVisible() const;
     virtual void setVisible(bool visible);
 
+    // This does not work for Polygons. Here use RenderPolygonData.
+    bool isWireframeEnabled() const;
+
+    // This does not work for Polygons. Here use RenderPolygonData.
+    void setWireframeEnabled(bool wireframeEnabled);
+
     // Returns a reference to the transformatoin matrix.
     // This method can be used to adapt the transformation
     // matrix using Eigen syntax.
@@ -88,6 +94,10 @@ public:
 protected:
     virtual ~RenderObject();
 
+    // Enableds/ Disables wireframe according to the set flag. Must be called
+    // before rendering the object.
+    void setPolygonMode();
+
     DrawMode mDm;
 
     std::shared_ptr<RenderMaterial> mRenderMaterial;
@@ -96,6 +106,9 @@ protected:
 
     // Transformation matrix
     Eigen::Affine3f mTransform;
+
+    bool mWireframeEnabled;
+
 };
 
 #endif // RENDEROBJECT_H

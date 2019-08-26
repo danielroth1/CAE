@@ -8,7 +8,6 @@ class ViewFrustum;
 
 using namespace Eigen;
 
-// TODO: implement this class
 class RenderScreenRectangle : public RenderObject
 {
 public:

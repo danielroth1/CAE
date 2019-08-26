@@ -87,6 +87,8 @@ PolygonRenderModel::~PolygonRenderModel()
     // remove listener that was created in the constructor
     mPolygon->removeGeometricDataListener(mGeometricListener.get());
 
+    mRenderModelManager->removePolygonData(mPolygon->getData());
+
     if (mRenderPolygons && mRenderPolygonsData)
         mRenderPolygons->removeRenderPolygonsData(mRenderPolygonsData);
 }
@@ -428,6 +430,12 @@ void PolygonRenderModel::setVisible(bool visible)
         mRenderPoints->setVisible(visible);
     }
     RenderModel::setVisible(visible);
+}
+
+void PolygonRenderModel::setWireframeEnabled(bool wireframeEnabled)
+{
+    mRenderPolygonsData->setWireframeEnabled(wireframeEnabled);
+    RenderModel::setWireframeEnabled(wireframeEnabled);
 }
 
 std::vector<TopologyFace>* PolygonRenderModel::retrieveRelevantFaces()

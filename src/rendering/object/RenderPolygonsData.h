@@ -34,8 +34,11 @@ public:
 
     BufferedData<Eigen::Vector2f, float, 2>& getTexturesCoordinatesBufferedData();
 
-    bool isVisible();
+    bool isVisible() const;
     void setVisible(bool visible);
+
+    bool isWireframeEnabled() const;
+    void setWireframeEnabled(bool wireframeEnabled);
 
     void setAppearances(const std::shared_ptr<Appearances>& appearances);
     std::shared_ptr<Appearances> getAppearances() const;
@@ -57,6 +60,9 @@ public:
     // frame.
     void setTextureCoordinates(const std::vector<Eigen::Vector2f>& tc);
 
+    // Sets the polygon mode according to if wireframe is chosen.
+    void setPolygonMode() const;
+
 private:
 
     std::shared_ptr<Appearances> mAppearances;
@@ -66,6 +72,8 @@ private:
     bool mTexturingEnabled;
 
     bool mVisible;
+
+    bool mWireframeEnabled;
 };
 
 #endif // RENDERPOLYGONSDATA_H

@@ -65,6 +65,9 @@ public:
     virtual bool isVisible() const;
     virtual void setVisible(bool visible);
 
+    virtual bool isWireframeEnabled() const;
+    virtual void setWireframeEnabled(bool wireframeEnabled);
+
     virtual ~RenderModel();
 protected:
     RenderModel();
@@ -73,6 +76,9 @@ protected:
     bool mAlwaysUpdate;
 
     bool mVisible;
+
+private:
+    bool mWireframeEnabled;
 };
 
 #endif // RENDERMODEL_H

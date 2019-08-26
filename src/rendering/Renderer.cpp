@@ -37,10 +37,6 @@ Domain* Renderer::getDomain()
 void Renderer::draw()
 {
     START_TIMING_RENDERING("Renderer::draw()")
-    if (mEnableWireframe)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    else
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     if (mLightRenderer)
         mLightRenderer->drawLight();
@@ -78,11 +74,6 @@ void Renderer::initialize()
     // enable transparency
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable( GL_BLEND );
-}
-
-void Renderer::enableWireframe(bool enable)
-{
-    mEnableWireframe = enable;
 }
 
 void Renderer::handlePreRenderingStep()

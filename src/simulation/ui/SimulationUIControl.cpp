@@ -198,6 +198,13 @@ void SimulationUIControl::init(QWidget* parent)
 
     // No domain needed. The render models already thread safety.
     polyModelWidget->addBool(
+                "Wireframe",
+                MemberAccessorFactory::createGetterSetter<bool, PolygonRenderModel>(
+                    &PolygonRenderModel::isWireframeEnabled,
+                    &PolygonRenderModel::setWireframeEnabled,
+                    false, nullptr, nullptr, nullptr));
+
+    polyModelWidget->addBool(
                 "Render Face Normals",
                 MemberAccessorFactory::createGetterSetter<bool, PolygonRenderModel>(
                     &PolygonRenderModel::isRenderFaceNormals,
