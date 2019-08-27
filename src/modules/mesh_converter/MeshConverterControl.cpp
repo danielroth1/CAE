@@ -47,9 +47,6 @@ void MeshConverterControl::convert(
         bool renderOnlyOuterFaces)
 {
     // get selected leaf nodes
-    // TODO: how to retrieve the SGLeafNode from SceneLeafData? currently not possible
-    // either get the SGLeafNode directly from the selection or store pointer in
-    // SceneLeafData
     std::vector<std::shared_ptr<SceneLeafData>> sceneLeafData =
             mAc->getUIControl()->getSelectionControl()->retrieveSelectedSceneLeafData();
 
@@ -86,22 +83,28 @@ void MeshConverterControl::convert(
         extractPolygonVisitor.polygon = nullptr;
         leafData->getGeometricData()->accept(extractPolygonVisitor);
 
+        // create new node
+        SGLeafNode* newNode = mAc->getSGControl()->createLeafNode(
+                    leafData->getNode()->getName() + " (converted)",
+                    leafData->getNode()->getParent(),
+                    std::dynamic_pointer_cast<Polygon>(leafData->getGeometricData()),
+                    leafData->getGeometricData()->getPosition(0));
+
         // create the new polygon
-        SGLeafNode* newNode =
-                mAc->getSGControl()->create3DGeometryFrom2D(
-                    static_cast<SGLeafNode*>(leafData->getNode()),
+        mAc->getSGControl()->create3DGeometryFrom2D(
+                    newNode,
                     meshCriteria,
                     renderOnlyOuterFaces);
 
         //TODO: save the newly created SGLeafNode* and the old Polygon
-        if (extractPolygonVisitor.polygon &&
-            extractPolygonVisitor.polygon != newNode->getData()->getGeometricData())
-        {
-            mSavedPolygons.push_back(
-                        std::make_tuple(
-                            newNode->getData(),
-                            extractPolygonVisitor.polygon));
-        }
+//        if (extractPolygonVisitor.polygon &&
+//            extractPolygonVisitor.polygon != newNode->getData()->getGeometricData())
+//        {
+//            mSavedPolygons.push_back(
+//                        std::make_tuple(
+//                            newNode->getData(),
+//                            extractPolygonVisitor.polygon));
+//        }
     }
 }
 
