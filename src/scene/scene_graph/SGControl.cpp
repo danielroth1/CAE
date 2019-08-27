@@ -557,17 +557,21 @@ SGLeafNode* SGControl::createLeafNode(
     SGLeafNode* leafNode = new SGLeafNode(name);
     std::shared_ptr<SceneLeafData> leafData = std::make_shared<SceneLeafData>(leafNode);
 
-    polygon->translate(position);
-    leafData->setGeometricData(polygon);
+    if (polygon)
+    {
+        polygon->translate(position);
+        leafData->setGeometricData(polygon);
 
-    // Render Model
-    std::shared_ptr<PolygonRenderModel> renderModel =
-            ModelFactory::createPolygonRenderModelImproved(
-                mAc->getRenderModelManager(),
-                polygon,
-                renderOnlyOuterFaces);
+        // Render Model
+        std::shared_ptr<PolygonRenderModel> renderModel =
+                ModelFactory::createPolygonRenderModelImproved(
+                    mAc->getRenderModelManager(),
+                    polygon,
+                    renderOnlyOuterFaces);
 
-    leafData->setRenderModel(renderModel);
+        leafData->setRenderModel(renderModel);
+    }
+
 
     // Create leaf node and add to scene graph
     leafNode->setData(leafData);
