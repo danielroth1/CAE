@@ -73,6 +73,10 @@ void VertexCollection::removeVertex(
     if (it != mDataVectorsMap.end())
     {
         std::remove(it->second.begin(), it->second.end(), vertexID);
+        if (it->second.empty())
+        {
+            mDataVectorsMap.erase(it);
+        }
     }
 }
 
@@ -96,6 +100,10 @@ void VertexCollection::removeVertices(
             {
                 it->second.erase(it2);
             }
+        }
+        if (it->second.empty())
+        {
+            mDataVectorsMap.erase(it);
         }
     }
 }

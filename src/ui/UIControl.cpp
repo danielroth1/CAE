@@ -352,9 +352,9 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             double y = mMainWindow->getGlWidget()->height() - event->pos().y();
 //            double z = 1; // near plane
 
-            mSelectionControl->updateSelection(
-                        static_cast<int>(x),
-                        static_cast<int>(y));
+//            mSelectionControl->updateSelection(
+//                        static_cast<int>(x),
+//                        static_cast<int>(y));
 
 //            QVector3D camPos = mGlWidget->getCameraPos();
 //            QVector3D camDir = mGlWidget->getCameraDir();
@@ -439,9 +439,22 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
                 if (!it.first->getSimulationObjectRaw())
                     continue;
 
-                for (ID id : it.second)
+                switch (it.first->getSimulationObjectRaw()->getType())
                 {
-                    SimulationObjectProxy(it.first->getSimulationObjectRaw()).addToPosition(avgDir, id);
+                case SimulationObject::Type::SIMULATION_POINT:
+                case SimulationObject::Type::RIGID_BODY:
+                {
+                    SimulationObjectProxy(it.first->getSimulationObjectRaw()).addToPosition(avgDir, 0);
+                    break;
+                }
+                case SimulationObject::Type::FEM_OBJECT:
+                {
+                    for (ID id : it.second)
+                    {
+                        SimulationObjectProxy(it.first->getSimulationObjectRaw()).addToPosition(avgDir, id);
+                    }
+                    break;
+                }
                 }
             }
 
