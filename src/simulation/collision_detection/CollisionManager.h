@@ -60,6 +60,10 @@ public:
 private:
     struct CollisionData
     {
+        // To detect if the data changed before updating everything.
+        Eigen::Vector3d mX;
+        Eigen::Quaterniond mQ;
+
         std::shared_ptr<SimulationObject> mSo;
         std::shared_ptr<Polygon> mPolygon;
         std::shared_ptr<BoundingVolumeHierarchy> mBvh;

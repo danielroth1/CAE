@@ -307,9 +307,29 @@ bool CollisionManager::collideAll()
 
 void CollisionManager::updateAll()
 {
-    for (const CollisionData& cd : mCollisionData)
+    for (CollisionData& cd : mCollisionData)
     {
-        cd.mBvh->udpate();
+        bool dirty = true;
+
+        // Only update a collision hierarchy if position or orientation of
+        // the rigid changed. This is especially important to prevent
+        // unnecessary updates of static rigids.
+        if (cd.mSo->getType() == SimulationObject::Type::RIGID_BODY)
+        {
+            RigidBody* rb = static_cast<RigidBody*>(cd.mSo.get());
+            if (cd.mQ.isApprox(rb->getOrientation()) &&
+                cd.mX.isApprox(rb->getPosition()))
+            {
+                dirty = false;
+            }
+            cd.mQ = rb->getOrientation();
+            cd.mX = rb->getPosition();
+        }
+
+        if (dirty)
+        {
+            cd.mBvh->udpate();
+        }
     }
 
     for (CollisionManagerListener* listener : mListeners)
