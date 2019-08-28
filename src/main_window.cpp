@@ -61,7 +61,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
 
 void MainWindow::setUIControl(UIControl *uiControl)
 {
-    m_ui_control = uiControl;
+    mUiControl = uiControl;
     ui->openGLWidget->setUIControl(uiControl);
 
     // connect singals
@@ -101,35 +101,45 @@ void MainWindow::on_sceneGraphTreeWidget_customContextMenuRequested(
     QTreeWidget* tree = ui->sceneGraphTreeWidget;
     QTreeWidgetItem* item = tree->itemAt(pos);
 
+    // renamd SGNode action
+    QAction* renameSGNodeAction = new QAction("Rename", this);
+    QSignalMapper* signalMapper = new QSignalMapper(this);
+    connect(renameSGNodeAction, SIGNAL(triggered()),
+            signalMapper, SLOT(map()));
+    connect(signalMapper, SIGNAL(mapped(QObject*)),
+            this, SLOT(renameSGNodeSlot(QObject*)));
+    signalMapper->setMapping(renameSGNodeAction, new QTreeWidgetItemWrapper(item));
+
     // add SGNode action
     QAction* addSGNodeAction = new QAction("New Node", this);
-    QSignalMapper* mSignalMapper = new QSignalMapper(this);
+    signalMapper = new QSignalMapper(this);
     connect(addSGNodeAction, SIGNAL(triggered()),
-            mSignalMapper, SLOT(map()));
-    connect(mSignalMapper, SIGNAL(mapped(QObject*)),
+            signalMapper, SLOT(map()));
+    connect(signalMapper, SIGNAL(mapped(QObject*)),
             this, SLOT(addSGNodeSlot(QObject*)));
-    mSignalMapper->setMapping(addSGNodeAction, new QTreeWidgetItemWrapper(item));
+    signalMapper->setMapping(addSGNodeAction, new QTreeWidgetItemWrapper(item));
 
     // remove SGNode action
     QAction* removeSGNodeAction = new QAction("Remove Node", this);
-    mSignalMapper = new QSignalMapper(this);
+    signalMapper = new QSignalMapper(this);
     connect(removeSGNodeAction, SIGNAL(triggered()),
-            mSignalMapper, SLOT(map()));
-    connect(mSignalMapper, SIGNAL(mapped(QObject*)),
+            signalMapper, SLOT(map()));
+    connect(signalMapper, SIGNAL(mapped(QObject*)),
             this, SLOT(removeSGNodeSlot(QObject*)));
-    mSignalMapper->setMapping(removeSGNodeAction, new QTreeWidgetItemWrapper(item));
+    signalMapper->setMapping(removeSGNodeAction, new QTreeWidgetItemWrapper(item));
 
     // load file SGNode action
     QAction* loadFileSGNodeAction = new QAction("Load File", this);
-    mSignalMapper = new QSignalMapper(this);
+    signalMapper = new QSignalMapper(this);
     connect(loadFileSGNodeAction, SIGNAL(triggered()),
-            mSignalMapper, SLOT(map()));
-    connect(mSignalMapper, SIGNAL(mapped(QObject*)),
+            signalMapper, SLOT(map()));
+    connect(signalMapper, SIGNAL(mapped(QObject*)),
             this, SLOT(loadFileSGNodeSlot(QObject*)));
-    mSignalMapper->setMapping(loadFileSGNodeAction, new QTreeWidgetItemWrapper(item));
+    signalMapper->setMapping(loadFileSGNodeAction, new QTreeWidgetItemWrapper(item));
 
     // show custom context menu
     QMenu contextMenu;
+    contextMenu.addAction(renameSGNodeAction);
     contextMenu.addAction(addSGNodeAction);
     contextMenu.addAction(removeSGNodeAction);
     contextMenu.addAction(loadFileSGNodeAction);
@@ -137,49 +147,56 @@ void MainWindow::on_sceneGraphTreeWidget_customContextMenuRequested(
     contextMenu.exec( tree->mapToGlobal(pos) );
 }
 
+void MainWindow::renameSGNodeSlot(QObject* node)
+{
+    QTreeWidgetItemWrapper* item = static_cast<QTreeWidgetItemWrapper*>(node);
+    ui->sceneGraphTreeWidget->editItem(item->getItem(), 0);
+}
+
 void MainWindow::addSGNodeSlot(QObject* parentNode)
 {
-    m_ui_control->onAddNewSGNodeActionTriggered(
-                (QTreeWidgetItemWrapper*) parentNode);
+    mUiControl->onAddNewSGNodeActionTriggered(
+                static_cast<QTreeWidgetItemWrapper*>(parentNode));
 }
 
 void MainWindow::removeSGNodeSlot(QObject* node)
 {
-    m_ui_control->onRemoveSGNodeActionTriggered(
-                (QTreeWidgetItemWrapper*) node);
+    mUiControl->onRemoveSGNodeActionTriggered(
+                static_cast<QTreeWidgetItemWrapper*>(node));
 }
 
 void MainWindow::loadFileSGNodeSlot(QObject* node)
 {
-    m_ui_control->onLoadFileSGNodeActionTriggered(
-                (QTreeWidgetItemWrapper*) node);
+    mUiControl->onLoadFileSGNodeActionTriggered(
+                static_cast<QTreeWidgetItemWrapper*>(node));
 }
 
 void MainWindow::on_actionSimulate_triggered(bool checked)
 {
-    m_ui_control->onSimulateActionTriggered(checked);
+    mUiControl->onSimulateActionTriggered(checked);
 }
 
 void MainWindow::on_actionMesh_Converter_triggered()
 {
-    m_ui_control->onMeshConverterActionTriggered();
+    mUiControl->onMeshConverterActionTriggered();
 }
 
-void MainWindow::on_sceneGraphTreeWidget_itemChanged(QTreeWidgetItem* /*item*/, int /*column*/)
+void MainWindow::on_sceneGraphTreeWidget_itemChanged(
+        QTreeWidgetItem* item, int /*column*/)
 {
-
+    mUiControl->onItemChanged(item);
 }
 
 void MainWindow::on_sceneGraphTreeWidget_itemSelectionChanged()
 {
     QTreeWidget* tree = ui->sceneGraphTreeWidget;
     QList<QTreeWidgetItem*> selectedItems = tree->selectedItems();
-    m_ui_control->onSGSelectionChanged(selectedItems);
+    mUiControl->onSGSelectionChanged(selectedItems);
 }
 
 void MainWindow::on_mSelectionTypeComboBox_currentIndexChanged(int index)
 {
-    m_ui_control->onSelectionTypeChanged(index);
+    mUiControl->onSelectionTypeChanged(index);
 }
 
 void MainWindow::on_actionClose_2_triggered()

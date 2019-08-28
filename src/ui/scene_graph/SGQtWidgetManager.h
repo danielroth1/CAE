@@ -29,8 +29,13 @@ public:
     SGNode* get(QTreeWidgetItem* item);
     QTreeWidgetItem* get(SGNode* node);
 
-    void addNode(SGNode* child);
+    //\param setEditing - after insertion of the node in the scene graph, the
+    //      field is set into editing mode to change the name.
+    void addNode(SGNode* child, bool setEditing = false);
     void removeNode(SGNode* node);
+
+    // Enabled the editing mode to change the name for the given node.
+    void enableEditing(SGNode* node);
 
     // LeafNodeListener interface
 public:

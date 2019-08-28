@@ -669,6 +669,10 @@ void UIControl::onAddNewSGNodeActionTriggered(QTreeWidgetItemWrapper* parentItem
             childNode->setName("child");
             childrenNode->addChild(childNode);
 
+            // Enable the editing to change the name of the node immediately
+            // after adding it.
+            uiControl.mSGQtWidgetManager->enableEditing(childNode);
+
             // QTreeWidgetItem
 //            childItem = new QTreeWidgetItem(parentItem->treeWidget());
 //            parentItem->addChild(childItem);
@@ -765,6 +769,14 @@ void UIControl::onSelectionTypeChanged(int typeIndex)
                     SelectionControl::SELECT_SCENE_NODES);
         break;
     }
+}
+
+void UIControl::onItemChanged(QTreeWidgetItem* item)
+{
+    // Name changed after editing the item in the scene graph.
+    SGNode* node = mSGQtWidgetManager->get(item);
+    if (node)
+        node->setName(item->text(0).toStdString());
 }
 
 void UIControl::onSimulateActionTriggered(bool checked)

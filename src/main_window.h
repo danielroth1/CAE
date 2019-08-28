@@ -44,6 +44,7 @@ private slots:
 
     void on_sceneGraphTreeWidget_customContextMenuRequested(const QPoint &pos);
 
+    void renameSGNodeSlot(QObject* node);
     void addSGNodeSlot(QObject* parentNode);
     void removeSGNodeSlot(QObject* node);
     void loadFileSGNodeSlot(QObject* node);
@@ -65,7 +66,7 @@ private:
 
     Ui::MainWindow *ui;
 
-    UIControl* m_ui_control;
+    UIControl* mUiControl;
 
 
 };

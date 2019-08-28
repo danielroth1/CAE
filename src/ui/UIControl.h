@@ -117,6 +117,8 @@ public slots:
 
         void onSelectionTypeChanged(int typeIndex);
 
+        void onItemChanged(QTreeWidgetItem* item);
+
     void onSimulateActionTriggered(bool checked);
     void onMeshConverterActionTriggered();
 signals:

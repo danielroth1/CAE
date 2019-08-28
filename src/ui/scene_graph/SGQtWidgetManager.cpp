@@ -42,6 +42,8 @@ void SGQtWidgetManager::revalidate()
         }
         void visitImpl(SGNode* node)
         {
+            // We don't want to change names of nodes that are added from a
+            // validation.
             ui.addNode(node);
         }
         virtual void visit(SGChildrenNode* childrenNode)
@@ -59,7 +61,7 @@ void SGQtWidgetManager::revalidate()
     tt.traverse(visitor);
 }
 
-SGNode *SGQtWidgetManager::get(QTreeWidgetItem* item)
+SGNode* SGQtWidgetManager::get(QTreeWidgetItem* item)
 {
     return mBidirectionalMap.get(item);
 }
@@ -69,7 +71,7 @@ QTreeWidgetItem* SGQtWidgetManager::get(SGNode* node)
     return mBidirectionalMap.get(node);
 }
 
-void SGQtWidgetManager::addNode(SGNode* node)
+void SGQtWidgetManager::addNode(SGNode* node, bool setEditing)
 {
     QTreeWidgetItem* item;
     if (node->getParent() != nullptr)
@@ -78,7 +80,12 @@ void SGQtWidgetManager::addNode(SGNode* node)
         item = new QTreeWidgetItem(mTreeWidget); // root node
 
     item->setText(0, QString::fromStdString(node->getName()));
-    item->flags().setFlag(Qt::ItemFlag::ItemIsEditable, true);
+    item->setFlags(Qt::ItemIsEditable |
+                   Qt::ItemIsEnabled |
+                   Qt::ItemIsSelectable |
+                   Qt::ItemIsUserCheckable |
+                   Qt::ItemIsDragEnabled |
+                   Qt::ItemIsDropEnabled);
     item->setCheckState(0, Qt::Checked); // enable check box
 
     // add to parent
@@ -87,7 +94,11 @@ void SGQtWidgetManager::addNode(SGNode* node)
         QTreeWidgetItem* parentItem =
                 mBidirectionalMap.get(node->getParent());
         parentItem->addChild(item);
+        parentItem->setExpanded(true);
     }
+
+    if (setEditing)
+        mTreeWidget->editItem(item);
 
     mBidirectionalMap.add(item, node);
 }
@@ -99,6 +110,12 @@ void SGQtWidgetManager::removeNode(SGNode* node)
     delete item; // TOOD: is this correct?
     // remove from bidirectional map
     mBidirectionalMap.remove(node);
+}
+
+void SGQtWidgetManager::enableEditing(SGNode* node)
+{
+    QTreeWidgetItem* item = mBidirectionalMap.get(node);
+    mTreeWidget->editItem(item);
 }
 
 void SGQtWidgetManager::notifyLeafDataChanged(SGNode* /*source*/, std::shared_ptr<SceneLeafData>& /*data*/)
