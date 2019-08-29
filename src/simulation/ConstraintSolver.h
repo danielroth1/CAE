@@ -23,22 +23,6 @@ public:
             int maxIterations,
             double maxConstraintError);
 
-    // Dispatches the constraint to one of the other solverConstraint
-    // methods.
-    // \return if the maxConstraintError could be satisfied
-    virtual bool solveConstraint(
-            const std::shared_ptr<Constraint>& c,
-            double maxConstraintError);
-
-    // \return if the maxConstraintError could be satisfied
-    virtual bool solveConstraint(
-            CollisionConstraint& cc,
-            double maxConstraintError) = 0;
-
-    virtual bool solveConstraint(
-            BallJoint& ballJoint,
-            double maxConstraintError) = 0;
-
     // Adds a constraint. Doesn't check if the constraint was already added.
     void addConstraint(const std::shared_ptr<Constraint>& constraint);
     void removeConstraint(const std::shared_ptr<Constraint>& constraint);
@@ -59,35 +43,6 @@ protected:
     // are added/ removed, they are saved sepearatly wihtout
     // using pointers and additional heap memory allocations.
     std::vector<CollisionConstraint> mCollisionConstraints;
-
-private:
-    // Dispatch the constraints
-    class ConstraintDispatcher : public ConstraintVisitor
-    {
-    public:
-        ConstraintDispatcher(ConstraintSolver& _cs)
-            : cs(_cs)
-        {
-
-        }
-
-        virtual void visit(BallJoint* ballJoint)
-        {
-            returnValue = cs.solveConstraint(*ballJoint, maxConstraintError);
-        }
-
-        virtual void visit(CollisionConstraint* /*cc*/)
-        {
-            returnValue = false;
-            // This is done
-        }
-
-        ConstraintSolver& cs;
-        double maxConstraintError;
-        bool returnValue;
-    };
-
-    ConstraintDispatcher mConstraintDispatcher;
 };
 
 #endif // CONSTRAINTSOLVER_H

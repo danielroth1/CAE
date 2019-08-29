@@ -1,4 +1,5 @@
 #include "BallJoint.h"
+#include "ConstraintVisitor.h"
 #include "DoubleAxisRotationalJoint.h"
 #include "HingeJoint.h"
 
@@ -17,4 +18,9 @@ HingeJoint::HingeJoint(
 
     addConstraint(std::make_shared<BallJoint>(refA, refB));
     addConstraint(std::make_shared<DoubleAxisRotationalJoint>(rbA, rbB, axis1BS, axis2BS));
+}
+
+void HingeJoint::accept(ConstraintVisitor& cv)
+{
+    cv.visit(this);
 }

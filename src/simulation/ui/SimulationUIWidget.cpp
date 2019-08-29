@@ -62,7 +62,7 @@ void SimulationUIWidget::onSimulationObjectAdded(SimulationObject* simulationObj
     QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(visitor.name),
                                                 mUi->mListWidgetSimulationObjects);
     mListWidgetSimulationObjectMap.add(item, simulationObject);
-    mUi->mListWidgetSimulationObjects->addItem(item);
+    //mUi->mListWidgetSimulationObjects->addItem(item);
 }
 
 void SimulationUIWidget::onSimulationObjectRemoved(SimulationObject* simulationObject)
@@ -78,7 +78,7 @@ void SimulationUIWidget::onSimulationObjectRemoved(SimulationObject* simulationO
     }
 }
 
-void SimulationUIWidget::onConstraintAdded(Constraint* constraint)
+void SimulationUIWidget::onConstraintAdded(const std::shared_ptr<Constraint>& constraint)
 {
     class SOVisitor : public ConstraintVisitor
     {
@@ -98,6 +98,36 @@ void SimulationUIWidget::onConstraintAdded(Constraint* constraint)
             name = "Collision";
         }
 
+        virtual void visit(DistanceJoint* /*joint*/)
+        {
+            name = "DistanceJoint";
+        }
+
+        virtual void visit(DoubleAxisRotationalJoint* /*joint*/)
+        {
+            name = "DoubleAxisRotationalJoint";
+        }
+
+        virtual void visit(FixedRotationalJoint* /*joint*/)
+        {
+            name = "FixedRotationalJoint";
+        }
+
+        virtual void visit(HingeJoint* /*joint*/)
+        {
+            name = "HingeJoint";
+        }
+
+        virtual void visit(LineJoint* /*joint*/)
+        {
+            name = "LineJoint";
+        }
+
+        virtual void visit(PlaneJoint* /*joint*/)
+        {
+            name = "PlaneJoint";
+        }
+
         std::string name;
     } visitor;
 
@@ -105,27 +135,32 @@ void SimulationUIWidget::onConstraintAdded(Constraint* constraint)
 
     // create a QtListWidgetItem and add it to the bidirectional map
     QListWidgetItem* item = new QListWidgetItem(QString::fromStdString(visitor.name),
-                                                mUi->mListWidgetSimulationObjects);
-    mListWidgetConstraintMap.add(item, constraint);
-    mUi->mListWidgetConstraints->addItem(item);
+                                                mUi->mListWidgetConstraints);
+    mListWidgetConstraintMap.add(item, constraint.get());
+    //mUi->mListWidgetConstraints->addItem(item); // constraints == SimulationObjects?
 }
 
-void SimulationUIWidget::onConstraintRemoved(Constraint* constraint)
+void SimulationUIWidget::onConstraintRemoved(const std::shared_ptr<Constraint>& constraint)
 {
-    QListWidgetItem* item = mListWidgetConstraintMap.get(constraint);
+    QListWidgetItem* item = mListWidgetConstraintMap.get(constraint.get());
     if (item)
     {
         // remove item from QListWidget
         mUi->mListWidgetConstraints->removeItemWidget(item);
         delete item;
         // remove simulation object and item reference from bidirectional map
-        mListWidgetConstraintMap.remove(constraint);
+        mListWidgetConstraintMap.remove(constraint.get());
     }
 }
 
 SimulationObject* SimulationUIWidget::getSelectedSimulationObject()
 {
     return mListWidgetSimulationObjectMap.get(mUi->mListWidgetSimulationObjects->currentItem());
+}
+
+Constraint* SimulationUIWidget::getSelectedConstraint()
+{
+    return mListWidgetConstraintMap.get(mUi->mListWidgetConstraints->currentItem());
 }
 
 QtMembersWidget* SimulationUIWidget::getMembersWidget()
@@ -234,4 +269,9 @@ void SimulationUIWidget::on_mButtonCollidable_clicked()
 void SimulationUIWidget::on_mPrintStiffnessMatrixButton_clicked()
 {
     mUiControl->onPrintStiffnessMatrixClicked();
+}
+
+void SimulationUIWidget::on_mPushButtonRemoveConstraint_clicked()
+{
+    mUiControl->onRemoveConstraintClicked();
 }

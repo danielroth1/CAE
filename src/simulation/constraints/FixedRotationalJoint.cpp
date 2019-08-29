@@ -53,7 +53,7 @@ bool FixedRotationalJoint::solve(double maxConstraintError)
     return false;
 }
 
-void FixedRotationalJoint::accept(ConstraintVisitor& /*cv*/)
+void FixedRotationalJoint::accept(ConstraintVisitor& cv)
 {
-
+    cv.visit(this);
 }

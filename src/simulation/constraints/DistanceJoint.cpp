@@ -95,9 +95,9 @@ bool DistanceJoint::solve(double maxConstraintError)
     return false;
 }
 
-void DistanceJoint::accept(ConstraintVisitor& /*cv*/)
+void DistanceJoint::accept(ConstraintVisitor& cv)
 {
-
+    cv.visit(this);
 }
 
 bool DistanceJoint::references(const std::shared_ptr<SimulationObject>& so)

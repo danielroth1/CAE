@@ -33,14 +33,6 @@ public:
             double cFrictionStatic,
             double cFrictionDynamic);
 
-    void solveConstraints(int maxIterations, double maxConstraintError) override;
-
-    // Returns true if the constraint was already valid and no impulse was
-    // applied, else returns false.
-    bool solveConstraint(CollisionConstraint& cc, double maxConstraintError) override;
-
-    bool solveConstraint(BallJoint& ballJoint, double maxConstraintError) override;
-
     static Eigen::Vector calculateRelativeNormalSpeed(
             const Eigen::Vector& relativeSpeedA,
             const Eigen::Vector& relativeSpeedB,

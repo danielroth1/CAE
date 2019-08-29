@@ -75,7 +75,7 @@ bool DoubleAxisRotationalJoint::solve(double maxConstraintError)
     return false;
 }
 
-void DoubleAxisRotationalJoint::accept(ConstraintVisitor& /*cv*/)
+void DoubleAxisRotationalJoint::accept(ConstraintVisitor& cv)
 {
-
+    cv.visit(this);
 }

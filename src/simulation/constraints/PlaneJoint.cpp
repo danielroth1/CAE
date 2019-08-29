@@ -94,9 +94,9 @@ bool PlaneJoint::solve(double maxConstraintError)
     return false;
 }
 
-void PlaneJoint::accept(ConstraintVisitor& /*cv*/)
+void PlaneJoint::accept(ConstraintVisitor& cv)
 {
-
+    cv.visit(this);
 }
 
 Eigen::Vector PlaneJoint::calculateLineDirection(const Eigen::Vector& lineBS)

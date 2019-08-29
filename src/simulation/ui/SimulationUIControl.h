@@ -6,6 +6,7 @@
 #include <ui/selection/SelectionListener.h>
 
 class ApplicationControl;
+class Constraint;
 class GeometricData;
 class QWidget;
 class RenderModelVisitor;
@@ -33,6 +34,7 @@ public:
     void onCreateFEMObjectClicked();
     void onCreateRigidObjectClicked(double mass);
     void onRemoveSimulationObjectClicked();
+    void onRemoveConstraintClicked();
     void onCreateCollidableClicked();
 
     // Prints the corotated stiffness matrices of all selected FEMObjects.
@@ -48,19 +50,19 @@ public:
 
     // SimulationControlListener interface
 public:
-    virtual void onSimulationObjectAdded(SimulationObject* so);
-    virtual void onSimulationObjectRemoved(SimulationObject* so);
+    virtual void onSimulationObjectAdded(SimulationObject* so) override;
+    virtual void onSimulationObjectRemoved(SimulationObject* so) override;
 
-    virtual void onConstraintAdded(SimulationObject* so);
-    virtual void onConstraintRemoved(SimulationObject* so);
+    virtual void onConstraintAdded(const std::shared_ptr<Constraint>& c) override;
+    virtual void onConstraintRemoved(const std::shared_ptr<Constraint>& c) override;
 
     // SelectionListener interface
 public:
-    virtual void onSceneNodeSelected(const std::shared_ptr<SceneData>& sd);
+    virtual void onSceneNodeSelected(const std::shared_ptr<SceneData>& sd) override;
     virtual void onSelectedSceneNodesChanged(
-            const std::set<std::shared_ptr<SceneData> >& sd);
+            const std::set<std::shared_ptr<SceneData> >& sd) override;
     virtual void onSelectedVerticesChanged(
-            const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID> >& sv);
+            const std::map<std::shared_ptr<SceneLeafData>, std::vector<ID> >& sv) override;
 
 private:
 

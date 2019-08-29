@@ -3,7 +3,6 @@
 #include <simulation/constraints/ConstraintVisitor.h>
 
 ConstraintSolver::ConstraintSolver()
-    : mConstraintDispatcher(*this)
 {
 
 }
@@ -17,26 +16,56 @@ void ConstraintSolver::solveConstraints(
         int maxIterations,
         double maxConstraintError)
 {
-    for (int i = 0; i < maxIterations; ++i)
-    {
-        for (const std::shared_ptr<Constraint>& c : mConstraints)
-        {
-            solveConstraint(c, maxConstraintError);
-        }
-        for (CollisionConstraint& cc : mCollisionConstraints)
-        {
-            solveConstraint(cc, maxConstraintError);
-        }
-    }
-}
+    size_t validConstraints = 0;
+    size_t totalConstraints = mConstraints.size() + mCollisionConstraints.size();
 
-bool ConstraintSolver::solveConstraint(
-        const std::shared_ptr<Constraint>& c,
-        double maxConstraintError)
-{
-    mConstraintDispatcher.maxConstraintError = maxConstraintError;
-    c->accept(mConstraintDispatcher);
-    return mConstraintDispatcher.returnValue;
+    int iterCount = 0;
+    for (int iter = 0; iter < maxIterations; ++iter)
+    {
+        ++iterCount;
+
+        // iterate non-collision constraints
+        for (size_t i = 0; i < mConstraints.size(); ++i)
+        {
+            if (validConstraints == totalConstraints)
+                break;
+
+            if (mConstraints[i]->solve(maxConstraintError))
+            {
+                // if constraint is valid, nothing to do
+                ++validConstraints;
+            }
+            else
+            {
+                // if not, this corrected coinstraint will be the only one
+                // we can be sure about to be valid since the correction
+                // can make any other constraint invalid again.
+                validConstraints = 1;
+            }
+        }
+
+        // iterate collisions for as long as each u rel is equal to target u rel
+        for (size_t i = 0; i < mCollisionConstraints.size(); ++i)
+        {
+            if (validConstraints == totalConstraints)
+                break;
+
+            if (mCollisionConstraints[i].solve(maxConstraintError))
+            {
+                // if constraint is valid, nothing to do
+                ++validConstraints;
+            }
+            else
+            {
+                // if not, this corrected coinstraint will be the only one
+                // we can be sure about to be valid since the correction
+                // can make any other constraint invalid again.
+                validConstraints = 1;
+            }
+        }
+        if (validConstraints == totalConstraints)
+            break;
+    }
 }
 
 void ConstraintSolver::addConstraint(const std::shared_ptr<Constraint>& constraint)

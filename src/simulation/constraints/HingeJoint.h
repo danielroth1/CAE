@@ -16,6 +16,8 @@ public:
             Eigen::Vector pointBBS,
             Eigen::Vector axis1BS,
             Eigen::Vector axis2BS);
+
+    virtual void accept(ConstraintVisitor& cv);
 };
 
 #endif // HINGEJOINT_H

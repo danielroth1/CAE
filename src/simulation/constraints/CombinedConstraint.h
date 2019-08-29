@@ -13,13 +13,12 @@ public:
 
     // MechanicalProperty interface
 public:
-    virtual bool references(const std::shared_ptr<SimulationObject>& so);
+    virtual bool references(const std::shared_ptr<SimulationObject>& so) override;
 
     // Constraint interface
 public:
-    virtual void initialize(double stepSize);
-    virtual bool solve(double maxConstraintError);
-    virtual void accept(ConstraintVisitor& cv);
+    virtual void initialize(double stepSize) override;
+    virtual bool solve(double maxConstraintError) override;
 
 protected:
     void addConstraint(const std::shared_ptr<Constraint>& c);

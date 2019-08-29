@@ -640,6 +640,9 @@ void SimulationControl::addConstraintSlot(const std::shared_ptr<Constraint>& c)
     }
 
     mImpulseConstraintSolver->addConstraint(c);
+
+    for (SimulationControlListener* l : mListeners)
+        l->onConstraintAdded(c);
 }
 
 void SimulationControl::removeConstraintSlot(const std::shared_ptr<Constraint>& c)
@@ -651,6 +654,9 @@ void SimulationControl::removeConstraintSlot(const std::shared_ptr<Constraint>& 
     }
 
     mImpulseConstraintSolver->removeConstraint(c);
+
+    for (SimulationControlListener* l : mListeners)
+        l->onConstraintRemoved(c);
 }
 
 void SimulationControl::applyForces()

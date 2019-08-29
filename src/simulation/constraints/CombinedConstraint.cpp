@@ -35,11 +35,6 @@ bool CombinedConstraint::solve(double maxConstraintError)
     return resolved;
 }
 
-void CombinedConstraint::accept(ConstraintVisitor& /*cv*/)
-{
-
-}
-
 void CombinedConstraint::addConstraint(const std::shared_ptr<Constraint>& c)
 {
     mConstraints.push_back(c);

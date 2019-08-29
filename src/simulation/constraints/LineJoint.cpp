@@ -85,9 +85,9 @@ bool LineJoint::solve(double maxConstraintError)
     return false;
 }
 
-void LineJoint::accept(ConstraintVisitor& /*cv*/)
+void LineJoint::accept(ConstraintVisitor& cv)
 {
-
+    cv.visit(this);
 }
 
 Eigen::Vector LineJoint::calculateLineDirection()

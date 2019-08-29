@@ -5,6 +5,7 @@
 #include <qlistwidget.h>
 
 #include <data_structures/BidirectionalMap.h>
+#include <memory>
 
 class Constraint;
 class QtMembersWidget;
@@ -31,13 +32,15 @@ public:
     void onSimulationObjectAdded(SimulationObject* simulationObject);
     void onSimulationObjectRemoved(SimulationObject* simulationObject);
 
-    void onConstraintAdded(Constraint* constraint);
-    void onConstraintRemoved(Constraint* constraint);
+    void onConstraintAdded(const std::shared_ptr<Constraint>& constraint);
+    void onConstraintRemoved(const std::shared_ptr<Constraint>& constraint);
 
     // Returns the currently in the QListWidget selected simulation object.
     // If none is selected or there is some inconsistency between this module
     // and the simulation, nulllptr is returned.
     SimulationObject* getSelectedSimulationObject();
+
+    Constraint* getSelectedConstraint();
 
     QtMembersWidget* getMembersWidget();
 
@@ -65,6 +68,8 @@ private slots:
     void on_mButtonCollidable_clicked();
 
     void on_mPrintStiffnessMatrixButton_clicked();
+
+    void on_mPushButtonRemoveConstraint_clicked();
 
 private:
     void renderCollisionSpheres();

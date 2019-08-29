@@ -27,6 +27,7 @@
 #include <utils/MemberAccessorFactory.h>
 #include <simulation/collision_detection/CollisionManager.h>
 #include <ui/scene_graph/SGUIControl.h>
+#include <simulation/constraints/Constraint.h>
 
 #include <simulation/fem/FEMObject.h>
 #include <simulation/fem/FEMSimulation.h>
@@ -310,6 +311,20 @@ void SimulationUIControl::onRemoveSimulationObjectClicked()
     }
 }
 
+void SimulationUIControl::onRemoveConstraintClicked()
+{
+    Constraint* c = mWidget->getSelectedConstraint();
+    if (c)
+    {
+        mAc->getSimulationControl()->removeConstraint(
+                    std::static_pointer_cast<Constraint>(c->shared_from_this()));
+    }
+    else
+    {
+        std::cout << "Can not remove constraint because it is already removed.\n";
+    }
+}
+
 void SimulationUIControl::onCreateCollidableClicked()
 {
     SelectionControl* sc = mAc->getUIControl()->getSelectionControl();
@@ -373,14 +388,14 @@ void SimulationUIControl::onSimulationObjectRemoved(SimulationObject* so)
     mWidget->onSimulationObjectRemoved(so);
 }
 
-void SimulationUIControl::onConstraintAdded(SimulationObject* /*so*/)
+void SimulationUIControl::onConstraintAdded(const std::shared_ptr<Constraint>& c)
 {
-    // TODO: implement what happens in the UI when a constraintis added
+    mWidget->onConstraintAdded(c);
 }
 
-void SimulationUIControl::onConstraintRemoved(SimulationObject* /*so*/)
+void SimulationUIControl::onConstraintRemoved(const std::shared_ptr<Constraint>& c)
 {
-    // TODO: implement what happens in the UI when a constraint is removed
+    mWidget->onConstraintRemoved(c);
 }
 
 void SimulationUIControl::onSceneNodeSelected(
