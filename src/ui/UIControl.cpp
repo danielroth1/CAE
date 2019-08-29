@@ -361,15 +361,11 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             {
                 std::shared_ptr<GeometricData> gd =
                         it.first->getGeometricData();
-                if (gd->getType() == GeometricData::Type::POLYGON)
+
+                for (ID id : it.second)
                 {
-                    std::shared_ptr<Polygon> poly =
-                            std::static_pointer_cast<Polygon>(gd);
-                    for (ID id : it.second)
-                    {
-                        avg += poly->getPosition(id);
-                        count++;
-                    }
+                    avg += gd->getPosition(id);
+                    count++;
                 }
             }
 
