@@ -25,6 +25,7 @@
 #include <ui/qt/FileDialog.h>
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/GeometricPoint.h>
+#include <scene/data/geometric/Polygon.h>
 #include <simulation/models/LinearForceRenderModel.h>
 #include <ui/selection/Selection.h>
 #include <ui/selection/SelectionControl.h>
@@ -352,28 +353,23 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             double y = mMainWindow->getGlWidget()->height() - event->pos().y();
 //            double z = 1; // near plane
 
-//            mSelectionControl->updateSelection(
-//                        static_cast<int>(x),
-//                        static_cast<int>(y));
-
-//            QVector3D camPos = mGlWidget->getCameraPos();
-//            QVector3D camDir = mGlWidget->getCameraDir();
-
             // move every vertex by the same amount
             Vector avg = Vector::Zero();
             size_t count = 0;
             for (auto it :
                  mSelectionControl->getSelectionVertices()->getDataVectorsMap())
             {
-                if (!it.first->getSimulationObjectRaw())
-                    continue;
-
-                for (ID id : it.second)
+                std::shared_ptr<GeometricData> gd =
+                        it.first->getGeometricData();
+                if (gd->getType() == GeometricData::Type::POLYGON)
                 {
-                    // TODO: replace with simulation/geometry references
-                    Vector& pos = it.first->getSimulationObjectRaw()->getPosition(id);
-                    avg += pos;
-                    count++;
+                    std::shared_ptr<Polygon> poly =
+                            std::static_pointer_cast<Polygon>(gd);
+                    for (ID id : it.second)
+                    {
+                        avg += poly->getPosition(id);
+                        count++;
+                    }
                 }
             }
 
@@ -397,20 +393,13 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             double yProj;
             double zProj;
 
-            // projects to far plane I think. What is actually desired is the plane
-            // on which the vertex is
-            // which vertex? there can be multiple selected
-            // how to make that all selected vertices move in parallel
-            //   -> determine moving direction
-            // TODO: use a different function here
+            // projects to far plane I think. What is actually desired is the
+            // plane on which the vertex is
             gluUnProject(x,y,zWin,
                          mViewFrustum->getModelView(),
                          mViewFrustum->getProjection(),
                          mViewFrustum->getViewPort(),
                          &xProj, &yProj, &zProj);
-
-    //                Vector n1(xProj, yProj, zProj);
-    //                n1.normalize();
 
 //            std::cout << "(" << avg(0) << ", " << avg(1) << ", " << avg(2) << ") => ("
 //                      << xProj << ", " << yProj << ", " << zProj << ")\n";
@@ -418,57 +407,50 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             Vector avgTo(xProj, yProj, zProj);
             Vector avgDir = avgTo - avg;
 
-
-//            for (auto it : mSelection->getDataVectorsMap())
-//            {
-//                for (ID id : it.second)
-//                {
-//                    // TODO: replace with simulation/ geometry reference
-//                    Vector& pos = it.first->getSimulationObjectRaw()->getPosition(id);
-
-//                    pos += avgDir;
-//                }
-//            }
-
             // Position update of vertex.
-            // This should be modeled differently and should
-            // at least be handled in the simulation class.
+            // If node is part of simulation, movement of it will be done in
+            // the simulation thread to guarantee consistency.
+            // If its not part of simulation, movement is done immediately.
             for (auto it :
                  mSelectionControl->getSelectionVertices()->getDataVectorsMap())
             {
-                if (!it.first->getSimulationObjectRaw())
-                    continue;
-
-                switch (it.first->getSimulationObjectRaw()->getType())
+                if (it.first->getSimulationObjectRaw())
                 {
-                case SimulationObject::Type::SIMULATION_POINT:
-                case SimulationObject::Type::RIGID_BODY:
-                {
-                    SimulationObjectProxy(it.first->getSimulationObjectRaw()).addToPosition(avgDir, 0);
-                    break;
-                }
-                case SimulationObject::Type::FEM_OBJECT:
-                {
-                    for (ID id : it.second)
+                    switch (it.first->getSimulationObjectRaw()->getType())
                     {
-                        SimulationObjectProxy(it.first->getSimulationObjectRaw()).addToPosition(avgDir, id);
+                    case SimulationObject::Type::SIMULATION_POINT:
+                    case SimulationObject::Type::RIGID_BODY:
+                    {
+                        SimulationObjectProxy(it.first->getSimulationObjectRaw()).addToPosition(avgDir, 0);
+                        break;
                     }
-                    break;
+                    case SimulationObject::Type::FEM_OBJECT:
+                    {
+                        for (ID id : it.second)
+                        {
+                            SimulationObjectProxy(it.first->getSimulationObjectRaw()).addToPosition(avgDir, id);
+                        }
+                        break;
+                    }
+                    }
                 }
+                else
+                {
+                    std::shared_ptr<GeometricData> gd = it.first->getGeometricData();
+                    if (gd->getType() == GeometricData::Type::POLYGON)
+                    {
+                        std::shared_ptr<Polygon> poly = std::static_pointer_cast<Polygon>(gd);
+                        poly->translate(avgDir);
+                        poly->geometricDataChanged();
+                    }
                 }
             }
-
-            // TODO: implement this
-            // Selection
-            // project selection correctly
-            // call simulation to move vertices, all vertices by the same amount
 
         }
         break;
     }
     case ACT_FORCE:
     {
-        // TODO: implement this
         break;
     }
     case END:
