@@ -554,12 +554,25 @@ SGLeafNode* SGControl::createLeafNode(
         Eigen::Vector position,
         bool renderOnlyOuterFaces)
 {
+    Eigen::Affine3d translation = Eigen::Affine3d::Identity() * Eigen::Translation3d(position);
+    return createLeafNode(name, parent, polygon,
+                          translation,
+                          renderOnlyOuterFaces);
+}
+
+SGLeafNode* SGControl::createLeafNode(
+        std::string name,
+        SGChildrenNode* parent,
+        std::shared_ptr<Polygon> polygon,
+        Affine3d transform,
+        bool renderOnlyOuterFaces)
+{
     SGLeafNode* leafNode = new SGLeafNode(name);
     std::shared_ptr<SceneLeafData> leafData = std::make_shared<SceneLeafData>(leafNode);
 
     if (polygon)
     {
-        polygon->translate(position);
+        polygon->transform(transform);
         leafData->setGeometricData(polygon);
 
         // Render Model

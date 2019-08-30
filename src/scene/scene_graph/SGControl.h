@@ -137,8 +137,15 @@ public:
         SGLeafNode* createLeafNode(
                 std::string name,
                 SGChildrenNode* parent,
-                std::shared_ptr<Polygon> geoData,
+                std::shared_ptr<Polygon> polygon,
                 Eigen::Vector position = Eigen::Vector::Zero(),
+                bool renderOnlyOuterFaces = true);
+
+        SGLeafNode* createLeafNode(
+                std::string name,
+                SGChildrenNode* parent,
+                std::shared_ptr<Polygon> polygon,
+                Eigen::Affine3d transform,
                 bool renderOnlyOuterFaces = true);
 
     // Getters
