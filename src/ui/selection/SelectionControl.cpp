@@ -293,29 +293,6 @@ void SelectionControl::finalizeSelection(ViewFrustum& viewFrustum)
 
     updateSelection(sceneDatas, vc);
 
-    switch(mSelectionType)
-    {
-    case SELECT_SCENE_NODES:
-    {
-        for (auto it : mSelectionListeners)
-        {
-            it->onSelectedSceneNodesChanged(mSelectionSceneData->getSceneData());
-        }
-        break;
-    }
-    case SELECT_VERTICES:
-    {
-        for (auto it : mSelectionListeners)
-        {
-            it->onSelectedVerticesChanged(
-                        mSelectionVertices->getDataVectorsMap());
-        }
-        break;
-    }
-    case UNDEFINED:
-        break;
-    }
-
     // Disable selection rectangle
     switch (mSelectionMode)
     {
@@ -369,6 +346,29 @@ void SelectionControl::updateSelection(
     case SELECT_VERTICES:
         mSelectionVertices->updateSelectedVertices(vc);
         break;
+    case UNDEFINED:
+        break;
+    }
+
+    switch(mSelectionType)
+    {
+    case SELECT_SCENE_NODES:
+    {
+        for (auto it : mSelectionListeners)
+        {
+            it->onSelectedSceneNodesChanged(mSelectionSceneData->getSceneData());
+        }
+        break;
+    }
+    case SELECT_VERTICES:
+    {
+        for (auto it : mSelectionListeners)
+        {
+            it->onSelectedVerticesChanged(
+                        mSelectionVertices->getDataVectorsMap());
+        }
+        break;
+    }
     case UNDEFINED:
         break;
     }

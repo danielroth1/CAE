@@ -399,11 +399,8 @@ void SimulationUIControl::onConstraintRemoved(const std::shared_ptr<Constraint>&
 }
 
 void SimulationUIControl::onSceneNodeSelected(
-        const std::shared_ptr<SceneData>& sd)
+        const std::shared_ptr<SceneData>& /*sd*/)
 {
-    std::vector<std::shared_ptr<SceneData>> sdsVec;
-    sdsVec.push_back(sd);
-    onSelectedSceneNodesChanged(sdsVec);
 }
 
 void SimulationUIControl::onSelectedSceneNodesChanged(
