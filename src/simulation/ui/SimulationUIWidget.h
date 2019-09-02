@@ -27,8 +27,6 @@ public:
             QWidget *parent = nullptr);
     ~SimulationUIWidget();
 
-
-
     void onSimulationObjectAdded(SimulationObject* simulationObject);
     void onSimulationObjectRemoved(SimulationObject* simulationObject);
 

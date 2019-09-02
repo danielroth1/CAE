@@ -42,7 +42,10 @@ RigidBody::RigidBody(
     // calculate center of mass
     // since each vertex has the same mass, the
     // center of mass is equal to the average of vertices
-    mX = mPolygon->getCenter();
+//    mX = mPolygon->getCenter();
+
+    mX = mPolygon->getTransform().translation();
+    mQ = Eigen::Quaterniond(mPolygon->getTransform().rotation());
 
     // calculate inertia tensor from positions and faces
     mInertiaBS = Matrix3d::Zero();
@@ -54,8 +57,6 @@ RigidBody::RigidBody(
     }
 //    mInertiaBS.setIdentity(); // whats
     mInertiaInvBS = mInertiaBS.inverse();
-
-    mQ.setIdentity();
 
     mOmega.setZero();
     mV.setZero();
@@ -256,7 +257,6 @@ void RigidBody::updateGeometricData()
     mPolygon->setTransform(transform);
 //    mPolygon->updatePositions();
     mPolygon->update();
-    mPolygon->geometricDataChanged();
 //    mPolygon->getTransform().setIdentity();
 //    mPolygon->getTransform().rotate(mQ);
     //    mPolygon->getTransform().translate(mX);

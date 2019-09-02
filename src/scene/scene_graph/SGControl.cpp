@@ -384,6 +384,36 @@ void SGControl::createCollidable(const std::shared_ptr<SceneLeafData>& ld,
     }
 }
 
+void SGControl::removeSimulationObject(const std::shared_ptr<SceneLeafData>& ld)
+{
+    std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
+    if (so)
+    {
+        mAc->getSimulationControl()->removeSimulationObject(so);
+        ld->setSimulationObject(nullptr);
+    }
+    else
+    {
+        std::cout << "Cannot remove simulation object from leaf data because"
+                     "there is none.\n";
+    }
+}
+
+void SGControl::removeSimulationObject(const std::shared_ptr<SimulationObject>& so)
+{
+    SGLeafNode* leafNode =
+            mAc->getSGControl()->getSceneNodeBySimulationObject(so.get());
+    if (leafNode)
+    {
+        removeSimulationObject(leafNode->getData());
+    }
+    else
+    {
+        std::cout << "Can not remove scene node with simulation object "
+                     "because it is not part of the scene graph.\n";
+    }
+}
+
 SGChildrenNode* SGControl::createChildrenNode(SGChildrenNode* parent, std::string name)
 {
     return SGTreeNodeFactory::createChildrenNode(parent, name);
@@ -601,6 +631,45 @@ SGSceneGraph* SGControl::getSceneGraph()
 SGNode* SGControl::getSceneNodeByName(std::string name)
 {
     return mSceneGraph->getRoot()->searchNodeByName(name);
+}
+
+SGLeafNode* SGControl::getSceneNodeBySimulationObject(SimulationObject* so)
+{
+    class RemoveChildrenNodeVisitor : public SGNodeVisitor
+    {
+    public:
+        RemoveChildrenNodeVisitor(SimulationObject* _so, SGTraverser& _traverser)
+            : so(_so)
+            , traverser(_traverser)
+        {
+            leaf = nullptr;
+        }
+
+        virtual void visit(SGChildrenNode* /*childrenNode*/)
+        {
+        }
+
+        virtual void visit(SGLeafNode* leafNode)
+        {
+            if (leafNode->getData()->getSimulationObjectRaw() == so)
+            {
+                leaf = leafNode;
+                traverser.setEndSearchEarly(true);
+            }
+        }
+
+        SGLeafNode* leaf;
+        SimulationObject* so;
+        SGTraverser& traverser;
+    };
+
+    SGTraverser traverser =
+            SGTraverserFactory::createDefaultSGTraverser(mSceneGraph->getRoot());
+
+    RemoveChildrenNodeVisitor v(so, traverser);
+    traverser.traverse(v);
+
+    return v.leaf;
 }
 
 void SGControl::notifyLeafDataChanged(SGNode* /*source*/,

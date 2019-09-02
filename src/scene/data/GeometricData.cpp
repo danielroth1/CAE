@@ -20,7 +20,7 @@ GeometricData::~GeometricData()
 
 }
 
-void GeometricData::geometricDataChanged()
+void GeometricData::update()
 {
     for (const auto& listener : mListeners)
         listener->notifyGeometricDataChanged();

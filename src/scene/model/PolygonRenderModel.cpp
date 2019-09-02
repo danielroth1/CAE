@@ -181,9 +181,18 @@ void PolygonRenderModel::reset()
 
     // Create RenderPolygonsData that is specific to this
     // polygon.
+
     if (mRenderPolygonsData)
     {
         mRenderPolygons->removeRenderPolygonsData(mRenderPolygonsData);
+
+        // World space uses its own vertex positions and ignored transformation
+        // matrix.
+        if (mRenderPolygons->getType() == BSWSVectors::Type::WORLD_SPACE)
+        {
+            std::static_pointer_cast<RenderPolygonsDataBS>(mRenderPolygonsData)
+                    ->getTransform()->setIdentity();
+        }
     }
 
     // set mRenderPolygons and create RenderPolygonsConstantData
@@ -380,9 +389,8 @@ void PolygonRenderModel::update()
 
 void PolygonRenderModel::revalidate()
 {
-    if (mRenderPolygons->getType() == BSWSVectors::Type::BODY_SPACE)
-        std::static_pointer_cast<RenderPolygonsDataBS>(mRenderPolygonsData)->getTransform()->setIdentity();
-
+    reset();
+    mRequiresUpdate = true;
     update();
 }
 
@@ -593,11 +601,12 @@ void PolygonRenderModel::updatePositions()
         {
             for (size_t i = 0; i < positionsLock->size(); ++i)
             {
-                if (mRenderOnlyOuterFaces && mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+                if (mRenderOnlyOuterFaces &&
+                    mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
                 {
                     positionsLock->at(i) = positions[
-                            static_cast<Polygon3D*>(
-                                mPolygon.get())->getOuterPositionIds()[i]].cast<float>();
+                            static_cast<Polygon3D*>(mPolygon.get())->
+                            getOuterPositionIds()[i]].cast<float>();
                 }
                 else
                 {

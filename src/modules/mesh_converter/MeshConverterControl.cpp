@@ -57,7 +57,7 @@ void MeshConverterControl::convert(
     public:
         ExtractPolygonVisitor()
         {
-
+            polygon = nullptr;
         }
 
         virtual void visit(Polygon2D& polygon2D)
@@ -80,29 +80,26 @@ void MeshConverterControl::convert(
     for (const std::shared_ptr<SceneLeafData>& leafData : sceneLeafData)
     {
         // save the current polygon
-        extractPolygonVisitor.polygon = nullptr;
         leafData->getGeometricData()->accept(extractPolygonVisitor);
 
         Eigen::Vector3d position;
 
-        std::shared_ptr<Polygon> poly =
-                std::dynamic_pointer_cast<Polygon>(leafData->getGeometricData());
+        std::shared_ptr<Polygon> poly = extractPolygonVisitor.polygon;
         if (poly)
         {
-            poly->getTransform();
-
             // create new node
             SGLeafNode* newNode = mAc->getSGControl()->createLeafNode(
                         leafData->getNode()->getName() + " (converted)",
                         leafData->getNode()->getParent(),
-                        std::dynamic_pointer_cast<Polygon>(leafData->getGeometricData()),
-                        poly->getTransform());
+                        poly);
 
             // create the new polygon
             mAc->getSGControl()->create3DGeometryFrom2D(
                         newNode,
                         meshCriteria,
                         renderOnlyOuterFaces);
+
+            newNode->getData()->getGeometricData()->transform(poly->getTransform());
         }
 
         //TODO: save the newly created SGLeafNode* and the old Polygon

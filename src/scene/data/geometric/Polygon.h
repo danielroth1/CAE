@@ -44,7 +44,7 @@ public:
     // This method updates the world space positions.
     // Call this method when in BODY_SPACE representation type
     // and the transformation matrix changed.
-    virtual void update();
+    virtual void update() override;
 
     // Checks if the given point is inside the topology. Only tests the
     // faces that are part of the given feature.

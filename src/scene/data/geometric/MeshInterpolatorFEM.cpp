@@ -226,7 +226,7 @@ void MeshInterpolatorFEM::update()
     }
     }
 
-    mTarget->geometricDataChanged();
+    mTarget->update();
 }
 
 Vector3d MeshInterpolatorFEM::getSourcePosition(size_t targetId) const

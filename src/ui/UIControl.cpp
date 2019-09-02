@@ -437,7 +437,7 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
                     {
                         std::shared_ptr<Polygon> poly = std::static_pointer_cast<Polygon>(gd);
                         poly->translate(avgDir);
-                        poly->geometricDataChanged();
+                        poly->update();
                     }
                 }
             }

@@ -258,7 +258,7 @@ void BVHRenderModel::SphereData::setRadius(double radius)
     if (std::abs(mRadiusPrevious - mBvSphere->getRadius()) > 1e-5)
     {
         mGeometricSphere->setRadiusAndProject(radius);
-        mGeometricSphere->getPolygon()->geometricDataChanged();
+        mGeometricSphere->getPolygon()->update();
 
         mRadiusPrevious = mBvSphere->getRadius();
     }
@@ -267,5 +267,5 @@ void BVHRenderModel::SphereData::setRadius(double radius)
 void BVHRenderModel::SphereData::setPosition(Eigen::Vector position)
 {
     mGeometricSphere->getPolygon()->getTransform().translation() = position;
-    mGeometricSphere->getPolygon()->geometricDataChanged();
+    mGeometricSphere->getPolygon()->update();
 }

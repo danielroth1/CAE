@@ -194,7 +194,7 @@ void MeshInterpolatorMeshMesh::update()
             mTargetAccessor->setPosition(i, p);
         }
     }
-    mTarget->geometricDataChanged();
+    mTarget->update();
 }
 
 Vector3d MeshInterpolatorMeshMesh::getSourcePosition(size_t targetId) const

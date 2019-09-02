@@ -300,14 +300,15 @@ void SimulationUIControl::onCreateRigidObjectClicked(double mass)
 
 void SimulationUIControl::onRemoveSimulationObjectClicked()
 {
-    SimulationObject* so = mWidget->getSelectedSimulationObject();
+    std::shared_ptr<SimulationObject> so =
+            mWidget->getSelectedSimulationObject()->shared_from_this();
     if (so)
     {
-        mAc->getSimulationControl()->removeSimulationObject(so->shared_from_this());
+        mAc->getSGControl()->removeSimulationObject(so);
     }
     else
     {
-        std::cout << "Can not remove simulation object because it is already removed.\n";
+        std::cout << "Cannot remove simulation object because there is none.\n";
     }
 }
 

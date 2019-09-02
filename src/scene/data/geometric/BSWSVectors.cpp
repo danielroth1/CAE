@@ -203,7 +203,7 @@ void BSWSVectors::translate(const Vector& t)
     switch(mType)
     {
     case BODY_SPACE:
-        mTransform.translate(t);
+        mTransform.pretranslate(t);
         break;
     case WORLD_SPACE:
         for (Vector& v : mVectorsWS)

@@ -185,11 +185,11 @@ void InterpolationMeshMeshDemo::load()
 //    {
 //        std::static_pointer_cast<Polygon>(
 //                    target->getData()->getGeometricData())->transform(trans);
-//        target->getData()->getGeometricData()->geometricDataChanged();
+//        target->getData()->getGeometricData()->update();
 //    }
 //    std::static_pointer_cast<Polygon>(
 //                sourceNode->getData()->getGeometricData())->transform(trans);
-//    sourceNode->getData()->getGeometricData()->geometricDataChanged();
+//    sourceNode->getData()->getGeometricData()->update();
 
     if (interpolate)
     {
@@ -200,11 +200,11 @@ void InterpolationMeshMeshDemo::load()
 //        {
 //            std::static_pointer_cast<Polygon>(
 //                        target->getData()->getGeometricData())->transform(trans);
-//            target->getData()->getGeometricData()->geometricDataChanged();
+//            target->getData()->getGeometricData()->update();
 //        }
 //        std::static_pointer_cast<Polygon>(
 //                    sourceNode->getData()->getGeometricData())->transform(trans);
-//        sourceNode->getData()->getGeometricData()->geometricDataChanged();
+//        sourceNode->getData()->getGeometricData()->update();
 
         for (SGLeafNode* target : targets)
         {
@@ -216,7 +216,7 @@ void InterpolationMeshMeshDemo::load()
 //                Eigen::Translation3d(0.0, 0.0, 0.0);
 //        std::static_pointer_cast<Polygon>(
 //                    sourceNode->getData()->getGeometricData())->transform(trans);
-//        sourceNode->getData()->getGeometricData()->geometricDataChanged();
+//        sourceNode->getData()->getGeometricData()->update();
     }
 
     mAc->getSGControl()->createFEMObject(sourceNode->getData());

@@ -37,6 +37,8 @@ void Polygon::initBodySpace(Vectors* positionsBS, const Affine3d& transform)
 void Polygon::update()
 {
     mPositionData.update();
+
+    GeometricData::update();
 }
 
 GeometricData::Type Polygon::getType() const

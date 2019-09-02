@@ -90,6 +90,18 @@ public:
         void createCollidable(const std::shared_ptr<SceneLeafData>& ld,
                               double collisionSphereRadiusFactor = 0.1);
 
+        // Removes the simulation object from the simulation and sets the
+        // reference in the scene node null.
+        void removeSimulationObject(
+                const std::shared_ptr<SceneLeafData>& ld);
+
+        // Searches the scene graph for the scene node with the given
+        // simulation object.
+        // Removes the simulation object from the simulation and sets the
+        // reference in the scene node null.
+        void removeSimulationObject(
+                const std::shared_ptr<SimulationObject>& so);
+
 
     // Factory methods
 
@@ -138,20 +150,24 @@ public:
                 std::string name,
                 SGChildrenNode* parent,
                 std::shared_ptr<Polygon> polygon,
-                Eigen::Vector position = Eigen::Vector::Zero(),
+                Eigen::Vector position,
                 bool renderOnlyOuterFaces = true);
 
         SGLeafNode* createLeafNode(
                 std::string name,
                 SGChildrenNode* parent,
                 std::shared_ptr<Polygon> polygon,
-                Eigen::Affine3d transform,
+                Eigen::Affine3d transform = Eigen::Affine3d::Identity(),
                 bool renderOnlyOuterFaces = true);
 
     // Getters
         SGSceneGraph* getSceneGraph();
 
         SGNode* getSceneNodeByName(std::string name);
+
+        // Searches the scene graph and returns the first found scene node that
+        // has the given simulation object. If there is none, it returns nullptr.
+        SGLeafNode* getSceneNodeBySimulationObject(SimulationObject* so);
 
     // LeafNodeListener interface
     public:
@@ -177,7 +193,6 @@ private:
 
     ApplicationControl* mAc;
     SGSceneGraph* mSceneGraph;
-
 
 };
 

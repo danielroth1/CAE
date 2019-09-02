@@ -70,8 +70,9 @@ public:
 
     virtual void transform(const Eigen::Affine3d& transform) = 0;
 
-    // This method must be called when this objects geometric data changed.
-    void geometricDataChanged();
+    // Calls this method when the geometric data changed. Informs listeners
+    // about the change by calling notifyGeometricDataChanged.
+    virtual void update();
 
     // Listener support
     void addGeometricDataListener(
@@ -86,6 +87,7 @@ protected:
     BoundingBox mBoundingBox;
 
 private:
+
     std::vector<std::shared_ptr<GeometricDataListener>> mListeners;
 };
 
