@@ -530,6 +530,7 @@ void RenderPolygons::drawTriangles(
         if (data->isTexturingEnabled())
         {
             // disable texturing
+            glBindTexture(GL_TEXTURE_2D, 0);
             glDisable(GL_TEXTURE_2D);
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         }

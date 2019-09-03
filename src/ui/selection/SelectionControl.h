@@ -49,7 +49,7 @@ public:
 
     //*********************************************
     // General methods
-        // Adds SelectionModel to renderer
+        // Adds SelectionModel to modeler
         void init(Renderer* renderer);
 
         // Changes the selection type. Deactivates the

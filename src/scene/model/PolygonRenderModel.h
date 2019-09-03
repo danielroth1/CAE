@@ -61,8 +61,11 @@ public:
     // of them.
     void setTextureCoordinates(const std::vector<Eigen::Vector2f>& textureCoordinates);
 
-    // Sets the texture.
-    void setAppearances(const std::shared_ptr<Appearances> appearances);
+    // Sets the rendered appearance. Does not overwrite this class appearance.
+    virtual void setRenderedAppearances(
+            const std::shared_ptr<Appearances>& appearances) override;
+
+    virtual std::shared_ptr<Appearances> getRenderedAppearances() override;
 
     void setPolygonIndexMapping(
             const std::shared_ptr<PolygonIndexMapping>& polygonIndexMapping);
@@ -76,6 +79,7 @@ public:
     void setTexturingEnabled(bool textureEnabled);
 
     bool isRenderOnlyOuterFaces() const;
+
     // Sets the flag for rendering only outer faces and resets() to make the
     // changes take effect.
     void setRenderOnlyOuterFaces(bool renderOnlyOuterFaces);

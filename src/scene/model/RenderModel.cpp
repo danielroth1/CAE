@@ -22,6 +22,33 @@ void RenderModel::setAlwaysUpdate(bool alwaysUpdate)
     mAlwaysUpdate = alwaysUpdate;
 }
 
+std::shared_ptr<Appearances> RenderModel::getAppearances()
+{
+    return mAppearances;
+}
+
+void RenderModel::setAppearances(const std::shared_ptr<Appearances>& appearances)
+{
+    if (!mAppearances ||
+        getRenderedAppearances() == nullptr ||
+        getRenderedAppearances() == mAppearances)
+    {
+        setRenderedAppearances(appearances);
+    }
+
+    mAppearances = appearances;
+}
+
+std::shared_ptr<Appearances> RenderModel::getRenderedAppearances()
+{
+    return nullptr;
+}
+
+void RenderModel::setRenderedAppearances(
+        const std::shared_ptr<Appearances>& /*appearances*/)
+{
+}
+
 bool RenderModel::isVisible() const
 {
     return mVisible;

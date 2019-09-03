@@ -3,6 +3,7 @@
 
 #include <memory>
 
+class Appearances;
 class RenderModelVisitor;
 class RenderObject;
 class Renderer;
@@ -62,6 +63,26 @@ public:
     bool isAlwaysUpdate();
     void setAlwaysUpdate(bool alwaysUpdate);
 
+    // Returns the appearances that are stored in this class. They can differ
+    // from the rendered appearances which are obtained by calling
+    // getRenderedAppearances().
+    virtual std::shared_ptr<Appearances> getAppearances();
+
+    // Set the appearance that is stored in this class. If no rendered
+    // appearance was set before, this will be set as well. To change the
+    // rendered appearance use setRenderedAppearance(),
+    virtual void setAppearances(const std::shared_ptr<Appearances>& appearances);
+
+    // Returns the currently rendered appearances. They can differ from the
+    // appearances that are stored in this class which can be obtained by
+    // calling getAppearances().
+    virtual std::shared_ptr<Appearances> getRenderedAppearances();
+
+    // Sets the rendered appearance. Does not overwrite this class appearance.
+    // Use setAppearances() to do so.
+    virtual void setRenderedAppearances(
+            const std::shared_ptr<Appearances>& appearances);
+
     virtual bool isVisible() const;
     virtual void setVisible(bool visible);
 
@@ -69,8 +90,11 @@ public:
     virtual void setWireframeEnabled(bool wireframeEnabled);
 
     virtual ~RenderModel();
+
 protected:
     RenderModel();
+
+    std::shared_ptr<Appearances> mAppearances;
 
     bool mAddedToRenderer;
     bool mAlwaysUpdate;

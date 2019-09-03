@@ -99,9 +99,15 @@ void PolygonRenderModel::setTextureCoordinates(
     mRenderPolygonsData->setTextureCoordinates(textureCoordinates);
 }
 
-void PolygonRenderModel::setAppearances(const std::shared_ptr<Appearances> appearances)
+void PolygonRenderModel::setRenderedAppearances(
+        const std::shared_ptr<Appearances>& appearances)
 {
     mRenderPolygonsData->setAppearances(appearances);
+}
+
+std::shared_ptr<Appearances> PolygonRenderModel::getRenderedAppearances()
+{
+    return mRenderPolygonsData->getAppearances();
 }
 
 void PolygonRenderModel::setPolygonIndexMapping(
@@ -257,15 +263,10 @@ void PolygonRenderModel::reset()
     }
     }
 
-    // Standard color is teal for now.
-//    mRenderPolygonsData->setRenderMaterial(
-//                RenderMaterial::createFromColor({0.0f, 0.58f, 1.0f, 0.7f}));
-
     if (!mRenderPolygonsData->getAppearances())
     {
-        mRenderPolygonsData->setAppearances(
-                    std::make_shared<Appearances>(
-                        Appearance::createAppearanceFromColor({1.0f, 1.0f, 1.0f, 1.0f})));
+        setAppearances(std::make_shared<Appearances>(
+                           Appearance::createAppearanceFromColor({1.0f, 1.0f, 1.0f, 1.0f})));
     }
 
     initializeBufferedData();

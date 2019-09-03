@@ -4,8 +4,11 @@
 #include <data_structures/DataStructures.h>
 #include <scene/model/RenderModel.h>
 #include <memory>
+#include <set>
 
+class Appearances;
 class RenderPoints;
+class SceneData;
 class SelectionSceneData;
 
 class SelectionSceneDataModel : public RenderModel
@@ -29,6 +32,10 @@ private:
     SelectionSceneData& mSelectionSceneData;
 
     std::shared_ptr<RenderPoints> mRenderPoints;
+
+    std::shared_ptr<Appearances> mSelectionAppearance;
+
+    std::set<std::shared_ptr<SceneData>> mSelectedColored;
 };
 
 #endif // SELECTIONSCENEDATAMODEL_H
