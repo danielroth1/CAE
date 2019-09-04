@@ -99,6 +99,8 @@ void CollisionManager::addSimulationObject(
 
                     spherePos = spherePos - rigid->getPosition();
 
+                    spherePos = p2->getTransform().linear().inverse() * spherePos;
+
                     collisionObjects.push_back(
                                 std::make_shared<CollisionSphere>(
                                     SimulationPointRef(so.get(), polygon.get(), spherePos),
@@ -178,19 +180,22 @@ void CollisionManager::addSimulationObject(
                     if ((eFirst - eSecond).norm() < 1e-10)
                         std::cout << "error: edges are identical\n";
 
-                    Vector p1 = pFirst + line / static_cast<double>(nLines) * eFirst;
-                    Vector p2 = pSecond + line / static_cast<double>(nLines) * eSecond;
+                    Vector v1 = pFirst + line / static_cast<double>(nLines) * eFirst;
+                    Vector v2 = pSecond + line / static_cast<double>(nLines) * eSecond;
 
                     int nSpheresPerLine =
-                            static_cast<int>(std::floor((p2-p1).norm() / diameter));
+                            static_cast<int>(std::floor((v2-v1).norm() / diameter));
 
-                    if ((p2 - p1).norm() < 1e-10)
+                    if ((v2 - v1).norm() < 1e-10)
                         std::cout << "error: triangle is plane";
                     for (int i = 1; i < nSpheresPerLine; ++i)
                     {
-                        Vector spherePos = p1 + i / static_cast<double>(nSpheresPerLine) * (p2 - p1);
+                        Vector spherePos = v1 + i / static_cast<double>(nSpheresPerLine) * (v2 - v1);
 
                         spherePos = spherePos - rigid->getPosition();
+
+                        spherePos = p2->getTransform().linear().inverse() * spherePos;
+
                         collisionObjects.push_back(
                                     std::make_shared<CollisionSphere>(
                                         SimulationPointRef(so.get(), polygon.get(), spherePos),
