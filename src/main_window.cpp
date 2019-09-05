@@ -9,7 +9,6 @@
 
 #include <QKeyEvent>
 
-#include <ui/KeyManager.h>
 
 MainWindow::MainWindow(ApplicationControl* ac, QWidget* parent)
     : QMainWindow(parent)
@@ -51,12 +50,12 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-    KeyManager::instance()->keyDownEvent(event);
+    mUiControl->keyPressEvent(event);
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent* event)
 {
-    KeyManager::instance()->keyReleaseEvent(event);
+    mUiControl->keyReleaseEvent(event);
 }
 
 void MainWindow::setUIControl(UIControl *uiControl)

@@ -11,6 +11,7 @@
 #include "constants.h"
 
 #include <ui/KeyManager.h>
+#include <ui/KeyManager.h>
 #include <ui/UIControl.h>
 #include <rendering/Renderer.h>
 
@@ -34,7 +35,7 @@ GLWidget::~GLWidget()
 void GLWidget::setDefaults()
 {
     mMouseSensitivy = 1.0f;
-    mMovementSpeed = 0.2f;
+    mMovementSpeed = 20.0f;
     mMousePos = QPointF(0.0, 0.0);
     mAngle = QPointF(0.0, -15.0);
     mCameraPos = QVector3D(0.0, 1.5f, 5.5f);
@@ -42,14 +43,60 @@ void GLWidget::setDefaults()
     mRenderer = nullptr;
 }
 
+QVector3D GLWidget::getCameraPos() const
+{
+    return mCameraPos;
+}
+
 QVector3D GLWidget::getCameraDir() const
 {
     return mCameraDir;
 }
 
-QVector3D GLWidget::getCameraPos() const
+void GLWidget::updateCameraSpeedAfterKeyPress()
 {
-    return mCameraPos;
+    KeyManager* km = KeyManager::instance();
+
+    QVector3D cameraVel;
+    cameraVel.setX(0);
+    cameraVel.setY(0);
+    cameraVel.setZ(0);
+
+    if (km->isKeyDown(Qt::Key::Key_W))
+    {
+        cameraVel += mMovementSpeed * mCameraDir;
+    }
+
+    if (km->isKeyDown(Qt::Key::Key_S))
+    {
+        cameraVel -= mMovementSpeed * mCameraDir;
+    }
+
+    if (km->isKeyDown(Qt::Key::Key_A))
+    {
+        QVector3D ortho(-mCameraDir.z(), 0.0, mCameraDir.x());
+        ortho.normalize();
+        cameraVel -= mMovementSpeed * ortho;
+    }
+
+    if (km->isKeyDown(Qt::Key::Key_D))
+    {
+        QVector3D ortho(-mCameraDir.z(), 0.0, mCameraDir.x());
+        ortho.normalize();
+        cameraVel += mMovementSpeed * ortho;
+    }
+
+    if (km->isKeyDown(Qt::Key::Key_Q))
+    {
+        cameraVel[1] += mMovementSpeed;
+    }
+
+    if (km->isKeyDown(Qt::Key::Key_E))
+    {
+        cameraVel[1] -= mMovementSpeed;
+    }
+
+    mCameraVel = cameraVel;
 }
 
 void GLWidget::setUIControl(UIControl *uiControl)
@@ -103,33 +150,6 @@ void GLWidget::resizeGL(int width, int height)
 
 void GLWidget::keyPressEvent(QKeyEvent* keyEvent)
 {
-    mUiControl->keyPressEvent(keyEvent);
-
-    if (keyEvent->key() == Qt::Key::Key_W)
-        mCameraPos += mMovementSpeed * mCameraDir;
-    if (keyEvent->key() == Qt::Key::Key_S)
-        mCameraPos -= mMovementSpeed * mCameraDir;
-    if (keyEvent->key() == Qt::Key::Key_A)
-    {
-        QVector3D ortho(-mCameraDir.z(), 0.0, mCameraDir.x());
-        ortho.normalize();
-        mCameraPos -= mMovementSpeed * ortho;
-    }
-    if (keyEvent->key() == Qt::Key::Key_D)
-    {
-        QVector3D ortho(-mCameraDir.z(), 0.0, mCameraDir.x());
-        ortho.normalize();
-        mCameraPos += mMovementSpeed * ortho;
-    }
-    if (keyEvent->key() == Qt::Key::Key_Q)
-    {
-        mCameraPos[1] += mMovementSpeed;
-    }
-    if (keyEvent->key() == Qt::Key::Key_E)
-    {
-        mCameraPos[1] -= mMovementSpeed;
-    }
-
     QWidget::keyPressEvent(keyEvent);
 }
 
@@ -182,7 +202,9 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 
 void GLWidget::paintGL()
 {
-    START_TIMING_RENDERING("GLWidget::paintGL()")
+    START_TIMING_RENDERING("GLWidget::paintGL()");
+
+    updateCameraPos(0.01f);
 
     mUiControl->handlePreRenderingStep();
     if (mRenderer)
@@ -253,4 +275,9 @@ void GLWidget::angleToDir()
     mCameraDir[1] = max(0.0f,min(sqrtf(1.0f - mCameraDir.x()*mCameraDir.x() -  mCameraDir.z()* mCameraDir.z()),1.0f));
     if (mAngle.y() < 0)
         mCameraDir[1] = -mCameraDir[1];
+}
+
+void GLWidget::updateCameraPos(float stepSize)
+{
+    mCameraPos += stepSize * mCameraVel;
 }

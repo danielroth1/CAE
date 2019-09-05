@@ -1,3 +1,4 @@
+#include "KeyManager.h"
 #include "ModulesUIControl.h"
 #include "UIControl.h"
 
@@ -109,14 +110,24 @@ void UIControl::connectSignals()
     connectSignals(*(mMainWindow->getGlWidget()));
 }
 
-void UIControl::keyPressEvent(QKeyEvent *keyEvent)
+void UIControl::keyPressEvent(QKeyEvent* keyEvent)
 {
+    KeyManager::instance()->keyPressEvent(keyEvent);
     if (keyEvent->key() == Qt::Key::Key_Space)
     {
         // stop or start simulation
         mAc->getSimulationControl()->setSimulationPaused(
                     !mAc->getSimulationControl()->isSimulationPaused());
     }
+
+    mGlWidget->updateCameraSpeedAfterKeyPress();
+}
+
+void UIControl::keyReleaseEvent(QKeyEvent* keyEvent)
+{
+    KeyManager::instance()->keyReleaseEvent(keyEvent);
+
+    mGlWidget->updateCameraSpeedAfterKeyPress();
 }
 
 void UIControl::connectSignals(GLWidget& glWidget)

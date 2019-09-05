@@ -56,10 +56,11 @@ public:
 
     void keyPressEvent(QKeyEvent* keyEvent);
 
+    void keyReleaseEvent(QKeyEvent* keyEvent);
+
     void setSimulationControl(SimulationControl* simulationControl);
 
     void connectSignals(GLWidget& glWidget);
-
 
     void registerNewSimulation(Simulation* sim);
 

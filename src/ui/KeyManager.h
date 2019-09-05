@@ -18,7 +18,7 @@ public:
         return mInstance;
     }
 
-    void keyDownEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
     void keyReleaseEvent(QKeyEvent *event);
 

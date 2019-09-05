@@ -34,6 +34,8 @@ public:
 
     QVector3D getCameraDir() const;
 
+    void updateCameraSpeedAfterKeyPress();
+
 protected:
     virtual void initializeGL();
     virtual void paintGL();
@@ -52,7 +54,10 @@ private:
     // Calculates the camera direction from the angle.
     void angleToDir();
 
+    void updateCameraPos(float stepSize);
+
     QVector3D mCameraPos;
+    QVector3D mCameraVel;
     QVector3D mCameraDir;
     QPointF mMousePos;
     QPointF mAngle; // (x, y) camera angle in degree

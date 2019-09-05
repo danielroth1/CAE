@@ -11,7 +11,7 @@ KeyManager::KeyManager()
     mKeyDowns.resize(static_cast<size_t>(mMaxKeys), false);
 }
 
-void KeyManager::keyDownEvent(QKeyEvent* event)
+void KeyManager::keyPressEvent(QKeyEvent* event)
 {
     int keyId = event->key();
     if (isKeyValid(keyId))
