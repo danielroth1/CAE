@@ -20,27 +20,36 @@ GeometricData::~GeometricData()
 
 }
 
+GeometricData::GeometricData(const GeometricData& gd)
+    : std::enable_shared_from_this<GeometricData> ()
+{
+    mBoundingBox = gd.mBoundingBox;
+}
+
 void GeometricData::update()
 {
-    for (const auto& listener : mListeners)
+    auto listeners = mListeners.lock();
+    for (std::shared_ptr<GeometricDataListener> listener : *listeners)
         listener->notifyGeometricDataChanged();
 }
 
 void GeometricData::addGeometricDataListener(std::shared_ptr<GeometricDataListener> listener)
 {
-    mListeners.push_back(listener);
+    auto listeners = mListeners.lock();
+    listeners->push_back(listener);
 }
 
 bool GeometricData::removeGeometricDataListener(GeometricDataListener* listener)
 {
-    auto it = std::find_if(mListeners.begin(), mListeners.end(),
+    auto listeners = mListeners.lock();
+    auto it = std::find_if(listeners->begin(), listeners->end(),
                            [&listener](const std::shared_ptr<GeometricDataListener>& l)
     {
         return l.get() == listener;
     });
-    if (it != mListeners.end())
+    if (it != listeners->end())
     {
-        mListeners.erase(it);
+        listeners->erase(it);
         return true;
     }
     return false;

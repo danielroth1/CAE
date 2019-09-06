@@ -3,6 +3,8 @@
 
 #include <data_structures/BoundingBox.h>
 
+#include <multi_threading/Monitor.h>
+
 
 class GeometricDataListener;
 class GeometricDataVisitor;
@@ -51,6 +53,8 @@ public:
     GeometricData();
     virtual ~GeometricData();
 
+    GeometricData(const GeometricData& gd);
+
     virtual Type getType() const = 0;
 
     // Updates the bounding box.
@@ -88,7 +92,7 @@ protected:
 
 private:
 
-    std::vector<std::shared_ptr<GeometricDataListener>> mListeners;
+    Monitor<std::vector<std::shared_ptr<GeometricDataListener>>> mListeners;
 };
 
 #endif // GEOMETRICDATA_H
