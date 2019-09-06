@@ -168,7 +168,6 @@ void PositionData::initializeFromBodySpace(
 
 void PositionData::moveCenterTo(const Vector& center)
 {
-    moveCenter(-mCenter);
     moveCenter(center);
 }
 
@@ -195,4 +194,3 @@ void PositionData::updateWorldSpace()
 {
     mPositions.updateWorldSpace();
 }
-
