@@ -98,8 +98,6 @@ void MeshConverterControl::convert(
                         newNode,
                         meshCriteria,
                         renderOnlyOuterFaces);
-
-            newNode->getData()->getGeometricData()->transform(poly->getTransform());
         }
 
         //TODO: save the newly created SGLeafNode* and the old Polygon

@@ -189,6 +189,7 @@ void BSWSVectors::changeRepresentationToWS()
     // is valid.
     if (mType == BODY_SPACE)
     {
+        mTransform.setIdentity();
         updateWorldSpace();
         mType = WORLD_SPACE;
     }
