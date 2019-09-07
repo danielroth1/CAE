@@ -19,8 +19,14 @@ public:
 
     Truncation(const std::vector<ID>& truncatedVectorIds);
 
-    // Use this getter to adapt the truncated vector ids.
-    std::vector<ID>& getTruncatedVectorIds();
+    void addTruncationIds(const std::vector<ID>& ids);
+
+    void removeTruncationIds(const std::vector<ID>& ids);
+
+    // Removes all truncated ids.
+    void clear();
+
+    const std::vector<ID>& getTruncatedVectorIds() const;
 
     // Takes the matrix A of the linear equation system A * x = b
     // and truncates it according to the truncated vector ids from

@@ -16,6 +16,45 @@ Truncation::Truncation(const std::vector<ID>& truncatedVectorIds)
 {
 }
 
+
+void Truncation::addTruncationIds(const std::vector<ID>& ids)
+{
+    for (ID vId : ids)
+    {
+        auto it = std::find(mTruncatedIds.begin(),
+                            mTruncatedIds.end(),
+                            vId);
+        if (it == mTruncatedIds.end())
+        {
+            mTruncatedIds.push_back(vId);
+        }
+    }
+}
+
+void Truncation::removeTruncationIds(const std::vector<ID>& ids)
+{
+    for (ID vId : ids)
+    {
+        auto it = std::find(mTruncatedIds.begin(),
+                            mTruncatedIds.end(),
+                            vId);
+        if (it != mTruncatedIds.end())
+        {
+            mTruncatedIds.erase(it);
+        }
+    }
+}
+
+void Truncation::clear()
+{
+    mTruncatedIds.clear();
+}
+
+const std::vector<ID>& Truncation::getTruncatedVectorIds() const
+{
+    return mTruncatedIds;
+}
+
 void Truncation::truncateByRemoving(
         const Eigen::SparseMatrix<double>& A,
         const Eigen::VectorXd& b,
@@ -176,9 +215,4 @@ Eigen::VectorXd Truncation::createOriginal(
         x(i) = truncatedB(i - iTrunc * 3);
     }
     return x;
-}
-
-std::vector<ID>& Truncation::getTruncatedVectorIds()
-{
-    return mTruncatedIds;
 }

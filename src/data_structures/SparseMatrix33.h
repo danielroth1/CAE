@@ -5,7 +5,8 @@
 #include <Eigen/Sparse>
 
 // Represents a stiffness matrix that is composed of 3x3 sub matrices.
-// Offers efficient methods to access these sub matrices.
+// Offers efficient methods to access these sub matrices with three block
+// operations for each submatrix that accesses the three rows of the matrix.
 // Internally stores a regular sparse matrix consisting of doubles that
 // can be used for regular calculations.
 //

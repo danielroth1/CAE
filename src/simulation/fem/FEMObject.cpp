@@ -28,6 +28,7 @@ FEMObject::FEMObject(
          static_cast<Eigen::Index>(mPositions.size()))
     , mKCorot(static_cast<Eigen::Index>(mPositions.size()),
               static_cast<Eigen::Index>(mPositions.size()))
+    , mAnalyzePatternNecessary(true)
 {
     mInitialPositions.resize(mPositions.size());
     std::copy(mPositions.begin(), mPositions.end(), mInitialPositions.begin());
@@ -298,9 +299,13 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 //        if (!solver.lastErrorMessage().empty())
 //            fprintf(stderr, "EigenErrorMessage[factorize]: %s\n", solver.lastErrorMessage().c_str());
 
-        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze");
-        mSolver.analyzePattern(A);
-        STOP_TIMING_SIMULATION;
+        if (mAnalyzePatternNecessary)
+        {
+            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze");
+            mSolver.analyzePattern(A);
+            mAnalyzePatternNecessary = false;
+            STOP_TIMING_SIMULATION;
+        }
 
         if (mSolver.info() != Eigen::Success)
             std::cerr << "Solver: analyzePattern failed.\n";
@@ -472,6 +477,36 @@ void FEMObject::applyForce(ID vertexIndex, const Vector& force)
     mForcesExt[vertexIndex] += force;
 }
 
+void FEMObject::addTrunctionIds(const std::vector<ID>& vectorIDs)
+{
+    mTruncation->addTruncationIds(vectorIDs);
+    for (ID id : vectorIDs)
+    {
+        mVelocities[id].setZero();
+    }
+
+    mAnalyzePatternNecessary = true;
+}
+
+void FEMObject::removeTrunctionIds(const std::vector<ID>& vectorIDs)
+{
+    mTruncation->removeTruncationIds(vectorIDs);
+
+    mAnalyzePatternNecessary = true;
+}
+
+void FEMObject::clearTruncation()
+{
+    mTruncation->clear();
+
+    mAnalyzePatternNecessary = true;
+}
+
+const std::vector<ID>& FEMObject::getTruncatedVectorIds() const
+{
+    return mTruncation->getTruncatedVectorIds();
+}
+
 Vector& FEMObject::x(unsigned int i)
 {
     return mInitialPositions[i];
@@ -598,11 +633,6 @@ Vector& FEMObject::getExternalForce(size_t id)
     return mForcesExt[id];
 }
 
-Truncation* FEMObject::getTruncation()
-{
-    return mTruncation.get();
-}
-
 std::shared_ptr<Polygon3D> FEMObject::getPolygon()
 {
     return mPoly3;
@@ -689,6 +719,8 @@ void FEMObject::initializeStiffnessMatrix()
 
 //    updateStiffnessMatrix(false);
     updateFEM(false);
+
+    mAnalyzePatternNecessary = true;
 }
 
 void FEMObject::updateElasticForces()

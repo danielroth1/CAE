@@ -25,6 +25,19 @@ class Truncation;
 // Simulation loop:
 //      1. update the stiffness matrix and forces with updateCorotatedFEM()
 //      2. apply the solver with
+//
+// Optimzations:
+// -> analyzePattern() is only called once when the sparsity pattern of the
+//      linear systems matrix changes. As long as the sparsity pattern doesn't
+//      change, a recomputation is unnecessary, see " The Compute Step" under
+//      https://eigen.tuxfamily.org/dox/group__TopicSparseSystems.html
+//      The impact of this optimzation depends on the matrix structure. It can
+//      make up from 5% to 50% of the total compute time (i.e. analyzePattern()
+//      + factorize() call).
+//
+// -> usage of a sparse matrix that is especially suited for the FEM, see
+//      SparseMatrix33.
+//
 class FEMObject : public SimulationObject
 {
 public:
@@ -101,6 +114,14 @@ public:
     void applyImpulse(ID vertexIndex, const Eigen::Vector& impulse);
     void applyForce(ID vertexIndex, const Eigen::Vector& force);
 
+    void addTrunctionIds(const std::vector<ID>& vectorIDs);
+
+    void removeTrunctionIds(const std::vector<ID>& vectorIDs);
+
+    void clearTruncation();
+
+    const std::vector<ID>& getTruncatedVectorIds() const;
+
     Eigen::Vector& x(unsigned int i);
     Eigen::Vector& y(unsigned int i);
     Eigen::Vector& u(unsigned int i);
@@ -128,8 +149,6 @@ public:
     Vectors& getExternalForces();
     Eigen::Vector& getExternalForce(size_t id);
     //std::vector<FiniteElement>& getFiniteElements() { return m_finite_elements; }
-
-    Truncation* getTruncation();
 
     std::shared_ptr<Polygon3D> getPolygon();
 
@@ -215,6 +234,10 @@ private:
     Eigen::SparseMatrix<double> mM;
 
     std::shared_ptr<Truncation> mTruncation;
+
+    // If true, triggers a recomputation of mSolver->analyzePattern() in the
+    // next solver step. It's then automatically set to false again.
+    bool mAnalyzePatternNecessary;
 
 };
 

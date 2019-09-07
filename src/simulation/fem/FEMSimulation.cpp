@@ -55,40 +55,20 @@ void FEMSimulation::addTruncation(
         FEMObject* femObject,
         const std::vector<ID>& vectorIDs)
 {
-    for (ID vId : vectorIDs)
-    {
-        Truncation* t = femObject->getTruncation();
-        if (std::find(t->getTruncatedVectorIds().begin(),
-                      t->getTruncatedVectorIds().end(),
-                      vId) == t->getTruncatedVectorIds().end())
-        {
-            femObject->getVelocities()[vId] = Vector::Zero();
-            t->getTruncatedVectorIds().push_back(vId);
-        }
-    }
+    femObject->addTrunctionIds(vectorIDs);
 }
 
 void FEMSimulation::removeTruncation(
         FEMObject* femObject,
         const std::vector<ID>& vectorIDs)
 {
-    for (ID vId : vectorIDs)
-    {
-        Truncation* t = femObject->getTruncation();
-        auto it = std::find(t->getTruncatedVectorIds().begin(),
-                            t->getTruncatedVectorIds().end(),
-                            vId);
-        if (it != t->getTruncatedVectorIds().end())
-        {
-            t->getTruncatedVectorIds().erase(it);
-        }
-    }
+    femObject->removeTrunctionIds(vectorIDs);
 }
 
 void FEMSimulation::clearTruncation()
 {
     for (std::shared_ptr<FEMObject>& fo : mFEMObjects)
-        fo->getTruncation()->getTruncatedVectorIds().clear();
+        fo->clearTruncation();
 }
 
 void FEMSimulation::printStiffnessMatrix(FEMObject* femObject)
