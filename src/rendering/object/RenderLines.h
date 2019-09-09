@@ -6,7 +6,10 @@
 #include <multi_threading/Monitor.h>
 
 
+// Renders lines. Disables the lightning because it's not possible to find
+// correct vertex normals for lines.
 // Needs to update lines and indicies. Use the corresponding getters for that.
+//
 // - To render a line that follows the points in lines, fill indices like this
 //   indices = {0, 1, 1, 2, 2, ..., nPoints-1, nPoints-1}
 // - To render lines whichs points are stored after each other in the lines vector

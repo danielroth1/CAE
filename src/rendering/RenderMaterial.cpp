@@ -40,6 +40,16 @@ void RenderMaterial::glMaterial()
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mSpecular.data());
 }
 
+void RenderMaterial::glColorAmbient()
+{
+    glColor3f(mAmbient[0], mAmbient[1], mAmbient[2]);
+}
+
+void RenderMaterial::glColorDiffuse()
+{
+    glColor3f(mDiffuse[0], mDiffuse[1], mDiffuse[2]);
+}
+
 void RenderMaterial::setOpaquness(float opaqueness)
 {
     mAmbient[3] = opaqueness;

@@ -27,6 +27,12 @@ public:
 
     void glMaterial();
 
+    // Executed glColor3f with the ambient color.
+    void glColorAmbient();
+
+    // Executed glColor3f with the diffuse color.
+    void glColorDiffuse();
+
     void setOpaquness(float opaqueness);
 
     std::array<float, 4> getAmbient() const;

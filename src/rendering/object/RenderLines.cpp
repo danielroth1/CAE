@@ -45,12 +45,14 @@ void RenderLines::drawImmediate()
 
 void RenderLines::drawArray()
 {
+    glDisable(GL_LIGHTING);
+
+    mRenderMaterial->glColorDiffuse();
+
     glLineWidth(3);
-    mRenderMaterial->glMaterial();
 
     // draw in array mode
     glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
 
     {
         auto linesLock = mLines.lock();
@@ -67,7 +69,7 @@ void RenderLines::drawArray()
     }
 
     glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_NORMAL_ARRAY);
+    glEnable(GL_LIGHTING);
 }
 
 void RenderLines::drawVBO()

@@ -21,7 +21,9 @@ void RenderLine::draw()
 
 void RenderLine::drawImmediate()
 {
-    mRenderMaterial->glMaterial();
+    glDisable(GL_LIGHTING);
+
+    mRenderMaterial->glColorDiffuse();
     glBegin(GL_LINES);
     {
         auto lineLock = mLine.lock();
@@ -31,6 +33,8 @@ void RenderLine::drawImmediate()
         }
     }
     glEnd();
+
+    glEnable(GL_LIGHTING);
 }
 
 void RenderLine::drawArray()

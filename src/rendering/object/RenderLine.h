@@ -8,6 +8,10 @@
 class RenderObjectVisitor;
 
 
+// Renders a line. Use RenderLines to render multiple lines in a more efficient
+// way.
+// Disables the lightning because it's not possible to find correct vertex
+// normals for lines.
 class RenderLine : public RenderObject
 {
 public:
