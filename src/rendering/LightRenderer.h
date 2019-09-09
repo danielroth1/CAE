@@ -17,12 +17,12 @@ public:
 
     void drawLight();
 
-    void setLightPosition(Eigen::Vector3f lightPosition);
+    void setLightDirection(Eigen::Vector3f lightDirection);
 
-    Eigen::Vector3f getLightPosition();
+    Eigen::Vector3f getLightDirection();
 
 private:
-    Eigen::Vector3f mLightPosition;
+    Eigen::Vector3f mLightDirection;
 };
 
 #endif // LIGHTRENDERER_H

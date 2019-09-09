@@ -7,7 +7,8 @@
 
 LightRenderer::LightRenderer()
 {
-    mLightPosition = Eigen::Vector3f(1.7f, 1.3f, 1.7f);
+//    mLightDirection = Eigen::Vector3f(1.7f, 1.3f, 1.7f);
+    mLightDirection = Eigen::Vector3f(1.0f, 0.0f, 0.0f);
 }
 
 void LightRenderer::initialize()
@@ -41,9 +42,9 @@ void LightRenderer::initialize()
 void LightRenderer::drawLight()
 {
     // set light position in within current coordinate system
-    GLfloat lp[] = { mLightPosition(0),
-                     mLightPosition(1),
-                     mLightPosition(2), 0.0f };
+    GLfloat lp[] = { -mLightDirection(0),
+                     -mLightDirection(1),
+                     -mLightDirection(2), 0.0f };
     glLightfv(GL_LIGHT0, GL_POSITION, lp);
 
 //    glDisable(GL_LIGHTING);
@@ -59,12 +60,12 @@ void LightRenderer::drawLight()
     glEnable(GL_LIGHTING);
 }
 
-void LightRenderer::setLightPosition(Eigen::Vector3f lightPosition)
+void LightRenderer::setLightDirection(Eigen::Vector3f lightDirection)
 {
-    mLightPosition = lightPosition;
+    mLightDirection = lightDirection;
 }
 
-Eigen::Vector3f LightRenderer::getLightPosition()
+Eigen::Vector3f LightRenderer::getLightDirection()
 {
-    return mLightPosition;
+    return mLightDirection;
 }

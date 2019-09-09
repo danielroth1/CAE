@@ -40,8 +40,8 @@ public:
     // This method is completely thread safe.
     void removeRenderObject(std::shared_ptr<RenderObject> ro);
 
-    Eigen::Vector3f getLightPosition() const;
-    void setLightPosition(const Eigen::Vector3f& pos);
+    Eigen::Vector3f getLightDirection() const;
+    void setLightDirection(const Eigen::Vector3f& pos);
 
     std::shared_ptr<RenderObjectFactory>& getRenderObjectFactory();
 
@@ -51,7 +51,7 @@ public:
 //public slots:
     void addRenderObjectSlot(std::shared_ptr<RenderObject> ro);
     void removeRenderObjectSlot(std::shared_ptr<RenderObject> ro);
-    void setLightPositionSlot(Eigen::Vector3f pos);
+    void setLightDirectionSlot(Eigen::Vector3f pos);
 
 private:
 
@@ -76,7 +76,7 @@ PROXY_CLASS(RendererProxy, Renderer, mR,
             PROXY_FUNCTION(Renderer, mR, removeRenderObjectSlot,
                            PL(std::shared_ptr<RenderObject> ro),
                            PL(ro))
-            PROXY_FUNCTION(Renderer, mR, setLightPositionSlot,
+            PROXY_FUNCTION(Renderer, mR, setLightDirectionSlot,
                            PL(Eigen::Vector3f pos),
                            PL(pos))
             )

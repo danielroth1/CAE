@@ -20,8 +20,8 @@ public:
 
     void handlePreRenderingStep();
 
-    Eigen::Vector3f getHeadlightPosition() const;
-    void setHeadlightPosition(const Eigen::Vector3f& pos);
+    Eigen::Vector3f getHeadlightDirection() const;
+    void setHeadlightDirection(const Eigen::Vector3f& dir);
 
     Renderer* getRenderer();
     RendererProxy* getRendererProxy();

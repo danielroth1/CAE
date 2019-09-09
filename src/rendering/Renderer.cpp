@@ -92,14 +92,14 @@ void Renderer::removeRenderObject(std::shared_ptr<RenderObject> ro)
     mProxy->removeRenderObjectSlot(ro);
 }
 
-Vector3f Renderer::getLightPosition() const
+Vector3f Renderer::getLightDirection() const
 {
-    return mLightRenderer->getLightPosition();
+    return mLightRenderer->getLightDirection();
 }
 
-void Renderer::setLightPosition(const Vector3f& pos)
+void Renderer::setLightDirection(const Vector3f& pos)
 {
-    mProxy->setLightPositionSlot(pos);
+    mProxy->setLightDirectionSlot(pos);
 }
 
 std::shared_ptr<RenderObjectFactory>& Renderer::getRenderObjectFactory()
@@ -181,7 +181,7 @@ void Renderer::removeRenderObjectSlot(std::shared_ptr<RenderObject> ro)
     }
 }
 
-void Renderer::setLightPositionSlot(Eigen::Vector3f pos)
+void Renderer::setLightDirectionSlot(Eigen::Vector3f pos)
 {
-    mLightRenderer->setLightPosition(pos);
+    mLightRenderer->setLightDirection(pos);
 }
