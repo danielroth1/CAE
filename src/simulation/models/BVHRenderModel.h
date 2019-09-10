@@ -55,6 +55,7 @@ private:
         SphereData(
                 RenderModelManager* renderModelManager,
                 BVSphere* bvSphere,
+                int level,
                 double radius,
                 int resolution,
                 bool isLeaf);
@@ -69,12 +70,26 @@ private:
                 RenderModelManager* renderModelManager,
                 GeometricSphere* geometricSphereTemplate,
                 BVSphere* bvSphere,
+                int level,
                 double radius,
                 bool isLeaf);
 
         ~SphereData();
 
+        void initialize(
+                Renderer* renderer,
+                RenderModelManager* renderModelManager,
+                GeometricSphere* geometricSphereTemplate);
+
         void update();
+
+        void addToRenderer(Renderer* renderer);
+
+        void removeFromRenderer(Renderer* renderer);
+
+        void setVisible(bool visible, int level);
+
+        bool isToBeSetVisible(bool visible, int level);
 
         // Projects the vertices of the Polygon2D on the sphere
         // with the given radius.
@@ -83,16 +98,26 @@ private:
         // Sets the position of the Polygon2D.
         void setPosition(Eigen::Vector position);
 
+    private:
         BVSphere* mBvSphere;
 
         std::shared_ptr<GeometricSphere> mGeometricSphere;
 
         std::shared_ptr<PolygonRenderModel> mRenderModel;
 
+        double mRadius;
+
         double mRadiusPrevious;
 
         bool mIsLeaf;
+
+        int mLevel;
+
+        bool mInitialized;
+
     };
+
+    Renderer* mRenderer;
 
     RenderModelManager* mRenderModelManager;
 

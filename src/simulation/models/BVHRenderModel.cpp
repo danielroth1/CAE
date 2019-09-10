@@ -106,11 +106,12 @@ void BVHRenderModel::accept(RenderModelVisitor& /*v*/)
 
 void BVHRenderModel::addToRenderer(Renderer* renderer)
 {
+    mRenderer = renderer;
     for (const std::vector<std::shared_ptr<SphereData>>& levels : mRenderPolygons)
     {
         for (const std::shared_ptr<SphereData>& sphereData : levels)
         {
-            sphereData->mRenderModel->addToRenderer(renderer);
+            sphereData->addToRenderer(renderer);
         }
     }
 }
@@ -121,7 +122,7 @@ void BVHRenderModel::removeFromRenderer(Renderer* renderer)
     {
         for (const std::shared_ptr<SphereData>& sphereData : levels)
         {
-            sphereData->mRenderModel->removeFromRenderer(renderer);
+            sphereData->removeFromRenderer(renderer);
         }
     }
 }
@@ -133,19 +134,11 @@ void BVHRenderModel::setVisible(bool visible)
         const std::vector<std::shared_ptr<SphereData>>& levelData = mRenderPolygons[i];
         for (const std::shared_ptr<SphereData>& sphereData : levelData)
         {
-            if (mRenderedLevel == -1) // Render all
-            {
-                sphereData->mRenderModel->setVisible(visible);
-            }
-            else if (mRenderedLevel == -2) // Render leafs
-            {
-                sphereData->mRenderModel->setVisible(visible && sphereData->mIsLeaf);
-            }
-            else // Render the corresponding level
-            {
-                sphereData->mRenderModel->setVisible(
-                            visible && mRenderedLevel == static_cast<int>(i));
-            }
+            if (sphereData->isToBeSetVisible(visible, mRenderedLevel))
+                sphereData->initialize(mRenderer,
+                                       mRenderModelManager,
+                                       mGeometricSphereTemplate.get());
+            sphereData->setVisible(visible, mRenderedLevel);
         }
     }
     RenderModel::setVisible(visible);
@@ -198,8 +191,7 @@ void BVHRenderModel::addSphere(BVSphere* sphere, size_t level, bool isLeaf)
     std::shared_ptr<SphereData> sphereData =
             std::make_shared<SphereData>(
                 mRenderModelManager,
-                mGeometricSphereTemplate.get(), sphere, radius, isLeaf);
-    sphereData->mGeometricSphere->getPolygon()->getTransform().scale(radius*25);
+                nullptr, sphere, level, radius, isLeaf);
 
     mRenderPolygons[level].push_back(sphereData);
 }
@@ -207,11 +199,14 @@ void BVHRenderModel::addSphere(BVSphere* sphere, size_t level, bool isLeaf)
 BVHRenderModel::SphereData::SphereData(
         RenderModelManager* renderModelManager,
         BVSphere* bvSphere,
+        int level,
         double radius,
         int resolution,
         bool isLeaf)
     : mBvSphere(bvSphere)
     , mIsLeaf(isLeaf)
+    , mLevel(level)
+    , mInitialized(false)
 {
     mGeometricSphere = std::make_shared<GeometricSphere>(radius, resolution);
 
@@ -224,18 +219,25 @@ BVHRenderModel::SphereData::SphereData(
         RenderModelManager* renderModelManager,
         GeometricSphere* geometricSphereTemplate,
         BVSphere* bvSphere,
+        int level,
         double radius,
         bool isLeaf)
     : mBvSphere(bvSphere)
     , mIsLeaf(isLeaf)
+    , mLevel(level)
+    , mInitialized(false)
 {
     mRadiusPrevious = 0.0;
 
-    mGeometricSphere = std::make_shared<GeometricSphere>(*geometricSphereTemplate);
+    if (geometricSphereTemplate)
+    {
+        mGeometricSphere = std::make_shared<GeometricSphere>(*geometricSphereTemplate);
+        mRenderModel = std::make_shared<PolygonRenderModel>(
+                    renderModelManager,
+                    mGeometricSphere->getPolygon());
+    }
+
     setRadius(radius);
-    mRenderModel = std::make_shared<PolygonRenderModel>(
-                renderModelManager,
-                mGeometricSphere->getPolygon());
 }
 
 BVHRenderModel::SphereData::~SphereData()
@@ -243,9 +245,29 @@ BVHRenderModel::SphereData::~SphereData()
 
 }
 
+void BVHRenderModel::SphereData::initialize(
+        Renderer* renderer,
+        RenderModelManager* renderModelManager,
+        GeometricSphere* geometricSphereTemplate)
+{
+    if (mInitialized)
+        return;
+
+    mInitialized = true;
+    mGeometricSphere = std::make_shared<GeometricSphere>(*geometricSphereTemplate);
+    mGeometricSphere->getPolygon()->getTransform().scale(mRadius*25);
+//    setRadius(mRadius);
+    mRenderModel = std::make_shared<PolygonRenderModel>(
+                renderModelManager,
+                mGeometricSphere->getPolygon());
+    mRenderModel->addToRenderer(renderer);
+
+    update();
+}
+
 void BVHRenderModel::SphereData::update()
 {
-    if (mRenderModel->isVisible())
+    if (mRenderModel)
     {
         setRadius(mBvSphere->getRadius());
         setPosition(mBvSphere->getPosition());
@@ -253,14 +275,54 @@ void BVHRenderModel::SphereData::update()
     }
 }
 
+void BVHRenderModel::SphereData::addToRenderer(Renderer* renderer)
+{
+    if (mRenderModel)
+        mRenderModel->addToRenderer(renderer);
+}
+
+void BVHRenderModel::SphereData::removeFromRenderer(Renderer* renderer)
+{
+    if (mRenderModel)
+        mRenderModel->removeFromRenderer(renderer);
+}
+
+void BVHRenderModel::SphereData::setVisible(bool visible, int level)
+{
+    if (!mRenderModel)
+        return;
+
+    mRenderModel->setVisible(isToBeSetVisible(visible, level));
+}
+
+bool BVHRenderModel::SphereData::isToBeSetVisible(bool visible, int level)
+{
+    if (level == -1) // Render all
+    {
+        return visible;
+    }
+    else if (level == -2) // Render leafs
+    {
+        return visible && mIsLeaf;
+    }
+    else // Render the corresponding level
+    {
+        return visible && level == static_cast<int>(mLevel);
+    }
+}
+
 void BVHRenderModel::SphereData::setRadius(double radius)
 {
-    if (std::abs(mRadiusPrevious - mBvSphere->getRadius()) > 1e-5)
+    mRadius = radius;
+    if (mGeometricSphere)
     {
-        mGeometricSphere->setRadiusAndProject(radius);
-        mGeometricSphere->getPolygon()->update();
+        if (std::abs(mRadiusPrevious - mBvSphere->getRadius()) > 1e-5)
+        {
+            mGeometricSphere->setRadiusAndProject(radius);
+            mGeometricSphere->getPolygon()->update();
 
-        mRadiusPrevious = mBvSphere->getRadius();
+            mRadiusPrevious = mBvSphere->getRadius();
+        }
     }
 }
 
