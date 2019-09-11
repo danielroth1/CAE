@@ -11,6 +11,7 @@
 #include <simulation/SimulationObject.h>
 #include <simulation/collision_detection/narrow/CollisionSphere.h>
 #include <simulation/rigid/RigidBody.h>
+#include <times/timing.h>
 
 #include <map>
 

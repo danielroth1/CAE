@@ -486,6 +486,12 @@ void SimulationControl::initializeStep()
 
 void SimulationControl::step()
 {
+    if (mFEMSimulation->getFEMObjects().size() +
+        mRigidSimulation->getRigidBodies().size() == 0)
+    {
+        return;
+    }
+
     START_TIMING_SIMULATION("SimulationControl::step()");
     // Solver step algorithm
     // -> iterate for as long as all collisions are resolved

@@ -85,11 +85,35 @@ void BVHRenderModel::reset()
 
 void BVHRenderModel::update()
 {
-    for (const std::vector<std::shared_ptr<SphereData>>& levels : mRenderPolygons)
+    if (!isVisible())
+        return;
+
+    // Update only the specific visible level. If all levels are visible or all
+    // leafs, just try to update all. Invisible ones are ignored while iterating.
+    if (mRenderedLevel >= 0)
     {
+        const std::vector<std::shared_ptr<SphereData>>& levels =
+                mRenderPolygons[static_cast<size_t>(mRenderedLevel)];
+
         for (const std::shared_ptr<SphereData>& sphereData : levels)
         {
-            sphereData->update();
+            if (sphereData->isVisible())
+            {
+                sphereData->update();
+            }
+        }
+    }
+    else
+    {
+        for (const std::vector<std::shared_ptr<SphereData>>& levels : mRenderPolygons)
+        {
+            for (const std::shared_ptr<SphereData>& sphereData : levels)
+            {
+                if (sphereData->isVisible())
+                {
+                    sphereData->update();
+                }
+            }
         }
     }
 }
@@ -293,6 +317,13 @@ void BVHRenderModel::SphereData::setVisible(bool visible, int level)
         return;
 
     mRenderModel->setVisible(isToBeSetVisible(visible, level));
+}
+
+bool BVHRenderModel::SphereData::isVisible() const
+{
+    if (!mRenderModel)
+        return false;
+    return mRenderModel->isVisible();
 }
 
 bool BVHRenderModel::SphereData::isToBeSetVisible(bool visible, int level)

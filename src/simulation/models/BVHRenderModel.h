@@ -89,6 +89,8 @@ private:
 
         void setVisible(bool visible, int level);
 
+        bool isVisible() const;
+
         bool isToBeSetVisible(bool visible, int level);
 
         // Projects the vertices of the Polygon2D on the sphere
@@ -130,6 +132,8 @@ private:
 
     // currently rendered level
     // -1 means alls levels are rendered.
+    // -2 means all leafs are rendered.
+    // All other numbers render the specified level.
     int mRenderedLevel;
 
     // first vector: levels
