@@ -177,6 +177,25 @@ private:
 
     void applyForces();
 
+    // Retrieves all constraints that reference the given simulation object
+    // and returns them in a vector.
+    template <class MechanicalPropertyType>
+    std::vector<std::shared_ptr<MechanicalPropertyType>>
+    retrieveReferencingMechanicalProperties(
+            const std::shared_ptr<SimulationObject>& so,
+            const std::vector<std::shared_ptr<MechanicalPropertyType>>& constraints)
+    {
+        std::vector<std::shared_ptr<MechanicalPropertyType>> conRef;
+        for (const std::shared_ptr<MechanicalPropertyType>& c : constraints)
+        {
+            if (c->references(so))
+            {
+                conRef.push_back(c);
+            }
+        }
+        return conRef;
+    }
+
     std::shared_ptr<SimulationControlProxy> mProxy;
 
     ApplicationControl* mAc;

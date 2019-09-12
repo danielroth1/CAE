@@ -332,12 +332,19 @@ void SimulationControl::removeSimulationObject(const std::shared_ptr<SimulationO
     }
 
     // Remove all linear forces that reference the simulation object
-    for (const std::shared_ptr<Force>& lf : mForces)
+    std::vector<std::shared_ptr<Force>> forcesToBeRemoved =
+            retrieveReferencingMechanicalProperties(so, mForces);
+    for (const std::shared_ptr<Force>& lf : forcesToBeRemoved)
     {
-        if (lf->references(so))
-        {
-            mAc->getRenderModelManager()->removeRenderModelByObject(lf);
-        }
+        mAc->getRenderModelManager()->removeRenderModelByObject(lf);
+        removeForce(lf);
+    }
+
+    std::vector<std::shared_ptr<Constraint>> constraintsToBeRemoved =
+            retrieveReferencingMechanicalProperties(so, mConstraints);
+    for (const std::shared_ptr<Constraint>& c : constraintsToBeRemoved)
+    {
+        removeConstraint(c);
     }
 
     class RemoveSimulationObjectVisitor : public SimulationObjectVisitor

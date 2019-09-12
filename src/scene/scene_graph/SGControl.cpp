@@ -478,8 +478,11 @@ void SGControl::createAndSetCorrespondingSimulationObject(SGLeafNode* leafNode)
     //TODO is this method only working for simulation points, not fem objects?
     if (GeometricData* geo = leafNode->getData()->getGeometricDataRaw())
     {
-        leafNode->getData()->setSimulationObject(
-                    std::shared_ptr<SimulationObject>(createCorrespondingSimulationObject(geo)));
+        std::shared_ptr<SimulationObject> so =
+                std::shared_ptr<SimulationObject>(
+                    createCorrespondingSimulationObject(geo));
+        leafNode->getData()->setSimulationObject(so);
+        mAc->getSimulationControl()->addSimulationObject(so);
     }
 }
 
