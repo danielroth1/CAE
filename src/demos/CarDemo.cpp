@@ -12,6 +12,7 @@
 
 #include <simulation/constraints/BallJoint.h>
 #include <simulation/constraints/DistanceJoint.h>
+#include <simulation/constraints/DoubleAxisRotationalJoint.h>
 #include <simulation/constraints/FixedRotationalJoint.h>
 #include <simulation/constraints/LineJoint.h>
 
@@ -36,7 +37,7 @@ void CarDemo::load()
     SGLeafNode* floor = mAc.getSGControl()->createBox(
                 "Floor",
                 mAc.getSGControl()->getSceneGraph()->getRoot(),
-                Vector(0.0, -4.5, 0.0), 12, 0.5, 12, true);
+                Vector(0.0, -4.5, 0.0), 12, 0.5, 40, true);
     mAc.getSGControl()->createRigidBody(floor->getData(), 1.0, true);
     mAc.getSGControl()->createCollidable(floor->getData());
 
@@ -155,6 +156,12 @@ void CarDemo::createTire(
     std::shared_ptr<LineJoint> lineJoint =
             std::make_shared<LineJoint>(target, source, Vector(0, -1.0, 0));
     mAc.getSimulationControl()->addConstraint(lineJoint);
+
+    // Double Rotational Joint
+    std::shared_ptr<DoubleAxisRotationalJoint> rotLineJoint =
+            std::make_shared<DoubleAxisRotationalJoint>(
+                rigid, hull, Vector(1.0, 0.0, 0.0), Vector(1.0, 0.0, 0.0));
+    mAc.getSimulationControl()->addConstraint(rotLineJoint);
 
     // Rotational motor
     std::shared_ptr<RotationalMotor> motorForce =
