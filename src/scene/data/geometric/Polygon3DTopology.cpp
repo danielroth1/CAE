@@ -25,6 +25,34 @@ Polygon3DTopology::Polygon3DTopology(
     std::cout << "V - E + F - T = " <<
                  nVertices - mEdges.size() + mFaces.size() - mCells.size() << "\n";
 
+    // Check if all vertices are referenced by cells.
+    std::set<unsigned int> verticesReferencedInCells;
+    for (TopologyCell& tc : mCells)
+    {
+        for (size_t i = 0; i < 4; ++i)
+        {
+            verticesReferencedInCells.insert(tc.getVertexIds()[i]);
+        }
+    }
+
+    if (verticesReferencedInCells.size() != nVertices)
+    {
+        std::cout << nVertices - verticesReferencedInCells.size()
+                  << " dangling vertices. Potential not possible"
+                     " factorization.\n";
+    }
+
+    // Check if no cell points to two identical vertices.
+    for (Cell& c : mCellIds)
+    {
+        if (c[0] == c[1] || c[0] == c[2] || c[0] == c[3] ||
+            c[1] == c[2] || c[1] == c[3] ||
+            c[2] == c[3])
+        {
+            std::cout << "Detected degenerated cell that points to two"
+                         " identical vertices.\n";
+        }
+    }
 }
 
 Cells& Polygon3DTopology::getCellIds()

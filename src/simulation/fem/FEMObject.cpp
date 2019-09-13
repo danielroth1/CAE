@@ -313,6 +313,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
         START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
         mSolver.factorize(A);
         STOP_TIMING_SIMULATION;
+
 #else
 
         START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");

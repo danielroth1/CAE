@@ -237,6 +237,10 @@ void FiniteElement::updateDnx()
 
     mVolume = r1.cross(r2).dot(r3);
 
+    // Sometimes tetrahedrons can be so degenerated that their volume is zero.
+    if (mVolume < 1e-10)
+        mVolume = 1e-5;
+
     mDnx[0] = r4.cross(r5) / mVolume;
     mDnx[1] = r2.cross(r3) / mVolume;
     mDnx[2] = r3.cross(r1) / mVolume;

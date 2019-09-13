@@ -320,7 +320,7 @@ bool generateMeshFromCGALPolyhedron(
             Eigen::Vector3d r_1 = vertices_out[facet[1]] - vertices_out[facet[0]];
             Eigen::Vector3d r_2 = vertices_out[facet[2]] - vertices_out[facet[0]];
             Eigen::Vector3d r_3 = vertices_out[other_vertex_id] - vertices_out[facet[0]];
-            std::cout << "other_vertex_id = " << other_vertex_id << "\n";
+//            std::cout << "other_vertex_id = " << other_vertex_id << "\n";
 
             if (r_1.cross(r_2).normalized().dot(r_3) > 0)
             {
