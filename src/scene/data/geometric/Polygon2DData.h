@@ -23,6 +23,12 @@ public:
 public:
     virtual Polygon::DimensionType getDimensionType() const override;
 
+    // Removes a vector at the given index.
+    virtual void removeVector(ID index) override;
+
+    // Removes the vectors at the given indices.
+    virtual void removeVectors(std::vector<ID>& indices) override;
+
 private:
     std::unique_ptr<Polygon2DTopology> mTopology;
 };

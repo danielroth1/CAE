@@ -10,7 +10,7 @@ class Polygon3DDataBS : public Polygon3DData
 public:
 
     Polygon3DDataBS(
-            const Polygon3DTopology& topology,
+            const std::shared_ptr<Polygon3DTopology>& topology,
             const Vectors& positionsBS,
             const Vectors& outerVertexNormalsBS,
             const Vectors& outerFaceNormalsBS);
@@ -26,11 +26,17 @@ public:
     Vectors& getOuterFaceNormalsBS();
     void setOuterFaceNormalsBS(const Vectors& outerFaceNormalsBS);
 
+    // PolygonData interface
+public:
+    virtual void removeVector(ID index);
+    virtual void removeVectors(std::vector<ID>& indices);
+
 private:
 
     Vectors mPositionsBS;
     Vectors mOuterVertexNormalsBS;
     Vectors mOuterFaceNormalsBS;
+
 };
 
 #endif // SHAREDPOLYGON3DDATABS_H

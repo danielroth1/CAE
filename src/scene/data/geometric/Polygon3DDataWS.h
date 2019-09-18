@@ -8,9 +8,10 @@ class Polygon3DDataWS : public Polygon3DData
 {
 public:
 
-    Polygon3DDataWS(const Polygon3DTopology& topology);
+    Polygon3DDataWS(const std::shared_ptr<Polygon3DTopology>& topology);
 
     virtual ~Polygon3DDataWS();
+
 };
 
 #endif // POLYGON3DDATAWS_H

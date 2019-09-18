@@ -16,3 +16,13 @@ BSWSVectors::Type Polygon2DDataWS::getPositionType()
 {
     return BSWSVectors::Type::WORLD_SPACE;
 }
+
+void Polygon2DDataWS::removeVector(ID /*index*/)
+{
+
+}
+
+void Polygon2DDataWS::removeVectors(std::vector<ID>& /*indices*/)
+{
+
+}

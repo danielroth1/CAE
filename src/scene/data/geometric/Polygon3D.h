@@ -21,21 +21,21 @@ public:
     // vertices.
     Polygon3D(
             const Vectors& positionsWS,
-            const Polygon3DTopology& topology);
+            const std::shared_ptr<Polygon3DTopology>& topology);
 
     // Constructor for world space position data.
     // The outer vertex normals are given.
     Polygon3D(
             const Vectors& positionsWS,
             const Vectors& vertexNormalsWS,
-            const Polygon3DTopology& topology);
+            const std::shared_ptr<Polygon3DTopology>& topology);
 
     // Constructor for body space position data
     // Calculates the missing normals for the outer.
     Polygon3D(
             Vectors* positionsBS,
             const Eigen::Affine3d& transform,
-            const Polygon3DTopology& topology);
+            const std::shared_ptr<Polygon3DTopology>& topology);
 
     // Constructor for body space position data
     // The outer vertex normals are given.
@@ -43,7 +43,7 @@ public:
             Vectors* positionsBS,
             const Eigen::Affine3d& transform,
             const Vectors& vertexNormalsBS,
-            const Polygon3DTopology& topology);
+            const std::shared_ptr<Polygon3DTopology>& topology);
 
     virtual ~Polygon3D() override;
 
@@ -77,6 +77,20 @@ public:
     // Polygon interface
 public:
     virtual void update() override;
+
+    // Fix the topology by removing all vertices that are not referenced by
+    // other topological elements like edges, faces, and cells. This is important
+    // if algorithms are applied that rely on the fact that each vertex
+    // is part of at least one of each other topological element.
+    virtual void fixTopology() override;
+
+    // Removes the vertex at the given index. This includes position and
+    // normal.
+    virtual void removeVertex(ID index) override;
+
+    // Removes the vertices at the given index. This includes positions and
+    // normals.
+    virtual void removeVertices(std::vector<ID>& indices) override;
 
     // Checks if the given point is inside the outer topology. Only tests the
     // faces that are part of the given feature.

@@ -12,19 +12,25 @@ class Polygon3DData : public PolygonData
 {
 public:
 
-    Polygon3DData(const Polygon3DTopology& topology);
+    Polygon3DData(const std::shared_ptr<Polygon3DTopology>& topology);
 
-    virtual ~Polygon3DData();
+    virtual ~Polygon3DData() override;
 
-    Polygon3DTopology& getTopology();
+    std::shared_ptr<Polygon3DTopology> getTopology() const;
 
     // PolygonData interface
 public:
-    virtual Polygon::DimensionType getDimensionType() const;
+    virtual Polygon::DimensionType getDimensionType() const override;
+
+    // Removes a vector at the given index.
+    virtual void removeVector(ID index) override;
+
+    // Removes the vectors at the given indices.
+    virtual void removeVectors(std::vector<ID>& indices) override;
 
 private:
 
-    std::unique_ptr<Polygon3DTopology> mTopology;
+    std::shared_ptr<Polygon3DTopology> mTopology;
 
 };
 

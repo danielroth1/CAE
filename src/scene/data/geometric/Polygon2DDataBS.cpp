@@ -1,5 +1,7 @@
 #include "Polygon2DDataBS.h"
 
+#include <data_structures/VectorOperations.h>
+
 
 Polygon2DDataBS::Polygon2DDataBS(
         const Polygon2DTopology& topology,
@@ -52,4 +54,18 @@ Vectors& Polygon2DDataBS::getFaceNormalsBS()
 BSWSVectors::Type Polygon2DDataBS::getPositionType()
 {
     return BSWSVectors::Type::BODY_SPACE;
+}
+
+void Polygon2DDataBS::removeVector(ID index)
+{
+    VectorOperations::removeVector(mPositionsBS, index);
+    VectorOperations::removeVector(mVertexNormalsBS, index);
+    VectorOperations::removeVector(mFacesNormalsBS, index);
+}
+
+void Polygon2DDataBS::removeVectors(std::vector<ID>& indices)
+{
+    VectorOperations::removeVectors(mPositionsBS, indices.begin(), indices.end());
+    VectorOperations::removeVectors(mVertexNormalsBS, indices.begin(), indices.end());
+    VectorOperations::removeVectors(mFacesNormalsBS, indices.begin(), indices.end());
 }

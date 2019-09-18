@@ -12,7 +12,7 @@
 
 Polygon3D::Polygon3D(
         const Vectors& positionsWS,
-        const Polygon3DTopology& topology)
+        const std::shared_ptr<Polygon3DTopology>& topology)
     : Polygon(positionsWS)
 {
     // World space construtor
@@ -22,26 +22,25 @@ Polygon3D::Polygon3D(
     mOuterVertexNormals.initializeFromWorldSpace(
                 GeometricDataUtils::calculateNormals(
                     positionsWS,
-                    topology.getOuterFacesIndices3D()));
+                    topology->getOuterFacesIndices3D()));
 
     // initialize mOuterFaceNormals
     Vectors faceNormals;
-//    ModelUtils::calculateFaceNormals<double>(
-//                mPositionData.getPositions(), faces, faceNormals);
     ModelUtils::calculateFaceNormals<double>(
                 mPositionData.getPositions(),
-                topology.getOuterFacesIndices3D(),
+                topology->getOuterFacesIndices3D(),
                 faceNormals);
 
     mOuterFaceNormals.initializeFromWorldSpace(faceNormals);
 
     fixOuterTriangleIndexOrder();
+    fixTopology();
 }
 
 Polygon3D::Polygon3D(
         const Vectors& positionsWS,
         const Vectors& vertexNormalsWS,
-        const Polygon3DTopology& topology)
+        const std::shared_ptr<Polygon3DTopology>& topology)
     : Polygon(positionsWS)
 {
     // World space construtor
@@ -57,22 +56,23 @@ Polygon3D::Polygon3D(
 //                mPositionData.getPositions(), faces, faceNormals);
     ModelUtils::calculateFaceNormals<double>(
                 mPositionData.getPositions(),
-                topology.getOuterFacesIndices3D(),
+                topology->getOuterFacesIndices3D(),
                 faceNormals);
 
     mOuterFaceNormals.initializeFromWorldSpace(faceNormals);
 
     fixOuterTriangleIndexOrder();
+    fixTopology();
 }
 
 Polygon3D::Polygon3D(
         Vectors* positionsBS,
         const Affine3d& transform,
-        const Polygon3DTopology& topology)
+        const std::shared_ptr<Polygon3DTopology>& topology)
     : Polygon(positionsBS, transform)
 {
     Vectors faceNormals = GeometricDataUtils::calculateNormals(
-                *positionsBS, topology.getOuterFacesIndices3D());
+                *positionsBS, topology->getOuterFacesIndices3D());
     std::shared_ptr<Polygon3DDataBS> dataBS =
             std::make_shared<Polygon3DDataBS>(
                 topology,
@@ -80,7 +80,7 @@ Polygon3D::Polygon3D(
                 faceNormals,
                 ModelUtils::calculateFaceNormals<double>(
                     mPositionData.getPositions(),
-                    topology.getOuterFacesIndices3D(),
+                    topology->getOuterFacesIndices3D(),
                     faceNormals));
 
     mData = dataBS;
@@ -91,24 +91,25 @@ Polygon3D::Polygon3D(
                                               Eigen::Affine3d(transform.linear()));
 
     fixOuterTriangleIndexOrder();
+    fixTopology();
 }
 
 Polygon3D::Polygon3D(
         Vectors* positionsBS,
         const Affine3d& transform,
         const Vectors& vertexNormalsBS,
-        const Polygon3DTopology& topology)
+        const std::shared_ptr<Polygon3DTopology>& topology)
     : Polygon (positionsBS, transform)
 {
     Vectors faceNormals = GeometricDataUtils::calculateNormals(
-                *positionsBS, topology.getOuterFacesIndices3D());
+                *positionsBS, topology->getOuterFacesIndices3D());
     std::shared_ptr<Polygon3DDataBS> dataBS = std::make_shared<Polygon3DDataBS>(
                 topology,
                 mPositionData.getPositionsBS(),
                 vertexNormalsBS,
                 ModelUtils::calculateFaceNormals<double>(
                     mPositionData.getPositions(),
-                    topology.getOuterFacesIndices3D(),
+                    topology->getOuterFacesIndices3D(),
                     faceNormals));
 
     mData = dataBS;
@@ -119,6 +120,7 @@ Polygon3D::Polygon3D(
                                               Eigen::Affine3d(transform.linear()));
 
     fixOuterTriangleIndexOrder();
+    fixTopology();
 }
 
 Polygon3D::~Polygon3D()
@@ -128,7 +130,7 @@ Polygon3D::~Polygon3D()
 
 Vectors Polygon3D::calcualtePositions2DFrom3D() const
 {
-    std::vector<unsigned int>& outerVertexIds = mData->getTopology().getOuterVertexIds();
+    std::vector<unsigned int>& outerVertexIds = mData->getTopology()->getOuterVertexIds();
     Vectors positions2D;
     positions2D.reserve(outerVertexIds.size());
     for (size_t i = 0; i < outerVertexIds.size(); ++i)
@@ -140,17 +142,17 @@ Vectors Polygon3D::calcualtePositions2DFrom3D() const
 
 Polygon3DTopology& Polygon3D::getTopology3D()
 {
-    return mData->getTopology();
+    return *mData->getTopology().get();
 }
 
 const Polygon3DTopology& Polygon3D::getTopology3D() const
 {
-    return mData->getTopology();
+    return *mData->getTopology().get();
 }
 
 std::vector<unsigned int>& Polygon3D::getOuterPositionIds()
 {
-    return mData->getTopology().getOuterVertexIds();
+    return mData->getTopology()->getOuterVertexIds();
 }
 
 Vectors& Polygon3D::getOuterVertexNormals()
@@ -194,7 +196,7 @@ void Polygon3D::update()
         ModelUtils::calculateNormals<double>(
                     calcualtePositions2DFrom3D(),
 //                    mPositionData.getPositions(),
-                    mData->getTopology().getOuterTopology().getFacesIndices(),
+                    mData->getTopology()->getOuterTopology().getFacesIndices(),
                     normalsTemp);
 
         mOuterVertexNormals.getVectors() = normalsTemp;
@@ -202,11 +204,78 @@ void Polygon3D::update()
         ModelUtils::calculateFaceNormals<double>(
                     calcualtePositions2DFrom3D(),
 //                    mPositionData.getPositions(),
-                    mData->getTopology().getOuterTopology().getFacesIndices(),
+                    mData->getTopology()->getOuterTopology().getFacesIndices(),
                     normalsTemp);
 
         mOuterFaceNormals.getVectors() = normalsTemp;
     }
+}
+
+void Polygon3D::fixTopology()
+{
+    std::set<ID> notReferenced;
+
+    std::vector<ID> notReferencedByEdges =
+            mData->getTopology()->retrieveNotReferencedByEdges();
+    notReferenced.insert(notReferencedByEdges.begin(),
+                         notReferencedByEdges.end());
+
+    std::vector<ID> notReferencedByFaces =
+            mData->getTopology()->retrieveNotReferencedByFaces();
+    notReferenced.insert(notReferencedByFaces.begin(),
+                         notReferencedByFaces.end());
+
+    std::vector<ID> notReferencedByCells =
+            mData->getTopology()->retrieveNotReferencedByCells();
+    notReferenced.insert(notReferencedByCells.begin(),
+                         notReferencedByCells.end());
+
+
+    if (notReferencedByEdges.size() > 0)
+        std::cout << "remove " << notReferencedByEdges.size() << " vertices that "
+                  << "are not referenced by edges.\n";
+
+    if (notReferencedByFaces.size() > 0)
+        std::cout << "remove " << notReferencedByFaces.size() << " vertices that "
+                  << "are not referenced by faces.\n";
+
+    if (notReferencedByCells.size() > 0)
+        std::cout << "remove " << notReferencedByCells.size() << " vertices that "
+                  << "are not referenced by cells.\n";
+
+    std::vector<ID> notReferencedVector;
+    notReferencedVector.insert(notReferencedVector.end(),
+                         notReferenced.begin(),
+                         notReferenced.end());
+
+    // Should not be necessary becaues elements are already sorted in
+    // set and vector is sorted anyways in remove method.
+    std::sort(notReferencedVector.begin(), notReferencedVector.end());
+
+    if (notReferencedVector.size() > 0)
+        std::cout << "remove a total of " << notReferencedVector.size()
+                  << " vertices\n";
+
+    removeVertices(notReferencedVector);
+}
+
+void Polygon3D::removeVertex(ID index)
+{
+    Polygon::removeVertex(index);
+    mData->removeVector(index);
+    mOuterFaceNormals.removeVector(index);
+    mOuterVertexNormals.removeVector(index);
+}
+
+void Polygon3D::removeVertices(std::vector<ID>& indices)
+{
+    if (indices.empty())
+        return;
+
+    Polygon::removeVertices(indices);
+    mData->removeVectors(indices);
+    mOuterFaceNormals.removeVectors(indices.begin(), indices.end());
+    mOuterVertexNormals.removeVectors(indices.begin(), indices.end());
 }
 
 bool Polygon3D::isInside(const TopologyFeature& feature, Vector point)
@@ -214,7 +283,7 @@ bool Polygon3D::isInside(const TopologyFeature& feature, Vector point)
     return Polygon::isInside(
                 feature,
                 point,
-                mData->getTopology().getOuterTopology(),
+                mData->getTopology()->getOuterTopology(),
                 mOuterFaceNormals);
 }
 
@@ -226,7 +295,7 @@ bool Polygon3D::isInside(
 {
     return Polygon::isInside(
                 feature, source, distance, target,
-                mData->getTopology().getOuterTopology(), mOuterFaceNormals);
+                mData->getTopology()->getOuterTopology(), mOuterFaceNormals);
 }
 
 Polygon::DimensionType Polygon3D::getDimensionType() const
@@ -241,7 +310,7 @@ std::shared_ptr<PolygonData> Polygon3D::getData()
 
 PolygonTopology& Polygon3D::getTopology()
 {
-    return mData->getTopology();
+    return *mData->getTopology().get();
 }
 
 std::shared_ptr<Polygon2DAccessor> Polygon3D::createAccessor()
@@ -267,22 +336,22 @@ std::shared_ptr<Polygon2DAccessor> Polygon3D::createAccessor()
 
         virtual void setPosition(size_t index, const Eigen::Vector& position) override
         {
-            poly3->setPosition(poly3->mData->getTopology().to3DVertexIndex(index), position);
+            poly3->setPosition(poly3->mData->getTopology()->to3DVertexIndex(index), position);
         }
 
         virtual Eigen::Vector& getPosition(std::size_t index) override
         {
-            return poly3->getPosition(poly3->mData->getTopology().to3DVertexIndex(index));
+            return poly3->getPosition(poly3->mData->getTopology()->to3DVertexIndex(index));
         }
 
         virtual Polygon2DTopology& getTopology2D() override
         {
-            return poly3->mData->getTopology().getOuterTopology();
+            return poly3->mData->getTopology()->getOuterTopology();
         }
 
         virtual const Polygon2DTopology& getTopology2D() const override
         {
-            return poly3->mData->getTopology().getOuterTopology();
+            return poly3->mData->getTopology()->getOuterTopology();
         }
 
         virtual Vectors& getVertexNormals() override
@@ -354,21 +423,21 @@ void Polygon3D::setTransform(const Affine3d& transform)
 
 void Polygon3D::fixOuterTriangleIndexOrder(bool printInfo)
 {
-    Polygon3DTopology& topology = mData->getTopology();
+    std::shared_ptr<Polygon3DTopology> topology = mData->getTopology();
 
     synchronizeTriangleIndexOrder();
 
     int fixedFacesCounter = 0;
 
-    for (TopologyFace& outerFace2D : topology.getOuterTopology().getFaces())
+    for (TopologyFace& outerFace2D : topology->getOuterTopology().getFaces())
     {
-        ID face3DId = topology.to3DFaceIndex(outerFace2D.getID());
-        TopologyFace& face3D = topology.getFace(face3DId);
+        ID face3DId = topology->to3DFaceIndex(outerFace2D.getID());
+        TopologyFace& face3D = topology->getFace(face3DId);
 
         if (face3D.getCellIds().empty())
             continue;
 
-        TopologyCell& cell = topology.getCells()[face3D.getCellIds()[0]];
+        TopologyCell& cell = topology->getCells()[face3D.getCellIds()[0]];
         Cell& c = cell.getVertexIds();
         Face& f = face3D.getVertexIds();
 
@@ -412,7 +481,7 @@ void Polygon3D::fixOuterTriangleIndexOrder(bool printInfo)
         {
             revertFace(f);
             revertFace(outerFace2D.getVertexIds());
-            revertFace(topology.getOuterFacesIndices3D()[outerFace2D.getID()]);
+            revertFace(topology->getOuterFacesIndices3D()[outerFace2D.getID()]);
 
             ++fixedFacesCounter;
         }
@@ -424,20 +493,20 @@ void Polygon3D::fixOuterTriangleIndexOrder(bool printInfo)
 
 void Polygon3D::synchronizeTriangleIndexOrder()
 {
-    Polygon3DTopology& topology = mData->getTopology();
+    std::shared_ptr<Polygon3DTopology> topology = mData->getTopology();
 
-    for (TopologyFace& outerFace2D : topology.getOuterTopology().getFaces())
+    for (TopologyFace& outerFace2D : topology->getOuterTopology().getFaces())
     {
-        ID face3DId = topology.to3DFaceIndex(outerFace2D.getID());
-        TopologyFace& face3D = topology.getFace(face3DId);
+        ID face3DId = topology->to3DFaceIndex(outerFace2D.getID());
+        TopologyFace& face3D = topology->getFace(face3DId);
 
         for (size_t i = 0; i < 3; ++i)
         {
             unsigned int index3d =
                     static_cast<unsigned int>(
-                        topology.to3DVertexIndex(outerFace2D.getVertexIds()[i]));
+                        topology->to3DVertexIndex(outerFace2D.getVertexIds()[i]));
             face3D.getVertexIds()[i] = index3d;
-            topology.getOuterFacesIndices3D()[outerFace2D.getID()][i] = index3d;
+            topology->getOuterFacesIndices3D()[outerFace2D.getID()][i] = index3d;
         }
     }
 }
@@ -447,5 +516,5 @@ bool Polygon3D::isInside(ID faceId, const Vector& point,
 {
     ID vertexId = topology.getFace(faceId).getVertexIds()[0];
     return faceNormals.getVector(faceId)
-            .dot(point - mPositionData.getPosition(mData->getTopology().getOuterVertexIds()[vertexId])) < 0;
+            .dot(point - mPositionData.getPosition(mData->getTopology()->getOuterVertexIds()[vertexId])) < 0;
 }

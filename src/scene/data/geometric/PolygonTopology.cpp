@@ -1,14 +1,100 @@
 #include "PolygonTopology.h"
 #include "TopologyEdge.h"
 
-
 #include <map>
 #include <set>
 
+#include <data_structures/VectorOperations.h>
+
 PolygonTopology::PolygonTopology(const Faces& faces, ID nVertices)
-    : mFacesIndices(faces)
 {
-    buildTopology(faces, nVertices, mVertices, mEdges, mFaces);
+    init(faces, nVertices);
+}
+
+PolygonTopology::~PolygonTopology()
+{
+
+}
+
+void PolygonTopology::removeVertices(std::vector<ID>& vertexIds)
+{
+    if (vertexIds.empty())
+        return;
+
+    size_t nVerticesAfter = mVertices.size() - vertexIds.size();
+    std::vector<ID> oldToNew = createOldToNewMapping(vertexIds);
+
+    // 1.) remove all faces / cells that reference the to be removed vertices
+    // from:
+    //  mFacesIndices
+    // 2.) adapt the indices in the remaining faces / cells (w.r.t. the removed vertices)
+    // change indices in:
+    //  mFacesIndices
+    // 3.) reinit everything with the adapted data
+
+    // 1.)
+    VectorOperations::removeArrayIfContains<unsigned int, 3>(
+                vertexIds.begin(),
+                vertexIds.end(),
+                mFacesIndices);
+
+    // 2.)
+    // mFacesIndices
+    for (size_t fId = 0; fId < mFacesIndices.size(); ++fId)
+    {
+        for (size_t i = 0; i < 3; ++i)
+        {
+            mFacesIndices[fId][i] = static_cast<unsigned int>(
+                        oldToNew[mFacesIndices[fId][i]]);
+        }
+    }
+
+    // 3.)
+    init(mFacesIndices, nVerticesAfter);
+}
+
+std::vector<ID> PolygonTopology::retrieveNotReferencedByEdges() const
+{
+    std::set<ID> referenced;
+
+    for (const TopologyEdge& e : mEdges)
+    {
+        for (size_t i = 0; i < 2; ++i)
+        {
+            referenced.insert(e.getVertexIds()[i]);
+        }
+    }
+
+    std::vector<ID> allVertices;
+    allVertices.reserve(mVertices.size());
+    for (size_t i = 0; i < mVertices.size(); ++i)
+    {
+        allVertices.push_back(i);
+    }
+
+    return VectorOperations::sub(allVertices, referenced);
+}
+
+std::vector<ID> PolygonTopology::retrieveNotReferencedByFaces() const
+{
+    std::set<ID> referenced;
+
+    for (const TopologyFace& f : mFaces)
+    {
+        for (size_t i = 0; i < 3; ++i)
+        {
+            referenced.insert(f.getVertexIds()[i]);
+        }
+    }
+
+    std::vector<ID> allVertices;
+    allVertices.reserve(mVertices.size());
+    for (size_t i = 0; i < mVertices.size(); ++i)
+    {
+        allVertices.push_back(i);
+    }
+
+    return VectorOperations::sub(allVertices, referenced);
 }
 
 TopologyVertex& PolygonTopology::getVertex(ID id)
@@ -100,7 +186,12 @@ std::string PolygonTopology::toString() const
           "Number of edges: " << mEdges.size() <<
           "Number of faces: " << mFaces.size();
     return ss.str();
+}
 
+void PolygonTopology::init(const Faces& faces, ID nVertices)
+{
+    mFacesIndices = faces;
+    buildTopology(mFacesIndices, nVertices, mVertices, mEdges, mFaces);
 }
 
 std::vector<TopologyEdge>
@@ -214,6 +305,7 @@ void PolygonTopology::buildTopology(
         std::vector<TopologyFace>& facesOut) const
 {
     // TopologyVertices
+    verticesOut.clear();
     verticesOut.reserve(nVertices);
     for (ID i = 0; i < nVertices; ++i)
     {
@@ -230,6 +322,7 @@ void PolygonTopology::buildTopology(
     }
 
     // TopologyEdges
+    edgesOut.clear();
     edgesOut.reserve(edgesSet.size());
     for (const std::pair<ID, ID>& p : edgesSet)
     {
@@ -254,6 +347,7 @@ void PolygonTopology::buildTopology(
     }
 
     // TopologyFaces
+    facesOut.clear();
     facesOut.reserve(faces.size());
     for (ID i = 0; i < faces.size(); ++i)
     {
@@ -286,7 +380,9 @@ void PolygonTopology::buildTopology(
         TopologyFace& tFace = facesOut[i];
         for (ID j = 0; j < 3; ++j)
         {
-            tFace.getAdjacentFaces().push_back(edgesOut[tFace.getEdgeIds()[j]].getOtherFaceId(i));
+            TopologyEdge& e = edgesOut[tFace.getEdgeIds()[j]];
+            if (e.getFaceIds().size() > 1)
+                tFace.getAdjacentFaces().push_back(e.getOtherFaceId(i));
         }
     }
 }

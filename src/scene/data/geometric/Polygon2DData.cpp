@@ -21,3 +21,15 @@ Polygon::DimensionType Polygon2DData::getDimensionType() const
 {
     return Polygon::DimensionType::TWO_D;
 }
+
+void Polygon2DData::removeVector(ID index)
+{
+    std::vector<ID> indices;
+    indices.push_back(index);
+    mTopology->removeVertices(indices);
+}
+
+void Polygon2DData::removeVectors(std::vector<ID>& indices)
+{
+    mTopology->removeVertices(indices);
+}

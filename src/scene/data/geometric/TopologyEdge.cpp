@@ -1,5 +1,6 @@
 #include "TopologyEdge.h"
 
+#include <iostream>
 
 TopologyEdge::TopologyEdge(ID id)
     : TopologyFeature(id)
@@ -40,6 +41,11 @@ const std::vector<ID>& TopologyEdge::getCellIds() const
 
 ID TopologyEdge::getOtherFaceId(ID faceId)
 {
+//    if (mFaces.size() != 2)
+//    {
+//        std::cout << "Error: edge doesn't have exactly 2 neighbored faces but "
+//                     "instead " << mFaces.size() << ".\n";
+//    }
     return faceId == mFaces[0] ? mFaces[1] : mFaces[0];
 }
 

@@ -50,6 +50,12 @@ public:
     // and the transformation matrix changed.
     void update();
 
+    // Removes a position at the given index.
+    virtual void removePosition(ID index);
+
+    // Removes the positions at the given indices.
+    virtual void removePositions(const std::vector<ID>& indices);
+
     BSWSVectors::Type getType();
 
     size_t getSize();

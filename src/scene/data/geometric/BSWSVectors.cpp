@@ -1,5 +1,6 @@
 #include "BSWSVectors.h"
 
+
 using namespace Eigen;
 
 BSWSVectors::BSWSVectors()
@@ -81,6 +82,11 @@ BSWSVectors::Type BSWSVectors::getType()
 size_t BSWSVectors::getSize()
 {
     return mVectorsWS.size();
+}
+
+void BSWSVectors::removeVector(ID index)
+{
+    VectorOperations::removeVector(mVectorsWS, index);
 }
 
 Vectors& BSWSVectors::getVectors()

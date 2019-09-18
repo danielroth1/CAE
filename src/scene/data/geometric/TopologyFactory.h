@@ -44,6 +44,38 @@ public:
     // Creates a regular Polygon2DTopology.
     static std::shared_ptr<Polygon2DTopology> createPolygon2DTopology(
             const Faces& faces, ID nVertices);
+
+private:
+
+    // Note: Currently not used but maybe they are needed in the future.
+    // The advantage over fixing the topology before creating the Polygon3D is
+    // that the whole steop of creating the wrong Polygon3D can be skipped by
+    // directly providing the correct data.
+    //
+    // Transforms the topology in a way that
+    // - all vertices are part of a edge, triangle, cell
+    // - all edges are part of a triangle, cell
+    // - all triangles are part of a cell
+    // Returns those in the corresponding parameters marked with "Out".
+    static void fixTopology(
+            ID nVertices,
+            Faces& faces,
+            Faces& outerFaces,
+            Cells& cells);
+
+    // Note: Currently not used but maybe they are needed in the future.
+    // The advantage over fixing the topology before creating the Polygon3D is
+    // that the whole steop of creating the wrong Polygon3D can be skipped by
+    // directly providing the correct data.
+    //
+    // Removes the given vertices and adapt the indices of the given faces,
+    // outerFaces, and cells accordingly.
+    static void removeVertices(
+            ID nVertices,
+            std::vector<unsigned int>& vertexIds,
+            Faces& faces,
+            Faces& outerFaces,
+            Cells& cells);
 };
 
 #endif // TOPOLOGYFACTORY_H

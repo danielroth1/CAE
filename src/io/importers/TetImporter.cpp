@@ -159,8 +159,7 @@ SGNode* TetImporter::importFile(File file, ApplicationControl* ac)
 
     // Step 2)
     std::shared_ptr<Polygon3D> poly3 =
-            std::make_shared<Polygon3D>(vertices,
-                                        *topology.get());
+            std::make_shared<Polygon3D>(vertices, topology);
 
     std::shared_ptr<PolygonRenderModel> renderModel =
             std::make_shared<PolygonRenderModel>(

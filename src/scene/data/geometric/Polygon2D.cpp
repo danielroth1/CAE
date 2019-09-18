@@ -7,6 +7,8 @@
 #include "TopologyFeature.h"
 #include "TopologyVertex.h"
 
+#include <iostream>
+
 #include <scene/data/GeometricDataVisitor.h>
 
 #include <scene/model/ModelUtils.h>
@@ -31,6 +33,8 @@ Polygon2D::Polygon2D(
     ModelUtils::calculateFaceNormals<double>(
                 mPositionData.getPositions(), faces, faceNormals);
     mFaceNormals.initializeFromWorldSpace(faceNormals);
+
+    fixTopology();
 }
 
 Polygon2D::Polygon2D(
@@ -49,6 +53,8 @@ Polygon2D::Polygon2D(
     ModelUtils::calculateFaceNormals<double>(
                 mPositionData.getPositions(), faces, faceNormals);
     mFaceNormals.initializeFromWorldSpace(faceNormals);
+
+    fixTopology();
 }
 
 Polygon2D::Polygon2D(
@@ -79,6 +85,8 @@ Polygon2D::Polygon2D(
                                            Eigen::Affine3d(transform.linear()));
     mFaceNormals.initializeFromBodySpace(&dataBS->getFaceNormalsBS(),
                                            Eigen::Affine3d(transform.linear()));
+
+    fixTopology();
 }
 
 Polygon2D::Polygon2D(
@@ -107,6 +115,8 @@ Polygon2D::Polygon2D(
                                            Eigen::Affine3d(transform.linear()));
     mFaceNormals.initializeFromBodySpace(&dataBS->getFaceNormalsBS(),
                                          Eigen::Affine3d(transform.linear()));
+
+    fixTopology();
 }
 
 Polygon2DTopology& Polygon2D::getTopology2D()
@@ -171,6 +181,63 @@ void Polygon2D::update()
                     normalsTemp);
         mFaceNormals.getVectors() = normalsTemp;
     }
+}
+
+void Polygon2D::fixTopology()
+{
+    std::set<ID> notReferenced;
+
+    std::vector<ID> notReferencedByEdges =
+            mData->getTopology().retrieveNotReferencedByEdges();
+    notReferenced.insert(notReferencedByEdges.begin(),
+                         notReferencedByEdges.end());
+
+    std::vector<ID> notReferencedByFaces =
+            mData->getTopology().retrieveNotReferencedByFaces();
+    notReferenced.insert(notReferencedByFaces.begin(),
+                         notReferencedByFaces.end());
+
+    if (notReferencedByEdges.size() > 0)
+        std::cout << "remove " << notReferencedByEdges.size() << " vertices that "
+                  << "are not referenced by edges.\n";
+
+    if (notReferencedByFaces.size() > 0)
+        std::cout << "remove " << notReferencedByFaces.size() << " vertices that "
+                  << "are not referenced by faces.\n";
+
+    std::vector<ID> notReferencedVector;
+    notReferencedVector.insert(notReferencedVector.end(),
+                         notReferenced.begin(),
+                         notReferenced.end());
+
+    // TODO: should not be necessary becaues elements are already sorted in
+    // set and vector is sorted anyways in remove method.
+    std::sort(notReferencedVector.begin(), notReferencedVector.end());
+
+    if (notReferencedVector.size() > 0)
+        std::cout << "remove a total of " << notReferencedVector.size()
+                  << " vertices\n";
+
+    removeVertices(notReferencedVector);
+}
+
+void Polygon2D::removeVertex(ID index)
+{
+    Polygon::removeVertex(index);
+    mData->removeVector(index);
+    mVertexNormals.removeVector(index);
+    mFaceNormals.removeVector(index);
+}
+
+void Polygon2D::removeVertices(std::vector<ID>& indices)
+{
+    if (indices.empty())
+        return;
+
+    Polygon::removeVertices(indices);
+    mData->removeVectors(indices);
+    mFaceNormals.removeVectors(indices.begin(), indices.end());
+    mVertexNormals.removeVectors(indices.begin(), indices.end());
 }
 
 bool Polygon2D::isInside(const TopologyFeature& feature, Vector point)

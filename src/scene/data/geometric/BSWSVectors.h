@@ -4,6 +4,8 @@
 #include "BSWSVectors.h"
 
 #include <data_structures/DataStructures.h>
+#include <data_structures/VectorOperations.h>
+#include <iterator>
 
 // Container for vertices either in body or in world
 // space coordinates.
@@ -68,6 +70,14 @@ public:
     Type getType();
 
     size_t getSize();
+
+    template<class BidirIter>
+    void removeVectors(BidirIter begin, BidirIter end)
+    {
+        VectorOperations::removeVectors(mVectorsWS, begin, end);
+    }
+
+    void removeVector(ID index);
 
     // World space
     Vectors& getVectors();

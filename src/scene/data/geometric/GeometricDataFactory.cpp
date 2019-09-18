@@ -4,6 +4,7 @@
 #include "GeometricDataFactory.h"
 #include "Polygon2DTopology.h"
 #include "Polygon3DTopology.h"
+#include "TopologyFactory.h"
 
 #include "modules/mesh_converter/MeshConverter.h"
 #include "scene/data/geometric/Polygon2D.h"
@@ -84,7 +85,12 @@ Polygon3D GeometricDataFactory::create3DBox(double width, double length, double 
     cells.push_back(Cell({ {2,5,6,7} }));
     cells.push_back(Cell({ {0,7,5,2} }));
 
-    Polygon3DTopology t3(faces, p2.getTopology2D().getFacesIndices(), cells, p2.getPositions().size());
+    std::shared_ptr<Polygon3DTopology> t3 =
+            TopologyFactory::createPolygon3DTopology(
+                faces,
+                p2.getTopology2D().getFacesIndices(),
+                cells,
+                p2.getPositions().size());
 
     return Polygon3D(p2.getPositions(), t3);
 }
@@ -325,8 +331,9 @@ Polygon3D GeometricDataFactory::createPolygon3DFromPolygon2D(
     }
 
     return Polygon3D(verticesOut,
-                     Polygon3DTopology(facesOut, outerFacesOut,
-                                       cellsOut, verticesOut.size()));
+                     TopologyFactory::createPolygon3DTopology(
+                         facesOut, outerFacesOut,
+                         cellsOut, verticesOut.size()));
 }
 
 GeometricDataFactory::GeometricDataFactory()

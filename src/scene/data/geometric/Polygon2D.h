@@ -62,6 +62,20 @@ public:
 
     virtual void update() override;
 
+    // Fix the topology by removing all vertices that are not referenced by
+    // other topological elements like edges, and faces. This is important
+    // if algorithms are applied that rely on the fact that each vertex
+    // is part of at least one of each other topological element.
+    virtual void fixTopology() override;
+
+    // Removes the vertex at the given index. This includes position and
+    // normal.
+    virtual void removeVertex(ID index) override;
+
+    // Removes the vertices at the given index. This includes positions and
+    // normals.
+    virtual void removeVertices(std::vector<ID>& indices) override;
+
     // Checks if the given point is inside the topology. Only tests the
     // faces that are part of the given feature.
     // Retruns false, if there are no faces.

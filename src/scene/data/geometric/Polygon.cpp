@@ -6,6 +6,8 @@
 #include <set>
 #include <stack>
 
+#include <data_structures/VectorOperations.h>
+
 Polygon::Polygon()
 {
 
@@ -39,6 +41,20 @@ void Polygon::update()
     mPositionData.update();
 
     GeometricData::update();
+}
+
+void Polygon::removeVertex(ID index)
+{
+    mPositionData.removePosition(index);
+    if (!mNormals.empty())
+        VectorOperations::removeVector(mNormals, index);
+}
+
+void Polygon::removeVertices(std::vector<ID>& indices)
+{
+    mPositionData.removePositions(indices);
+    if (!mNormals.empty())
+        VectorOperations::removeVectors(mNormals, indices.begin(), indices.end());
 }
 
 GeometricData::Type Polygon::getType() const
@@ -139,6 +155,11 @@ const ID* Polygon::getRelevantFaces(const TopologyFeature& feature, size_t& coun
         const TopologyFace& face = static_cast<const TopologyFace&>(feature);
         count = 1;
         return &face.getIDRef();
+    }
+    case TopologyFeature::Type::CELL:
+    {
+        count = 0;
+        break;
     }
     }
     return nullptr;

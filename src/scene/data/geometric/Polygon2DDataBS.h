@@ -30,6 +30,8 @@ public:
     // Polygon2DData interface
 public:
     virtual BSWSVectors::Type getPositionType() override;
+    virtual void removeVector(ID index) override;
+    virtual void removeVectors(std::vector<ID>& indices) override;
 
 private:
 

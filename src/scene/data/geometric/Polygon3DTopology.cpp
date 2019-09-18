@@ -4,16 +4,18 @@
 #include <map>
 #include <set>
 
+#include <data_structures/VectorOperations.h>
+
 Polygon3DTopology::Polygon3DTopology(
         const Faces& faces,
         const Faces& outerFaces, // you can not call this constructor with already 2d outer faces
         const Cells& cells,
         ID nVertices)
     : PolygonTopology (faces, nVertices)
-    , mOuterVertexIds(calculateOuterVertexIDs(outerFaces))
     , mOuterFacesIndices3D(outerFaces)
+    , mOuterVertexIds(calculateOuterVertexIDs(mOuterFacesIndices3D))
     , mCellIds(cells)
-    , mOuterTopology(transformTo2DIndices(outerFaces, mOuterVertexIds),
+    , mOuterTopology(transformTo2DIndices(mOuterFacesIndices3D, mOuterVertexIds),
                      mOuterVertexIds.size())
 {
     init();
@@ -35,24 +37,133 @@ Polygon3DTopology::Polygon3DTopology(
         }
     }
 
+    bool requiresFix = false;
     if (verticesReferencedInCells.size() != nVertices)
     {
         std::cout << nVertices - verticesReferencedInCells.size()
                   << " dangling vertices. Potential not possible"
                      " factorization.\n";
+        requiresFix = true;
     }
 
     // Check if no cell points to two identical vertices.
-    for (Cell& c : mCellIds)
+    for (size_t i = 0; i < mCellIds.size(); ++i)
     {
+        Cell& c = mCellIds[i];
         if (c[0] == c[1] || c[0] == c[2] || c[0] == c[3] ||
             c[1] == c[2] || c[1] == c[3] ||
             c[2] == c[3])
         {
             std::cout << "Detected degenerated cell that points to two"
                          " identical vertices.\n";
+            requiresFix = true;
         }
     }
+
+    if (requiresFix)
+        std::cout << "The topology requires to be fixed before it can be "
+                     "used with the Finite Element Method.\n";
+}
+
+void Polygon3DTopology::removeVertices(std::vector<ID>& vertexIds)
+{
+    if (vertexIds.empty())
+        return;
+
+    size_t nVerticesAfter = mVertices.size() - vertexIds.size();
+
+    std::vector<ID> oldToNew = createOldToNewMapping(vertexIds);
+
+    // 1.) remove all faces / cells that reference the to be removed vertices
+    // from:
+    //  mOuterFacesIndices3D
+    //  mFacesIndices
+    //  mCellIds
+    // 2.) adapt the indices in the remaining faces / cells (w.r.t. the removed vertices)
+    // change indices in:
+    //  mOuterFacesIndices3D
+    //  mFacesIndices
+    //  mCellIds
+    // 3.) reinit everything with the adapted data
+    //  mOuterVertexIds
+    //  mOuterTopology
+
+    // 1.)
+    VectorOperations::removeArrayIfContains<unsigned int, 3>(
+                vertexIds.begin(),
+                vertexIds.end(),
+                mOuterFacesIndices3D);
+    VectorOperations::removeArrayIfContains<unsigned int, 3>(
+                vertexIds.begin(),
+                vertexIds.end(),
+                mFacesIndices);
+    VectorOperations::removeArrayIfContains<unsigned int, 4>(
+                vertexIds.begin(),
+                vertexIds.end(),
+                mCellIds);
+
+    // 2.)
+    // mOuterFacesIndices3D
+    for (size_t fId = 0; fId < mOuterFacesIndices3D.size(); ++fId)
+    {
+        for (size_t i = 0; i < 3; ++i)
+        {
+            mOuterFacesIndices3D[fId][i] = static_cast<unsigned int>(
+                        oldToNew[mOuterFacesIndices3D[fId][i]]);
+        }
+    }
+
+    // mFacesIndices
+    for (size_t fId = 0; fId < mFacesIndices.size(); ++fId)
+    {
+        for (size_t i = 0; i < 3; ++i)
+        {
+            mFacesIndices[fId][i] = static_cast<unsigned int>(
+                        oldToNew[mFacesIndices[fId][i]]);
+        }
+    }
+
+    // mCellIds
+    for (size_t cId = 0; cId < mCellIds.size(); ++cId)
+    {
+        for (size_t i = 0; i < 4; ++i)
+        {
+            mCellIds[cId][i] = static_cast<unsigned int>(
+                        oldToNew[mCellIds[cId][i]]);
+        }
+    }
+
+    // 3.)
+    mOuterVertexIds = calculateOuterVertexIDs(mOuterFacesIndices3D);
+
+    mOuterTopology = Polygon2DTopology(
+                transformTo2DIndices(mOuterFacesIndices3D, mOuterVertexIds),
+                mOuterVertexIds.size());
+
+    PolygonTopology::init(mFacesIndices, nVerticesAfter);
+    init();
+}
+
+std::vector<ID> Polygon3DTopology::retrieveNotReferencedByCells() const
+{
+    std::set<ID> referenced;
+
+    for (const TopologyCell& c : mCells)
+    {
+        for (size_t i = 0; i < 4; ++i)
+        {
+            referenced.insert(c.getVertexIds()[i]);
+        }
+    }
+
+    std::vector<ID> allVertices;
+    allVertices.reserve(mVertices.size());
+    for (size_t i = 0; i < mVertices.size(); ++i)
+    {
+        allVertices.push_back(i);
+    }
+
+    return VectorOperations::sub(allVertices, referenced);
 }
 
 Cells& Polygon3DTopology::getCellIds()

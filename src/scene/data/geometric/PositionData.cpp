@@ -32,6 +32,16 @@ void PositionData::update()
     mPositions.update();
 }
 
+void PositionData::removePosition(ID index)
+{
+    mPositions.removeVector(index);
+}
+
+void PositionData::removePositions(const std::vector<ID>& indices)
+{
+    mPositions.removeVectors(indices.begin(), indices.end());
+}
+
 BSWSVectors::Type PositionData::getType()
 {
     return mPositions.getType();

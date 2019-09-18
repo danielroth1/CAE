@@ -23,6 +23,13 @@ public:
             const Cells& cells,
             ID nVertices);
 
+    // Removes all given vertices. If one vertex is part of an other topological
+    // element, that element is removed as well.
+    virtual void removeVertices(std::vector<ID>& vertexIds) override;
+
+    // Returns all ids of vertices that are not referenced by cells.
+    std::vector<ID> retrieveNotReferencedByCells() const;
+
     Cells& getCellIds();
 
     std::vector<TopologyCell>& getCells();
@@ -100,6 +107,9 @@ private:
             const Faces& faces,
             const std::vector<unsigned int>& outerVertexIds) const;
 
+    // Outer faces whichs indices point to all positions
+    Faces mOuterFacesIndices3D;
+
     // size = number of outer vertices
     // stores for each outer vertex the corresponding id of all vertices
     std::vector<unsigned int> mOuterVertexIds;
@@ -107,9 +117,6 @@ private:
     // size = number of outer face
     // stores for each outer face the corresponding id of all faces
     std::vector<unsigned int> mOuterFaceIds;
-
-    // Outer faces whichs indices point to all positions
-    Faces mOuterFacesIndices3D;
 
     // All cells.
     Cells mCellIds;
