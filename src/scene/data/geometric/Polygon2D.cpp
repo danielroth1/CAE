@@ -34,7 +34,7 @@ Polygon2D::Polygon2D(
                 mPositionData.getPositions(), faces, faceNormals);
     mFaceNormals.initializeFromWorldSpace(faceNormals);
 
-    fixTopology();
+//    fixTopology();
 }
 
 Polygon2D::Polygon2D(
@@ -54,7 +54,7 @@ Polygon2D::Polygon2D(
                 mPositionData.getPositions(), faces, faceNormals);
     mFaceNormals.initializeFromWorldSpace(faceNormals);
 
-    fixTopology();
+//    fixTopology();
 }
 
 Polygon2D::Polygon2D(
@@ -86,7 +86,7 @@ Polygon2D::Polygon2D(
     mFaceNormals.initializeFromBodySpace(&dataBS->getFaceNormalsBS(),
                                            Eigen::Affine3d(transform.linear()));
 
-    fixTopology();
+//    fixTopology();
 }
 
 Polygon2D::Polygon2D(
@@ -116,7 +116,7 @@ Polygon2D::Polygon2D(
     mFaceNormals.initializeFromBodySpace(&dataBS->getFaceNormalsBS(),
                                          Eigen::Affine3d(transform.linear()));
 
-    fixTopology();
+//    fixTopology();
 }
 
 Polygon2DTopology& Polygon2D::getTopology2D()

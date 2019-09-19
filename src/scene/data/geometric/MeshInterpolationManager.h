@@ -31,9 +31,10 @@ public:
     bool addInterpolatorMeshMesh(const std::shared_ptr<Polygon>& source,
                                   const std::shared_ptr<Polygon>& target);
 
-    // Removes the interpolation for the given target.
+    // Removes the interpolation that references the given polygon (either
+    // source or target).
     //\return true if there was such an interpolation that could be removed.
-    bool removeInterpolator(const std::shared_ptr<Polygon>& target);
+    bool removeInterpolator(const std::shared_ptr<Polygon>& poly);
 
     void clearInterpolators();
 
@@ -78,6 +79,11 @@ private:
 
     std::shared_ptr<MeshInterpolationData> getData(
             const std::shared_ptr<Polygon>& target);
+
+    // Returns all interpolation datas that have the given polygon either as
+    // source or as target.
+    std::vector<std::shared_ptr<MeshInterpolationData>> getDatas(
+            const std::shared_ptr<Polygon>& polygon);
 
     // Creates the MeshInterpolationData for the given interpolator, initializes
     // all necessary data, and adds it to mData.

@@ -570,6 +570,15 @@ void SGControl::removeNode(SGNode* node)
             SelectionVertices* sv = control.mAc->getUIControl()->
                     getSelectionControl()->getSelectionVertices();
             sv->removeVertices(leafNode->getData());
+
+            std::shared_ptr<GeometricData> gd =
+                    leafNode->getData()->getGeometricData();
+            if (gd->getType() == GeometricData::Type::POLYGON)
+            {
+                std::shared_ptr<Polygon> poly =
+                        std::static_pointer_cast<Polygon>(gd);
+                control.mAc->getMeshInterpolationManager()->removeInterpolator(poly);
+            }
         }
 
         SGControl& control;

@@ -268,7 +268,7 @@ void ApplicationControl::initiateApplication()
                             std::shared_ptr<FEMObject> femObj =
                                     std::dynamic_pointer_cast<FEMObject>(
                                         node1->getData()->getSimulationObject());
-                            femObj->setYoungsModulus(2e+4);
+                            femObj->setYoungsModulus(5e+4);
                         }
                         else
                         {

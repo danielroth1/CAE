@@ -56,25 +56,32 @@ bool MeshInterpolationManager::addInterpolatorMeshMesh(
     return true;
 }
 
-bool MeshInterpolationManager::removeInterpolator(const std::shared_ptr<Polygon>& target)
+bool MeshInterpolationManager::removeInterpolator(
+        const std::shared_ptr<Polygon>& poly)
 {
-    std::shared_ptr<MeshInterpolationData> data = getData(target);
-    if (data == nullptr)
+    std::vector<std::shared_ptr<MeshInterpolationData>> datas = getDatas(poly);
+    bool success = true;
+
+    if (datas.empty())
     {
         std::cout << "No interpolation to remove.\n";
-        return false;
+        success = false;
     }
 
-    auto it = std::find(mData.begin(), mData.end(), data);
-    if (it == mData.end())
+    for (const std::shared_ptr<MeshInterpolationData>& data : datas)
     {
-        std::cout << "Should not be happening. Possible race condition.\n";
-        return false;
+        auto it = std::find(mData.begin(), mData.end(), data);
+        if (it == mData.end())
+        {
+            std::cout << "Should not be happening. Possible race condition.\n";
+            success = false;
+            continue;
+        }
+        unload(*it);
+        mData.erase(it);
     }
 
-    unload(*it);
-    mData.erase(it);
-    return true;
+    return success;
 }
 
 void MeshInterpolationManager::clearInterpolators()
@@ -188,6 +195,21 @@ std::shared_ptr<MeshInterpolationManager::MeshInterpolationData> MeshInterpolati
         }
     }
     return nullptr;
+}
+
+std::vector<std::shared_ptr<MeshInterpolationManager::MeshInterpolationData>>
+MeshInterpolationManager::getDatas(const std::shared_ptr<Polygon>& polygon)
+{
+    std::vector<std::shared_ptr<MeshInterpolationData>> datas;
+    for (const std::shared_ptr<MeshInterpolationData>& data : mData)
+    {
+        if (data->mInterpolator->getTarget() == polygon ||
+            data->mInterpolator->getSource() == polygon)
+        {
+            datas.push_back(data);
+        }
+    }
+    return datas;
 }
 
 void MeshInterpolationManager::addInterpolator(
