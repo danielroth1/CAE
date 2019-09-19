@@ -24,9 +24,6 @@ private:
 
     void addInterpolation(SGLeafNode* sourceNode, SGLeafNode* targetNode);
 
-    std::shared_ptr<MeshInterpolatorFEM> mInterpolator;
-    std::shared_ptr<MeshInterpolatorRenderModel> mInterpolatorModel;
-
     ApplicationControl* mAc;
 };
 

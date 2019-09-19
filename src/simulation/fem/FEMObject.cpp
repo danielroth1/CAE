@@ -93,8 +93,6 @@ FEMObject::FEMObject(
     std::copy(mPositions.begin(), mPositions.end(), mInitialPositions.begin());
 
     mTruncation = std::make_shared<Truncation>();
-
-    initializeStiffnessMatrix();
 }
 
 FEMObject::~FEMObject()
@@ -183,6 +181,8 @@ void FEMObject::initializeFEM()
     // initializes getMassMatrix(), getStiffnessMatirx()
     for (FiniteElement& fe : mFiniteElements)
         fe.initialize();
+    initializeStiffnessMatrix();
+
     updateFEM(false);
 //    updateStiffnessMatrix(false);
     updateMassMatrix();
@@ -209,6 +209,7 @@ void FEMObject::updatePositions()
 void FEMObject::updateFEM(bool corotated)
 {
     START_TIMING_SIMULATION("FEMObject::updateFEM()");
+
     updateStiffnessMatrix(corotated);
     updateElasticForces();
 
@@ -247,9 +248,9 @@ void FEMObject::solveFEMExplicitly(double timeStep, bool corotated)
 
 void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 {
-    START_TIMING_SIMULATION("FEMObject::solveFEM()");
     if (mTruncation->getTruncatedVectorIds().size() == mPositions.size())
         return;
+    START_TIMING_SIMULATION("FEMObject::solveFEM()");
 
     // map velocities to eigen struct
     unsigned int size = static_cast<unsigned int>(mVelocities.size());
@@ -279,9 +280,12 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
     START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver");
     if (firstStep)
     {
-        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::first");
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::calcAOriginal");
         SparseMatrix<double> AOriginal = mM + timeStep * timeStep * K;
         SparseMatrix<double> A;
+        STOP_TIMING_SIMULATION;
+
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::truncateByRemoving");
         mTruncation->truncateByRemoving(AOriginal, A);
 
 //        SparseMatrix<float> C = A.cast<float>();

@@ -16,6 +16,7 @@
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/GeometricDataListener.h>
 #include <scene/data/geometric/GeometricDataUtils.h>
+#include <scene/data/geometric/MeshInterpolationManager.h>
 #include <scene/data/geometric/MeshInterpolatorMeshMesh.h>
 #include <scene/data/geometric/Polygon3D.h>
 #include <scene/scene_graph/SGControl.h>
@@ -65,8 +66,6 @@ void ApplicationControl::initiateApplication()
 {
     // initiate all controls
 
-
-
     // Simulation Control
     mSimulationControl = std::make_shared<SimulationControl>();
 
@@ -94,6 +93,10 @@ void ApplicationControl::initiateApplication()
     mSGUIControl->initialize(mSGControl.get(), mUiControl.get());
 
     mUiControl->connectSignals();
+
+    // MeshInterpolationManager
+    mMeshInterpolationManager = std::make_shared<MeshInterpolationManager>(
+                mUiControl->getRenderer());
 
 
 
@@ -230,31 +233,57 @@ void ApplicationControl::initiateApplication()
             ac.mSGControl->createRigidBody(node2->getData(), 1.0, true);
             ac.mSGControl->createCollidable(node2->getData());
 
-            // some boxes:
-            for (int r = 0; r < 4; ++r)
+            bool createSingleBox = false;
+            if (createSingleBox)
             {
-                for (int c = 0; c < 4; ++c)
-                {
-                    if (r == 0)
-                    {
-                        MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0);
-                        SGLeafNode* node1 = ac.mSGControl->createBox("Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                                                                  Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
-                        ac.mSGControl->create3DGeometryFrom2D(node1, criteria);
-                        ac.mSGControl->createFEMObject(node1->getData());
-//                        ac.mSGControl->createRigidBody(node1->getData(), 1.0, true);
-                        ac.mSGControl->createCollidable(node1->getData());
-                    }
-                    else
-                    {
-                        SGLeafNode* node1 = ac.mSGControl->createBox("Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                                                                  Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0), 0.5, 0.5, 0.5, true);
-                        ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
-                        ac.mSGControl->createCollidable(node1->getData());
-                    }
+                ac.mSimulationControl->setGravity(Eigen::Vector::Zero());
 
+                MeshCriteria criteria(0.0, 0.0, 0.0, 0.2, 1.0, true);
+                SGLeafNode* node1 = ac.mSGControl->createBox(
+                            "Box", ac.mSGControl->getSceneGraph()->getRoot(),
+                            Vector(-1, -0.5, 0.0), 1.5, 1.0, 0.5, true);
+                ac.mSGControl->create3DGeometryFrom2D(node1, criteria);
+                ac.mSGControl->createFEMObject(node1->getData());
+                ac.mSGControl->createCollidable(node1->getData());
+            }
+            else
+            {
+                // some boxes:
+                for (int r = 0; r < 4; ++r)
+                {
+                    for (int c = 0; c < 4; ++c)
+                    {
+                        if (r > -1)
+                        {
+                            MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0, true, 0.0);
+
+                            SGLeafNode* node1 = ac.mSGControl->createBox(
+                                        "Box", ac.mSGControl->getSceneGraph()->getRoot(),
+                                        Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0),
+                                        0.5, 0.5, 0.5, true);
+                            ac.mSGControl->create3DGeometryFrom2D(node1, criteria);
+                            ac.mSGControl->createFEMObject(node1->getData());
+                            ac.mSGControl->createCollidable(node1->getData());
+
+                            std::shared_ptr<FEMObject> femObj =
+                                    std::dynamic_pointer_cast<FEMObject>(
+                                        node1->getData()->getSimulationObject());
+                            femObj->setYoungsModulus(2e+4);
+                        }
+                        else
+                        {
+                            SGLeafNode* node1 = ac.mSGControl->createBox(
+                                        "Box", ac.mSGControl->getSceneGraph()->getRoot(),
+                                        Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0),
+                                        0.5, 0.5, 0.5, true);
+                            ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
+                            ac.mSGControl->createCollidable(node1->getData());
+                        }
+
+                    }
                 }
             }
+
         }
 
         virtual void unload()
@@ -426,4 +455,10 @@ UIControl* ApplicationControl::getUIControl()
 RenderModelManager* ApplicationControl::getRenderModelManager()
 {
     return mRenderModelManager.get();
+}
+
+std::shared_ptr<MeshInterpolationManager>
+ApplicationControl::getMeshInterpolationManager() const
+{
+    return mMeshInterpolationManager;
 }

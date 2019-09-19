@@ -12,6 +12,7 @@
 #include <rendering/TextureUtils.h>
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/GeometricDataListener.h>
+#include <scene/data/geometric/MeshInterpolationManager.h>
 #include <scene/data/geometric/MeshInterpolatorMeshMesh.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon3D.h>
@@ -173,6 +174,8 @@ void InterpolationMeshMeshDemo::load()
 //        poly1->transform(scaling);
     }
 
+    sourceNode->getData()->getRenderModel()->setWireframeEnabled(true);
+
     // deformable
 //                    MeshCriteria criteria(0.0, 0.0, 0.0, 0.15, 30, true);
 //                    MeshCriteria criteria(0.0, 0.0, 0.0, 0.15, 30, false);
@@ -209,6 +212,9 @@ void InterpolationMeshMeshDemo::load()
         for (SGLeafNode* target : targets)
         {
             addInterpolation(sourceNode, target);
+            mAc->getMeshInterpolationManager()->setInterpolatorVisible(
+                        std::dynamic_pointer_cast<Polygon>(
+                            target->getData()->getGeometricData()), true);
         }
 
 //        // move geometries away from origin
@@ -260,55 +266,13 @@ void InterpolationMeshMeshDemo::addInterpolation(
             SGLeafNode* sourceNode,
             SGLeafNode* targetNode)
 {
-    mInterpolator = std::make_shared<MeshInterpolatorMeshMesh>(
+    mAc->getMeshInterpolationManager()->addInterpolatorMeshMesh(
                 std::dynamic_pointer_cast<Polygon>(
                     sourceNode->getData()->getGeometricData()),
                 std::dynamic_pointer_cast<Polygon>(
                     targetNode->getData()->getGeometricData()));
-    mInterpolator->solveNewton();
-
-    mInterpolatorModel = std::make_shared<MeshInterpolatorRenderModel>(
-                mInterpolator, false, false);
-
-    Renderer* renderer = mAc->getUIControl()->getRenderer();
-    mInterpolatorModel->addToRenderer(renderer);
-    mInterpolatorModel->setAddedToRenderer(true);
-
-    class mInterpolatorModelUpdater : public GeometricDataListener
-    {
-    public:
-        mInterpolatorModelUpdater(
-                    const std::shared_ptr<MeshInterpolator>& _mInterpolatorModel,
-                    const std::shared_ptr<MeshInterpolatorRenderModel>& _renderModel)
-            : mInterpolatorModel(_mInterpolatorModel)
-            , renderModel(_renderModel)
-        {
-
-        }
-
-        virtual void notifyGeometricDataChanged()
-        {
-            mInterpolatorModel->update();
-            renderModel->update();
-        }
-
-        std::shared_ptr<MeshInterpolator> mInterpolatorModel;
-        std::shared_ptr<MeshInterpolatorRenderModel> renderModel;
-    };
-
-    mListener = std::make_shared<mInterpolatorModelUpdater>(
-                mInterpolator,
-                mInterpolatorModel);
-
-    sourceNode->getData()->getGeometricData()->addGeometricDataListener(
-                mListener);
 }
 
 void InterpolationMeshMeshDemo::unload()
 {
-    mInterpolator->getSource()->removeGeometricDataListener(mListener.get());
-    mInterpolator = nullptr;
-    mInterpolatorModel->removeFromRenderer(mAc->getUIControl()->getRenderer());
-    mInterpolatorModel = nullptr;
-    mListener = nullptr;
 }

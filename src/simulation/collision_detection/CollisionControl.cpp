@@ -74,10 +74,11 @@ void CollisionControl::notifySimulationObjectRemoved(const std::shared_ptr<Simul
     // remove BVHData
     auto it = mBvhMap.find(so);
 
-    it->second.mRenderModel->removeFromRenderer(mUiControl->getRenderer());
-
     if (it != mBvhMap.end())
+    {
+        it->second.mRenderModel->removeFromRenderer(mUiControl->getRenderer());
         mBvhMap.erase(it);
+    }
 }
 
 void CollisionControl::notifyCollideAllCalled()

@@ -5,6 +5,7 @@
 #include <io/MeshIO.h>
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/GeometricPoint.h>
+#include <scene/data/geometric/MeshInterpolationManager.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon3D.h>
 
@@ -50,6 +51,7 @@ void SGControl::clearScene()
     {
         removeNode(node);
     }
+    mAc->getMeshInterpolationManager()->clearInterpolators();
 //    mAc->getSimulationControl()->clearSimulationObjects();
 //    mSceneGraph->getRoot()->clear();
 }

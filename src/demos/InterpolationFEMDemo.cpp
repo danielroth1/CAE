@@ -12,6 +12,7 @@
 #include <rendering/TextureUtils.h>
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/GeometricDataListener.h>
+#include <scene/data/geometric/MeshInterpolationManager.h>
 #include <scene/data/geometric/MeshInterpolatorFEM.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon3D.h>
@@ -112,11 +113,16 @@ void InterpolationFEMDemo::load()
         mAc->getSGControl()->create3DGeometryFrom2D(sourceNode, criteria, true);
     }
 
+    sourceNode->getData()->getRenderModel()->setWireframeEnabled(true);
+
     if (interpolate)
     {
         for (SGLeafNode* target : targets)
         {
             addInterpolation(sourceNode, target);
+            mAc->getMeshInterpolationManager()->setInterpolatorVisible(
+                        std::dynamic_pointer_cast<Polygon>(
+                            target->getData()->getGeometricData()), true);
         }
     }
 
@@ -161,53 +167,11 @@ void InterpolationFEMDemo::addInterpolation(
             SGLeafNode* sourceNode,
             SGLeafNode* targetNode)
 {
-    mInterpolator = std::make_shared<MeshInterpolatorFEM>(
+    mAc->getMeshInterpolationManager()->addInterpolatorFEM(
                 std::dynamic_pointer_cast<Polygon3D>(
                     sourceNode->getData()->getGeometricData()),
                 std::dynamic_pointer_cast<Polygon>(
                     targetNode->getData()->getGeometricData()));
-    mInterpolator->solve();
-
-    // The render model doesn't do anything for FEM based mesh interpolation
-    // but it is let here if this changes. There is nearly no performance
-    // drawback by disabling rendering of vertices and lines.
-
-    mInterpolatorModel = std::make_shared<MeshInterpolatorRenderModel>(
-                mInterpolator, false, false);
-
-    Renderer* renderer = mAc->getUIControl()->getRenderer();
-    mInterpolatorModel->addToRenderer(renderer);
-    mInterpolatorModel->setAddedToRenderer(true);
-
-    class mInterpolatorModelUpdater : public GeometricDataListener
-    {
-    public:
-        mInterpolatorModelUpdater(
-                    const std::shared_ptr<MeshInterpolator>& _mInterpolatorModel,
-                    const std::shared_ptr<MeshInterpolatorRenderModel>& _renderModel)
-            : mInterpolatorModel(_mInterpolatorModel)
-            , renderModel(_renderModel)
-        {
-
-        }
-
-        virtual void notifyGeometricDataChanged()
-        {
-            mInterpolatorModel->update();
-            renderModel->update();
-        }
-
-        std::shared_ptr<MeshInterpolator> mInterpolatorModel;
-        std::shared_ptr<MeshInterpolatorRenderModel> renderModel;
-    };
-
-    std::shared_ptr<mInterpolatorModelUpdater> updater =
-            std::make_shared<mInterpolatorModelUpdater>(
-                mInterpolator,
-                mInterpolatorModel);
-
-    sourceNode->getData()->getGeometricData()->addGeometricDataListener(
-                updater);
 }
 
 void InterpolationFEMDemo::unload()

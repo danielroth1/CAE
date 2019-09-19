@@ -19,6 +19,9 @@ public:
     MeshInterpolator(const std::shared_ptr<Polygon>& source,
                      const std::shared_ptr<Polygon>& target);
 
+    // Solves initial system. Must be called before the first update() call.
+    virtual void solve() = 0;
+
     virtual void update() = 0;
 
     // Returns the position of the source vertex that correspondons to the

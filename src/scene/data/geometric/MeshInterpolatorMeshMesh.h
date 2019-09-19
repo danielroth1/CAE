@@ -158,6 +158,9 @@ public:
             const NCGParameters& ncgParams = NCGParameters(),
             const LineSearchParameters& lsParams = LineSearchParameters());
 
+    // Solves the system using the newton method with the default parameters.
+    virtual void solve() override;
+
     // Calls geometricDataChanged() of target.
     virtual void update() override;
 

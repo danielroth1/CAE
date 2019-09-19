@@ -17,11 +17,11 @@ public:
 
     virtual ~MeshInterpolatorFEM() override;
 
-    void solve();
 
     // MeshInterpolator interface
 public:
     // Calls geometricDataChanged() of target.
+    virtual void solve() override;
     virtual void update() override;
     virtual Eigen::Vector3d getSourcePosition(size_t targetId) const override;
 
