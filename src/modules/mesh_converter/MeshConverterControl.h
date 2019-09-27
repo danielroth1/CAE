@@ -34,8 +34,7 @@ public:
     // Call this method before calling convert().
     void loadGeometry2D(Polygon2D* poly2);
 
-    // Converts the Polygon2D that was loaded in loadGeometry2D.
-    //TODO: call these from ui control
+    // Converts Polygon2Ds of all selected scene nodes.
     void convert(
             const MeshCriteria& meshCriteria,
             bool renderOnlyOuterFaces = true);

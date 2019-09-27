@@ -33,7 +33,7 @@ public:
         // node to the provided children node.
         SGNode* importFileAsChild(
                 File file,
-                SGChildrenNode* childrenNode,
+                SGChildrenNode* parent,
                 bool renderOnlyOuterFaces = true);
 
         // Creates a sphere
@@ -59,8 +59,19 @@ public:
                 int resolution = 3,
                 bool renderOnlyOuterFaces = true);
 
+        // Converts the polygon of the given leaf node. Overwrites the old
+        // geometry.
         // Returns the given leaf node.
         SGLeafNode* create3DGeometryFrom2D(
+                SGLeafNode* leafNode,
+                const MeshCriteria& meshCriteria,
+                bool renderOnlyOuterFaces = true);
+
+        // Converts the polygon of the given leafNode and sets it as the
+        // geometry of a new node that is added to the given parent node.
+        SGLeafNode* create3DGeometryFrom2D(
+                std::string name,
+                SGChildrenNode* parent,
                 SGLeafNode* leafNode,
                 const MeshCriteria& meshCriteria,
                 bool renderOnlyOuterFaces = true);

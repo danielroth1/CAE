@@ -205,6 +205,27 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
     return leafNode;
 }
 
+SGLeafNode* SGControl::create3DGeometryFrom2D(
+        std::string name,
+        SGChildrenNode* parent,
+        SGLeafNode* leafNode,
+        const MeshCriteria& meshCriteria,
+        bool renderOnlyOuterFaces)
+{
+    std::shared_ptr<GeometricData> gd = leafNode->getData()->getGeometricData();
+    SGLeafNode* newNode;
+    if (gd != nullptr)
+    {
+        if (gd->getType() == GeometricData::Type::POLYGON)
+        {
+            std::shared_ptr<Polygon> poly = std::static_pointer_cast<Polygon>(gd);
+            newNode = mAc->getSGControl()->createLeafNode(name, parent, poly);
+            create3DGeometryFrom2D(newNode, meshCriteria, renderOnlyOuterFaces);
+        }
+    }
+    return newNode;
+}
+
 SGLeafNode* SGControl::createSimulationPoint(
         std::string name,
         SGChildrenNode* parent,

@@ -35,7 +35,7 @@ GLWidget::~GLWidget()
 void GLWidget::setDefaults()
 {
     mMouseSensitivy = 1.0f;
-    mMovementSpeed = 20.0f;
+    mMovementSpeed = 10.0f;
     mMousePos = QPointF(0.0, 0.0);
     mAngle = QPointF(0.0, -15.0);
     mCameraPos = QVector3D(0.0, 1.5f, 5.5f);

@@ -6,6 +6,7 @@
 
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/Polygon2D.h>
+#include <scene/model/RenderModel.h>
 
 #include <simulation/forces/LinearForce.h>
 #include <simulation/forces/RotationalMotor.h>
@@ -15,6 +16,10 @@
 #include <simulation/constraints/DoubleAxisRotationalJoint.h>
 #include <simulation/constraints/FixedRotationalJoint.h>
 #include <simulation/constraints/LineJoint.h>
+
+#include <rendering/Appearance.h>
+#include <rendering/Appearances.h>
+
 
 using namespace Eigen;
 
@@ -38,6 +43,12 @@ void CarDemo::load()
                 "Floor",
                 mAc.getSGControl()->getSceneGraph()->getRoot(),
                 Vector(0.0, -4.5, 0.0), 12, 0.5, 40, true);
+
+    floor->getData()->getRenderModel()->setAppearances(
+                std::make_shared<Appearances>(
+                    Appearance::createAppearanceFromColor(
+    {0.8f, 0.8f, 0.8f, 1.0f})));
+
     mAc.getSGControl()->createRigidBody(floor->getData(), 1.0, true);
     mAc.getSGControl()->createCollidable(floor->getData());
 
@@ -63,6 +74,12 @@ void CarDemo::createCar(
     SGLeafNode* hull = mSg->createBox(
                 "Hull", carNode, transformation * Vector::Zero(),
                 width, height, length);
+
+    hull->getData()->getRenderModel()->setAppearances(
+                std::make_shared<Appearances>(
+                    Appearance::createAppearanceFromColor(
+    {1.0f, 0.1f, 0.1f, 1.0f})));
+
     std::shared_ptr<RigidBody> hullRigid = mSg->createRigidBody(
                 hull->getData(), 5.0, false);
 //    mSg->createCollidable(hull->getData());//, 0.05);
@@ -133,6 +150,12 @@ void CarDemo::createTire(
                 tirePolyLf,
                 Eigen::Vector::Zero(),
                 true);
+
+    tire->getData()->getRenderModel()->setAppearances(
+                std::make_shared<Appearances>(
+                    Appearance::createAppearanceFromColor(
+    {0.1f, 0.1f, 0.1f, 1.0f})));
+
     std::shared_ptr<RigidBody> rigid =
             mSg->createRigidBody(tire->getData(), 1.0, false);
     mSg->createCollidable(tire->getData());//, 0.2);
