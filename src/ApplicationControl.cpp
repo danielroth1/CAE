@@ -48,6 +48,8 @@
 #include <demos/InterpolationMeshMeshDemo.h>
 #include <demos/TexturingDemo.h>
 #include <demos/InterpolationFEMDemo.h>
+#include <demos/FallingObjectsDemo.h>
+#include <demos/CubeWallDemo.h>
 #include <ui/scene_graph/SGUIControl.h>
 #include <io/importers/OBJImporter.h>
 #include <modules/geometry_info/GeometryInfoModule.h>
@@ -209,92 +211,8 @@ void ApplicationControl::initiateApplication()
     };
     std::shared_ptr<Demo> example1Demo = std::make_shared<Example1Demo>(*this);
     mDemoLoaderModule->addDemo(example1Demo);
-
-    class Example2Demo : public Demo
-    {
-    public:
-        Example2Demo(ApplicationControl& _ac)
-            : ac(_ac)
-        {
-
-        }
-
-        virtual std::string getName()
-        {
-            return "Rigid Deformable Collision";
-        }
-
-        virtual void load()
-        {
-            // Floor
-            SGLeafNode* node2 = ac.mSGControl->createBox("Floor", ac.mSGControl->getSceneGraph()->getRoot(),
-                                                      /*Vector(-5, -2, -5)*/Vector(0.0, -1.5, 0.0), 6, 0.5, 6, true);
-
-            ac.mSGControl->createRigidBody(node2->getData(), 1.0, true);
-            ac.mSGControl->createCollidable(node2->getData());
-
-            bool createSingleBox = false;
-            if (createSingleBox)
-            {
-                ac.mSimulationControl->setGravity(Eigen::Vector::Zero());
-
-                MeshCriteria criteria(0.0, 0.0, 0.0, 0.2, 1.0, true);
-                SGLeafNode* node1 = ac.mSGControl->createBox(
-                            "Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                            Vector(-1, -0.5, 0.0), 1.5, 1.0, 0.5, true);
-                ac.mSGControl->create3DGeometryFrom2D(node1, criteria);
-                ac.mSGControl->createFEMObject(node1->getData());
-                ac.mSGControl->createCollidable(node1->getData());
-            }
-            else
-            {
-                // some boxes:
-                for (int r = 0; r < 4; ++r)
-                {
-                    for (int c = 0; c < 4; ++c)
-                    {
-                        if (r > -1)
-                        {
-                            MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0, true, 0.0);
-
-                            SGLeafNode* node1 = ac.mSGControl->createBox(
-                                        "Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                                        Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0),
-                                        0.5, 0.5, 0.5, true);
-                            ac.mSGControl->create3DGeometryFrom2D(node1, criteria);
-                            ac.mSGControl->createFEMObject(node1->getData());
-                            ac.mSGControl->createCollidable(node1->getData());
-
-                            std::shared_ptr<FEMObject> femObj =
-                                    std::dynamic_pointer_cast<FEMObject>(
-                                        node1->getData()->getSimulationObject());
-                            femObj->setYoungsModulus(5e+4);
-                        }
-                        else
-                        {
-                            SGLeafNode* node1 = ac.mSGControl->createBox(
-                                        "Box", ac.mSGControl->getSceneGraph()->getRoot(),
-                                        Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0),
-                                        0.5, 0.5, 0.5, true);
-                            ac.mSGControl->createRigidBody(node1->getData(), 1.0, false);
-                            ac.mSGControl->createCollidable(node1->getData());
-                        }
-
-                    }
-                }
-            }
-
-        }
-
-        virtual void unload()
-        {
-
-        }
-
-        ApplicationControl& ac;
-    };
-
-    mDemoLoaderModule->addDemo(std::make_shared<Example2Demo>(*this));
+    mDemoLoaderModule->addDemo(std::make_shared<CubeWallDemo>(this, true));
+    mDemoLoaderModule->addDemo(std::make_shared<CubeWallDemo>(this, false));
     mDemoLoaderModule->addDemo(std::make_shared<DoublePendulumDemo>(*this));
     mDemoLoaderModule->addDemo(std::make_shared<ChainDemo>(*this));
     mDemoLoaderModule->addDemo(std::make_shared<LineJointDemo>(*this));
@@ -312,6 +230,10 @@ void ApplicationControl::initiateApplication()
     mDemoLoaderModule->addDemo(interpolationDemo);
     mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMDemo>(this));
     mDemoLoaderModule->addDemo(std::make_shared<TexturingDemo>(this));
+    mDemoLoaderModule->addDemo(std::make_shared<FallingObjectsDemo>(
+                                   this, "Falling Objects (rigid)", true));
+    mDemoLoaderModule->addDemo(std::make_shared<FallingObjectsDemo>(
+                                   this, "Falling Objects (deformable)", false));
 
     mDemoLoaderModule->loadDemo(emptyDemo);
 
