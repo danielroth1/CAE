@@ -40,6 +40,8 @@ public:
     // Rendering methods
         void setBvhRenderLevel(int level);
         void setBvhRenderingEnables(bool visible);
+
+        bool isCollisionsRenderingVisible() const;
         void setCollisionsRenderingVisible(bool visible);
 
     // CollisionManagerListener interface

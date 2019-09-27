@@ -7,6 +7,8 @@
 
 SceneData::SceneData(Node<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>* node)
     : NodeData<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>(node)
+    , mSceneDataSelectable(true)
+    , mVerticesSelectable(true)
 {
 
 }
@@ -104,4 +106,24 @@ SceneData::Visibility SceneData::getSubtreeVisibility()
         traverser.traverse(visitor);
         return visitor.visibility;
     }
+}
+
+bool SceneData::isSceneDataSelectable() const
+{
+    return mSceneDataSelectable;
+}
+
+void SceneData::setSceneDataSelectable(bool selectable)
+{
+    mSceneDataSelectable = selectable;
+}
+
+bool SceneData::isVerticesSelectable() const
+{
+    return mVerticesSelectable;
+}
+
+void SceneData::setVerticesSelectable(bool selectable)
+{
+    mVerticesSelectable = selectable;
 }

@@ -47,6 +47,11 @@ void CollisionControl::setBvhRenderingEnables(bool visible)
     }
 }
 
+bool CollisionControl::isCollisionsRenderingVisible() const
+{
+    return mColliderRenderModel->isVisible();
+}
+
 void CollisionControl::setCollisionsRenderingVisible(bool visible)
 {
     mColliderRenderModel->setVisible(visible);

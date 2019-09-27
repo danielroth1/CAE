@@ -42,10 +42,19 @@ public:
     // then it returns Visibility::UNDEFINED.
     virtual Visibility getSubtreeVisibility();
 
+    bool isSceneDataSelectable() const;
+    void setSceneDataSelectable(bool selectable);
+
+    bool isVerticesSelectable() const;
+    void setVerticesSelectable(bool selectable);
+
 private:
 
     // not in use
     Eigen::Matrix3d mTransformationMatrix;
+
+    bool mSceneDataSelectable;
+    bool mVerticesSelectable;
 };
 
 #endif // SCENEDATA_H

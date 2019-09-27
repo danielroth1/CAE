@@ -4,6 +4,7 @@
 #include <ApplicationControl.h>
 
 #include <QButtonGroup>
+#include <SimulationControl.h>
 #include <iostream>
 
 #include <ui/UIControl.h>
@@ -114,7 +115,7 @@ void SimulationUIControl::init(QWidget* parent)
                 -100.0, 100.0, 1.0);
 
     mWidget->getMembersWidget()->addBool(
-                "Invert normals if necessary",
+                "Invert Normals if necessary",
                 MemberAccessorFactory::createGetterSetter<bool, SimulationControl>(
                     &SimulationControl::getInvertNormalsIfNecessary,
                     &SimulationControl::setInvertNormalsIfNecessary,
@@ -124,7 +125,7 @@ void SimulationUIControl::init(QWidget* parent)
                     mAc->getSimulationControl()->getDomain()));
 
     mWidget->getMembersWidget()->addBool(
-                "Visualize Face normals",
+                "Visualize Face Normals",
                 MemberAccessorFactory::createGetterSetter<bool, SGUIControl>(
                     &SGUIControl::isVisualizeFaceNormals,
                     &SGUIControl::setVisualizeFaceNormals,
@@ -134,7 +135,7 @@ void SimulationUIControl::init(QWidget* parent)
                     mAc->getSimulationControl()->getDomain()));
 
     mWidget->getMembersWidget()->addBool(
-                "Visualize Vertex normals",
+                "Visualize Vertex Normals",
                 MemberAccessorFactory::createGetterSetter<bool, SGUIControl>(
                     &SGUIControl::isVisualizeVertexNormals,
                     &SGUIControl::setVisualizeVertexNormals,
@@ -143,16 +144,43 @@ void SimulationUIControl::init(QWidget* parent)
                     MemberAccessorFactory::createBoolComparator(),
                     mAc->getSimulationControl()->getDomain()));
 
+    mWidget->getMembersWidget()->addBool(
+                "Visualize Collision Normals",
+                MemberAccessorFactory::createGetterSetter<bool, SimulationControl>(
+                    &SimulationControl::isCollisionNormalsVisible,
+                    &SimulationControl::setCollisionNormalsVisible,
+                    true,
+                    mAc->getSimulationControl(),
+                    MemberAccessorFactory::createBoolComparator(),
+                    mAc->getSimulationControl()->getDomain()));
+
     QtOwnersMembersWidget* omw = mWidget->getOwnersMembersWidget();
+
+    QtMembersWidget* sceneNodeWidget = omw->registerMembersWidget("SceneData");
     // SimulationObjects
     QtMembersWidget* femWidget = omw->registerMembersWidget("FEMObject");
     QtMembersWidget* rigidBodyWidget = omw->registerMembersWidget("RigidBody");
     // RenderModels
     QtMembersWidget* polyModelWidget = omw->registerMembersWidget("PolygonRenderModel");
 
+    omw->setMembersWidgetVisible("SceneData", false);
     omw->setMembersWidgetVisible("FEMObject", false);
     omw->setMembersWidgetVisible("RigidBody", false);
     omw->setMembersWidgetVisible("PolygonRenderModel", false);
+
+//    sceneNodeWidget->addBool(
+//                "Selectable",
+//                MemberAccessorFactory::createGetterSetter<bool, SceneData>(
+//                    &SceneData::isSceneDataSelectable,
+//                    &SceneData::setSceneDataSelectable,
+//                    true, nullptr, nullptr, nullptr));
+
+    sceneNodeWidget->addBool(
+                "Vertices Selectable",
+                MemberAccessorFactory::createGetterSetter<bool, SceneData>(
+                    &SceneData::isVerticesSelectable,
+                    &SceneData::setVerticesSelectable,
+                    true, nullptr, nullptr, nullptr));
 
     femWidget->addDouble(
                 "Youngs Modulus",
@@ -426,20 +454,27 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
         const std::vector<std::shared_ptr<SceneData> >& sds)
 {
     QtOwnersMembersWidget* omw = mWidget->getOwnersMembersWidget();
+    QtMembersWidget* sceneDataWidget = omw->getMembersWidget("SceneData");
     QtMembersWidget* femWidget = omw->getMembersWidget("FEMObject");
     QtMembersWidget* rigidWidget = omw->getMembersWidget("RigidBody");
     QtMembersWidget* polyModelWidget = omw->getMembersWidget("PolygonRenderModel");
 
+    sceneDataWidget->clearOwners();
     femWidget->clearOwners();
     rigidWidget->clearOwners();
     polyModelWidget->clearOwners();
 
+    omw->setMembersWidgetVisible("SceneData", false);
     omw->setMembersWidgetVisible("FEMObject", false);
     omw->setMembersWidgetVisible("RigidBody", false);
     omw->setMembersWidgetVisible("PolygonRenderModel", false);
 
     for (const std::shared_ptr<SceneData>& sd : sds)
     {
+        sceneDataWidget->addOwner(sd.get());
+        sceneDataWidget->updateValues();
+        omw->setMembersWidgetVisible("SceneData", true);
+
         if (sd->isLeafData())
         {
             std::shared_ptr<SceneLeafData> leafData =

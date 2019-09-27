@@ -86,7 +86,17 @@ void SGQtWidgetManager::addNode(SGNode* node, bool setEditing)
                    Qt::ItemIsUserCheckable |
                    Qt::ItemIsDragEnabled |
                    Qt::ItemIsDropEnabled);
-    item->setCheckState(0, Qt::Checked); // enable check box
+
+    bool visible = false;
+    if (node->isLeaf())
+    {
+        SGLeafNode* leaf = static_cast<SGLeafNode*>(node);
+        visible = leaf->getData()->isVisible();
+    }
+    if (visible)
+        item->setCheckState(0, Qt::Checked); // enable check box
+    else
+        item->setCheckState(0, Qt::Unchecked); // enable check box
 
     // add to parent
     if (node->getParent() != nullptr)
