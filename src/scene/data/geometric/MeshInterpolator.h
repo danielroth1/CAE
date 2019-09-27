@@ -39,6 +39,11 @@ public:
 protected:
     virtual ~MeshInterpolator();
 
+    // Fixes the position representation type (body or world space) so that
+    // the one of the target is identical to the one of the source. Call this
+    // method at the beginning of the update() method.
+    void fixRepresentationType();
+
     std::shared_ptr<Polygon> mSource;
     std::shared_ptr<Polygon> mTarget;
 

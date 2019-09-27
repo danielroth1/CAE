@@ -10,6 +10,7 @@
 #include <iostream>
 #include <numeric>
 
+#include <times/timing.h>
 
 MeshInterpolatorMeshMesh::MeshInterpolatorMeshMesh(
         const std::shared_ptr<Polygon>& source,
@@ -167,7 +168,7 @@ void MeshInterpolatorMeshMesh::solveNCG(
 
 void MeshInterpolatorMeshMesh::solve()
 {
-    solveNewton();
+    solveNewton(NewtonParameters(50, 1e-12, std::numeric_limits<double>::min()));
 }
 
 void MeshInterpolatorMeshMesh::update()
@@ -178,28 +179,83 @@ void MeshInterpolatorMeshMesh::update()
                      "calling MeshInterpolatorMeshMesh::solveNewton().\n";
         return;
     }
-    for (size_t i = 0; i < mTargetAccessor->getSize(); ++i)
+    START_TIMING("MeshInterpolatorMeshMesh::update()", 2);
+
+    fixRepresentationType();
+
+    switch(mSource->getPositionType())
     {
-        VertexInterpolation& vi = mInterpolations[i];
-        if (vi.mAssigned)
-        {
-            Face& f = mSourceAccessor->getTopology2D().getFace(vi.mSourceFaceId).getVertexIds();
-            Eigen::Vector q =
-                    vi.mWeights[0] * mSourceAccessor->getPosition(f[0])
-                    + vi.mWeights[1] * mSourceAccessor->getPosition(f[1])
-                    + vi.mWeights[2] * mSourceAccessor->getPosition(f[2]);
-            Eigen::Vector n_q =
-                    vi.mWeights[0] * mSourceAccessor->getVertexNormals()[f[0]]
-                    + vi.mWeights[1] * mSourceAccessor->getVertexNormals()[f[1]]
-                    + vi.mWeights[2] * mSourceAccessor->getVertexNormals()[f[2]];
-
-            n_q.normalize();
-
-            Eigen::Vector p = q + vi.mDistance * n_q;
-            mTargetAccessor->setPosition(i, p);
-        }
+    case BSWSVectors::BODY_SPACE:
+    {
+        // This is a simple case. Transformation matrices need to be equal.
+        mTarget->setTransform(mSource->getTransform());
+        break;
     }
-    mTarget->update();
+    case BSWSVectors::WORLD_SPACE:
+    {
+        // Update positions of target according to mapping that was calculated
+        // in init().
+//        for (size_t i = 0; i < mTarget->getPositions().size(); ++i)
+//        {
+            // Calculate interpolated vertex
+//            Eigen::Vector interpolatedPosition = interpolate(mInterpolations[i]);
+//            mTarget->setPosition(i, interpolatedPosition);
+
+        for (size_t i = 0; i < mTargetAccessor->getSize(); ++i)
+        {
+            VertexInterpolation& vi = mInterpolations[i];
+            if (vi.mAssigned)
+            {
+                Face& f = mSourceAccessor->getTopology2D().getFace(vi.mSourceFaceId).getVertexIds();
+                Eigen::Vector q =
+                        vi.mWeights[0] * mSourceAccessor->getPosition(f[0])
+                        + vi.mWeights[1] * mSourceAccessor->getPosition(f[1])
+                        + vi.mWeights[2] * mSourceAccessor->getPosition(f[2]);
+                Eigen::Vector n_q =
+                        vi.mWeights[0] * mSourceAccessor->getVertexNormals()[f[0]]
+                        + vi.mWeights[1] * mSourceAccessor->getVertexNormals()[f[1]]
+                        + vi.mWeights[2] * mSourceAccessor->getVertexNormals()[f[2]];
+
+//                n_q.normalize();
+
+                mTargetAccessor->setPosition(i, q + vi.mDistance * n_q);
+            }
+        }
+//        }
+
+
+        break;
+    }
+    }
+    STOP_TIMING(2);
+
+    START_TIMING("MeshInterpolatorMeshMesh::Polygon::update()", 2);
+    mTarget->update(false, false);
+
+    STOP_TIMING(2);
+
+//    for (size_t i = 0; i < mTargetAccessor->getSize(); ++i)
+//    {
+//        VertexInterpolation& vi = mInterpolations[i];
+//        if (vi.mAssigned)
+//        {
+//            Face& f = mSourceAccessor->getTopology2D().getFace(vi.mSourceFaceId).getVertexIds();
+//            Eigen::Vector q =
+//                    vi.mWeights[0] * mSourceAccessor->getPosition(f[0])
+//                    + vi.mWeights[1] * mSourceAccessor->getPosition(f[1])
+//                    + vi.mWeights[2] * mSourceAccessor->getPosition(f[2]);
+//            Eigen::Vector n_q =
+//                    vi.mWeights[0] * mSourceAccessor->getVertexNormals()[f[0]]
+//                    + vi.mWeights[1] * mSourceAccessor->getVertexNormals()[f[1]]
+//                    + vi.mWeights[2] * mSourceAccessor->getVertexNormals()[f[2]];
+
+//            n_q.normalize();
+
+//            Eigen::Vector p = q + vi.mDistance * n_q;
+//            mTargetAccessor->setPosition(i, p);
+//        }
+//    }
+//    mTarget->update();
 }
 
 Vector3d MeshInterpolatorMeshMesh::getSourcePosition(size_t targetId) const
@@ -240,10 +296,10 @@ void MeshInterpolatorMeshMesh::solve(
     mInterpolations.reserve(mTarget->getSize());
 
     double wnt = 1e-2; // weight normal tolerance
-    double wbt = 1e-1; // weight bounding tolerance
+    double wbt = 1e-2; // weight bounding tolerance
     double wt = 1e-2; // weight tolerance
     bool printStatistics = false;
-    bool printErrors = false;
+    bool printErrors = true;
 
     std::vector<double> errors;
 
@@ -255,19 +311,48 @@ void MeshInterpolatorMeshMesh::solve(
             std::cout << std::round(static_cast<double>(i) / mTargetAccessor->getSize() * 100.0)
                       << " / 100\n";
         }
-        std::vector<VertexInterpolation> candidateInterpolations;
-        std::vector<VertexInterpolation> outOfBoundsInterpolations;
-        std::vector<VertexInterpolation> nonConvergedInterpolations;
+
         std::vector<VertexInterpolation> allInterpolations;
 
         Eigen::Vector p = mTargetAccessor->getPosition(i);
-
-        // find q, n_q, and distance so that distance is minimal
-
         Polygon2DTopology& topology = mSourceAccessor->getTopology2D();
+
+        // sort all triangles by distance
+        std::vector<std::tuple<TopologyFace, double>> closestFaces;
         for (size_t fId = 0; fId < topology.getFaces().size(); ++fId)
         {
             TopologyFace& f = topology.getFace(fId);
+
+            Eigen::Vector v[3];
+            v[0] = mSourceAccessor->getPosition(f.getVertexIds()[0]);
+            v[1] = mSourceAccessor->getPosition(f.getVertexIds()[1]);
+            v[2] = mSourceAccessor->getPosition(f.getVertexIds()[2]);
+
+            Eigen::Vector3d inter;
+            Eigen::Vector3d bary;
+            if (projectPointOnTriangle(v[0], v[1], v[2], p, inter, bary))
+            {
+                double distance = (p - inter).norm();
+                closestFaces.push_back(std::make_tuple(f, distance));
+            }
+        }
+        std::sort(closestFaces.begin(), closestFaces.end(),
+                  [](std::tuple<TopologyFace, double>& t1,
+                  std::tuple<TopologyFace, double>& t2)
+        {
+            return std::get<1>(t1) < std::get<1>(t2);
+        });
+
+
+        // find q, n_q, and distance so that distance is minimal
+
+        size_t maxIndex = std::min(static_cast<size_t>(15), closestFaces.size());
+        for (size_t faceIndex = 0; faceIndex < maxIndex; ++faceIndex)
+//        for (size_t fId = 0; fId < topology.getFaces().size(); ++fId)
+        {
+            std::tuple<TopologyFace, double>& t = closestFaces[faceIndex];
+            TopologyFace& f = std::get<0>(t);
+            size_t fId = f.getID();
 
             // vertices per face
 
@@ -313,10 +398,13 @@ void MeshInterpolatorMeshMesh::solve(
                     ((p - v[1]).dot(fn[2]) > -wnt || (p - v[2]).dot(fn[3]) > -wnt) &&
                     ((p - v[2]).dot(fn[4]) > -wnt || (p - v[0]).dot(fn[5]) > -wnt);
 
-            if (!isInside)
-            {
-                continue;
-            }
+            bool atLeastOneInterpolation =
+                    faceIndex != maxIndex - 1 || !allInterpolations.empty();
+
+//            if (!isInside && atLeastOneInterpolation)
+//            {
+//                continue;
+//            }
 
             bool converged;
 
@@ -351,31 +439,78 @@ void MeshInterpolatorMeshMesh::solve(
             double sign = r.dot(n_q) < 0 ? -1 : 1;
             double distance = sign * r.norm();
 
-            VertexInterpolation interpolation(Eigen::Vector3d(
-                                                  weights[0],weights[1], weights[2]),
-                    distance, fId, i);
+            // Distance bounded
+
+            Eigen::Vector3d weightsBounded;
+            for (Eigen::Index i = 0; i < 3; ++i)
+            {
+                weightsBounded(i) = std::max(0.0, std::min(1.0, weights(i)));
+            }
+            Eigen::Vector qBounded =
+                    weightsBounded[0] * v[0]
+                    + weightsBounded[1] * v[1]
+                    + weightsBounded[2] * v[2];
+            double distanceBounded = (p - qBounded).norm();
+
+            VertexInterpolation interpolation(
+                        Eigen::Vector3d(weights[0],weights[1], weights[2]),
+                    distance, distanceBounded, fId, i, converged);
+
             allInterpolations.push_back(interpolation);
 
+        }
+
+//        std::sort(allInterpolations.begin(),
+//                  allInterpolations.end(),
+//                  [](const VertexInterpolation& vi1,
+//                  const VertexInterpolation& vi2)
+//        {
+//            return std::abs(vi1.mDistanceBounded) < std::abs(vi2.mDistanceBounded);
+//        });
+
+//        std::vector<VertexInterpolation> cappedInterpolations;
+//        for (size_t i = 0; i < std::min(static_cast<int>(allInterpolations.size()), 5); ++i)
+//        {
+//            cappedInterpolations.push_back(allInterpolations[i]);
+//        }
+
+        std::vector<VertexInterpolation> candidateInterpolations;
+        std::vector<VertexInterpolation> outOfBoundsInterpolations;
+        std::vector<VertexInterpolation> nonConvergedInterpolations;
+
+        for (VertexInterpolation& ve : allInterpolations)
+        {
             bool inBounds =
 //                    std::abs(weights(0) + weights(1) + weights(2) - 1) < 3 * wt &&
-                    -wbt <= weights[0] && weights[0] <= 1.0 + wbt &&
-                    -wbt <= weights[1] && weights[1] <= 1.0 + wbt &&
-                    -wbt <= weights[2] && weights[2] <= 1.0 + wbt;
+                    -wbt <= ve.mWeights[0] && ve.mWeights[0] <= 1.0 + wbt &&
+                    -wbt <= ve.mWeights[1] && ve.mWeights[1] <= 1.0 + wbt &&
+                    -wbt <= ve.mWeights[2] && ve.mWeights[2] <= 1.0 + wbt;
 
-            if (converged && inBounds)
+            if (ve.mConverged && inBounds)
             {
-                candidateInterpolations.push_back(interpolation);
+                candidateInterpolations.push_back(ve);
             }
-            else if (!converged && inBounds)
+            else if (!ve.mConverged && inBounds)
             {
-                nonConvergedInterpolations.push_back(interpolation);
-            }
-            else if (converged && !inBounds)
-            {
-                outOfBoundsInterpolations.push_back(interpolation);
-            }
+//                candidateInterpolations.push_back(ve);
+                nonConvergedInterpolations.push_back(ve);
+//                candidateInterpolations.push_back(ve);
 
-            allInterpolations.push_back(interpolation);
+//                outOfBoundsInterpolations.push_back(ve);
+            }
+            else if (ve.mConverged && !inBounds)
+            {
+                outOfBoundsInterpolations.push_back(ve);
+//                candidateInterpolations.push_back(ve);
+
+//                nonConvergedInterpolations.push_back(ve);
+            }
+            else
+            {
+//                nonConvergedInterpolations.push_back(ve);
+//                outOfBoundsInterpolations.push_back(ve);
+//                candidateInterpolations.push_back(ve);
+            }
         }
 
         std::vector<VertexInterpolation>* chosenInterpolations;
@@ -405,6 +540,7 @@ void MeshInterpolatorMeshMesh::solve(
                 std::cout << "warning: interpolation for vertex at " << i << "("
                           << p.transpose() << ") did not converge and is out of bounds.\n";
         }
+//        chosenInterpolations = &allInterpolations;
 
         std::sort(chosenInterpolations->begin(),
                   chosenInterpolations->end(),
@@ -696,4 +832,55 @@ Vector3d MeshInterpolatorMeshMesh::interpolate(
     double distance = sign * r.norm();
 
     return q + distance * n_q;
+}
+
+bool MeshInterpolatorMeshMesh::projectPointOnTriangle(
+        const Eigen::Vector3d& p0,
+        const Eigen::Vector3d& p1,
+        const Eigen::Vector3d& p2,
+        const Eigen::Vector3d& p,
+        Eigen::Vector3d& inter,
+        Eigen::Vector3d &bary)
+{
+    // see Bridson: Robust treatment of collisions contact and friction for cloth animation
+    const Eigen::Vector3d x43 = p - p2;
+    const Eigen::Vector3d x13 = p0 - p2;
+    const Eigen::Vector3d x23 = p1 - p2;
+
+    // compute inv matrix a,b,b,c
+    double a = x13.dot(x13);
+    double b = x13.dot(x23);
+    double c = x23.dot(x23);
+    const double det = a*c - b*b;
+    if (fabs(det) < 1.0e-9)
+        return false;
+
+    double d1 = x13.dot(x43);
+    double d2 = x23.dot(x43);
+
+    double w1 = (c*d1 - b*d2) / det;
+    double w2 = (a*d2 - b*d1) / det;
+
+    // this clamping gives not an exact orthogonal point to the edge!!
+    if (w1 < 0) w1 = 0;
+    if (w1 > 1) w1 = 1;
+    if (w2 < 0) w2 = 0;
+    if (w2 > 1) w2 = 1;
+
+    bary[0] = w1;
+    bary[1] = w2;
+    bary[2] = 1.0 - w1 - w2;
+
+    if (bary[2] < 0)
+    {
+        // this gives not an exact orthogonal point to the edge!!
+        const double w12 = w1 + w2;
+        bary[0] -= w2 / (w12)*(w12 - 1);
+        bary[1] -= w1 / (w12)*(w12 - 1);
+        bary[2] = 0;
+    }
+
+    inter = p2 + bary[0] * x13 + bary[1] * x23;
+
+    return true;
 }

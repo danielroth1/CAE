@@ -20,7 +20,7 @@ class MeshInterpolatorRenderModel : public RenderModel
 public:
     MeshInterpolatorRenderModel(
             std::shared_ptr<MeshInterpolator> interpolator,
-            bool renderPointsEnablded = true,
+            bool renderPointsEnablded = false,
             bool renderLinesEnablded = true);
 
     virtual ~MeshInterpolatorRenderModel() override;

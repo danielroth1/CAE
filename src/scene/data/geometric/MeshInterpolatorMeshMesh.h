@@ -185,12 +185,16 @@ private:
 
         VertexInterpolation(const Eigen::Vector3d& weights,
                             double distance,
+                            double distanceBounded,
                             std::size_t sourceFaceId,
-                            std::size_t targetVertexId)
+                            std::size_t targetVertexId,
+                            bool converged)
             : mWeights(weights)
             , mDistance(distance)
+            , mDistanceBounded(distanceBounded)
             , mSourceFaceId(sourceFaceId)
             , mTargetVertexId(targetVertexId)
+            , mConverged(converged)
             , mAssigned(true)
         {
 
@@ -202,12 +206,18 @@ private:
         // Distance of the point on the low res mesh to the one on the high res mesh.
         double mDistance;
 
+        // Distance with bounded baryzentric coordinates.
+        double mDistanceBounded;
+
         // The id of the corresponding vertex on the low res mesh.
         std::size_t mSourceFaceId;
 
         std::size_t mTargetVertexId;
 
+        bool mConverged;
+
         bool mAssigned;
+
     };
 
     void solve(
@@ -247,6 +257,13 @@ private:
             Eigen::Vector3d v[3],
             Eigen::Vector3d n[3],
             const Eigen::Vector3d& weights);
+
+    bool projectPointOnTriangle(const Eigen::Vector3d& p0,
+                         const Eigen::Vector3d& p1,
+                         const Eigen::Vector3d& p2,
+                         const Eigen::Vector3d& p,
+                         Eigen::Vector3d& inter,
+                         Eigen::Vector3d& bary);
 
     Eigen::Vector3d calcA(
             const Eigen::Vector3d& p,

@@ -12,6 +12,8 @@ MeshInterpolator::MeshInterpolator(
     : mSource(source)
     , mTarget(target)
 {
+    mSource->update();
+    mTarget->update();
     mSourceAccessor = source->createAccessor();
     mTargetAccessor = target->createAccessor();
 }
@@ -39,4 +41,20 @@ std::shared_ptr<Polygon2DAccessor> MeshInterpolator::getTarget2DAccessor() const
 MeshInterpolator::~MeshInterpolator()
 {
 
+}
+
+void MeshInterpolator::fixRepresentationType()
+{
+    if (mTarget->getPositionType() != mSource->getPositionType())
+    {
+        if (mSource->getPositionType() == BSWSVectors::Type::BODY_SPACE)
+        {
+            mTarget->changeRepresentationToBS(mSource->getCenter());
+        }
+        else
+        {
+            mTarget->changeRepresentationToWS();
+        }
+        mTarget->update();
+    }
 }

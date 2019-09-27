@@ -195,6 +195,8 @@ void MeshInterpolatorFEM::update()
         return;
     }
 
+    fixRepresentationType();
+
     // position type must be the same
     if (mSource->getPositionType() !=
         mTarget->getPositionType())
