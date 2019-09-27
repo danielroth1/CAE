@@ -550,7 +550,7 @@ void SimulationControl::step()
                 mStepSize,
                 0.0, // Restitution (bounciness factor))
                 0.0, // static friction
-                0.01); // dynamic friction
+                0.001); // dynamic friction
 
     if (collisionsOccured || !mImpulseConstraintSolver->getConstraints().empty())
     {
@@ -612,6 +612,16 @@ void SimulationControl::setCollisionRenderingLevel(int level)
 void SimulationControl::setBVHCollisionRenderingEnabled(bool enabled)
 {
     mCollisionControl->setBvhRenderingEnables(enabled);
+}
+
+bool SimulationControl::isCollisionNormalsVisible() const
+{
+    return mCollisionControl->isCollisionsRenderingVisible();
+}
+
+void SimulationControl::setCollisionNormalsVisible(bool visible)
+{
+    mCollisionControl->setCollisionsRenderingVisible(visible);
 }
 
 Domain* SimulationControl::getDomain()

@@ -157,6 +157,9 @@ public:
         void setCollisionRenderingLevel(int level);
         void setBVHCollisionRenderingEnabled(bool enabled);
 
+        bool isCollisionNormalsVisible() const;
+        void setCollisionNormalsVisible(bool visible);
+
     //void simulationLoop();
 
     Domain* getDomain();

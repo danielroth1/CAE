@@ -43,7 +43,10 @@ const Eigen::Vector& CollisionConstraint::getSumOfAllAppliedImpulses() const
 void CollisionConstraint::initialize(double stepSize)
 {
     mSumOfAllAppliedImpulses = Eigen::Vector::Zero();
+    mSumFrictionImpulses = Eigen::Vector::Zero();
 
+    // TODO: is this p1 even the correct point. this is w.r.t. the predictor state?
+    // isn't the one w.r.t. the current state needed?
     Eigen::Vector p1 = ImpulseConstraintSolver::calculateRelativePoint(
                 mCollision.getSimulationObjectA(), mCollision.getPointA());
     Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
@@ -56,8 +59,11 @@ void CollisionConstraint::initialize(double stepSize)
     Eigen::Vector u2 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectB(), p2, mCollision.getVertexIndexB());
 
-
-    double positionCorrection = 0.2 * std::max(0.0, (mCollision.getPointA() - mCollision.getPointB()).dot(n) / stepSize);
+    // TODO:
+    // (mCollision.getPointA() - mCollision.getPointB()).dot(n) is the
+    // penetration depth of the collision in the predictor step.
+    // This is not the distance from the contact points in the current step!
+    double positionCorrection = 0.0;//0.2 * std::max(0.0, (mCollision.getPointA() - mCollision.getPointB()).dot(n) / stepSize);
 //    double positionCorrection = -std::max(0.0, (mCollision.getPointB() - mCollision.getPointA()).dot(n) / stepSize);
     if (positionCorrection > 1e-10)
         std::cout << "position correction = " << positionCorrection << "\n";
@@ -146,10 +152,15 @@ bool CollisionConstraint::solve(double maxConstraintError)
             else
             {
                 // dynamic friction
-                frictionImpulse = - mCFrictionDynamic * impulse.dot(n) * t;
+                // This is the equation in the paper but the other one is used
+                // in IBDS.
+//                frictionImpulse = -mCFrictionDynamic * impulse.norm() * t;
+                frictionImpulse = -mCFrictionDynamic * impulse.dot(n) * t;
 
-                if (frictionImpulse.dot(t) > frictionImpulseMax.dot(t))
+                if (frictionImpulse.dot(t) < frictionImpulseMax.dot(t))
+                {
                     frictionImpulse = frictionImpulseMax;
+                }
 
             }
 
