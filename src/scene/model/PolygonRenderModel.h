@@ -165,6 +165,9 @@ private:
     // Detecting transformation changes
     Eigen::Affine3d mCurrentlyRenderedTransform;
     Eigen::Vector mCurrentlyRenderedCenter;
+
+    // Used as intermediate product for the calculation of the vertex normals.
+    Vectorfs mFaceNormals;
 };
 
 #endif // POLYGONRENDERMODELIMPROVED_H

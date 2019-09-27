@@ -14,7 +14,7 @@ class GeometricDataVisitor;
 // Data in this class is permanent and serializable.
 // It is saved when the scene graph is written.
 //
-// Call geometricDataChanged() whenever changes were made
+// Call update() whenever changes were made
 // to the data that other modules (like the renderer)
 // should know about. This approach was chosen
 // over a setter (e.g. setTransform(Eigen::Affine3d)) to
@@ -76,7 +76,8 @@ public:
 
     // Calls this method when the geometric data changed. Informs listeners
     // about the change by calling notifyGeometricDataChanged.
-    virtual void update();
+    virtual void update(bool updateFaceNormals = true,
+                        bool updateVertexNormals = true);
 
     // Listener support
     void addGeometricDataListener(

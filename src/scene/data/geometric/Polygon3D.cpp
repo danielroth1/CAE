@@ -181,33 +181,37 @@ void Polygon3D::accept(GeometricDataVisitor& visitor)
     visitor.visit(*this);
 }
 
-void Polygon3D::update()
+void Polygon3D::update(bool updateFaceNormals, bool updateVertexNormals)
 {
-    Polygon::update();
+    Polygon::update(updateFaceNormals, updateVertexNormals);
 
     if (mOuterVertexNormals.getType() == BSWSVectors::Type::BODY_SPACE)
     {
-        mOuterVertexNormals.update();
-        mOuterFaceNormals.update();
+        if (updateVertexNormals)
+            mOuterVertexNormals.update();
+
+        if (updateFaceNormals)
+            mOuterFaceNormals.update();
     }
     else
     {
-        Vectors normalsTemp;
-        ModelUtils::calculateNormals<double>(
-                    calcualtePositions2DFrom3D(),
-//                    mPositionData.getPositions(),
-                    mData->getTopology()->getOuterTopology().getFacesIndices(),
-                    normalsTemp);
+        if (updateVertexNormals)
+        {
+            ModelUtils::calculateNormals<double>(
+                        calcualtePositions2DFrom3D(),
+    //                    mPositionData.getPositions(),
+                        mData->getTopology()->getOuterTopology().getFacesIndices(),
+                        mOuterVertexNormals.getVectors());
+        }
 
-        mOuterVertexNormals.getVectors() = normalsTemp;
-
-        ModelUtils::calculateFaceNormals<double>(
-                    calcualtePositions2DFrom3D(),
-//                    mPositionData.getPositions(),
-                    mData->getTopology()->getOuterTopology().getFacesIndices(),
-                    normalsTemp);
-
-        mOuterFaceNormals.getVectors() = normalsTemp;
+        if (updateFaceNormals)
+        {
+            ModelUtils::calculateFaceNormals<double>(
+                        calcualtePositions2DFrom3D(),
+    //                    mPositionData.getPositions(),
+                        mData->getTopology()->getOuterTopology().getFacesIndices(),
+                        mOuterFaceNormals.getVectors());
+        }
     }
 }
 

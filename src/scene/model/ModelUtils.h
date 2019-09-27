@@ -4,6 +4,8 @@
 // Includes
 #include <data_structures/DataStructures.h>
 
+#include <scene/data/geometric/PolygonTopology.h>
+
 // ModelUtils contains functionality that is shared between different
 // Models.
 class ModelUtils
@@ -38,9 +40,9 @@ public:
             const Face& t = faces[i];
 
             // face normals
-            Eigen::Matrix<Type, 3, 1> p0 = positions[t[0]];
-            Eigen::Matrix<Type, 3, 1> p1 = positions[t[1]];
-            Eigen::Matrix<Type, 3, 1> p2 = positions[t[2]];
+            const Eigen::Matrix<Type, 3, 1>& p0 = positions[t[0]];
+            const Eigen::Matrix<Type, 3, 1>& p1 = positions[t[1]];
+            const Eigen::Matrix<Type, 3, 1>& p2 = positions[t[2]];
 
             Eigen::Matrix<Type, 3, 1> normal = (p0 - p1).cross(p0 - p2);
 
@@ -72,6 +74,47 @@ public:
         return normals;
     }
 
+    // Calculates the vertex normals by averaging for each vertex the neighboring
+    // face normals.
+    //\param faceNormals - face normals that can be calculated with
+    //          calcualteFaceNormals()
+    //\param normals - returned vertex normals
+    template<class Type>
+    static std::vector<Eigen::Matrix<Type, 3, 1>>
+    calculateVertexFromFaceNormals(
+            const std::vector<Eigen::Matrix<Type, 3, 1>>& positions,
+            const Faces& faces,
+            const std::vector<Eigen::Matrix<Type, 3, 1>>& faceNormals,
+            const PolygonTopology& topology,
+            std::vector<Eigen::Matrix<Type, 3, 1>>& normals)
+    {
+        normals.resize(positions.size());
+        for (size_t i = 0; i < positions.size(); ++i)
+        {
+            normals[i] = Eigen::Matrix<Type, 3, 1>::Zero();
+        }
+
+        // calculate normals for each vertex
+        for (size_t i = 0; i < faces.size(); ++i)
+        {
+            const Face& t = faces[i];
+
+            normals[t[0]] += faceNormals[i];
+            normals[t[1]] += faceNormals[i];
+            normals[t[2]] += faceNormals[i];
+        }
+
+        for (size_t i = 0; i < positions.size(); ++i)
+        {
+            normals[i] /= topology.getVertices()[i].getFaceIds().size();
+        }
+//        for (Eigen::Matrix<Type, 3, 1>& normal : normals)
+//        {
+//            normal.normalize();
+//        }
+        return normals;
+    }
+
     template<class Type>
     static std::vector<Eigen::Matrix<Type, 3, 1>>
     calculateFaceNormals(
@@ -86,14 +129,11 @@ public:
             const Face& t = faces[i];
 
             // face normals
-            Eigen::Matrix<Type, 3, 1> p0 = positions[t[0]];
-            Eigen::Matrix<Type, 3, 1> p1 = positions[t[1]];
-            Eigen::Matrix<Type, 3, 1> p2 = positions[t[2]];
+            const Eigen::Matrix<Type, 3, 1>& p0 = positions[t[0]];
+            const Eigen::Matrix<Type, 3, 1>& p1 = positions[t[1]];
+            const Eigen::Matrix<Type, 3, 1>& p2 = positions[t[2]];
 
-            Eigen::Matrix<Type, 3, 1> normal = (p0 - p1).cross(p0 - p2);
-
-            normal.normalize();
-            normals[i] = normal;
+            normals[i] = (p0 - p1).cross(p0 - p2).normalized();
         }
         return normals;
     }

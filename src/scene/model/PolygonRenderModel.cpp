@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include <scene/data/GeometricDataVisitor.h>
 #include <scene/data/geometric/GeometricDataListener.h>
 #include <scene/data/geometric/GeometricPoint.h>
 #include <scene/data/geometric/Polygon.h>
@@ -15,6 +16,8 @@
 #include <scene/data/geometric/PolygonData.h>
 #include <scene/data/geometric/TopologyFace.h>
 
+#include <times/timing.h>
+
 #include <rendering/object/RenderLines.h>
 #include <rendering/object/RenderPoints.h>
 #include <rendering/object/RenderPolygons.h>
@@ -24,8 +27,6 @@
 #include <rendering/object/RenderPolygonsData.h>
 #include <rendering/object/RenderPolygonsDataBS.h>
 #include <rendering/object/RenderPolygonsDataWS.h>
-
-#include <scene/data/GeometricDataVisitor.h>
 
 #include <rendering/Appearance.h>
 #include <rendering/Appearances.h>
@@ -570,12 +571,14 @@ void PolygonRenderModel::revalidatePointLineRendering()
 
 void PolygonRenderModel::updatePositions()
 {
+
     Vectors& positions
             = mPolygon->getPositionType() == BSWSVectors::BODY_SPACE ?
                 mPolygon->getPositionsBS() :
                 mPolygon->getPositions(); // for 3d case, this are all 3d positions, but often only 2d positions are required
 
     {
+        START_TIMING_RENDERING("PolygonRenderModel::updatePositions::positions");
         auto positionsLock = mPositionsBufferedData->getData().lock();
 
         if (mPolygonIndexMapping)
@@ -616,15 +619,27 @@ void PolygonRenderModel::updatePositions()
             }
         }
 
+        STOP_TIMING_RENDERING;
 
+        START_TIMING_RENDERING("PolygonRenderModel::updatePositions::normals");
         // TODO: vim
         auto normalsLock = mNormalsBufferedData->getData().lock();
         auto facesLock = mFacesBufferedData->getData().lock();
-        // calculate normals
-        ModelUtils::calculateNormals<float>(
+
+        ModelUtils::calculateFaceNormals<float>(
                     *positionsLock,
                     *facesLock,
+                    mFaceNormals);
+
+        // calculate normals
+        ModelUtils::calculateVertexFromFaceNormals<float>(
+                    *positionsLock,
+                    *facesLock,
+                    mFaceNormals,
+                    mPolygon->getTopology(),
                     *normalsLock);
+
+        STOP_TIMING_RENDERING;
 
 //        if (positionsLock->size() != positions.size() ||
 //            normalsLock->size() != positions.size() )

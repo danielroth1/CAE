@@ -151,35 +151,42 @@ void Polygon2D::accept(GeometricDataVisitor& visitor)
 
 void Polygon2D::updateBoundingBox()
 {
-    // TODO: only when mPositionsWS is legal
+    mPositionData.update();
     GeometricDataUtils::updateBoundingBox(
                 mPositionData.getPositions(),
                 mBoundingBox);
 }
 
-void Polygon2D::update()
+void Polygon2D::update(bool updateFaceNormals, bool updateVertexNormals)
 {
-    Polygon::update();
+    Polygon::update(updateFaceNormals, updateVertexNormals);
 
     if (mVertexNormals.getType() == BSWSVectors::Type::BODY_SPACE)
     {
-        mVertexNormals.update();
-        mFaceNormals.update();
+        if (updateVertexNormals)
+            mVertexNormals.update();
+
+        if (updateFaceNormals)
+            mFaceNormals.update();
     }
     else
     {
-        Vectors normalsTemp;
-        ModelUtils::calculateNormals<double>(
-                    mPositionData.getPositions(),
-                    mData->getTopology().getFacesIndices(),
-                    normalsTemp);
-        mVertexNormals.getVectors() = normalsTemp;
+        if (updateVertexNormals)
+        {
+            ModelUtils::calculateNormals<double>(
+                        mPositionData.getPositions(),
+                        mData->getTopology().getFacesIndices(),
+                        mVertexNormals.getVectors());
+        }
 
-        ModelUtils::calculateFaceNormals<double>(
-                    mPositionData.getPositions(),
-                    mData->getTopology().getFacesIndices(),
-                    normalsTemp);
-        mFaceNormals.getVectors() = normalsTemp;
+        if (updateFaceNormals)
+        {
+            ModelUtils::calculateFaceNormals<double>(
+                        mPositionData.getPositions(),
+                        mData->getTopology().getFacesIndices(),
+                        mFaceNormals.getVectors());
+        }
+
     }
 }
 
