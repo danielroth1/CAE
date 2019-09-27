@@ -5,7 +5,10 @@
 
 BoundingBox::BoundingBox()
 {
-
+    m_min.setZero();
+    m_max.setZero();
+    m_mid.setZero();
+    m_size.setZero();
 }
 
 Vector& BoundingBox::min()
