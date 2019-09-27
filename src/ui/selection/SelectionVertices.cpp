@@ -112,6 +112,16 @@ void SelectionVertices::updateSelectedVertices(const VertexCollection& vc)
         clear();
         mVertexCollection = vc;
     }
+
+    DataVectorsMap temp = mVertexCollection.getDataVectorsMap();
+
+    for (const std::pair<const std::shared_ptr<SceneLeafData>, std::vector<ID>>& p : temp)
+    {
+        if (!p.first->isVerticesSelectable())
+        {
+            mVertexCollection.removeVertices(p.first);
+        }
+    }
 }
 
 void SelectionVertices::clear()

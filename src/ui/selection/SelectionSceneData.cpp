@@ -51,6 +51,13 @@ void SelectionSceneData::updateSelection(
             mSceneDatas.insert(sd);
         }
     }
+
+    std::set<std::shared_ptr<SceneData>> sceneDatasTemp = mSceneDatas;
+    for (const std::shared_ptr<SceneData>& sd : sceneDatasTemp)
+    {
+        if (!sd->isSceneDataSelectable())
+            mSceneDatas.erase(sd);
+    }
 }
 
 void SelectionSceneData::calculateSelectionByRectangle(
