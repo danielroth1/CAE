@@ -66,6 +66,8 @@ public:
 
     void repaint();
 
+    void revalidateTreeWidget();
+
     virtual void mousePressEvent(QMouseEvent* event);
     virtual void mouseReleaseEvent(QMouseEvent* event);
     virtual void mouseMoveEvent(QMouseEvent* event);

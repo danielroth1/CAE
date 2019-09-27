@@ -5,6 +5,8 @@
 
 #include <ApplicationControl.h>
 
+#include <ui/UIControl.h>
+
 DemoLoaderModule::DemoLoaderModule()
 {
 }
@@ -57,4 +59,5 @@ void DemoLoaderModule::loadDemo(const std::shared_ptr<Demo>& demo)
 
     mCurrentlyLoadedDemo = demo;
     mCurrentlyLoadedDemo->load();
+    mAc->getUIControl()->revalidateTreeWidget();
 }

@@ -146,7 +146,12 @@ void UIControl::repaint()
 {
     emit repaintSignal();
 //    std::cout << "update()\n";
-//    mGlWidget->update();
+    //    mGlWidget->update();
+}
+
+void UIControl::revalidateTreeWidget()
+{
+    mSGQtWidgetManager->revalidate();
 }
 
 void UIControl::mousePressEvent(QMouseEvent *event)
