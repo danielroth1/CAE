@@ -312,6 +312,8 @@ void RenderPolygons::drawVBO()
     if (!mVBOsupported || !mConstantData->isInitialized())
         return;
 
+    glEnable(GL_NORMALIZE);
+
     switch(mType)
     {
     case BSWSVectors::BODY_SPACE:
@@ -410,6 +412,8 @@ void RenderPolygons::drawVBO()
         break;
     }
     }
+
+    glDisable(GL_NORMALIZE);
 
     STOP_TIMING_RENDERING;
 }
