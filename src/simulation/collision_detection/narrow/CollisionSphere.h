@@ -28,6 +28,7 @@ public:
     // CollisionObject interface
 public:
     virtual void accept(CollisionObjectVisitor& visitor) override;
+    virtual Type getType() const override;
     virtual Eigen::Vector getPosition() override;
 
 private:

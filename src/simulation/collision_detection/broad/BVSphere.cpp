@@ -71,7 +71,12 @@ void BVSphere::update(BoundingVolume* bv1, BoundingVolume* bv2)
         if (mRadius != mRadius)
             std::cout << "illegal radius\n";
     }
-//    STOP_TIMING_SIMULATION;
+    //    STOP_TIMING_SIMULATION;
+}
+
+BoundingVolume::Type BVSphere::getType() const
+{
+    return BoundingVolume::Type::SPHERE;
 }
 
 Eigen::Vector BVSphere::getPosition() const
@@ -106,13 +111,24 @@ void BVSphere::BVIntersectsVisitor::visit(BVSphere* sphere)
 {
 //    START_TIMING_SIMULATION("BVSphere::BVIntersectsVisitor::visit()");
     // distance of center points is smaller than sum of radia
-    returnValue = (bvSphere.getPosition() - sphere->getPosition()).norm() <
-            (bvSphere.mRadius + sphere->getRadius());
+//    returnValue = (bvSphere.getPosition() - sphere->getPosition()).norm() <
+//            (bvSphere.mRadius + sphere->getRadius());
+
+    double rightSide = bvSphere.mRadius + sphere->getRadius();
+    returnValue =
+            (bvSphere.getPosition() - sphere->getPosition()).squaredNorm() <
+            rightSide * rightSide;
+
 //    STOP_TIMING_SIMULATION;
 
 //    if (returnValue)
 //        std::cout << "pos1 = " << bvSphere.getPosition().transpose() <<
 //                     ", pos2 = " << sphere->getPosition().transpose() <<
 //                     ", radius1 = " << bvSphere.getRadius() <<
-//                     ", radius2 = " << bvSphere.getRadius() << "\n";
+    //                     ", radius2 = " << bvSphere.getRadius() << "\n";
+}
+
+void BVSphere::BVIntersectsVisitor::visit(BVAABB* aabb)
+{
+
 }

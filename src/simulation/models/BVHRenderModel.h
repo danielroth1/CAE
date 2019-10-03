@@ -9,9 +9,11 @@
 
 class BoundingVolume;
 class BoundingVolumeHierarchy;
-class BVHRenderModelSphereData;
+class BVAABB;
+class BVHRenderModelData;
 class BVSphere;
 class GeometricSphere;
+class Polygon2D;
 class PolygonRenderModel;
 class RenderModelManager;
 class RenderPolygon2D;
@@ -48,7 +50,8 @@ public:
 
 private:
 
-    void addSphere(BoundingVolume* bv, size_t level, bool isLeaf);
+    void addBoundingVolume(BoundingVolume* bv, size_t level, bool isLeaf);
+    void addAABB(BVAABB* aabb, size_t level, bool isLeaf);
     void addSphere(BVSphere* sphere, size_t level, bool isLeaf);
 
     Renderer* mRenderer;
@@ -72,9 +75,10 @@ private:
     // second vector: for each level there is a number of spheres
     std::vector<
         std::vector<
-            std::shared_ptr<BVHRenderModelSphereData>>> mRenderPolygons;
+            std::shared_ptr<BVHRenderModelData>>> mRenderPolygons;
 
     std::shared_ptr<GeometricSphere> mGeometricSphereTemplate;
+    std::shared_ptr<Polygon2D> mGeometricAABBTemplate;
 
 };
 

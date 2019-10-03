@@ -15,9 +15,8 @@ BVHRenderModelSphereData::BVHRenderModelSphereData(
         double radius,
         int resolution,
         bool isLeaf)
-    : mBvSphere(bvSphere)
-    , mIsLeaf(isLeaf)
-    , mLevel(level)
+    : BVHRenderModelData (level, isLeaf)
+    , mBvSphere(bvSphere)
     , mInitialized(false)
 {
     mGeometricSphere = std::make_shared<GeometricSphere>(radius, resolution);
@@ -34,9 +33,8 @@ BVHRenderModelSphereData::BVHRenderModelSphereData(
         int level,
         double radius,
         bool isLeaf)
-    : mBvSphere(bvSphere)
-    , mIsLeaf(isLeaf)
-    , mLevel(level)
+    : BVHRenderModelData (isLeaf, level)
+    , mBvSphere(bvSphere)
     , mInitialized(false)
 {
     mRadiusPrevious = 0.0;
@@ -67,14 +65,33 @@ void BVHRenderModelSphereData::initialize(
 
     mInitialized = true;
     mGeometricSphere = std::make_shared<GeometricSphere>(*geometricSphereTemplate);
-    mGeometricSphere->getPolygon()->getTransform().scale(mRadius*25);
-//    setRadius(mRadius);
     mRenderModel = std::make_shared<PolygonRenderModel>(
                 renderModelManager,
                 mGeometricSphere->getPolygon());
     mRenderModel->addToRenderer(renderer);
 
     update();
+}
+
+void BVHRenderModelSphereData::setRadius(double radius)
+{
+    mRadius = radius;
+    if (mGeometricSphere)
+    {
+        if (std::abs(mRadiusPrevious - mBvSphere->getRadius()) > 1e-5)
+        {
+            mGeometricSphere->setRadiusAndScale(radius);
+            mGeometricSphere->getPolygon()->update();
+
+            mRadiusPrevious = mBvSphere->getRadius();
+        }
+    }
+}
+
+void BVHRenderModelSphereData::setPosition(Eigen::Vector position)
+{
+    mGeometricSphere->getPolygon()->getTransform().translation() = position;
+    mGeometricSphere->getPolygon()->update();
 }
 
 void BVHRenderModelSphereData::update()
@@ -114,39 +131,7 @@ bool BVHRenderModelSphereData::isVisible() const
     return mRenderModel->isVisible();
 }
 
-bool BVHRenderModelSphereData::isToBeSetVisible(bool visible, int level)
+BoundingVolume::Type BVHRenderModelSphereData::getType() const
 {
-    if (level == -1) // Render all
-    {
-        return visible;
-    }
-    else if (level == -2) // Render leafs
-    {
-        return visible && mIsLeaf;
-    }
-    else // Render the corresponding level
-    {
-        return visible && level == static_cast<int>(mLevel);
-    }
-}
-
-void BVHRenderModelSphereData::setRadius(double radius)
-{
-    mRadius = radius;
-    if (mGeometricSphere)
-    {
-        if (std::abs(mRadiusPrevious - mBvSphere->getRadius()) > 1e-5)
-        {
-            mGeometricSphere->setRadiusAndProject(radius);
-            mGeometricSphere->getPolygon()->update();
-
-            mRadiusPrevious = mBvSphere->getRadius();
-        }
-    }
-}
-
-void BVHRenderModelSphereData::setPosition(Eigen::Vector position)
-{
-    mGeometricSphere->getPolygon()->getTransform().translation() = position;
-    mGeometricSphere->getPolygon()->update();
+    return BoundingVolume::Type::SPHERE;
 }

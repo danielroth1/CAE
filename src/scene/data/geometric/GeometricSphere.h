@@ -23,13 +23,11 @@ public:
 
     std::shared_ptr<Polygon2D> getPolygon();
 
-    // Sets the radius and projects vertices on new sphere.
-    void setRadiusAndProject(double radius);
+    // Sets the radius and scales the transformation matrix so that the
+    // resulting sphere has the given radius.
+    void setRadiusAndScale(double radius);
 
 private:
-
-    // Only projects the body space positions.
-    void projectOnSphere(double radius);
 
     std::shared_ptr<Polygon2D> mPolygon;
 

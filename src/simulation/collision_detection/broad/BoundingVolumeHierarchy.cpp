@@ -6,15 +6,18 @@
 #include <simulation/collision_detection/narrow/Collider.h>
 
 
-BoundingVolumeHierarchy::BoundingVolumeHierarchy(SimulationObject* simulationObject,
-                                                 Polygon* polygon,
-                                                 const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects)
+BoundingVolumeHierarchy::BoundingVolumeHierarchy(
+        SimulationObject* simulationObject,
+        Polygon* polygon,
+        const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
+        BoundingVolume::Type bvType)
     : Tree<BVChildrenData*, BVLeafData*> ("BVH")
     , mSimulationObject(simulationObject)
     , mPolygon(polygon)
     , mCollisionObjects(collisionObjects)
     , mNodeNodeDispatcher(*this)
     , mNodeLeafNodeDispatcher(*this)
+    , mBvType(bvType)
 {
     getRoot()->setData(nullptr);
 }
@@ -127,9 +130,26 @@ bool BoundingVolumeHierarchy::collides(BoundingVolumeHierarchy* hierarchy, Colli
 
 bool BoundingVolumeHierarchy::collides(BVHNode* node1, BVHNode* node2)
 {
-    mNodeNodeDispatcher.node1 = node1;
-    node2->accept(mNodeNodeDispatcher);
-    return mNodeNodeDispatcher.returnValue;
+    if (node1->isLeaf() && node2->isLeaf())
+    {
+        return collides(static_cast<BVHLeafNode*>(node1), static_cast<BVHLeafNode*>(node2));
+    }
+    else if (!node1->isLeaf() && node2->isLeaf())
+    {
+        return collides(static_cast<BVHChildrenNode*>(node1), static_cast<BVHLeafNode*>(node2));
+    }
+    else if (node1->isLeaf() && !node2->isLeaf())
+    {
+        return collides(static_cast<BVHChildrenNode*>(node2), static_cast<BVHLeafNode*>(node1));
+    }
+    else
+    {
+        return collides(static_cast<BVHChildrenNode*>(node1), static_cast<BVHChildrenNode*>(node2));
+    }
+
+//    mNodeNodeDispatcher.node1 = node1;
+//    node2->accept(mNodeNodeDispatcher);
+//    return mNodeNodeDispatcher.returnValue;
 }
 
 bool BoundingVolumeHierarchy::collides(BVHNode* node, BVHLeafNode* leafNode)
@@ -176,6 +196,11 @@ bool BoundingVolumeHierarchy::collides(BVHLeafNode* leafNode1, BVHLeafNode* leaf
         return true;
     }
     return false;
+}
+
+BoundingVolume::Type BoundingVolumeHierarchy::getBoundingVolumeType() const
+{
+    return mBvType;
 }
 
 // NodeNodeDispatcher

@@ -1,3 +1,4 @@
+#include "BVAABB.h"
 #include "BVSphere.h"
 #include "BoundingVolumeFactory.h"
 
@@ -13,7 +14,54 @@ BoundingVolumeFactory::BoundingVolumeFactory()
 
 }
 
-BVSphere* BoundingVolumeFactory::createBVSphere(CollisionObject& co, Polygon& polygon)
+std::shared_ptr<BoundingVolume> BoundingVolumeFactory::createBoundingVolume(
+        CollisionObject& co,
+        Polygon& polygon,
+        BoundingVolume::Type bvType)
+{
+    switch (bvType)
+    {
+    case BoundingVolume::Type::AABB:
+    {
+        return createBVAABB(co, polygon);
+    }
+    case BoundingVolume::Type::SPHERE:
+    {
+        return createBVSphere(co, polygon);
+    }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<BoundingVolume> BoundingVolumeFactory::createBoundingVolume(
+        BoundingVolume* bv1,
+        BoundingVolume* bv2,
+        Polygon& polygon,
+        BoundingVolume::Type bvType)
+{
+    switch (bvType)
+    {
+    case BoundingVolume::Type::AABB:
+    {
+        return createBVAABB(static_cast<BVAABB*>(bv1),
+                            static_cast<BVAABB*>(bv2),
+                            polygon);
+    }
+    case BoundingVolume::Type::SPHERE:
+    {
+        return createBVSphere(static_cast<BVSphere*>(bv1),
+                              static_cast<BVSphere*>(bv2),
+                              polygon);
+    }
+    }
+
+    return nullptr;
+}
+
+std::shared_ptr<BVSphere> BoundingVolumeFactory::createBVSphere(
+        CollisionObject& co,
+        Polygon& polygon)
 {
     class BVSphereCreator : public CollisionObjectVisitor
     {
@@ -31,13 +79,13 @@ BVSphere* BoundingVolumeFactory::createBVSphere(CollisionObject& co, Polygon& po
             switch (p.getPositionType())
             {
             case BSWSVectors::BODY_SPACE:
-                returnValue = new BVSphere(collisionSphere->getPosition(),
+                returnValue = std::make_shared<BVSphere>(collisionSphere->getPosition(),
                                            collisionSphere->getRadius());
                 returnValue->setR(collisionSphere->getPosition() -
                                   p.getTransform().translation());
                 break;
             case BSWSVectors::WORLD_SPACE:
-                returnValue = new BVSphere(collisionSphere->getPosition(),
+                returnValue = std::make_shared<BVSphere>(collisionSphere->getPosition(),
                                            collisionSphere->getRadius());
                 break;
 
@@ -51,7 +99,7 @@ BVSphere* BoundingVolumeFactory::createBVSphere(CollisionObject& co, Polygon& po
             // TODO: implement this
         }
 
-        BVSphere* returnValue;
+        std::shared_ptr<BVSphere> returnValue;
         Polygon& p;
     } creator(polygon);
 
@@ -59,9 +107,12 @@ BVSphere* BoundingVolumeFactory::createBVSphere(CollisionObject& co, Polygon& po
     return creator.returnValue;
 }
 
-BVSphere* BoundingVolumeFactory::createBVSphere(BVSphere* sphere1, BVSphere* sphere2, Polygon& polygon)
+std::shared_ptr<BVSphere> BoundingVolumeFactory::createBVSphere(
+        BVSphere* sphere1,
+        BVSphere* sphere2,
+        Polygon& polygon)
 {
-    BVSphere* sphere = new BVSphere(sphere1, sphere2);
+    std::shared_ptr<BVSphere> sphere = std::make_shared<BVSphere>(sphere1, sphere2);
 
     if (polygon.getPositionType() == BSWSVectors::BODY_SPACE)
     {
@@ -70,4 +121,44 @@ BVSphere* BoundingVolumeFactory::createBVSphere(BVSphere* sphere1, BVSphere* sph
     }
 
     return sphere;
+}
+
+std::shared_ptr<BVAABB> BoundingVolumeFactory::createBVAABB(
+        CollisionObject& co,
+        Polygon& /*polygon*/)
+{
+    class BVAABBCreator : public CollisionObjectVisitor
+    {
+    public:
+        BVAABBCreator()
+        {
+
+        }
+
+        virtual void visit(CollisionSphere* collisionSphere)
+        {
+            returnValue = std::make_shared<BVAABB>();
+            returnValue->update(*collisionSphere);
+        }
+
+        virtual void visit(CollisionTriangle* /*collisionTriangle*/)
+        {
+            // TODO: implement this
+        }
+
+        std::shared_ptr<BVAABB> returnValue;
+    } creator;
+
+    co.accept(creator);
+    return creator.returnValue;
+}
+
+std::shared_ptr<BVAABB> BoundingVolumeFactory::createBVAABB(
+        BVAABB* bv1,
+        BVAABB* bv2,
+        Polygon& /*polygon*/)
+{
+    std::shared_ptr<BVAABB> aabb = std::make_shared<BVAABB>();
+    aabb->update(bv1, bv2);
+    return aabb;
 }

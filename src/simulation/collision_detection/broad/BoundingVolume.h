@@ -11,6 +11,11 @@ class CollisionObject;
 class BoundingVolume
 {
 public:
+    enum class Type
+    {
+        SPHERE, AABB
+    };
+
     BoundingVolume();
     virtual ~BoundingVolume();
 
@@ -23,6 +28,8 @@ public:
 
     // Children node update method
     virtual void update(BoundingVolume* bv1, BoundingVolume* bv2) = 0;
+
+    virtual Type getType() const = 0;
 
     virtual Eigen::Vector getPosition() const = 0;
 };

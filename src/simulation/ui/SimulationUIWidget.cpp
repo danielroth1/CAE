@@ -223,9 +223,6 @@ void SimulationUIWidget::renderCollisionSpheres()
         mUi->mSpinBoxCollisionSphereLevel->setEnabled(true);
         mUi->mCheckBoxRenderLeafs->setEnabled(true);
 
-        // enable rendering of BVH
-        mUiControl->onEnableCollisionRendering(true);
-
         // if rendering is wanted
         if (mUi->mCheckBoxRenderAllCollisionSpheres->checkState() == Qt::Checked)
         {
@@ -241,6 +238,9 @@ void SimulationUIWidget::renderCollisionSpheres()
             // else only render selected level
             mUiControl->onChangeCollisionRenderingLevel(mUi->mSpinBoxCollisionSphereLevel->value());
         }
+
+        // enable rendering of BVH
+        mUiControl->onEnableCollisionRendering(true);
     }
     else
     {

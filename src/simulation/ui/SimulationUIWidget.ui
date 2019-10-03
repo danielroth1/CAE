@@ -344,7 +344,7 @@
                  <item row="3" column="0">
                   <widget class="QCheckBox" name="mCheckBoxCollisionSphereLevel">
                    <property name="text">
-                    <string>Render Collision Sphere</string>
+                    <string>Render Collision Hierarchy</string>
                    </property>
                   </widget>
                  </item>

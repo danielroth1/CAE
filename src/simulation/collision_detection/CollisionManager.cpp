@@ -252,7 +252,11 @@ void CollisionManager::addSimulationObject(
     data.mSo = so;
     data.mPolygon = polygon;
 
-    data.mBvh = std::make_shared<BVHDeformable>(so.get(), polygon.get(), collisionObjects);
+    data.mBvh = std::make_shared<BVHDeformable>(
+                so.get(),
+                polygon.get(),
+                collisionObjects,
+                BoundingVolume::Type::AABB);
 
     mCollisionData.push_back(data);
 

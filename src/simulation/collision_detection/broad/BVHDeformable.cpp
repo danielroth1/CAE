@@ -12,8 +12,9 @@
 BVHDeformable::BVHDeformable(
         SimulationObject* so,
         Polygon* polygon,
-        const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects)
-    : BoundingVolumeHierarchy(so, polygon, collisionObjects)
+        const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
+        BoundingVolume::Type bvType)
+    : BoundingVolumeHierarchy(so, polygon, collisionObjects, bvType)
 {
     initialize();
 }
@@ -53,12 +54,12 @@ void BVHDeformable::udpate()
 
 void BVHDeformable::initializeWithKDTree()
 {
-    std::vector<std::shared_ptr<BVSphere>> leafSpheres;
+    std::vector<std::shared_ptr<BoundingVolume>> leafSpheres;
     for (const std::shared_ptr<CollisionObject>& co : mCollisionObjects)
     {
         leafSpheres.push_back(
-                    std::shared_ptr<BVSphere>(
-                        BoundingVolumeFactory::createBVSphere(*co, *mPolygon)));
+                    BoundingVolumeFactory::createBoundingVolume(
+                        *co, *mPolygon, getBoundingVolumeType()));
     }
 
     class SetRootVisitor : public BVHNodeVisitor
@@ -84,7 +85,7 @@ void BVHDeformable::initializeWithKDTree()
 
     } visitor(*this);
 
-    std::shared_ptr<BVSphere> dummyPtr;
+    std::shared_ptr<BoundingVolume> dummyPtr;
     BVHNode* node = initializeWithKDTreeRec(leafSpheres, mCollisionObjects, dummyPtr);
     node->accept(visitor);
 
@@ -94,12 +95,12 @@ void BVHDeformable::initializeWithKDTree()
 }
 
 BVHNode* BVHDeformable::initializeWithKDTreeRec(
-        const std::vector<std::shared_ptr<BVSphere>>& spheres,
+        const std::vector<std::shared_ptr<BoundingVolume>>& boundingVolumes,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
-        std::shared_ptr<BVSphere>& boundingVolumeRet)
+        std::shared_ptr<BoundingVolume>& boundingVolumeRet)
 {
 
-    if (spheres.size() == 0)
+    if (boundingVolumes.size() == 0)
         std::cout << "No spheres. This shouldn't happen!\n";
     // Recursive algorithm:
     // divide given spheres in two sets
@@ -131,10 +132,10 @@ BVHNode* BVHDeformable::initializeWithKDTreeRec(
         BVHLeafNode* leafNode = new BVHLeafNode("");
         BVLeafData* leafData = new BVLeafData(
                     leafNode,
-                    spheres[0],
+                    boundingVolumes[0],
                     collisionObjects[0]);
         leafNode->setData(leafData);
-        boundingVolumeRet = spheres[0];
+        boundingVolumeRet = boundingVolumes[0];
         return leafNode;
     }
 
@@ -146,10 +147,10 @@ BVHNode* BVHDeformable::initializeWithKDTreeRec(
     // find index of biggest axis
     Eigen::Vector min = std::numeric_limits<double>::max() * Eigen::Vector::Ones();
     Eigen::Vector max = -std::numeric_limits<double>::max() * Eigen::Vector::Ones();
-    for (const std::shared_ptr<BVSphere>& sphere : spheres)
+    for (const std::shared_ptr<BoundingVolume>& bv : boundingVolumes)
     {
-        min = min.cwiseMin(sphere->getPosition());
-        max = max.cwiseMax(sphere->getPosition());
+        min = min.cwiseMin(bv->getPosition());
+        max = max.cwiseMax(bv->getPosition());
     }
 
     Eigen::Vector axisLength = max - min;
@@ -168,55 +169,55 @@ BVHNode* BVHDeformable::initializeWithKDTreeRec(
     // the longest axis and sort it. The first half of elements in the vector belong to
     // the left side and the second half to the right side.
     std::vector<std::tuple<
-            std::shared_ptr<BVSphere>,
-            std::shared_ptr<CollisionObject>, double>> spherePositions;
+            std::shared_ptr<BoundingVolume>,
+            std::shared_ptr<CollisionObject>, double>> bvPositions;
 
-    for (size_t i = 0; i < spheres.size(); ++i)
+    for (size_t i = 0; i < boundingVolumes.size(); ++i)
     {
-        spherePositions.push_back(std::make_tuple(
-                                      spheres[i],
+        bvPositions.push_back(std::make_tuple(
+                                      boundingVolumes[i],
                                       collisionObjects[i],
-                                      spheres[i]->getPosition()(biggestAxisIndex)));
+                                      boundingVolumes[i]->getPosition()(biggestAxisIndex)));
     }
 
-    std::sort(spherePositions.begin(), spherePositions.end(),
-              [](const std::tuple<std::shared_ptr<BVSphere>, std::shared_ptr<CollisionObject>, double>& tuple1,
-              const std::tuple<std::shared_ptr<BVSphere>, std::shared_ptr<CollisionObject>, double>& tuple2)
+    std::sort(bvPositions.begin(), bvPositions.end(),
+              [](const std::tuple<std::shared_ptr<BoundingVolume>, std::shared_ptr<CollisionObject>, double>& tuple1,
+              const std::tuple<std::shared_ptr<BoundingVolume>, std::shared_ptr<CollisionObject>, double>& tuple2)
     {
         return std::get<2>(tuple1) < std::get<2>(tuple2);
     });
 
-    std::vector<std::shared_ptr<BVSphere>> leftSpheres;
-    std::vector<std::shared_ptr<BVSphere>> rightSpheres;
+    std::vector<std::shared_ptr<BoundingVolume>> leftBv;
+    std::vector<std::shared_ptr<BoundingVolume>> rightBv;
     std::vector<std::shared_ptr<CollisionObject>> leftCollisionObjects;
     std::vector<std::shared_ptr<CollisionObject>> rightCollisionObjects;
 
-    for (size_t i = 0; i < spherePositions.size(); ++i)
+    for (size_t i = 0; i < bvPositions.size(); ++i)
     {
-        if (i < spherePositions.size() / 2)
+        if (i < bvPositions.size() / 2)
         {
-            leftSpheres.push_back(std::get<0>(spherePositions[i]));
-            leftCollisionObjects.push_back(std::get<1>(spherePositions[i]));
+            leftBv.push_back(std::get<0>(bvPositions[i]));
+            leftCollisionObjects.push_back(std::get<1>(bvPositions[i]));
         }
         else
         {
-            rightSpheres.push_back(std::get<0>(spherePositions[i]));
-            rightCollisionObjects.push_back(std::get<1>(spherePositions[i]));
+            rightBv.push_back(std::get<0>(bvPositions[i]));
+            rightCollisionObjects.push_back(std::get<1>(bvPositions[i]));
         }
     }
 
-    std::shared_ptr<BVSphere> leftBV;
-    std::shared_ptr<BVSphere> rightBV;
+    std::shared_ptr<BoundingVolume> leftBV;
+    std::shared_ptr<BoundingVolume> rightBV;
 
-//    std::cout << "left: " << leftSpheres.size() << ", right: " << rightSpheres.size() << "\n";
+//    std::cout << "left: " << leftBv.size() << ", right: " << rightBv.size() << "\n";
 
-    BVHNode* leftNode = initializeWithKDTreeRec(leftSpheres, leftCollisionObjects, leftBV);
-    BVHNode* rightNode = initializeWithKDTreeRec(rightSpheres, rightCollisionObjects, rightBV);
+    BVHNode* leftNode = initializeWithKDTreeRec(leftBv, leftCollisionObjects, leftBV);
+    BVHNode* rightNode = initializeWithKDTreeRec(rightBv, rightCollisionObjects, rightBV);
 
 
-    std::shared_ptr<BVSphere> bv = std::shared_ptr<BVSphere>(
-                BoundingVolumeFactory::createBVSphere(
-                    leftBV.get(), rightBV.get(), *mPolygon));
+    std::shared_ptr<BoundingVolume> bv =
+            BoundingVolumeFactory::createBoundingVolume(
+                leftBV.get(), rightBV.get(), *mPolygon, getBoundingVolumeType());
     boundingVolumeRet = bv;
 
     // create parent node and set data

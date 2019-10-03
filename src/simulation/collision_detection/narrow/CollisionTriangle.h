@@ -12,7 +12,10 @@ public:
 
     // CollisionObject interface
 public:
-    virtual void accept(CollisionObjectVisitor& visitor);
+    virtual Type getType() const override;
+    virtual void accept(CollisionObjectVisitor& visitor) override;
+    virtual Eigen::Vector getPosition() override;
+
 };
 
 #endif // COLLISIONTRIANGLE_H

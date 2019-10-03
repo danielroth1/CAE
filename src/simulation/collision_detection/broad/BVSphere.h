@@ -23,6 +23,7 @@ public:
     virtual bool intersects(BoundingVolume* bv) override;
     virtual void update(CollisionObject& collisionObject) override;
     virtual void update(BoundingVolume* bv1, BoundingVolume* bv2) override;
+    virtual BoundingVolume::Type getType() const override;
     virtual Eigen::Vector getPosition() const override;
 
     double getRadius() const;
@@ -44,10 +45,12 @@ private:
         // BoundingVolumeVisitor interface
     public:
         virtual void visit(BVSphere* sphere);
+        virtual void visit(BVAABB* aabb);
 
         BVSphere& bvSphere;
 
         bool returnValue;
+
     };
 
     Eigen::Vector mPosition; // TODO

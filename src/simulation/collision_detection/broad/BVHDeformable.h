@@ -6,7 +6,7 @@
 
 #include <memory>
 
-class BVSphere;
+class BoundingVolume;
 class CollisionObject;
 
 // Surrounds each collision object with BVSpheres, then
@@ -18,7 +18,8 @@ class BVHDeformable : public BoundingVolumeHierarchy
 public:
     BVHDeformable(SimulationObject* so,
                   Polygon* polygon,
-                  const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects);
+                  const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
+                  BoundingVolume::Type bvType);
 
     // BoundingVolumeHierarchy interface
 public:
@@ -29,9 +30,9 @@ private:
     void initializeWithKDTree();
 
     BVHNode* initializeWithKDTreeRec(
-            const std::vector<std::shared_ptr<BVSphere>>& spheres,
+            const std::vector<std::shared_ptr<BoundingVolume>>& boundingVolumes,
             const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
-            std::shared_ptr<BVSphere>& boundingVolumeRet);
+            std::shared_ptr<BoundingVolume>& boundingVolumeRet);
 };
 
 #endif // BVHDEFORMABLE_H

@@ -65,6 +65,11 @@ void CollisionSphere::accept(CollisionObjectVisitor& visitor)
     visitor.visit(this);
 }
 
+CollisionObject::Type CollisionSphere::getType() const
+{
+    return CollisionObject::Type::SPHERE;
+}
+
 Eigen::Vector CollisionSphere::getPosition()
 {
     return mPointRef.getPoint();

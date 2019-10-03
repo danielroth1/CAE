@@ -1,6 +1,8 @@
 #ifndef BOUNDINGVOLUMEHIERARCHY_H
 #define BOUNDINGVOLUMEHIERARCHY_H
 
+#include "BoundingVolume.h"
+
 #include "BVChildrenData.h"
 #include "BVLeafData.h"
 #include "BVHCore.h"
@@ -19,7 +21,8 @@ class BoundingVolumeHierarchy : public Tree<BVChildrenData*, BVLeafData*>
 public:
     BoundingVolumeHierarchy(SimulationObject* so,
                             Polygon* mPolygon,
-                            const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects);
+                            const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
+                            BoundingVolume::Type bvType);
 
     virtual void initialize() = 0;
 
@@ -57,6 +60,9 @@ public:
 
     // Implements part C
     bool collides(BVHLeafNode* leafNode1, BVHLeafNode* leafNode2);
+
+    BoundingVolume::Type getBoundingVolumeType() const;
+
 protected:
 
     SimulationObject* mSimulationObject;
@@ -101,6 +107,8 @@ private:
     // only valid for the duration of a call of
     // collides(BoundingVolumeHierarchy* hierarchy, Collider& collider)
     Collider* mCollider;
+
+    BoundingVolume::Type mBvType;
 };
 
 #endif // BOUNDINGVOLUMEHIERARCHY_H

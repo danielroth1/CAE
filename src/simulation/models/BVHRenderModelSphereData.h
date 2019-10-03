@@ -1,6 +1,8 @@
 #ifndef BVHRENDERMODELSPHEREDATA_H
 #define BVHRENDERMODELSPHEREDATA_H
 
+#include "BVHRenderModelData.h"
+
 #include <data_structures/DataStructures.h>
 
 #include <memory>
@@ -12,7 +14,7 @@ class RenderModelManager;
 class Renderer;
 
 
-class BVHRenderModelSphereData
+class BVHRenderModelSphereData : public BVHRenderModelData
 {
 public:
     BVHRenderModelSphereData();
@@ -39,24 +41,12 @@ public:
             double radius,
             bool isLeaf);
 
-    ~BVHRenderModelSphereData();
+    virtual ~BVHRenderModelSphereData() override;
 
     void initialize(
             Renderer* renderer,
             RenderModelManager* renderModelManager,
             GeometricSphere* geometricSphereTemplate);
-
-    void update();
-
-    void addToRenderer(Renderer* renderer);
-
-    void removeFromRenderer(Renderer* renderer);
-
-    void setVisible(bool visible, int level);
-
-    bool isVisible() const;
-
-    bool isToBeSetVisible(bool visible, int level);
 
     // Projects the vertices of the Polygon2D on the sphere
     // with the given radius.
@@ -64,6 +54,20 @@ public:
 
     // Sets the position of the Polygon2D.
     void setPosition(Eigen::Vector position);
+
+    // BVHRenderModelData interface
+public:
+    void update() override;
+
+    void addToRenderer(Renderer* renderer) override;
+
+    void removeFromRenderer(Renderer* renderer) override;
+
+    void setVisible(bool visible, int level) override;
+
+    bool isVisible() const override;
+
+    BoundingVolume::Type getType() const override;
 
 private:
     BVSphere* mBvSphere;
@@ -75,10 +79,6 @@ private:
     double mRadius;
 
     double mRadiusPrevious;
-
-    bool mIsLeaf;
-
-    int mLevel;
 
     bool mInitialized;
 };
