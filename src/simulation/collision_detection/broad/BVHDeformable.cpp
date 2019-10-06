@@ -4,6 +4,7 @@
 #include "BoundingVolumeFactory.h"
 
 #include <simulation/collision_detection/narrow/Collider.h>
+#include <simulation/collision_detection/narrow/CollisionObject.h>
 
 #include <scene/data/geometric/Polygon.h>
 
@@ -22,34 +23,56 @@ BVHDeformable::BVHDeformable(
 void BVHDeformable::initialize()
 {
     initializeWithKDTree();
-}
 
-void BVHDeformable::udpate()
-{
-    BVHTreeTraverser traverser(getRoot());
+    // Fill mBottomToTop with nodes in the bottom to top order. This is the
+    // order in which the update operations must be called in (update() must
+    // have been called for all children before it can be called for the parent
+    // node).
     class UpdateVisitor : public BVHNodeVisitor
     {
     public:
-        UpdateVisitor()
+        UpdateVisitor(BVHDeformable& _deformable)
+            : deformable(_deformable)
         {
 
         }
 
         virtual void visit(BVHChildrenNode* childrenNode)
         {
-            BVChildrenData* data = childrenNode->getData();
-            data->getBoundingVolume()->update(data->getChild1(), data->getChild2());
+            deformable.mBottomToTop.push_back(childrenNode);
+
         }
 
         virtual void visit(BVHLeafNode* leafNode)
         {
-            BVLeafData* data = leafNode->getData();
-            data->getBoundingVolume()->update(*data->getCollisionObject());
+            deformable.mBottomToTop.push_back(leafNode);
         }
 
-    } visitor;
+    private:
+        BVHDeformable& deformable;
 
+    } visitor(*this);
+
+    BVHTreeTraverser traverser(getRoot());
     traverser.traverse(visitor, TraverserStrategy::BOTTOM_TO_TOP);
+}
+
+void BVHDeformable::udpate()
+{
+    for(BVHNode* node : mBottomToTop)
+    {
+        if (node->isLeaf())
+        {
+            BVLeafData* data = static_cast<BVHLeafNode*>(node)->getData();
+            data->getCollisionObject()->update();
+            data->getBoundingVolume()->update(*data->getCollisionObject());
+        }
+        else
+        {
+            BVChildrenData* data = static_cast<BVHChildrenNode*>(node)->getData();
+            data->getBoundingVolume()->update(data->getChild1(), data->getChild2());
+        }
+    }
 }
 
 void BVHDeformable::initializeWithKDTree()
@@ -107,6 +130,7 @@ BVHNode* BVHDeformable::initializeWithKDTreeRec(
     // if set > 1 -> ChildrenNode child = initializeWithKDTreeRec(ChildrenNode, set)
     // if set == 1 -> LeafNode, nothing to do
 
+    // Pseudo code:
     // ChildrenNode* initializeWithKDTree(vector<BVSpheres*> spheres)
     //      ChildrenNode* parent = new ChildrenNode();
     //      left, right <- divide spheres into two sets

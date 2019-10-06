@@ -27,12 +27,15 @@ public:
     virtual void udpate();
 
 private:
+
     void initializeWithKDTree();
 
     BVHNode* initializeWithKDTreeRec(
             const std::vector<std::shared_ptr<BoundingVolume>>& boundingVolumes,
             const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
             std::shared_ptr<BoundingVolume>& boundingVolumeRet);
+
+    std::vector<BVHNode*> mBottomToTop;
 };
 
 #endif // BVHDEFORMABLE_H
