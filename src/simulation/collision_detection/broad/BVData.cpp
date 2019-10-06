@@ -9,10 +9,7 @@ BVData::BVData(Node<BVChildrenData*, BVLeafData*>* node,
 
 }
 
-BoundingVolume* BVData::getBoundingVolume()
-{
-    return mBoundingVolume.get();
-}
+
 
 BVData::~BVData()
 {

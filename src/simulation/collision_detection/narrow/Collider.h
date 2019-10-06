@@ -66,71 +66,9 @@ private:
 
     bool passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal);
 
-    // Dispatcher classes
-    class CollisionObjectDispatcher : public CollisionObjectVisitor
-    {
-    public:
-        CollisionObjectDispatcher(
-                Collider& _collider)
-            : collider(_collider)
-        {
-        }
-
-        virtual void visit(CollisionSphere* collisionSphere);
-
-        virtual void visit(CollisionTriangle* collisionTriangle);
-
-        Collider& collider;
-        CollisionObject* collisionObject;
-        Collision* collision;
-        bool returnValue;
-    };
-
-    class CollisionSphereDispatcher : public CollisionObjectVisitor
-    {
-    public:
-        CollisionSphereDispatcher(
-                Collider& _collider)
-            : collider(_collider)
-        {
-        }
-
-        virtual void visit(CollisionSphere* cs);
-
-        virtual void visit(CollisionTriangle* collisionTriangle);
-
-        Collider& collider;
-        CollisionSphere* collisionSphere;
-        Collision* collision;
-        bool returnValue;
-    };
-
-    class CollisionTriangleDispatcher : public CollisionObjectVisitor
-    {
-    public:
-        CollisionTriangleDispatcher(
-                Collider& _collider)
-            : collider(_collider)
-        {
-        }
-
-        virtual void visit(CollisionSphere* cs);
-
-        virtual void visit(CollisionTriangle* ct);
-
-        Collider& collider;
-        CollisionTriangle* collisionTriangle;
-        Collision* collision;
-        bool returnValue;
-    };
-
     std::vector<Collision> mCollisions;
     bool mInvertNormalsIfNecessary;
 
-    // Dispatcher
-        CollisionObjectDispatcher mCollisionObjectDispatcher;
-        CollisionSphereDispatcher mCollisionSphereDispatcher;
-        CollisionTriangleDispatcher mCollisionTriangleDispatcher;
 };
 
 #endif // COLLIDER_H

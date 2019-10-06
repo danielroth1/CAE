@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef LEAFNODE_CPP
 #define LEAFNODE_CPP
 
@@ -10,13 +12,13 @@
 
 template <class T, class L>
 LeafNode<T, L>::LeafNode(std::string name)
-    : Node<T, L>(name)
+    : Node<T, L>(true, name)
 {
 }
 
 template <class T, class L>
 LeafNode<T, L>::LeafNode(ChildrenNode<T, L>* parent, std::string name)
-    : Node<T, L>(parent, name)
+    : Node<T, L>(true, parent, name)
 {
 
 }
@@ -48,12 +50,6 @@ template<class T, class L>
 std::size_t LeafNode<T, L>::getNumberOfChildren() const
 {
     return 0;
-}
-
-template<class T, class L>
-bool LeafNode<T, L>::isLeaf() const
-{
-    return true;
 }
 
 template<class T, class L>

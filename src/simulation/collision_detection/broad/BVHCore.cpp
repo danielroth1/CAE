@@ -12,12 +12,12 @@ BoundingVolume* BVHCore::getBoundingVolume(BVHNode* node)
 
 void BVHCore::GetBoundingVolumeVisitor::visit(BVHChildrenNode* childrenNode)
 {
-    boundingVolume = childrenNode->getData()->getBoundingVolume();
+    boundingVolume = childrenNode->getData()->getBoundingVolumePtr();
 }
 
 void BVHCore::GetBoundingVolumeVisitor::visit(BVHLeafNode* leafNode)
 {
-    boundingVolume = leafNode->getData()->getBoundingVolume();
+    boundingVolume = leafNode->getData()->getBoundingVolumePtr();
 }
 
 BVHCore::GetBoundingVolumeVisitor BVHCore::mGetBoundingVolumeVisitor;

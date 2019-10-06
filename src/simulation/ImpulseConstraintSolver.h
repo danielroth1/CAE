@@ -2,15 +2,16 @@
 #define ImpulseConstraintSolver_H
 
 #include "ConstraintSolver.h"
+#include "SimulationObject.h"
 
 #include <data_structures/DataStructures.h>
 #include <memory>
+#include <simulation/rigid/RigidBody.h>
 #include <vector>
 
 class Collision;
 class CollisionConstraint;
 class FEMObject;
-class RigidBody;
 class SimulationObject;
 class SimulationPointRef;
 
@@ -60,7 +61,14 @@ public:
 
     static Eigen::Vector calculateRelativePoint(
             const std::shared_ptr<SimulationObject>& so,
-            const Eigen::Vector& pointGlobal);
+            const Eigen::Vector& pointGlobal)
+    {
+        if (so->getType() == SimulationObject::Type::RIGID_BODY)
+        {
+            return pointGlobal - static_cast<RigidBody*>(so.get())->getCenterOfMass();
+        }
+        return pointGlobal;
+    }
 
     static Eigen::Quaterniond getOrientation(const std::shared_ptr<SimulationObject>& so);
     static Eigen::Vector getOrientationVelocity(const std::shared_ptr<SimulationObject>& so);

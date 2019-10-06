@@ -88,7 +88,7 @@ void BVHRenderModel::reset()
 
                 // root has no bounding volume?
                 // not initialized yet. Initialize data to nullptr and check for that here?
-                rm.addBoundingVolume(childrenNode->getData()->getBoundingVolume(),
+                rm.addBoundingVolume(childrenNode->getData()->getBoundingVolumePtr(),
                                      renderLevel, false);
             }
         }
@@ -97,7 +97,7 @@ void BVHRenderModel::reset()
         {
             size_t renderLevel = traverser.getCurrentLevel();
 
-            rm.addBoundingVolume(leafNode->getData()->getBoundingVolume(),
+            rm.addBoundingVolume(leafNode->getData()->getBoundingVolumePtr(),
                                  renderLevel, true);
         }
 

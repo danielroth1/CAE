@@ -24,7 +24,7 @@ RigidBody::RigidBody(
         std::shared_ptr<Polygon> polygon,
         Vectors& positions,
         double mass)
-    : SimulationObject(domain)
+    : SimulationObject(domain, SimulationObject::Type::RIGID_BODY)
     , mPolygon(polygon)
     , mPositions(positions)
     , mMass(mass)
@@ -186,42 +186,15 @@ void RigidBody::applyDamping()
 
 Vector RigidBody::getR(SimulationPointRef& pointRef)
 {
-    class GetRVisitor : public GeometricPointRefVisitor
+    switch(pointRef.getGeometricPointRef()->getType())
     {
-    public:
-        GetRVisitor(RigidBody& _rb)
-            : rb(_rb)
-        {
-        }
-
-        virtual void visit(GeometricVertexRef& ref)
-        {
-            // this assumes that the geometric datas initial positions
-            // (which remain unchanged for rigid bodies) have their origin
-            // in the center of mass.
-            r = rb.getOrientation().toRotationMatrix() *
-                    rb.getPolygon()->getPositionBS(ref.getIndex());
-        }
-
-        virtual void visit(PolygonVectorRef& ref)
-        {
-            r = rb.getOrientation().toRotationMatrix() * ref.getR();
-        }
-
-        RigidBody& rb;
-        Eigen::Vector r;
-    } visitor(*this);
-
-    pointRef.getGeometricPointRef()->accept(visitor);
-    return visitor.r;
-}
-
-Vector RigidBody::calculateSpeedAt(const Vector& r)
-{
-    if (mStatic)
-        return Vector::Zero();
-
-    return mV + mOmega.cross(r);
+    case GeometricPointRef::Type::POLYGON_VECTOR:
+        return mQ * static_cast<PolygonVectorRef*>(
+                    pointRef.getGeometricPointRef())->getR();
+    case GeometricPointRef::Type::GEOMETRIC_VERTEX:
+        return mQ * mPolygon->getPositionBS(static_cast<GeometricVertexRef*>(
+                                                pointRef.getGeometricPointRef())->getIndex());
+    }
 }
 
 Matrix3d RigidBody::calculateK(const Vector& rA, const Vector& rB)
@@ -260,106 +233,6 @@ void RigidBody::updateGeometricData()
 //    mPolygon->getTransform().setIdentity();
 //    mPolygon->getTransform().rotate(mQ);
     //    mPolygon->getTransform().translate(mX);
-}
-
-void RigidBody::setTranslationalDamping(double translationalDamping)
-{
-    mTranslationalDamping = translationalDamping;
-}
-
-void RigidBody::setRotationalDamping(double rotationalDamping)
-{
-    mRotationalDamping = rotationalDamping;
-}
-
-void RigidBody::setMass(double mass)
-{
-    mMass = mass;
-}
-
-void RigidBody::setStatic(bool s)
-{
-    mStatic = s;
-}
-
-const Vector3d& RigidBody::getCenterOfMass() const
-{
-    return mX;
-}
-
-const Quaterniond& RigidBody::getOrientation() const
-{
-    return mQ;
-}
-
-const Quaterniond& RigidBody::getOrientationPrevious() const
-{
-    return mQOld;
-}
-
-const Eigen::Vector& RigidBody::getOrientationVelocity() const
-{
-    return mOmega;
-}
-
-const Matrix3d& RigidBody::getInertiaTensor() const
-{
-    return mInertiaBS;
-}
-
-const Matrix3d& RigidBody::getInveresInertiaTensor() const
-{
-    return mInertiaInvBS;
-}
-
-const Matrix3d& RigidBody::getInertiaTensorWS() const
-{
-    return mInertia;
-}
-
-const Matrix3d& RigidBody::getInverseInertiaTensorWS() const
-{
-    return mInertiaInv;
-}
-
-const Vector& RigidBody::getPosition() const
-{
-    return mX;
-}
-
-const Vector& RigidBody::getPositionPrevious() const
-{
-    return mXOld;
-}
-
-std::shared_ptr<Polygon> RigidBody::getPolygon()
-{
-    return mPolygon;
-}
-
-double RigidBody::getTranslationalDamping() const
-{
-    return mTranslationalDamping;
-}
-
-double RigidBody::getRotationalDamping() const
-{
-    return mRotationalDamping;
-}
-
-double RigidBody::getMass() const
-{
-    return mMass;
-}
-
-bool RigidBody::isStatic() const
-{
-    return mStatic;
-}
-
-SimulationObject::Type RigidBody::getType() const
-{
-    return RIGID_BODY;
 }
 
 void RigidBody::accept(SimulationObjectVisitor& visitor)

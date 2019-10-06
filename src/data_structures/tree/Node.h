@@ -29,10 +29,10 @@ public:
     // Default constructor
     // @param name - name of the node
     // sets parent = NULL    
-    Node(std::string name = "", Tree<T, L>* tree = nullptr);
+    Node(bool leaf, std::string name = "", Tree<T, L>* tree = nullptr);
 
     // Constructor with parent node
-    Node(ChildrenNode<T, L>* parent, std::string name = "", Tree<T, L>* tree = nullptr);
+    Node(bool leaf, ChildrenNode<T, L>* parent, std::string name = "", Tree<T, L>* tree = nullptr);
 
     virtual ~Node();
 
@@ -43,7 +43,7 @@ public:
     // Visitor Pattern
     virtual void accept(NodeVisitor<T, L>& visitor) = 0;
 
-    virtual bool isLeaf() const = 0;
+    virtual bool isLeaf() const;
 
     virtual std::size_t getNumberOfChildren() const = 0;
 
@@ -89,6 +89,8 @@ protected:
     Tree<T, L>* mTree;
 
     std::vector<NodeListener<T, L>*> mListeners;
+
+    bool mLeaf;
 };
 
 #include "Node.cpp"

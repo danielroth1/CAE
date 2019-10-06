@@ -8,15 +8,10 @@
 SimulationPoint::SimulationPoint(
         Domain* domain,
         const std::shared_ptr<GeometricPoint> point)
-    : SimulationObject (domain)
+    : SimulationObject (domain, SimulationObject::Type::SIMULATION_POINT)
     , mPoint(point)
 {
 
-}
-
-SimulationObject::Type SimulationPoint::getType() const
-{
-    return SimulationObject::Type::SIMULATION_POINT;
 }
 
 void SimulationPoint::accept(SimulationObjectVisitor& visitor)

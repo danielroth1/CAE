@@ -45,7 +45,25 @@ public:
     // Dispatches node2, calling either
     // collides(BVHNode*, BVHChildrenNode*) or
     // collides(BVHNode*, BVHLeafNode*)
-    bool collides(BVHNode* node1, BVHNode* node2);
+    bool collides(BVHNode* node1, BVHNode* node2)
+    {
+        if (node1->isLeaf() && node2->isLeaf())
+        {
+            return collides(static_cast<BVHLeafNode*>(node1), static_cast<BVHLeafNode*>(node2));
+        }
+        else if (!node1->isLeaf() && node2->isLeaf())
+        {
+            return collides(static_cast<BVHChildrenNode*>(node1), static_cast<BVHLeafNode*>(node2));
+        }
+        else if (node1->isLeaf() && !node2->isLeaf())
+        {
+            return collides(static_cast<BVHChildrenNode*>(node2), static_cast<BVHLeafNode*>(node1));
+        }
+        else
+        {
+            return collides(static_cast<BVHChildrenNode*>(node1), static_cast<BVHChildrenNode*>(node2));
+        }
+    }
 
     // Dispatches node, calling either
     // collides(BVHChildrenNode*, LeafNode*) or
@@ -72,37 +90,6 @@ protected:
     std::vector<std::shared_ptr<CollisionObject>> mCollisionObjects;
 
 private:
-
-    class NodeNodeDispatcher : public BVHNodeVisitor
-    {
-    public:
-        NodeNodeDispatcher(BoundingVolumeHierarchy& _bvh);
-
-        virtual void visit(BVHChildrenNode* childrenNode) override;
-
-        virtual void visit(BVHLeafNode* leafNode) override;
-
-        BoundingVolumeHierarchy& bvh;
-        BVHNode* node1;
-        bool returnValue;
-    };
-
-    class NodeLeafNodeDispatcher : public BVHNodeVisitor
-    {
-    public:
-        NodeLeafNodeDispatcher(BoundingVolumeHierarchy& _bvh);
-
-        virtual void visit(BVHChildrenNode* childrenNode) override;
-
-        virtual void visit(BVHLeafNode* leafNode1) override;
-
-        BoundingVolumeHierarchy& bvh;
-        BVHLeafNode* leafNode;
-        bool returnValue;
-    };
-
-    NodeNodeDispatcher mNodeNodeDispatcher;
-    NodeLeafNodeDispatcher mNodeLeafNodeDispatcher;
 
     // only valid for the duration of a call of
     // collides(BoundingVolumeHierarchy* hierarchy, Collider& collider)

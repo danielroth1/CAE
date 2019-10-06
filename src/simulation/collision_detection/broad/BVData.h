@@ -20,7 +20,15 @@ public:
     BVData(Node<BVChildrenData*, BVLeafData*>* node,
            std::shared_ptr<BoundingVolume> boundingVolume);
 
-    BoundingVolume* getBoundingVolume();
+    BoundingVolume* getBoundingVolumePtr()
+    {
+        return mBoundingVolume.get();
+    }
+
+    const std::shared_ptr<BoundingVolume>& getBoundingVolume()
+    {
+        return mBoundingVolume;
+    }
 
     virtual void update() = 0;
 

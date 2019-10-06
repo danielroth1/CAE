@@ -9,9 +9,10 @@
 #include "TreeTraverser.h"
 
 template <class T, class L>
-Node<T, L>::Node(std::string name, Tree<T, L>* tree)
+Node<T, L>::Node(bool leaf, std::string name, Tree<T, L>* tree)
     : mName(name)
     , mTree(tree)
+    , mLeaf(leaf)
 {
     mParent = nullptr;
     if (tree)
@@ -19,10 +20,11 @@ Node<T, L>::Node(std::string name, Tree<T, L>* tree)
 }
 
 template <class T, class L>
-Node<T, L>::Node(ChildrenNode<T, L> *parent, std::string name, Tree<T, L>* tree)
+Node<T, L>::Node(bool leaf, ChildrenNode<T, L> *parent, std::string name, Tree<T, L>* tree)
     : mParent(parent)
     , mName(name)
     , mTree(tree)
+    , mLeaf(leaf)
 {
     if (tree)
         addListener(tree);
@@ -39,6 +41,12 @@ size_t Node<T, L>::calculateDepth()
         ++depth;
     }
     return depth;
+}
+
+template<class T, class L>
+bool Node<T, L>::isLeaf() const
+{
+    return mLeaf;
 }
 
 template <class T, class L>

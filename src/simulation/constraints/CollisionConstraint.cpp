@@ -86,34 +86,34 @@ void CollisionConstraint::initialize(double stepSize)
 
 bool CollisionConstraint::solve(double maxConstraintError)
 {
-    Eigen::Vector p1 = ImpulseConstraintSolver::calculateRelativePoint(
+    p1 = ImpulseConstraintSolver::calculateRelativePoint(
                 mCollision.getSimulationObjectA(), mCollision.getPointA());
-    Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
+    p2 = ImpulseConstraintSolver::calculateRelativePoint(
                 mCollision.getSimulationObjectB(), mCollision.getPointB());
 
     const Eigen::Vector& n = mCollision.getNormal();
 
-    Eigen::Vector u1 = ImpulseConstraintSolver::calculateSpeed(
+    u1 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectA(),
                 p1,
                 mCollision.getVertexIndexA());
 
-    Eigen::Vector u2 = ImpulseConstraintSolver::calculateSpeed(
+    u2 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectB(),
                 p2,
                 mCollision.getVertexIndexB());
 
 
-    Eigen::Vector uRel = u1 - u2;
+    uRel = u1 - u2;
 
-    Eigen::Vector uRelN = uRel.dot(n) * n;
+    uRelN = uRel.dot(n) * n;
 
-    Eigen::Vector deltaUNormalRel = mTargetUNormalRel - uRelN;
-    if (deltaUNormalRel.norm() < maxConstraintError)
+    deltaUNormalRel = mTargetUNormalRel - uRelN;
+    if (deltaUNormalRel.squaredNorm() < maxConstraintError * maxConstraintError)
     {
         return true;
     }
-    Eigen::Vector impulse = mImpulseFactor * deltaUNormalRel;
+    impulse = mImpulseFactor * deltaUNormalRel;
     if (mCollision.getNormal().dot(mSumOfAllAppliedImpulses + impulse) < 0)
     {
         impulse = -mSumOfAllAppliedImpulses;
@@ -137,12 +137,12 @@ bool CollisionConstraint::solve(double maxConstraintError)
         (mCFrictionStatic > 1e-10 ||
         mCFrictionDynamic > 1e-10))
     {
-        Eigen::Vector frictionImpulse;
-        Eigen::Vector uRelT = uRel - uRelN;
+        frictionImpulse;
+        uRelT = uRel - uRelN;
         if (uRelT.norm() > 1e-8)
         {
-            Eigen::Vector t = uRelT.normalized();
-            Eigen::Vector frictionImpulseMax = - 1 / (t.transpose() * mK * t) * uRelT;
+            t = uRelT.normalized();
+            frictionImpulseMax = - 1 / (t.transpose() * mK * t) * uRelT;
 
             if (mSumFrictionImpulses.norm() <= mCFrictionStatic * mSumOfAllAppliedImpulses.norm())
             {

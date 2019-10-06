@@ -26,9 +26,9 @@ void BVAABB::update(CollisionObject& collisionObject)
     case CollisionObject::Type::SPHERE:
     {
         CollisionSphere* cs = static_cast<CollisionSphere*>(&collisionObject);
-        mBB.min() = cs->getPosition() - cs->getRadius() * Eigen::Vector::Ones();
         mBB.mid() = cs->getPosition();
-        mBB.max() = cs->getPosition() + cs->getRadius() * Eigen::Vector::Ones();
+        mBB.min() = mBB.mid() - cs->getRadius() * Eigen::Vector::Ones();
+        mBB.max() = mBB.mid() + cs->getRadius() * Eigen::Vector::Ones();
         break;
     }
     case CollisionObject::Type::TRIANGLE:
@@ -38,20 +38,7 @@ void BVAABB::update(CollisionObject& collisionObject)
     }
 }
 
-void BVAABB::update(BoundingVolume* bv1,BoundingVolume* bv2)
-{
-    BVAABB* aabb1 = static_cast<BVAABB*>(bv1);
-    BVAABB* aabb2 = static_cast<BVAABB*>(bv2);
 
-    mBB.min() = aabb1->getBoundingBox().min().cwiseMin(
-                aabb2->getBoundingBox().min());
-
-    mBB.max() = aabb1->getBoundingBox().max().cwiseMax(
-                aabb2->getBoundingBox().max());
-
-    mBB.mid() = 0.5 * (mBB.min() + mBB.max());
-
-}
 
 BoundingVolume::Type BVAABB::getType() const
 {

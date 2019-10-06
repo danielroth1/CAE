@@ -4,15 +4,10 @@
 #include <scene/data/geometric/Polygon.h>
 
 GeometricVertexRef::GeometricVertexRef(GeometricData* geometricData, ID index)
-    : GeometricPointRef(geometricData)
+    : GeometricPointRef(geometricData, Type::GEOMETRIC_VERTEX)
     , mIndex(index)
 {
 
-}
-
-GeometricPointRef::Type GeometricVertexRef::getType()
-{
-    return Type::GEOMETRIC_VERTEX;
 }
 
 Vector GeometricVertexRef::getPoint() const

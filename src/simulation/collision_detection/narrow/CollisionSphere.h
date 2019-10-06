@@ -2,6 +2,7 @@
 #define COLLISIONSPHERE_H
 
 #include "CollisionObject.h"
+#include "CollisionObjectVisitor.h"
 
 #include <simulation/references/SimulationPointRef.h>
 
@@ -15,20 +16,40 @@ public:
                     double radius,
                     const std::shared_ptr<TopologyFeature>& topologyFeature = nullptr);
 
-    double getRadius() const;
+    double getRadius() const
+    {
+        return mRadius;
+    }
 
-    void setRadius(double radius);
+    void setRadius(double radius)
+    {
+        mRadius = radius;
+    }
 
-    SimulationPointRef& getPointRef();
+    SimulationPointRef& getPointRef()
+    {
+        return mPointRef;
+    }
 
     ID getVertexIndex();
 
-    const std::shared_ptr<TopologyFeature>& getTopologyFeature() const;
+    const std::shared_ptr<TopologyFeature>& getTopologyFeature() const
+    {
+        return mFeature;
+    }
 
     // CollisionObject interface
 public:
-    virtual void accept(CollisionObjectVisitor& visitor) override;
+    virtual void update() override;
+    virtual void updatePrevious() override;
+
+    virtual void accept(CollisionObjectVisitor& visitor) override
+    {
+        visitor.visit(this);
+    }
+
     virtual Type getType() const override;
+
     virtual Eigen::Vector getPosition() override;
 
 private:

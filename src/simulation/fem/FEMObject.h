@@ -49,8 +49,6 @@ public:
 
     virtual ~FEMObject() override;
 
-    virtual SimulationObject::Type getType() const override;
-
     virtual void accept(SimulationObjectVisitor& visitor) override;
 
     virtual void applyImpulse(

@@ -1,6 +1,7 @@
 #include "Collider.h"
 #include "CollisionObject.h"
 #include "CollisionSphere.h"
+#include "CollisionTriangle.h"
 
 #include <iostream>
 #include <new>
@@ -18,9 +19,6 @@
 
 Collider::Collider()
     : mInvertNormalsIfNecessary(false)
-    , mCollisionObjectDispatcher(*this)
-    , mCollisionSphereDispatcher(*this)
-    , mCollisionTriangleDispatcher(*this)
 {
 
 }
@@ -62,11 +60,14 @@ bool Collider::collides(
         CollisionObject& co2,
         Collision& collisionReturnValue)
 {
-    mCollisionObjectDispatcher.collisionObject = &co1;
-    mCollisionObjectDispatcher.collision = &collisionReturnValue;
-    co2.accept(mCollisionObjectDispatcher);
-
-    return mCollisionObjectDispatcher.returnValue;
+    switch(co2.getType())
+    {
+    case CollisionObject::Type::SPHERE:
+        return collides(co1, *static_cast<CollisionSphere*>(&co2), collisionReturnValue);
+    case CollisionObject::Type::TRIANGLE:
+        return collides(co1, *static_cast<CollisionTriangle*>(&co2), collisionReturnValue);
+    }
+    return false;
 }
 
 bool Collider::collides(
@@ -74,11 +75,14 @@ bool Collider::collides(
         CollisionSphere& cs,
         Collision& collisionReturnValue)
 {
-    mCollisionSphereDispatcher.collisionSphere = &cs;
-    mCollisionSphereDispatcher.collision = &collisionReturnValue;
-    co.accept(mCollisionSphereDispatcher);
-
-    return mCollisionSphereDispatcher.returnValue;
+    switch(co.getType())
+    {
+    case CollisionObject::Type::SPHERE:
+        return collides(*static_cast<CollisionSphere*>(&co), cs, collisionReturnValue);
+    case CollisionObject::Type::TRIANGLE:
+        return collides(cs, *static_cast<CollisionTriangle*>(&co), collisionReturnValue);
+    }
+    return false;
 }
 
 bool Collider::collides(
@@ -86,11 +90,14 @@ bool Collider::collides(
         CollisionTriangle& ct,
         Collision& collisionReturnValue)
 {
-    mCollisionTriangleDispatcher.collisionTriangle = &ct;
-    mCollisionTriangleDispatcher.collision = &collisionReturnValue;
-    co.accept(mCollisionTriangleDispatcher);
-
-    return mCollisionTriangleDispatcher.returnValue;
+    switch(co.getType())
+    {
+    case CollisionObject::Type::SPHERE:
+        return collides(*static_cast<CollisionSphere*>(&co), ct, collisionReturnValue);
+    case CollisionObject::Type::TRIANGLE:
+        return collides(ct, *static_cast<CollisionTriangle*>(&co), collisionReturnValue);
+    }
+    return false;
 }
 
 bool Collider::collides(
@@ -98,22 +105,25 @@ bool Collider::collides(
         CollisionSphere& cs2,
         Collision& collisionReturnValue)
 {
-    bool returnValue = (cs1.getPosition() - cs2.getPosition()).norm() <
-            (cs1.getRadius() + cs2.getRadius());
+    Eigen::Vector p1 = cs1.getPosition();
+    Eigen::Vector p2 = cs2.getPosition();
+
+    double radi = cs1.getRadius() + cs2.getRadius();
+    bool returnValue = (p1 - p2).squaredNorm() < radi * radi;
 
     if (!returnValue)
         return returnValue; // There is no collision
 
 //    if (returnValue)
-//        std::cout << "pos1 = " << cs1.getPosition().transpose() <<
-//                     ", pos2 = " << cs1.getPosition().transpose() <<
+//        std::cout << "pos1 = " << p1.transpose() <<
+//                     ", pos2 = " << p1.transpose() <<
 //                     ", radius1 = " << cs1.getRadius() <<
 //                     ", radius2 = " << cs2.getRadius() << "\n";
 
     // Contact normal is always directed from the second body to the first one.
-    Eigen::Vector normal = (cs1.getPosition() - cs2.getPosition()).normalized();
-    Eigen::Vector pointA = cs1.getPosition() - cs1.getRadius() * normal;
-    Eigen::Vector pointB = cs2.getPosition() + cs2.getRadius() * normal;
+    Eigen::Vector normal = (p1 - p2).normalized();
+    Eigen::Vector pointA = p1 - cs1.getRadius() * normal;
+    Eigen::Vector pointB = p2 + cs2.getRadius() * normal;
 
     // calculate previous points
 //    Eigen::Vector normalPrev =
@@ -274,40 +284,4 @@ bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
         }
     }
     return true;
-}
-
-// CollisionObjectCollisionObjectDispatcher
-
-void Collider::CollisionObjectDispatcher::visit(CollisionSphere* collisionSphere)
-{
-    returnValue = collider.collides(*collisionObject, *collisionSphere, *collision);
-}
-
-void Collider::CollisionObjectDispatcher::visit(CollisionTriangle* collisionTriangle)
-{
-    returnValue = collider.collides(*collisionObject, *collisionTriangle, *collision);
-}
-
-// CollisionObjectCollisionSphereDispatcher
-
-void Collider::CollisionSphereDispatcher::visit(CollisionSphere* cs)
-{
-    returnValue = collider.collides(*collisionSphere, *cs, *collision);
-}
-
-void Collider::CollisionSphereDispatcher::visit(CollisionTriangle* collisionTriangle)
-{
-    returnValue = collider.collides(*collisionSphere, *collisionTriangle, *collision);
-}
-
-// CollisionObjectCollisionTriangleDispatcher
-
-void Collider::CollisionTriangleDispatcher::visit(CollisionSphere* cs)
-{
-    returnValue = collider.collides(*cs, *collisionTriangle, *collision);
-}
-
-void Collider::CollisionTriangleDispatcher::visit(CollisionTriangle* ct)
-{
-    returnValue = collider.collides(*collisionTriangle, *ct, *collision);
 }

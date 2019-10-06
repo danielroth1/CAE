@@ -8,8 +8,9 @@ Domain*SimulationObject::getDomain()
     return mDomain;
 }
 
-SimulationObject::SimulationObject(Domain* domain)
+SimulationObject::SimulationObject(Domain* domain, Type type)
     : mDomain(domain)
+    , mType(type)
 {
 
 }

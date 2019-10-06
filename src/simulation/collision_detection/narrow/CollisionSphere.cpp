@@ -14,22 +14,8 @@ CollisionSphere::CollisionSphere(
     , mRadius(radius)
     , mFeature(topologyFeature)
 {
-
-}
-
-double CollisionSphere::getRadius() const
-{
-    return mRadius;
-}
-
-void CollisionSphere::setRadius(double radius)
-{
-    mRadius = radius;
-}
-
-SimulationPointRef& CollisionSphere::getPointRef()
-{
-    return mPointRef;
+    mPointRef.setUpdatePolicy(SimulationPointRef::UpdatePolicy::ON_UPDATE_CALL);
+    mPointRef.update();
 }
 
 ID CollisionSphere::getVertexIndex()
@@ -55,14 +41,14 @@ ID CollisionSphere::getVertexIndex()
     return visitor.index;
 }
 
-const std::shared_ptr<TopologyFeature>& CollisionSphere::getTopologyFeature() const
+void CollisionSphere::update()
 {
-    return mFeature;
+    mPointRef.update();
 }
 
-void CollisionSphere::accept(CollisionObjectVisitor& visitor)
+void CollisionSphere::updatePrevious()
 {
-    visitor.visit(this);
+    mPointRef.updatePrevious();
 }
 
 CollisionObject::Type CollisionSphere::getType() const

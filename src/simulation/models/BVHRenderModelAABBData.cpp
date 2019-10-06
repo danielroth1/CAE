@@ -13,7 +13,7 @@
 
 
 BVHRenderModelAABBData::BVHRenderModelAABBData(
-        RenderModelManager* renderModelManager,
+        RenderModelManager* /*renderModelManager*/,
         BVAABB* aabb,
         int level,
         bool isLeaf)
@@ -30,8 +30,6 @@ void BVHRenderModelAABBData::initialize(Renderer* renderer,
     if (mInitialized)
         return;
 
-//    mBox = std::make_shared<Polygon2D>(GeometricDataFactory::create2DBox(
-//                1.0, 1.0, 1.0));
     mBox = std::make_shared<Polygon2D>(*boxTemplate);
     mRenderModel = std::make_shared<PolygonRenderModel>(
                 renderModelManager, mBox);
@@ -48,7 +46,7 @@ void BVHRenderModelAABBData::update()
         const BoundingBox& bb = mAabb->getBoundingBox();
         Eigen::Vector3d scaling = bb.max() - bb.min();
         mBox->setTransform(
-                    Eigen::Translation3d(bb.mid()) *
+                    Eigen::Translation3d(0.5 * (bb.max() + bb.min())) *
                     Eigen::Scaling(scaling(0), scaling(1), scaling(2)));
         mBox->update();
         mRenderModel->update();

@@ -13,7 +13,7 @@ class BVHRenderModelAABBData : public BVHRenderModelData
 {
 public:
     BVHRenderModelAABBData(
-            RenderModelManager* renderModelManager,
+            RenderModelManager*,
             BVAABB* aabb,
             int level,
             bool isLeaf);

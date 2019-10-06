@@ -2,8 +2,9 @@
 
 
 
-GeometricPointRef::GeometricPointRef(GeometricData* geometricData)
+GeometricPointRef::GeometricPointRef(GeometricData* geometricData, Type type)
     : mGeometricData(geometricData)
+    , mType(type)
 {
 
 }
@@ -17,3 +18,5 @@ GeometricData* GeometricPointRef::getGeometricData()
 {
     return mGeometricData;
 }
+
+

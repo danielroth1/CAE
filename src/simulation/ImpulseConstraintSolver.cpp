@@ -182,16 +182,7 @@ void ImpulseConstraintSolver::applyImpulse(
     }
 }
 
-Vector ImpulseConstraintSolver::calculateRelativePoint(
-        const std::shared_ptr<SimulationObject>& so, const Vector& pointGlobal)
-{
-    if (so->getType() == SimulationObject::Type::RIGID_BODY)
-    {
-        RigidBody* rb = static_cast<RigidBody*>(so.get());
-        return pointGlobal - rb->getCenterOfMass();
-    }
-    return pointGlobal;
-}
+
 
 Quaterniond ImpulseConstraintSolver::getOrientation(const std::shared_ptr<SimulationObject>& so)
 {

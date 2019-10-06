@@ -54,6 +54,20 @@ private:
     double mRestitution;
     double mCFrictionDynamic;
     double mCFrictionStatic;
+
+    // Temporary variables used in methods
+    Eigen::Vector p1;
+    Eigen::Vector p2;
+    Eigen::Vector u1;
+    Eigen::Vector u2;
+    Eigen::Vector uRel;
+    Eigen::Vector uRelN;
+    Eigen::Vector deltaUNormalRel;
+    Eigen::Vector impulse;
+    Eigen::Vector frictionImpulse;
+    Eigen::Vector uRelT;
+    Eigen::Vector t;
+    Eigen::Vector frictionImpulseMax;
 };
 
 #endif // COLLISIONCONSTRAINT_H

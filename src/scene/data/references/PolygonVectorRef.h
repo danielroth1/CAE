@@ -18,7 +18,6 @@ public:
 
     // GeometricPointRef interface
 public:
-    virtual Type getType() override;
 
     virtual Vector getPoint() const override;
 

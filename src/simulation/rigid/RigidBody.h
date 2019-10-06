@@ -79,7 +79,7 @@ public:
 
         // Calculates and returns the speed of a point on this rigid
         // at r. r points from the center of the rigid to the point.
-        Eigen::Vector calculateSpeedAt(const Eigen::Vector& r);
+    Eigen::Vector calculateSpeedAt(const Eigen::Vector& r);
 
         Eigen::Matrix3d calculateK(
                 const Eigen::Vector& rA,
@@ -107,16 +107,20 @@ public:
         // Returns the orientation q.
         const Eigen::Quaterniond& getOrientation() const;
         const Eigen::Quaterniond& getOrientationPrevious() const;
+
         const Eigen::Vector& getOrientationVelocity() const;
 
         // Returns the 3x3 inertia tensor I.
         const Eigen::Matrix3d& getInertiaTensor() const;
+
         const Eigen::Matrix3d& getInveresInertiaTensor() const;
 
         const Eigen::Matrix3d& getInertiaTensorWS() const;
+
         const Eigen::Matrix3d& getInverseInertiaTensorWS() const;
 
         const Eigen::Vector& getPosition() const;
+
         const Eigen::Vector& getPositionPrevious() const;
 
         std::shared_ptr<Polygon> getPolygon();
@@ -130,7 +134,6 @@ public:
 
     // SimulationObject interface
 public:
-    virtual Type getType() const override;
     virtual void accept(SimulationObjectVisitor& visitor) override;
     virtual Eigen::Vector& getPosition(size_t id) override;
     virtual void setPosition(Eigen::Vector v, ID id) override;
@@ -175,5 +178,108 @@ private:
 
 
 };
+
+inline Eigen::Vector RigidBody::calculateSpeedAt(const Eigen::Vector& r)
+{
+    if (mStatic)
+        return Eigen::Vector::Zero();
+
+    return mV + mOmega.cross(r);
+}
+
+inline void RigidBody::setTranslationalDamping(double translationalDamping)
+{
+    mTranslationalDamping = translationalDamping;
+}
+
+inline void RigidBody::setRotationalDamping(double rotationalDamping)
+{
+    mRotationalDamping = rotationalDamping;
+}
+
+inline void RigidBody::setMass(double mass)
+{
+    mMass = mass;
+}
+
+inline void RigidBody::setStatic(bool s)
+{
+    mStatic = s;
+}
+
+inline const Eigen::Vector3d& RigidBody::getCenterOfMass() const
+{
+    return mX;
+}
+
+inline const Eigen::Quaterniond& RigidBody::getOrientation() const
+{
+    return mQ;
+}
+
+inline const Eigen::Quaterniond& RigidBody::getOrientationPrevious() const
+{
+    return mQOld;
+}
+
+inline const Eigen::Vector& RigidBody::getOrientationVelocity() const
+{
+    return mOmega;
+}
+
+inline const Eigen::Matrix3d& RigidBody::getInertiaTensor() const
+{
+    return mInertiaBS;
+}
+
+inline const Eigen::Matrix3d& RigidBody::getInveresInertiaTensor() const
+{
+    return mInertiaInvBS;
+}
+
+inline const Eigen::Matrix3d& RigidBody::getInertiaTensorWS() const
+{
+    return mInertia;
+}
+
+inline const Eigen::Matrix3d& RigidBody::getInverseInertiaTensorWS() const
+{
+    return mInertiaInv;
+}
+
+inline const Eigen::Vector& RigidBody::getPosition() const
+{
+    return mX;
+}
+
+inline const Eigen::Vector& RigidBody::getPositionPrevious() const
+{
+    return mXOld;
+}
+
+inline std::shared_ptr<Polygon> RigidBody::getPolygon()
+{
+    return mPolygon;
+}
+
+inline double RigidBody::getTranslationalDamping() const
+{
+    return mTranslationalDamping;
+}
+
+inline double RigidBody::getRotationalDamping() const
+{
+    return mRotationalDamping;
+}
+
+inline double RigidBody::getMass() const
+{
+    return mMass;
+}
+
+inline bool RigidBody::isStatic() const
+{
+    return mStatic;
+}
 
 #endif // RIGIDBODY_H

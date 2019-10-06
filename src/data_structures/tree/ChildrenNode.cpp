@@ -12,13 +12,13 @@
 
 template <class T, class L>
 ChildrenNode<T, L>::ChildrenNode(std::string name)
-    : Node<T, L>(name)
+    : Node<T, L>(false, name)
 {
 }
 
 template <class T, class L>
 ChildrenNode<T, L>::ChildrenNode(ChildrenNode *parent, std::string name)
-    : Node<T, L>(parent, name)
+    : Node<T, L>(false, parent, name)
 {
 
 }
@@ -165,12 +165,6 @@ template<class T, class L>
 T ChildrenNode<T, L>::getData() const
 {
     return mData;
-}
-
-template<class T, class L>
-bool ChildrenNode<T, L>::isLeaf() const
-{
-    return false;
 }
 
 template<class T, class L>

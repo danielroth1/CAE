@@ -60,7 +60,7 @@ public:
         FEM_OBJECT, SIMULATION_POINT, RIGID_BODY
     };
 
-    virtual Type getType() const = 0;
+    virtual Type getType() const;
 
     virtual void accept(SimulationObjectVisitor& visitor) = 0;
 
@@ -90,13 +90,20 @@ public:
     virtual ~SimulationObject();
 
 protected:
-    SimulationObject(Domain* domain);
+    SimulationObject(Domain* domain, Type type);
 
     Domain* mDomain;
+
+    Type mType;
 
     bool mRequiringUpdate;
 
 };
+
+inline SimulationObject::Type SimulationObject::getType() const
+{
+    return mType;
+}
 
 PROXY_CLASS(SimulationObjectProxy, SimulationObject, mS,
             PROXY_FUNCTION(SimulationObject, mS, setPosition,

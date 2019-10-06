@@ -21,7 +21,7 @@ using namespace Eigen;
 FEMObject::FEMObject(
         Domain* domain,
         std::shared_ptr<Polygon3D> poly3)
-    : SimulationObject(domain)
+    : SimulationObject(domain, SimulationObject::Type::FEM_OBJECT)
     , mPoly3(poly3)
     , mPositions(poly3->getPositions())
     , mK(static_cast<Eigen::Index>(mPositions.size()),
@@ -98,11 +98,6 @@ FEMObject::FEMObject(
 FEMObject::~FEMObject()
 {
 
-}
-
-SimulationObject::Type FEMObject::getType() const
-{
-    return SimulationObject::Type::FEM_OBJECT;
 }
 
 void FEMObject::accept(SimulationObjectVisitor& visitor)

@@ -20,15 +20,42 @@ public:
             ID vertexIndexB,
             bool isInside);
 
-    const std::shared_ptr<SimulationObject>& getSimulationObjectA();
-    const std::shared_ptr<SimulationObject>& getSimulationObjectB();
-    const Eigen::Vector& getPointA() const;
-    const Eigen::Vector& getPointB() const;
-    const Eigen::Vector& getNormal() const;
-    double getDepth() const;
-    ID getVertexIndexA() const;
-    ID getVertexIndexB() const;
-    bool isInside() const;
+    const std::shared_ptr<SimulationObject>& getSimulationObjectA()
+    {
+        return *mSoA;
+    }
+    const std::shared_ptr<SimulationObject>& getSimulationObjectB()
+    {
+        return *mSoB;
+    }
+    const Eigen::Vector& getPointA() const
+    {
+        return mPointA;
+    }
+    const Eigen::Vector& getPointB() const
+    {
+        return mPointB;
+    }
+    const Eigen::Vector& getNormal() const
+    {
+        return mNormal;
+    }
+    double getDepth() const
+    {
+        return mDepth;
+    }
+    ID getVertexIndexA() const
+    {
+        return mVertexIndexA;
+    }
+    ID getVertexIndexB() const
+    {
+        return mVertexIndexB;
+    }
+    bool isInside() const
+    {
+        return mIsInside;
+    }
 
     // TODO: should this class know of CollisionSpheres?
     // it would be able to caluclate the current distance/ current PointA and PointB (before the collision)

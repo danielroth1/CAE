@@ -17,7 +17,6 @@ public:
 
     // SimulationObject interface
 public:
-    virtual SimulationObject::Type getType() const override;
     virtual void accept(SimulationObjectVisitor& visitor) override;
     virtual void applyImpulse(
             SimulationPointRef& ref, const Eigen::Vector& impulse) override;

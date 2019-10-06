@@ -4,7 +4,7 @@
 #include <scene/data/geometric/Polygon.h>
 
 PolygonVectorRef::PolygonVectorRef(Polygon* polygon, Vector r)
-    : GeometricPointRef(polygon)
+    : GeometricPointRef(polygon, Type::POLYGON_VECTOR)
     , mPolygon(polygon)
     , mR(r)
 {
@@ -14,11 +14,6 @@ PolygonVectorRef::PolygonVectorRef(Polygon* polygon, Vector r)
 Vector PolygonVectorRef::getR() const
 {
     return mR;
-}
-
-GeometricPointRef::Type PolygonVectorRef::getType()
-{
-    return Type::POLYGON_VECTOR;
 }
 
 Vector PolygonVectorRef::getPoint() const

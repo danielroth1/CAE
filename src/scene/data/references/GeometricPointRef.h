@@ -15,13 +15,16 @@ public:
         GEOMETRIC_VERTEX, POLYGON_VECTOR
     };
 
-    GeometricPointRef(GeometricData* geometricData);
+    GeometricPointRef(GeometricData* geometricData, Type type);
 
     virtual ~GeometricPointRef();
 
     GeometricData* getGeometricData();
 
-    virtual Type getType() = 0;
+    Type getType()
+    {
+        return mType;
+    }
 
     virtual Eigen::Vector getPoint() const = 0;
 
@@ -36,6 +39,8 @@ public:
 
 protected:
     GeometricData* mGeometricData;
+
+    Type mType;
 
 };
 

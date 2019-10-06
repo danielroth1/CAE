@@ -332,8 +332,11 @@ void CollisionManager::updateAll()
             {
                 dirty = false;
             }
-            cd.mQ = rb->getOrientation();
-            cd.mX = rb->getPosition();
+            else
+            {
+                cd.mQ = rb->getOrientation();
+                cd.mX = rb->getPosition();
+            }
         }
 
         if (dirty)

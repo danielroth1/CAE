@@ -28,6 +28,22 @@ class SimulationObject;
 class SimulationPointRef
 {
 public:
+    // The update policy controls when the target point is calculated.
+    // Default: ON_DEMAND
+    // ON_DEMAND - the point is always calculated in the getter, e.g. getPoint()
+    //      The update() method does nothing. Use this policy if getPoint()
+    //      is only called once before the rotation matrix changed or if the
+    //      position representation type doesn't use rotations (e.g. WORLD_SPACE).
+    // ON_UPDATE_CALL - the point is only updated in the update() call. getPoint()
+    //      is then just a getter with little overhead. Use this method to
+    //      avoid unnecessary rotation matrix-vector multiplications when in
+    //      BODY_SPACE representation by calling update() only once when the
+    //      rotation matrix or position changed.
+    enum class UpdatePolicy
+    {
+        ON_DEMAND, ON_UPDATE_CALL
+    };
+
     // Constructor for referencign a vector w.r.t. to center of simulation object.
     // Used for deformable simulation objects.
     SimulationPointRef(SimulationObject* simObj, Polygon* polygon, Eigen::Vector r);
@@ -44,6 +60,11 @@ public:
 //    SimulationPointRef& operator=(SimulationPointRef&& ref) = default;
 
     virtual ~SimulationPointRef();
+
+    void update();
+    void updatePrevious();
+
+    void setUpdatePolicy(UpdatePolicy policy);
 
     const std::shared_ptr<SimulationObject>& getSimulationObject() const;
     GeometricPointRef* getGeometricPointRef() const;
@@ -117,12 +138,20 @@ private:
     virtual Eigen::Vector getPreviousPoint(RigidBody& rb);
     virtual Eigen::Vector getPreviousPoint(FEMObject& femObj);
 
+    // Calculates and returns the current point
+    Eigen::Vector calculatePoint();
+    Eigen::Vector calculatePointPrevious();
+
     std::unique_ptr<GeometricPointRef> mGeometricPointRef;
 
     std::shared_ptr<SimulationObject> mSimulationObject;
 
     GetSimulationPointDispatcher mGetSimulationPointDispatcher;
     GetPrevSimulationPointDispatcher mGetPrevSimulationPointDispatcher;
+
+    Eigen::Vector mPoint; // Only used if mUpdatePolicy == ON_UPDATE_CALL
+    Eigen::Vector mPointPrevious; // Only used if mUpdatePolicy == ON_UPDATE_CALL
+    UpdatePolicy mUpdatePolicy;
 
 };
 

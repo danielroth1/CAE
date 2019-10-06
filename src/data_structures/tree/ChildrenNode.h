@@ -53,7 +53,6 @@ public:
 
     // Getters
         virtual T getData() const;
-        virtual bool isLeaf() const;
 
     // Listener Support
         virtual void addListener(ChildrenNodeListener<T, L>* listener);

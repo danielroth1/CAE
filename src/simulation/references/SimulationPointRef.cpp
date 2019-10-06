@@ -20,6 +20,7 @@ SimulationPointRef::SimulationPointRef(
     : mGeometricPointRef(std::make_unique<PolygonVectorRef>(polygon, r))
     , mGetSimulationPointDispatcher(*this)
     , mGetPrevSimulationPointDispatcher(*this)
+    , mUpdatePolicy(UpdatePolicy::ON_DEMAND)
 {
     mSimulationObject = simObj->shared_from_this();
 }
@@ -31,6 +32,7 @@ SimulationPointRef::SimulationPointRef(
           std::make_unique<GeometricVertexRef>(simObj->getGeometricData(), index))
     , mGetSimulationPointDispatcher(*this)
     , mGetPrevSimulationPointDispatcher(*this)
+    , mUpdatePolicy(UpdatePolicy::ON_DEMAND)
 {
     mSimulationObject = simObj->shared_from_this();
 }
@@ -41,6 +43,7 @@ SimulationPointRef::SimulationPointRef(const SimulationPointRef& ref)
     , mSimulationObject(ref.mSimulationObject)
     , mGetSimulationPointDispatcher(*this)
     , mGetPrevSimulationPointDispatcher(*this)
+    , mUpdatePolicy(UpdatePolicy::ON_DEMAND)
 {
 
 }
@@ -58,6 +61,39 @@ SimulationPointRef::~SimulationPointRef()
 
 }
 
+void SimulationPointRef::update()
+{
+    switch (mUpdatePolicy)
+    {
+    case UpdatePolicy::ON_DEMAND:
+        // Nothing to do here because points are calculated on demand directly
+        // in the getter.
+        break;
+    case UpdatePolicy::ON_UPDATE_CALL:
+        mPoint = calculatePoint();
+        break;
+    }
+}
+
+void SimulationPointRef::updatePrevious()
+{
+    switch (mUpdatePolicy)
+    {
+    case UpdatePolicy::ON_DEMAND:
+        // Nothing to do here because points are calculated on demand directly
+        // in the getter.
+        break;
+    case UpdatePolicy::ON_UPDATE_CALL:
+        mPointPrevious = calculatePointPrevious();
+        break;
+    }
+}
+
+void SimulationPointRef::setUpdatePolicy(SimulationPointRef::UpdatePolicy policy)
+{
+    mUpdatePolicy = policy;
+}
+
 const std::shared_ptr<SimulationObject>& SimulationPointRef::getSimulationObject() const
 {
     return mSimulationObject;
@@ -70,14 +106,30 @@ GeometricPointRef* SimulationPointRef::getGeometricPointRef() const
 
 Eigen::Vector SimulationPointRef::getPoint()
 {
-    mSimulationObject->accept(mGetSimulationPointDispatcher);
-    return mGetSimulationPointDispatcher.point;
+    switch (mUpdatePolicy)
+    {
+    case UpdatePolicy::ON_DEMAND:
+        return calculatePoint();
+    case UpdatePolicy::ON_UPDATE_CALL:
+        return mPoint;
+    }
+
+    std::cout << "Added additional update policy but didn't handle it.\n";
+    return calculatePoint();
 }
 
 Vector SimulationPointRef::getPointPrevious()
 {
-    mSimulationObject->accept(mGetPrevSimulationPointDispatcher);
-    return mGetPrevSimulationPointDispatcher.point;
+    switch (mUpdatePolicy)
+    {
+    case UpdatePolicy::ON_DEMAND:
+        return calculatePointPrevious();
+    case UpdatePolicy::ON_UPDATE_CALL:
+        return mPointPrevious;
+    }
+
+    std::cout << "Added additional update policy but didn't handle it.\n";
+    return calculatePoint();
 }
 
 ID SimulationPointRef::getIndex() const
@@ -129,6 +181,38 @@ Vector SimulationPointRef::getPreviousPoint(FEMObject& femObj)
         return femObj.getPositionPrevious(index);
     }
     return Eigen::Vector::Zero();
+}
+
+Vector SimulationPointRef::calculatePoint()
+{
+    switch(mSimulationObject->getType())
+    {
+    case SimulationObject::Type::FEM_OBJECT:
+        return getPoint(*static_cast<FEMObject*>(mSimulationObject.get()));
+    case SimulationObject::Type::RIGID_BODY:
+        return getPoint(*static_cast<RigidBody*>(mSimulationObject.get()));
+    case SimulationObject::Type::SIMULATION_POINT:
+        return getPoint(*static_cast<SimulationPoint*>(mSimulationObject.get()));
+    }
+
+//    mSimulationObject->accept(mGetSimulationPointDispatcher);
+//    return mGetSimulationPointDispatcher.point;
+}
+
+Vector SimulationPointRef::calculatePointPrevious()
+{
+    switch(mSimulationObject->getType())
+    {
+    case SimulationObject::Type::FEM_OBJECT:
+        return getPreviousPoint(*static_cast<FEMObject*>(mSimulationObject.get()));
+    case SimulationObject::Type::RIGID_BODY:
+        return getPreviousPoint(*static_cast<RigidBody*>(mSimulationObject.get()));
+    case SimulationObject::Type::SIMULATION_POINT:
+        return getPreviousPoint(*static_cast<SimulationPoint*>(mSimulationObject.get()));
+    }
+
+    //    mSimulationObject->accept(mGetPrevSimulationPointDispatcher);
+    //    return mGetPrevSimulationPointDispatcher.point;
 }
 
 SimulationPointRef::GetSimulationPointDispatcher::GetSimulationPointDispatcher(

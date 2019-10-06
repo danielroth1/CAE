@@ -38,7 +38,6 @@ public:
     // Getters
         L& getData();
         virtual std::size_t getNumberOfChildren() const;
-        virtual bool isLeaf() const;
 
     // Setters
         void setTree(Tree<T, L>* tree);
