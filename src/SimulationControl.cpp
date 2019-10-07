@@ -544,16 +544,16 @@ void SimulationControl::step()
     bool collisionsOccured = mCollisionManager->collideAll();
     STOP_TIMING_SIMULATION;
 
-    // create collision constraints w.r.t. x + x^{FEM}
-    mImpulseConstraintSolver->initializeCollisionConstraints(
-                mCollisionManager->getCollider()->getCollisions(),
-                mStepSize,
-                0.0, // Restitution (bounciness factor))
-                0.0, // static friction
-                0.001); // dynamic friction
-
-    if (collisionsOccured || !mImpulseConstraintSolver->getConstraints().empty())
+    if (collisionsOccured)
     {
+        // create collision constraints w.r.t. x + x^{FEM}
+        mImpulseConstraintSolver->initializeCollisionConstraints(
+                    mCollisionManager->getCollider()->getCollisions(),
+                    mStepSize,
+                    0.0, // Restitution (bounciness factor))
+                    0.0, // static friction
+                    0.001); // dynamic friction
+
         // Revert the illegal state
         mRigidSimulation->revertPositions();
         mFEMSimulation->revertPositions(); // x, v + v^{FEM}
@@ -562,29 +562,32 @@ void SimulationControl::step()
                     mMaxNumConstraintSolverIterations,
                     mMaxConstraintError); // x, v + v^{FEM} + v^{col}
 
-        for (int i = 0; i < mNumFEMCorrectionIterations; ++i)
+        if (!mFEMSimulation->getFEMObjects().empty())
         {
-            mFEMSimulation->revertSolverStep(); // x, v + v^{col}
+            for (int i = 0; i < mNumFEMCorrectionIterations; ++i)
+            {
+                mFEMSimulation->revertSolverStep(); // x, v + v^{col}
 
-            // solve on x, v + v^{col}
-            START_TIMING_SIMULATION("CollisionManager::solve_FEM");
-            mFEMSimulation->solve(mStepSize, false); // x + x^{FEM}, v + v^{FEM}
-            STOP_TIMING_SIMULATION;
+                // solve on x, v + v^{col}
+                START_TIMING_SIMULATION("CollisionManager::solve_FEM");
+                mFEMSimulation->solve(mStepSize, false); // x + x^{FEM}, v + v^{FEM}
+                STOP_TIMING_SIMULATION;
 
-//            mImpulseConstraintSolver->initializeCollisionConstraints(
-//                        mCollisionManager->getCollider()->getCollisions(),
-//                        mStepSize,
-//                        0.0, // Restitution (bounciness factor))
-//                        0.0, // static friction
-//                        0.01); // dynamic friction
+//                mImpulseConstraintSolver->initializeCollisionConstraints(
+//                            mCollisionManager->getCollider()->getCollisions(),
+//                            mStepSize,
+//                            0.0, // Restitution (bounciness factor))
+//                            0.0, // static friction
+//                            0.01); // dynamic friction
 
-            mFEMSimulation->revertPositions(); // x, v + v^{FEM}
+                mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-            START_TIMING_SIMULATION("CollisionManager::solve_constraints");
-            mImpulseConstraintSolver->solveConstraints(
-                        mMaxNumConstraintSolverIterations,
-                        mMaxConstraintError); // x, v + v^{FEM} + v^{col}
-            STOP_TIMING_SIMULATION;
+                START_TIMING_SIMULATION("CollisionManager::solve_constraints");
+                mImpulseConstraintSolver->solveConstraints(
+                            mMaxNumConstraintSolverIterations,
+                            mMaxConstraintError); // x, v + v^{FEM} + v^{col}
+                STOP_TIMING_SIMULATION;
+            }
         }
 
         // x, v + v^{FEM} + v^{col}
