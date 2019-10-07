@@ -25,6 +25,10 @@ public:
     virtual void update(BoundingVolume* bv1, BoundingVolume* bv2) override;
     virtual BoundingVolume::Type getType() const override;
     virtual Eigen::Vector getPosition() const override;
+    virtual double getSize() const override
+    {
+        return mR(0);
+    }
 
     double getRadius() const;
 

@@ -60,7 +60,7 @@ bool Collider::collides(
         CollisionObject& co2,
         Collision& collisionReturnValue)
 {
-    switch(co2.getType())
+    switch(co1.getType())
     {
     case CollisionObject::Type::SPHERE:
         return collides(co1, *static_cast<CollisionSphere*>(&co2), collisionReturnValue);

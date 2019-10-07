@@ -24,6 +24,8 @@ public:
         mBB.max() = static_cast<BVAABB*>(bv1)->getBoundingBox().max().cwiseMax(
                     static_cast<BVAABB*>(bv2)->getBoundingBox().max());
 
+        mBB.size() = mBB.max() - mBB.min();
+
         //    mBB.mid() = 0.5 * (mBB.min() + mBB.max());
 
     }
@@ -32,6 +34,11 @@ public:
 
     // Returns the bounding boxes minimum position.
     virtual Eigen::Vector getPosition() const;
+
+    virtual double getSize() const
+    {
+        return mBB.size()(0);
+    }
 
     const BoundingBox& getBoundingBox() const;
 

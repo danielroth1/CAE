@@ -32,6 +32,10 @@ public:
     virtual Type getType() const = 0;
 
     virtual Eigen::Vector getPosition() const = 0;
+
+    // Returns a size value that is used when deciding which node to iterate
+    // next to in the BVH collision check.
+    virtual double getSize() const = 0;
 };
 
 #endif // BOUNDINGVOLUME_H

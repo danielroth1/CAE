@@ -1,6 +1,5 @@
-#include "BVSphere.h"
-#include "BoundingVolume.h"
 #include "BoundingVolumeHierarchy.h"
+#include "BoundingVolume.h"
 
 #include <memory>
 #include <simulation/collision_detection/narrow/Collider.h>
@@ -65,9 +64,9 @@ void BoundingVolumeHierarchy::print()
                 std::cout << "...";
             }
 
-            double radius = static_cast<BVSphere*>(childrenNode->getData()->getBoundingVolumePtr())->getRadius();
+            double size = childrenNode->getData()->getBoundingVolumePtr()->getSize();
 
-            std::cout << " " << countVisitor.nCount - 1 << "(" << radius << ")" << "\n";
+            std::cout << " " << countVisitor.nCount - 1 << "(" << size << ")" << "\n";
         }
 
         virtual void visit(BVHLeafNode* leafNode)
@@ -77,9 +76,9 @@ void BoundingVolumeHierarchy::print()
                 std::cout << "...";
             }
 
-            double radius = static_cast<BVSphere*>(leafNode->getData()->getBoundingVolumePtr())->getRadius();
+            double size = leafNode->getData()->getBoundingVolumePtr()->getSize();
 
-            std::cout << " 1" << "(" << radius << ")" << "\n";
+            std::cout << " 1" << "(" << size << ")" << "\n";
         }
 
         BoundingVolumeHierarchy& bvh;
@@ -123,10 +122,76 @@ int BoundingVolumeHierarchy::calculateNumberOfNodes()
 bool BoundingVolumeHierarchy::collides(BoundingVolumeHierarchy* hierarchy, Collider& collider)
 {
     mCollider = &collider;
-    return collides(getRoot(), hierarchy->getRoot());
+    return collidesIterative(getRoot(), hierarchy->getRoot());
 }
 
+bool BoundingVolumeHierarchy::collidesIterative(BVHNode* node1, BVHNode* node2)
+{
+    bool collides = false;
 
+    StackElement& first = mStack.push();
+    first.node1 = node1;
+    first.node2 = node2;
+
+    while (!mStack.empty())
+    {
+        StackElement& el = mStack.top();
+        mStack.pop();
+
+        BoundingVolume* bv1 = BVHCore::getBoundingVolume(el.node1);
+        BoundingVolume* bv2 = BVHCore::getBoundingVolume(el.node2);
+
+        if (bv1->intersects(bv2))
+        {
+            if (el.node1->isLeaf() && el.node2->isLeaf())
+            {
+                collides |= mCollider->collides(
+                            *static_cast<BVHLeafNode*>(el.node1)->getData()->getCollisionObject(),
+                            *static_cast<BVHLeafNode*>(el.node2)->getData()->getCollisionObject());
+            }
+            else
+            {
+                BVHNode* searchedNode;
+                BVHNode* otherNode;
+                if (el.node1->isLeaf())
+                {
+                    searchedNode = el.node2;
+                    otherNode = el.node1;
+                }
+                else if (el.node2->isLeaf())
+                {
+                    searchedNode = el.node1;
+                    otherNode = el.node2;
+                }
+                else
+                {
+                    // take children node with bigger bvh next
+                    if (bv1->getSize() > bv2->getSize())
+                    {
+                        searchedNode = el.node1;
+                        otherNode = el.node2;
+                    }
+                    else
+                    {
+                        searchedNode = el.node2;
+                        otherNode = el.node1;
+                    }
+                }
+
+                BVHChildrenNode* childrenNode = static_cast<BVHChildrenNode*>(searchedNode);
+                for (size_t i = 0; i < searchedNode->getNumberOfChildren(); ++i)
+                {
+                    StackElement& elTemp = mStack.push();
+                    elTemp.node1 = childrenNode->getChild(static_cast<unsigned int>(i));
+                    elTemp.node2 = otherNode;
+                }
+            }
+
+        }
+    }
+
+    return collides;
+}
 
 bool BoundingVolumeHierarchy::collides(BVHNode* node, BVHLeafNode* leafNode)
 {
@@ -145,7 +210,8 @@ bool BoundingVolumeHierarchy::collides(BVHNode* node, BVHChildrenNode* childrenN
     bool returnValue = false;
     for (size_t i = 0; i < childrenNode->getNumberOfChildren(); ++i)
     {
-        if (BVHCore::getBoundingVolume(node)->intersects(childrenNode->getData()->getBoundingVolumePtr()))
+        if (BVHCore::getBoundingVolume(node)->intersects(
+                childrenNode->getData()->getBoundingVolumePtr()))
         {
             returnValue |= collides(childrenNode->getChild(static_cast<unsigned int>(i)), node);
         }

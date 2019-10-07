@@ -34,21 +34,13 @@ typedef TreeNodeFactory<BVChildrenData*, BVLeafData*>       BVHTreeNodeFactory;
 class BVHCore
 {
 public:
-    static BoundingVolume* getBoundingVolume(BVHNode* node);
-
-public:
-    class GetBoundingVolumeVisitor : public BVHNodeVisitor
+    static BoundingVolume* getBoundingVolume(BVHNode* node)
     {
-    public:
-
-        virtual void visit(BVHChildrenNode* childrenNode) override;
-
-        virtual void visit(BVHLeafNode* leafNode) override;
-
-        BoundingVolume* boundingVolume;
-    };
-
-    static GetBoundingVolumeVisitor mGetBoundingVolumeVisitor;
+        if (node->isLeaf())
+            return static_cast<BVHLeafNode*>(node)->getData()->getBoundingVolumePtr();
+        else
+            return static_cast<BVHChildrenNode*>(node)->getData()->getBoundingVolumePtr();
+    }
 };
 
 #endif // BVHCORE_H

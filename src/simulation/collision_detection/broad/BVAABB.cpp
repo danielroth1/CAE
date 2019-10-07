@@ -29,6 +29,7 @@ void BVAABB::update(CollisionObject& collisionObject)
         mBB.mid() = cs->getPosition();
         mBB.min() = mBB.mid() - cs->getRadius() * Eigen::Vector::Ones();
         mBB.max() = mBB.mid() + cs->getRadius() * Eigen::Vector::Ones();
+        mBB.size() = mBB.max() - mBB.min();
         break;
     }
     case CollisionObject::Type::TRIANGLE:
