@@ -37,6 +37,9 @@ private:
     SimulationPointRef mPointA;
     SimulationPointRef mPointB;
 
+    Eigen::Vector mPoint1;
+    Eigen::Vector mPoint2;
+
     Eigen::Vector mTargetURel;
     Eigen::Vector mSumOfAllAppliedImpulses;
     Eigen::Matrix3d mImpulseFactor; // 1 / (K_aa + K_bb)

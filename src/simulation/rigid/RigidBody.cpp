@@ -149,12 +149,8 @@ void RigidBody::applyImpulse(const Eigen::Vector3d& r, const Eigen::Vector3d& p)
     if (mStatic)
         return;
 
-    Eigen::Matrix3d rot = mQ.toRotationMatrix();
-    Eigen::Matrix3d inertiaInv = rot * mInertiaInvBS * rot.transpose();
-
-//    Eigen::Matrix3d inertiaInv = rot.transpose() * mInertiaInvBS * rot;
     mV = mV + 1 / mMass * p;
-    mOmega = mOmega + inertiaInv * (r.cross(p));
+    mOmega = mOmega + mInertiaInv * (r.cross(p));
 }
 
 void RigidBody::applyOrientationImpulse(const Vector& l)

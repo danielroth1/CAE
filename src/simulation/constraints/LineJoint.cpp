@@ -12,8 +12,8 @@ LineJoint::LineJoint(
         SimulationPointRef pointA,
         SimulationPointRef pointB,
         Eigen::Vector lineDirectionBS)
-    : mPointA(pointA)
-    , mPointB(pointB)
+    : mPointARef(pointA)
+    , mPointBRef(pointB)
     , mLineDirectionBS(lineDirectionBS)
 {
 
@@ -21,48 +21,45 @@ LineJoint::LineJoint(
 
 bool LineJoint::references(const std::shared_ptr<SimulationObject>& so)
 {
-    return so == mPointA.getSimulationObject() ||
-            so == mPointB.getSimulationObject();
+    return so == mPointARef.getSimulationObject() ||
+            so == mPointBRef.getSimulationObject();
 }
 
 void LineJoint::initialize(double stepSize)
 {
     // calculate A
-    Eigen::Vector A = mPointA.getPoint();
+    Eigen::Vector A = mPointARef.getPoint();
     mCurrentLineDir = calculateLineDirection();
 
     // Project point A so that it is the closest point on the line to B
-    Eigen::Vector B = mPointB.getPoint();
-    mCurrentAWS = A + (B - A).dot(mCurrentLineDir) * mCurrentLineDir;
+    mPointBWS = mPointBRef.getPoint();
+    mPointAWS = A + (mPointBWS - A).dot(mCurrentLineDir) * mCurrentLineDir;
 
-
-    if (mPointA.getSimulationObject()->getType() == SimulationObject::Type::RIGID_BODY)
+    if (mPointARef.getSimulationObject()->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(mPointA.getSimulationObject().get());
-        mCurrentA = mCurrentAWS - rb->getCenterOfMass();
+        RigidBody* rb = static_cast<RigidBody*>(mPointARef.getSimulationObject().get());
+        mPointABS = mPointAWS - rb->getCenterOfMass();
     }
 
     // now apply impulses just like in BallJoint
-    mImpulseFactor = (ImpulseConstraintSolver::calculateK(mPointB) +
+    mImpulseFactor = (ImpulseConstraintSolver::calculateK(mPointBRef) +
                       ImpulseConstraintSolver::calculateK(
-                          mPointA.getSimulationObject(),
-                          mCurrentA, mPointA.getIndex())).inverse();
+                          mPointARef.getSimulationObject(),
+                          mPointABS, mPointARef.getIndex())).inverse();
 
-    mTargetURel = -(mCurrentAWS - mPointB.getPoint()) / stepSize;
+    mTargetURel = -(mPointAWS - mPointBWS) / stepSize;
 
+    mPointBBS = ImpulseConstraintSolver::calculateRelativePoint(
+                mPointBRef.getSimulationObject(), mPointBWS);
 }
 
 bool LineJoint::solve(double maxConstraintError)
 {
-    Eigen::Vector p1 = mCurrentA;
-    Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointB.getSimulationObject(), mPointB.getPoint());
-
     Eigen::Vector uRel =
             ImpulseConstraintSolver::calculateSpeed(
-                mPointA.getSimulationObject(), p1, mPointA.getIndex()) -
+                mPointARef.getSimulationObject(), mPointABS, mPointARef.getIndex()) -
             ImpulseConstraintSolver::calculateSpeed(
-                mPointB.getSimulationObject(), p2, mPointB.getIndex());
+                mPointBRef.getSimulationObject(), mPointBBS, mPointBRef.getIndex());
 
     // project uRel
     Eigen::Vector deltaURel = mTargetURel - uRel;
@@ -78,9 +75,11 @@ bool LineJoint::solve(double maxConstraintError)
     Eigen::Vector impulse = mImpulseFactor * deltaURel;
 
     ImpulseConstraintSolver::applyImpulse(
-                mPointA.getSimulationObject(), impulse, p1, mPointA.getIndex());
+                mPointARef.getSimulationObject(), impulse,
+                mPointABS, mPointARef.getIndex());
     ImpulseConstraintSolver::applyImpulse(
-                mPointB.getSimulationObject(), -impulse, p2, mPointB.getIndex());
+                mPointBRef.getSimulationObject(), -impulse,
+                mPointBBS, mPointBRef.getIndex());
 
     return false;
 }
@@ -94,10 +93,10 @@ Eigen::Vector LineJoint::calculateLineDirection()
 {
     // transform to world space if rigid
     Eigen::Vector lineDirection = mLineDirectionBS;
-    if (mPointA.getSimulationObject()->getType() == SimulationObject::Type::RIGID_BODY)
+    if (mPointARef.getSimulationObject()->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(mPointA.getSimulationObject().get());
-        lineDirection = rb->getOrientation().toRotationMatrix() * lineDirection;
+        RigidBody* rb = static_cast<RigidBody*>(mPointARef.getSimulationObject().get());
+        lineDirection = rb->getOrientation() * lineDirection;
     }
     return lineDirection;
 }

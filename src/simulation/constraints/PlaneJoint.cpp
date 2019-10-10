@@ -53,22 +53,26 @@ void PlaneJoint::initialize(double stepSize)
                           mPointA.getSimulationObject(),
                           mCurrentA, mPointA.getIndex())).inverse();
 
-    mTargetURel = -(mCurrentAWS - mPointB.getPoint()) / stepSize;
+    mTargetURel = -(mCurrentAWS - B) / stepSize;
 
+    mPoint1 = ImpulseConstraintSolver::calculateRelativePoint(
+                mPointA.getSimulationObject(), mCurrentAWS);
+    mPoint2 = ImpulseConstraintSolver::calculateRelativePoint(
+                mPointB.getSimulationObject(), B);
 }
 
 bool PlaneJoint::solve(double maxConstraintError)
 {
-    Eigen::Vector p1 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointA.getSimulationObject(), mCurrentAWS);
-    Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointB.getSimulationObject(), mPointB.getPoint());
+//    Eigen::Vector p1 = ImpulseConstraintSolver::calculateRelativePoint(
+//                mPointA.getSimulationObject(), mCurrentAWS);
+//    Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
+//                mPointB.getSimulationObject(), mPointB.getPoint());
 
     Eigen::Vector uRel =
             ImpulseConstraintSolver::calculateSpeed(
-                mPointA.getSimulationObject(), p1, mPointA.getIndex()) -
+                mPointA.getSimulationObject(), mPoint1, mPointA.getIndex()) -
             ImpulseConstraintSolver::calculateSpeed(
-                mPointB.getSimulationObject(), p2, mPointB.getIndex());
+                mPointB.getSimulationObject(), mPoint2, mPointB.getIndex());
 
     // project uRel
     Eigen::Vector deltaURel = mTargetURel - uRel;
@@ -87,9 +91,11 @@ bool PlaneJoint::solve(double maxConstraintError)
     Eigen::Vector impulse = mImpulseFactor * deltaURel;
 
     ImpulseConstraintSolver::applyImpulse(
-                mPointA.getSimulationObject(), impulse, p1, mPointA.getIndex());
+                mPointA.getSimulationObject(), impulse,
+                mPoint1, mPointA.getIndex());
     ImpulseConstraintSolver::applyImpulse(
-                mPointB.getSimulationObject(), -impulse, p2, mPointB.getIndex());
+                mPointB.getSimulationObject(), -impulse,
+                mPoint2, mPointB.getIndex());
 
     return false;
 }

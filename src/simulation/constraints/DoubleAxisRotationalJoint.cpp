@@ -28,7 +28,6 @@ bool DoubleAxisRotationalJoint::references(const std::shared_ptr<SimulationObjec
 
 void DoubleAxisRotationalJoint::initialize(double stepSize)
 {
-
     // position error
     Eigen::Quaterniond q1 = mRbA->getOrientation();
     Eigen::Quaterniond q2 = mRbB->getOrientation();

@@ -36,6 +36,11 @@ void BallJoint::initialize(double stepSize)
 
     mTargetURel = -(mPointA.getPoint() - mPointB.getPoint()) / stepSize;
 
+    mPoint1 = ImpulseConstraintSolver::calculateRelativePoint(
+                mPointA.getSimulationObject(), mPointA.getPoint());
+    mPoint2 = ImpulseConstraintSolver::calculateRelativePoint(
+                mPointB.getSimulationObject(), mPointB.getPoint());
+
     // comment in to print the norm
 //    std::cout << "position error = " << mTargetURel.norm() <<
 //                 ", p1 = " << mPointA.getPoint().transpose() <<
@@ -44,16 +49,11 @@ void BallJoint::initialize(double stepSize)
 
 bool BallJoint::solve(double maxConstraintError)
 {
-    Eigen::Vector p1 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointA.getSimulationObject(), mPointA.getPoint());
-    Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointB.getSimulationObject(), mPointB.getPoint());
-
     Eigen::Vector uRel =
             ImpulseConstraintSolver::calculateSpeed(
-                mPointA.getSimulationObject(), p1, mPointA.getIndex()) -
+                mPointA.getSimulationObject(), mPoint1, mPointA.getIndex()) -
             ImpulseConstraintSolver::calculateSpeed(
-                mPointB.getSimulationObject(), p2, mPointB.getIndex());
+                mPointB.getSimulationObject(), mPoint2, mPointB.getIndex());
 
     Eigen::Vector deltaURel = mTargetURel - uRel;
 
@@ -65,9 +65,9 @@ bool BallJoint::solve(double maxConstraintError)
     Eigen::Vector impulse = mImpulseFactor * deltaURel;
 
     ImpulseConstraintSolver::applyImpulse(
-                mPointA.getSimulationObject(), impulse, p1, mPointA.getIndex());
+                mPointA.getSimulationObject(), impulse, mPoint1, mPointA.getIndex());
     ImpulseConstraintSolver::applyImpulse(
-                mPointB.getSimulationObject(), -impulse, p2, mPointB.getIndex());
+                mPointB.getSimulationObject(), -impulse, mPoint2, mPointB.getIndex());
 
     return false;
 }

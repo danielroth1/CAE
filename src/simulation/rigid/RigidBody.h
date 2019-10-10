@@ -58,7 +58,8 @@ public:
 
         // \param r - the point on the body where the impulse is applied on
         // \param p - the impulse vector.
-        void applyImpulse(const Eigen::Vector& r, const Eigen::Vector& p);
+        void applyImpulse(const Eigen::Vector& r,
+                          const Eigen::Vector& p);
 
         void applyOrientationImpulse(const Eigen::Vector& l);
 

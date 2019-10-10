@@ -46,6 +46,7 @@ public:
 
 private:
     Collision& mCollision;
+
     Eigen::Vector mTargetUNormalRel;
     Eigen::Vector mSumOfAllAppliedImpulses;
     Eigen::Matrix3d mK;
@@ -56,8 +57,8 @@ private:
     double mCFrictionStatic;
 
     // Temporary variables used in methods
-    Eigen::Vector p1;
-    Eigen::Vector p2;
+    Eigen::Vector3d mPoint1;
+    Eigen::Vector3d mPoint2;
     Eigen::Vector u1;
     Eigen::Vector u2;
     Eigen::Vector uRel;

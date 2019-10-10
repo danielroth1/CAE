@@ -49,6 +49,9 @@ private:
     // Point that can move freely on the line
     SimulationPointRef mPointB;
 
+    Eigen::Vector mPoint1;
+    Eigen::Vector mPoint2;
+
     // Direction of the line in body space coordinates.
     // If used on a deformable, the direction stays the same (for now).
     Eigen::Vector mLineDir1BS;

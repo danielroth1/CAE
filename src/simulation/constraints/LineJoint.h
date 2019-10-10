@@ -44,17 +44,20 @@ private:
     Eigen::Vector calculateLineDirection();
 
     // Origin point of the line that is mounted to object A
-    SimulationPointRef mPointA;
+    SimulationPointRef mPointARef;
 
     // Point that can move freely on the line
-    SimulationPointRef mPointB;
+    SimulationPointRef mPointBRef;
+
+    Eigen::Vector mPointBWS;
+    Eigen::Vector mPointBBS;
 
     // Direction of the line in body space coordinates.
     // If used on a deformable, the direction stays the same (for now).
     Eigen::Vector mLineDirectionBS;
 
-    Eigen::Vector mCurrentAWS;
-    Eigen::Vector mCurrentA;
+    Eigen::Vector mPointAWS;
+    Eigen::Vector mPointABS;
     Eigen::Vector mCurrentLineDir;
 
     Eigen::Vector mTargetURel;
