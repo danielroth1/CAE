@@ -544,7 +544,7 @@ void SimulationControl::step()
     bool collisionsOccured = mCollisionManager->collideAll();
     STOP_TIMING_SIMULATION;
 
-    if (collisionsOccured)
+    if (collisionsOccured || !mImpulseConstraintSolver->getConstraints().empty())
     {
         // create collision constraints w.r.t. x + x^{FEM}
         mImpulseConstraintSolver->initializeCollisionConstraints(
