@@ -47,6 +47,18 @@ private slots:
 
     void on_mRevertButton_clicked();
 
+    void on_mCellSizeCheckBox_stateChanged(int arg1);
+
+    void on_mCellRadiusEdgeRatioBox_2_stateChanged(int arg1);
+
+    void on_mFacetAngleCheckBox_stateChanged(int arg1);
+
+    void on_mFacetSizeCheckBox_stateChanged(int arg1);
+
+    void on_mFacetDistanceCheckBox_stateChanged(int arg1);
+
+    void on_mSharpFeaturesEnabled_stateChanged(int arg1);
+
 private:
 
     // Update a double spin box with a given value.
@@ -56,7 +68,7 @@ private:
 
     MeshConverterUIControl* mUiControl;
 
-    Ui::MeshConverterUIForm *ui;
+    Ui::MeshConverterUIForm* ui;
 };
 
 #endif // MESHCONVERTERUIFORM_H

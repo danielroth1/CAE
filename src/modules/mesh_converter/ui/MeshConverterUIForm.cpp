@@ -18,27 +18,42 @@ MeshConverterUIForm::~MeshConverterUIForm()
 
 double MeshConverterUIForm::getCellSize()
 {
-    return ui->mCellSizeBox->value();
+    if (ui->mCellSizeCheckBox->checkState() == Qt::Checked)
+        return ui->mCellSizeBox->value();
+    else
+        return 0.0;
 }
 
 double MeshConverterUIForm::getCellRadiusEdgeRatio()
 {
-    return ui->mCellRadiusEdgeRatioBox->value();
+    if (ui->mCellRadiusEdgeRatioCheckBox->checkState() == Qt::Checked)
+        return ui->mCellRadiusEdgeRatioBox->value();
+    else
+        return 0.0;
 }
 
 double MeshConverterUIForm::getFacetAngle() const
 {
-    return ui->mFacetAngle->value();
+    if (ui->mFacetAngleCheckBox->checkState() == Qt::Checked)
+        return ui->mFacetAngle->value();
+    else
+        return 0.0;
 }
 
 double MeshConverterUIForm::getFacetSize() const
 {
-    return ui->mFacetSize->value();
+    if (ui->mFacetSizeCheckBox->checkState() == Qt::Checked)
+        return ui->mFacetSize->value();
+    else
+        return 0.0;
 }
 
 double MeshConverterUIForm::getFacetDistance() const
 {
-    return ui->mFacetDistance->value();
+    if (ui->mFacetDistanceCheckBox->checkState() == Qt::Checked)
+        return ui->mFacetDistance->value();
+    else
+        return 0.0;
 }
 
 bool MeshConverterUIForm::isSharpFeaturesEnabled() const
@@ -97,6 +112,36 @@ void MeshConverterUIForm::on_mConvertButton_clicked()
 void MeshConverterUIForm::on_mRevertButton_clicked()
 {
     mUiControl->onRevertButtonClicked();
+}
+
+void MeshConverterUIForm::on_mCellSizeCheckBox_stateChanged(int value)
+{
+    ui->mCellSizeBox->setEnabled(value == Qt::Checked);
+}
+
+void MeshConverterUIForm::on_mCellRadiusEdgeRatioBox_2_stateChanged(int value)
+{
+    ui->mCellRadiusEdgeRatioBox->setEnabled(value == Qt::Checked);
+}
+
+void MeshConverterUIForm::on_mFacetAngleCheckBox_stateChanged(int value)
+{
+    ui->mFacetAngle->setEnabled(value == Qt::Checked);
+}
+
+void MeshConverterUIForm::on_mFacetSizeCheckBox_stateChanged(int value)
+{
+    ui->mFacetSize->setEnabled(value == Qt::Checked);
+}
+
+void MeshConverterUIForm::on_mFacetDistanceCheckBox_stateChanged(int value)
+{
+    ui->mFacetDistance->setEnabled(value == Qt::Checked);
+}
+
+void MeshConverterUIForm::on_mSharpFeaturesEnabled_stateChanged(int value)
+{
+    ui->mMinFeatureEdgeAngleDeg->setEnabled(value == Qt::Checked);
 }
 
 void MeshConverterUIForm::updateDoubleSpinBox(
