@@ -97,61 +97,6 @@ std::vector<ID> PolygonTopology::retrieveNotReferencedByFaces() const
     return VectorOperations::sub(allVertices, referenced);
 }
 
-TopologyVertex& PolygonTopology::getVertex(ID id)
-{
-    return mVertices[id];
-}
-
-TopologyEdge& PolygonTopology::getEdge(ID id)
-{
-    return mEdges[id];
-}
-
-TopologyFace& PolygonTopology::getFace(ID id)
-{
-    return mFaces[id];
-}
-
-std::vector<TopologyVertex>& PolygonTopology::getVertices()
-{
-    return mVertices;
-}
-
-const std::vector<TopologyVertex>& PolygonTopology::getVertices() const
-{
-    return mVertices;
-}
-
-std::vector<TopologyEdge>& PolygonTopology::getEdges()
-{
-    return mEdges;
-}
-
-const std::vector<TopologyEdge>& PolygonTopology::getEdges() const
-{
-    return mEdges;
-}
-
-std::vector<TopologyFace>& PolygonTopology::getFaces()
-{
-    return mFaces;
-}
-
-const std::vector<TopologyFace>& PolygonTopology::getFaces() const
-{
-    return mFaces;
-}
-
-Faces& PolygonTopology::getFacesIndices()
-{
-    return mFacesIndices;
-}
-
-const Faces& PolygonTopology::getFacesIndices() const
-{
-    return mFacesIndices;
-}
-
 Edges PolygonTopology::retrieveEdges() const
 {
     Edges edges;

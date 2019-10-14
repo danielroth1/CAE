@@ -67,9 +67,15 @@ public:
     // and the transformation matrix changed.
     void update();
 
-    Type getType();
+    Type getType()
+    {
+        return mType;
+    }
 
-    size_t getSize();
+    size_t getSize()
+    {
+        return mVectorsWS.size();
+    }
 
     template<class BidirIter>
     void removeVectors(BidirIter begin, BidirIter end)
@@ -80,26 +86,68 @@ public:
     void removeVector(ID index);
 
     // World space
-    Vectors& getVectors();
-    const Vectors& getVectors() const;
-    void setVectors(const Vectors& vectors);
+    Vectors& getVectors()
+    {
+        return mVectorsWS;
+    }
+    const Vectors& getVectors() const
+    {
+        return mVectorsWS;
+    }
+    void setVectors(const Vectors& vectors)
+    {
+        mVectorsWS = vectors;
+    }
 
-    Eigen::Vector& getVector(ID index);
-    const Eigen::Vector& getVector(ID index) const;
-    void setVector(ID index, const Eigen::Vector& v);
+    Eigen::Vector& getVector(ID index)
+    {
+        return mVectorsWS[index];
+    }
+    const Eigen::Vector& getVector(ID index) const
+    {
+        return mVectorsWS[index];
+    }
+    void setVector(ID index, const Eigen::Vector& v)
+    {
+        mVectorsWS[index] = v;
+    }
 
     // Body space
-    Eigen::Affine3d& getTransform();
+    Eigen::Affine3d& getTransform()
+    {
+        return mTransform;
+    }
 
-    Vectors& getVectorsBS();
-    const Vectors& getVectorsBS() const;
-    void setVectorsBS(const Vectors& vectors);
+    Vectors& getVectorsBS()
+    {
+        return *mVectorsBS;
+    }
+    const Vectors& getVectorsBS() const
+    {
+        return *mVectorsBS;
+    }
+    void setVectorsBS(const Vectors& vectors)
+    {
+        *mVectorsBS = vectors;
+    }
 
-    Eigen::Vector& getVectorBS(ID index);
-    const Eigen::Vector& getVectorBS(ID index) const;
-    void setVectorBS(ID index, const Eigen::Vector& v);
+    Eigen::Vector& getVectorBS(ID index)
+    {
+        return (*mVectorsBS)[index];
+    }
+    const Eigen::Vector& getVectorBS(ID index) const
+    {
+        return (*mVectorsBS)[index];
+    }
+    void setVectorBS(ID index, const Eigen::Vector& v)
+    {
+        (*mVectorsBS)[index] = v;
+    }
 
-    void setTransform(const Eigen::Affine3d& transform);
+    void setTransform(const Eigen::Affine3d& transform)
+    {
+        mTransform = transform;
+    }
 
     // Changes the representation type to body space. In
     // this type, only the transformation matrix may be

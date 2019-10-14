@@ -56,45 +56,86 @@ public:
     // Removes the positions at the given indices.
     virtual void removePositions(const std::vector<ID>& indices);
 
-    BSWSVectors::Type getType();
+    BSWSVectors::Type getType()
+    {
+        return mPositions.getType();
+    }
 
-    size_t getSize();
+    size_t getSize()
+    {
+        return mPositions.getSize();
+    }
 
     // World space
-    Vectors& getPositions();
-    const Vectors& getPositions() const;
-    Eigen::Vector& getPosition(ID index);
+    Vectors& getPositions()
+    {
+        return mPositions.getVectors();
+    }
+
+    const Vectors& getPositions() const
+    {
+        return mPositions.getVectors();
+    }
+
+    Eigen::Vector& getPosition(ID index)
+    {
+        return mPositions.getVector(index);
+    }
 
     // If in body space representation, returns the temporary world space
     // positions.
     // If in world space representation, returns the regular permanent positions.
-    const Eigen::Vector& getPosition(ID index) const;
+    const Eigen::Vector& getPosition(ID index) const
+    {
+        return mPositions.getVector(index);
+    }
 
     // Sets the position at the given index. Use getSize() to see if the
     // index is within range.
     // - If in BODY_SPACE, sets the body space position. Note the difference
     //      behavior to the getter.
     // - If in WORLD_SPACE, sets the world space position
-    void setPosition(ID index, const Eigen::Vector& position);
+    void setPosition(ID index, const Eigen::Vector& position)
+    {
+        mPositions.setVector(index, position);
+    }
 
     // Sets all positions.
     // - If in BODY_SPACE, sets the body space positions. Note the difference
     //      behavior to the getter.
     // - If in WORLD_SPACE, sets the world space positions.
-    void setPositions(const Vectors& positions);
+    void setPositions(const Vectors& positions)
+    {
+        mPositions.setVectors(positions);
+    }
 
     // Body space
-    Eigen::Affine3d& getTransform();
-    Vectors& getPositionsBS();
-    Eigen::Vector& getPositionBS(ID index);
+    Eigen::Affine3d& getTransform()
+    {
+        return mPositions.getTransform();
+    }
+    Vectors& getPositionsBS()
+    {
+        return mPositions.getVectorsBS();
+    }
+    Eigen::Vector& getPositionBS(ID index)
+    {
+        return mPositions.getVectorBS(index);
+    }
 
     // Offset that points for each vertex to its initial body space
     // By calling changeRepresentationToBS(-mCenter) the original
     // vertex positions of each vertex v_i can be calculate with
     // mTransform.inverse() * v_i.
-    Eigen::Vector getCenter() const;
+    Eigen::Vector getCenter() const
+    {
+        return mCenter;
+    }
 
-    void setTransform(const Eigen::Affine3d& transform);
+    void setTransform(const Eigen::Affine3d& transform)
+    {
+        mPositions.setTransform(transform);
+    }
 
     // Calculates the center vertex by averaging over
     // all world space vertices. This method is indended

@@ -7,6 +7,8 @@
 #include <simulation/constraints/BallJoint.h>
 #include <simulation/constraints/CollisionConstraint.h>
 
+#include <times/timing.h>
+
 using namespace Eigen;
 
 ImpulseConstraintSolver::ImpulseConstraintSolver()
@@ -21,10 +23,12 @@ ImpulseConstraintSolver::~ImpulseConstraintSolver()
 
 void ImpulseConstraintSolver::initializeNonCollisionConstraints(double stepSize)
 {
+    START_TIMING_SIMULATION("ImpulseConstraintSolver::initializeNonCollisionConstraints");
     for (size_t i = 0; i < mConstraints.size(); ++i)
     {
         mConstraints[i]->initialize(stepSize);
     }
+    STOP_TIMING_SIMULATION;
 }
 
 void ImpulseConstraintSolver::initializeCollisionConstraints(
@@ -34,6 +38,7 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
         double cFrictionStatic,
         double cFrictionDynamic)
 {
+    START_TIMING_SIMULATION("ImpulseConstraintSolver::initializeCollisionConstraints");
     // calculate K, target u rels
     mCollisionConstraints.clear();
     mCollisionConstraints.reserve(collisions.size());
@@ -50,6 +55,8 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
     {
         mCollisionConstraints[i].initialize(stepSize);
     }
+
+    STOP_TIMING_SIMULATION;
 }
 
 Matrix3d ImpulseConstraintSolver::calculateK(

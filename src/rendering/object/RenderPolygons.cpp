@@ -474,6 +474,7 @@ void RenderPolygons::initialize()
 void RenderPolygons::drawTriangles(
         const std::shared_ptr<RenderPolygonsData>& data, int nTriangles)
 {
+    START_TIMING_RENDERING("RenderPolygons::drawTriangles")
     data->setPolygonMode();
 
     std::shared_ptr<Appearances> appearances = data->getAppearances();
@@ -539,4 +540,5 @@ void RenderPolygons::drawTriangles(
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         }
     }
+    STOP_TIMING_RENDERING;
 }

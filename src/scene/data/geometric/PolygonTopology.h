@@ -29,18 +29,51 @@ public:
     std::vector<ID> retrieveNotReferencedByEdges() const;
     std::vector<ID> retrieveNotReferencedByFaces() const;
 
-    TopologyVertex& getVertex(ID id);
-    TopologyEdge& getEdge(ID id);
-    TopologyFace& getFace(ID id);
+    TopologyVertex& getVertex(ID id)
+    {
+        return mVertices[id];
+    }
+    TopologyEdge& getEdge(ID id)
+    {
+        return mEdges[id];
+    }
+    TopologyFace& getFace(ID id)
+    {
+        return mFaces[id];
+    }
 
-    std::vector<TopologyVertex>& getVertices();
-    const std::vector<TopologyVertex>& getVertices() const;
-    std::vector<TopologyEdge>& getEdges();
-    const std::vector<TopologyEdge>& getEdges() const;
-    std::vector<TopologyFace>& getFaces();
-    const std::vector<TopologyFace>& getFaces() const;
-    Faces& getFacesIndices();
-    const Faces& getFacesIndices() const;
+    std::vector<TopologyVertex>& getVertices()
+    {
+        return mVertices;
+    }
+    const std::vector<TopologyVertex>& getVertices() const
+    {
+        return mVertices;
+    }
+    std::vector<TopologyEdge>& getEdges()
+    {
+        return mEdges;
+    }
+    const std::vector<TopologyEdge>& getEdges() const
+    {
+        return mEdges;
+    }
+    std::vector<TopologyFace>& getFaces()
+    {
+        return mFaces;
+    }
+    const std::vector<TopologyFace>& getFaces() const
+    {
+        return mFaces;
+    }
+    Faces& getFacesIndices()
+    {
+        return mFacesIndices;
+    }
+    const Faces& getFacesIndices() const
+    {
+        return mFacesIndices;
+    }
 
     Edges retrieveEdges() const;
     Faces retrieveFaces() const;

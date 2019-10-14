@@ -569,9 +569,9 @@ void SimulationControl::step()
                 mFEMSimulation->revertSolverStep(); // x, v + v^{col}
 
                 // solve on x, v + v^{col}
-                START_TIMING_SIMULATION("CollisionManager::solve_FEM");
+//                START_TIMING_SIMULATION("CollisionManager::solve_FEM");
                 mFEMSimulation->solve(mStepSize, false); // x + x^{FEM}, v + v^{FEM}
-                STOP_TIMING_SIMULATION;
+//                STOP_TIMING_SIMULATION;
 
 //                mImpulseConstraintSolver->initializeCollisionConstraints(
 //                            mCollisionManager->getCollider()->getCollisions(),
@@ -582,11 +582,11 @@ void SimulationControl::step()
 
                 mFEMSimulation->revertPositions(); // x, v + v^{FEM}
 
-                START_TIMING_SIMULATION("CollisionManager::solve_constraints");
+//                START_TIMING_SIMULATION("CollisionManager::solve_constraints");
                 mImpulseConstraintSolver->solveConstraints(
                             mMaxNumConstraintSolverIterations,
                             mMaxConstraintError); // x, v + v^{FEM} + v^{col}
-                STOP_TIMING_SIMULATION;
+//                STOP_TIMING_SIMULATION;
             }
         }
 
