@@ -1,18 +1,19 @@
 #include "FEMObject.h"
 #include "modules/mesh_converter/MeshConverter.h"
+#include "FiniteElement.h"
+
 #include <simulation/ElasticMaterial.h>
 #include <simulation/SimulationObjectVisitor.h>
-#include "simulation/SimulationUtils.h"
-#include "simulation/constraints/Truncation.h"
+#include <simulation/SimulationUtils.h>
+#include <simulation/constraints/Truncation.h>
+#include <simulation/references/SimulationPointRef.h>
 #include <QDebug>
-#include <iostream>
 #include <scene/data/geometric/Polygon3D.h>
 #include <scene/data/geometric/Polygon3DTopology.h>
 #include <scene/data/references/GeometricPointRefVisitor.h>
 #include <scene/data/references/GeometricVertexRef.h>
-#include <simulation/constraints/Truncation.h>
-#include <simulation/references/SimulationPointRef.h>
 #include <times/timing.h>
+
 
 // FEMObject without initialPositions
 
@@ -159,16 +160,6 @@ void FEMObject::applyForce(SimulationPointRef& ref, const Vector& force)
     } visitor(*this, force);
 
     ref.getGeometricPointRef()->accept(visitor);
-}
-
-ID FEMObject::getId() const
-{
-    return mId;
-}
-
-void FEMObject::setId(ID id)
-{
-    mId = id;
 }
 
 void FEMObject::initializeFEM()
@@ -422,20 +413,6 @@ void FEMObject::updateGeometricData()
     mPoly3->update();
 }
 
-void FEMObject::applyImpulse(ID vertexIndex, const Vector& impulse)
-{
-    // calculate masses of each vertex (itearte over finite elements)
-    if (mMasses[vertexIndex] > 0)
-        mVelocities[vertexIndex] += 1 / mMasses[vertexIndex] * impulse;
-    else
-        std::cout << "error: mass is negative\n";
-}
-
-void FEMObject::applyForce(ID vertexIndex, const Vector& force)
-{
-    mForcesExt[vertexIndex] += force;
-}
-
 void FEMObject::addTrunctionIds(const std::vector<ID>& vectorIDs)
 {
     mTruncation->addTruncationIds(vectorIDs);
@@ -459,36 +436,6 @@ void FEMObject::clearTruncation()
     mTruncation->clear();
 
     mAnalyzePatternNecessary = true;
-}
-
-const std::vector<ID>& FEMObject::getTruncatedVectorIds() const
-{
-    return mTruncation->getTruncatedVectorIds();
-}
-
-Vector& FEMObject::x(unsigned int i)
-{
-    return mInitialPositions[i];
-}
-
-Vector& FEMObject::y(unsigned int i)
-{
-    return mPositions[i];
-}
-
-Vector& FEMObject::u(unsigned int i)
-{
-    return mDisplacements[i];
-}
-
-Vector& FEMObject::v(unsigned int i)
-{
-    return mVelocities[i];
-}
-
-Vector& FEMObject::f_el(unsigned int i)
-{
-    return mForcesEl[i];
 }
 
 void FEMObject::setYoungsModulus(double youngsModulus)
@@ -545,89 +492,6 @@ ElasticMaterial FEMObject::getElasticMaterial()
         return mFiniteElements[0].getMaterial();
     }
     return ElasticMaterial();
-}
-
-Vectors& FEMObject::getInitialPositions()
-{
-    return mInitialPositions;
-}
-
-Vectors& FEMObject::getPositions()
-{
-    return mPositions;
-}
-
-const Vector& FEMObject::getPositionPrevious(size_t index) const
-{
-    return mPositionsPrevious[index];
-}
-
-Vectors& FEMObject::getVelocities()
-{
-    return mVelocities;
-}
-
-double FEMObject::getMass(ID vertexId)
-{
-    return mMasses[vertexId];
-}
-
-Vectors& FEMObject::getDisplacements()
-{
-    return mDisplacements;
-}
-
-Vectors& FEMObject::getElasticForces()
-{
-    return mForcesEl;
-}
-
-Vectors& FEMObject::getExternalForces()
-{
-    return mForcesExt;
-}
-
-Vector& FEMObject::getExternalForce(size_t id)
-{
-    return mForcesExt[id];
-}
-
-std::shared_ptr<Polygon3D> FEMObject::getPolygon()
-{
-    return mPoly3;
-}
-
-const Eigen::SparseMatrix<double>& FEMObject::getStiffnessMatrix(bool corot)
-{
-    if (corot)
-        return mKCorot.getMatrix();
-    else
-        return mK.getMatrix();
-}
-
-Vector& FEMObject::getPosition(size_t id)
-{
-    return mPositions[id];
-}
-
-void FEMObject::setPosition(Vector v, ID id)
-{
-    mPositions[id] = v;
-}
-
-void FEMObject::addToPosition(Vector v, ID id)
-{
-    mPositions[id] += v;
-}
-
-size_t FEMObject::getSize()
-{
-    return mPositions.size();
-}
-
-GeometricData* FEMObject::getGeometricData()
-{
-    return mPoly3.get();
 }
 
 void FEMObject::initializeStiffnessMatrix()
@@ -770,20 +634,26 @@ void FEMObject::assembleStiffnessMatrix(bool corotated)
         FiniteElement& fe = mFiniteElements[i];
         const FEColumnPtrs& ptrs = corotated ? mKCorotColPtrs[i] : mKColPtrs[i];
 
-        for (unsigned int a = 0; a < 4; ++a)
+        if (corotated)
         {
-            for (unsigned int b = 0; b < 4; ++b)
+            for (unsigned int a = 0; a < 4; ++a)
             {
-                if (corotated)
+                for (unsigned int b = 0; b < 4; ++b)
                 {
-                    Eigen::Map<Eigen::Vector3d>(ptrs[a][b][0]) +=
-                            fe.getKCorot()[a][b].col(0);
-                    Eigen::Map<Eigen::Vector3d>(ptrs[a][b][1]) +=
-                            fe.getKCorot()[a][b].col(1);
-                    Eigen::Map<Eigen::Vector3d>(ptrs[a][b][2]) +=
-                            fe.getKCorot()[a][b].col(2);
+                        Eigen::Map<Eigen::Vector3d>(ptrs[a][b][0]) +=
+                                fe.getKCorot()[a][b].col(0);
+                        Eigen::Map<Eigen::Vector3d>(ptrs[a][b][1]) +=
+                                fe.getKCorot()[a][b].col(1);
+                        Eigen::Map<Eigen::Vector3d>(ptrs[a][b][2]) +=
+                                fe.getKCorot()[a][b].col(2);
                 }
-                else
+            }
+        }
+        else
+        {
+            for (unsigned int a = 0; a < 4; ++a)
+            {
+                for (unsigned int b = 0; b < 4; ++b)
                 {
                     Eigen::Map<Eigen::Vector3d>(ptrs[a][b][0]) +=
                             fe.getK()[a][b].col(0);
@@ -792,7 +662,6 @@ void FEMObject::assembleStiffnessMatrix(bool corotated)
                     Eigen::Map<Eigen::Vector3d>(ptrs[a][b][2]) +=
                             fe.getK()[a][b].col(2);
                 }
-
             }
         }
     }

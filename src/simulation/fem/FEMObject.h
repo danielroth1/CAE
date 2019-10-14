@@ -2,15 +2,20 @@
 #define FEMOBJECT_H
 
 
-
 #include <data_structures/DataStructures.h>
 #include <data_structures/SparseMatrix33.h>
-#include "FiniteElement.h"
 #include <Eigen/Sparse>
+#include <simulation/ElasticMaterial.h>
 #include <simulation/SimulationObject.h>
 
+#include <iostream>
+
+#include <simulation/constraints/Truncation.h>
+
+#include <scene/data/geometric/Polygon3D.h>
+
+class FiniteElement;
 class Polygon3D;
-class Truncation;
 
 // A FEMObject describes a deformable body and offers
 // functionality to deform that body with the help of
@@ -58,10 +63,16 @@ public:
             SimulationPointRef& ref, const Eigen::Vector& force) override;
 
     // Getters
-    ID getId() const;
+    ID getId() const
+    {
+        return mId;
+    }
 
     // Setters
-    void setId(ID id);
+    void setId(ID id)
+    {
+        mId = id;
+    }
 
     // Update Functions
 
@@ -109,8 +120,19 @@ public:
 
     void updateGeometricData();
 
-    void applyImpulse(ID vertexIndex, const Eigen::Vector& impulse);
-    void applyForce(ID vertexIndex, const Eigen::Vector& force);
+    void applyImpulse(ID vertexIndex, const Eigen::Vector& impulse)
+    {
+        // calculate masses of each vertex (itearte over finite elements)
+        if (mMasses[vertexIndex] > 0)
+            mVelocities[vertexIndex] += 1 / mMasses[vertexIndex] * impulse;
+        else
+            std::cout << "error: mass is negative\n";
+    }
+
+    void applyForce(ID vertexIndex, const Eigen::Vector& force)
+    {
+        mForcesExt[vertexIndex] += force;
+    }
 
     void addTrunctionIds(const std::vector<ID>& vectorIDs);
 
@@ -118,13 +140,35 @@ public:
 
     void clearTruncation();
 
-    const std::vector<ID>& getTruncatedVectorIds() const;
+    const std::vector<ID>& getTruncatedVectorIds() const
+    {
+        return mTruncation->getTruncatedVectorIds();
+    }
 
-    Eigen::Vector& x(unsigned int i);
-    Eigen::Vector& y(unsigned int i);
-    Eigen::Vector& u(unsigned int i);
-    Eigen::Vector& v(unsigned int i);
-    Eigen::Vector& f_el(unsigned int i);
+    Eigen::Vector& x(unsigned int i)
+    {
+        return mInitialPositions[i];
+    }
+
+    Eigen::Vector& y(unsigned int i)
+    {
+        return mPositions[i];
+    }
+
+    Eigen::Vector& u(unsigned int i)
+    {
+        return mDisplacements[i];
+    }
+
+    Eigen::Vector& v(unsigned int i)
+    {
+        return mVelocities[i];
+    }
+
+    Eigen::Vector& f_el(unsigned int i)
+    {
+        return mForcesEl[i];
+    }
 
     void setYoungsModulus(double youngsModulus);
     double getYoungsModulus();
@@ -136,29 +180,88 @@ public:
     ElasticMaterial getElasticMaterial();
 
     // Getters
-    Vectors& getInitialPositions();
-    Vectors& getPositions();
-    const Eigen::Vector& getPositionPrevious(size_t index) const;
-    Vectors& getVelocities();
-    double getMass(ID vertexId);
+    Vectors& getInitialPositions()
+    {
+        return mInitialPositions;
+    }
 
-    Vectors& getDisplacements();
-    Vectors& getElasticForces();
-    Vectors& getExternalForces();
-    Eigen::Vector& getExternalForce(size_t id);
+    Vectors& getPositions()
+    {
+        return mPositions;
+    }
+
+    const Eigen::Vector& getPositionPrevious(size_t index) const
+    {
+        return mPositionsPrevious[index];
+    }
+
+    Vectors& getVelocities()
+    {
+        return mVelocities;
+    }
+
+    double getMass(ID vertexId)
+    {
+        return mMasses[vertexId];
+    }
+
+    Vectors& getDisplacements()
+    {
+        return mDisplacements;
+    }
+
+    Vectors& getElasticForces()
+    {
+        return mForcesEl;
+    }
+
+    Vectors& getExternalForces()
+    {
+        return mForcesExt;
+    }
+
+    Eigen::Vector& getExternalForce(size_t id)
+    {
+        return mForcesExt[id];
+    }
+
     //std::vector<FiniteElement>& getFiniteElements() { return m_finite_elements; }
 
-    std::shared_ptr<Polygon3D> getPolygon();
+    std::shared_ptr<Polygon3D> getPolygon()
+    {
+        return mPoly3;
+    }
 
-    const Eigen::SparseMatrix<double>& getStiffnessMatrix(bool corot);
+    const Eigen::SparseMatrix<double>& getStiffnessMatrix(bool corot)
+    {
+        if (corot)
+            return mKCorot.getMatrix();
+        else
+            return mK.getMatrix();
+    }
 
     // SimulationObject interface
 public:
-    virtual Eigen::Vector& getPosition(size_t id) override;
-    virtual void setPosition(Eigen::Vector v, ID id) override;
-    virtual void addToPosition(Eigen::Vector v, ID id) override;
-    virtual size_t getSize() override;
-    virtual GeometricData* getGeometricData() override;
+    virtual Eigen::Vector& getPosition(size_t id) override
+    {
+        return mPositions[id];
+    }
+    virtual void setPosition(Eigen::Vector v, ID id) override
+    {
+        mPositions[id] = v;
+    }
+    virtual void addToPosition(Eigen::Vector v, ID id) override
+    {
+        mPositions[id] += v;
+    }
+    virtual size_t getSize() override
+    {
+        return mPositions.size();
+    }
+    virtual GeometricData* getGeometricData() override
+    {
+        return mPoly3.get();
+    }
 
 private:
 

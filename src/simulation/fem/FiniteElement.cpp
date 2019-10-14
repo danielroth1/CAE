@@ -1,6 +1,5 @@
 #include "FiniteElement.h"
 
-#include "FEMObject.h"
 #include <Eigen/Core>
 #include <iostream>
 
@@ -22,61 +21,6 @@ void FiniteElement::setMaterial(ElasticMaterial material)
 {
     mMaterial = material;
     mStiffnessMatrixDirty = true;
-}
-
-std::array<Vector, 4>& FiniteElement::getElasticForces()
-{
-    return mForces;
-}
-
-std::array<unsigned int, 4>& FiniteElement::getCell()
-{
-    return mCell;
-}
-
-const std::array<std::array<Matrix3d, 4>, 4>& FiniteElement::getK()
-{
-    return mK;
-}
-
-const std::array<std::array<Matrix3d, 4>, 4>& FiniteElement::getKCorot()
-{
-    return mKCorot;
-}
-
-const std::array<double, 4>& FiniteElement::getM()
-{
-    return mM;
-}
-
-ElasticMaterial& FiniteElement::getMaterial()
-{
-    return mMaterial;
-}
-
-const Vector& FiniteElement::u(size_t i)
-{
-    return mFemObj->getDisplacements()[mCell[i]];
-}
-
-const Vector& FiniteElement::x(size_t i)
-{
-    return mFemObj->getInitialPositions()[mCell[i]];
-}
-
-const Vector& FiniteElement::y(size_t i)
-{
-    return mFemObj->getPositions()[mCell[i]];
-}
-
-const Vector& FiniteElement::v(size_t i)
-{
-    return mFemObj->getVelocities()[mCell[i]];
-}
-
-const Vector& FiniteElement::f(size_t i)
-{
-    return mFemObj->getElasticForces()[mCell[i]];
 }
 
 void FiniteElement::initialize()

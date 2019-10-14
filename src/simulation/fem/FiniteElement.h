@@ -1,11 +1,10 @@
 #ifndef FINITEELEMENT_H
 #define FINITEELEMENT_H
 
+#include "FEMObject.h"
 #include "data_structures/DataStructures.h"
 #include "simulation/ElasticMaterial.h"
 #include <array>
-
-class FEMObject;
 
 // Wrapper for cells
 class FiniteElement
@@ -18,12 +17,35 @@ public:
     void setMaterial(ElasticMaterial material);
 
     // Getters
-    std::array<Eigen::Vector, 4>& getElasticForces();
-    std::array<unsigned int, 4>& getCell();
-    const std::array<std::array<Eigen::Matrix3d, 4>, 4>& getK();
-    const std::array<std::array<Eigen::Matrix3d, 4>, 4>& getKCorot();
-    const std::array<double, 4>& getM();
-    ElasticMaterial& getMaterial();
+    std::array<Eigen::Vector, 4>& getElasticForces()
+    {
+        return mForces;
+    }
+
+    std::array<unsigned int, 4>& getCell()
+    {
+        return mCell;
+    }
+
+    const std::array<std::array<Eigen::Matrix3d, 4>, 4>& getK()
+    {
+        return mK;
+    }
+
+    const std::array<std::array<Eigen::Matrix3d, 4>, 4>& getKCorot()
+    {
+        return mKCorot;
+    }
+
+    const std::array<double, 4>& getM()
+    {
+        return mM;
+    }
+
+    ElasticMaterial& getMaterial()
+    {
+        return mMaterial;
+    }
 
     // Updates the stiffness matrix w.r.t. the initial configuration.
     void initialize();
@@ -75,15 +97,30 @@ private:
     void updateDny();
 
     // deformation u = y - x
-    const Eigen::Vector& u(size_t i);
+    const Eigen::Vector& u(size_t i)
+    {
+        return mFemObj->getDisplacements()[mCell[i]];
+    }
     // initial position x
-    const Eigen::Vector& x(size_t i);
+    const Eigen::Vector& x(size_t i)
+    {
+        return mFemObj->getInitialPositions()[mCell[i]];
+    }
     // current position y
-    const Eigen::Vector& y(size_t i);
+    const Eigen::Vector& y(size_t i)
+    {
+        return mFemObj->getPositions()[mCell[i]];
+    }
     // velocity v
-    const Eigen::Vector& v(size_t i);
+    const Eigen::Vector& v(size_t i)
+    {
+        return mFemObj->getVelocities()[mCell[i]];
+    }
     // forces f
-    const Eigen::Vector& f(size_t i);
+    const Eigen::Vector& f(size_t i)
+    {
+        return mFemObj->getElasticForces()[mCell[i]];
+    }
 
     FEMObject* mFemObj;
     std::array<unsigned int, 4> mCell;
