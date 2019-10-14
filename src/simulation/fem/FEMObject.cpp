@@ -273,70 +273,96 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 //    }
 
     START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver");
-    if (firstStep)
+
+    VectorXd sol;
+    bool byRemoving = false;
+    if (byRemoving)
     {
-        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::calcAOriginal");
-        SparseMatrix<double> AOriginal = mM + timeStep * timeStep * K;
-        SparseMatrix<double> A;
-        STOP_TIMING_SIMULATION;
-
-        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::truncateByRemoving");
-        mTruncation->truncateByRemoving(AOriginal, A);
-
-//        SparseMatrix<float> C = A.cast<float>();
-        // A is symmetric so no transposition required
-//        A = A.transpose();
-//        A.makeCompressed();
-        STOP_TIMING_SIMULATION;
-
-#if 1
-        // if solver is sparse LU
-//        solver.analyzePattern(A);
-//        if (!solver.lastErrorMessage().empty())
-//            printf("EigenErrorMessage[analyzePattern]: %s\n", solver.lastErrorMessage().c_str());
-//        solver.factorize(A);
-//        if (!solver.lastErrorMessage().empty())
-//            fprintf(stderr, "EigenErrorMessage[factorize]: %s\n", solver.lastErrorMessage().c_str());
-
-        if (mAnalyzePatternNecessary)
+        if (firstStep)
         {
-            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze");
-            mSolver.analyzePattern(A);
-            mAnalyzePatternNecessary = false;
+            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::calcAOriginal");
+            SparseMatrix<double> AOriginal = mM + timeStep * timeStep * K;
+            SparseMatrix<double> A;
+            STOP_TIMING_SIMULATION;
+
+            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::truncateByRemoving");
+            mTruncation->truncateByRemoving(AOriginal, A);
+            STOP_TIMING_SIMULATION;
+
+            if (mAnalyzePatternNecessary)
+            {
+                START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze");
+                mSolver.analyzePattern(A);
+                mAnalyzePatternNecessary = false;
+                STOP_TIMING_SIMULATION;
+            }
+
+            if (mSolver.info() != Eigen::Success)
+                std::cerr << "Solver: analyzePattern failed.\n";
+
+            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
+            mSolver.factorize(A);
             STOP_TIMING_SIMULATION;
         }
 
         if (mSolver.info() != Eigen::Success)
-            std::cerr << "Solver: analyzePattern failed.\n";
+        {
+            std::cerr << "Solver: factorize failed.\n";
+        }
 
-        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
-        mSolver.factorize(A);
+        VectorXd bCopy = b;
+        mTruncation->truncateByRemoving(bCopy, b);
+
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::solve");
+        sol = mSolver.solve(b);
         STOP_TIMING_SIMULATION;
 
-#else
-
-        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
-        mSolver.compute(A);
-        STOP_TIMING_SIMULATION;
-
-#endif
+        sol = mTruncation->createOriginal(sol);
     }
-
-    if (mSolver.info() != Eigen::Success)
+    else
     {
-        std::cerr << "Solver: factorize failed.\n";
+        if (firstStep)
+        {
+            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::calcAOriginal");
+            SparseMatrix<double> A = mM + timeStep * timeStep * K;
+            STOP_TIMING_SIMULATION;
+
+            if (mAnalyzePatternNecessary)
+            {
+                mTruncation->analyzePattern(A);
+            }
+
+            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::truncateBySettingZero");
+            mTruncation->truncateBySettingZeroFast(A, b);
+            STOP_TIMING_SIMULATION;
+
+            if (mAnalyzePatternNecessary)
+            {
+                START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze");
+                mSolver.analyzePattern(A);
+                mAnalyzePatternNecessary = false;
+                STOP_TIMING_SIMULATION;
+            }
+
+            if (mSolver.info() != Eigen::Success)
+                std::cerr << "Solver: analyzePattern failed.\n";
+
+            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
+            mSolver.factorize(A);
+            STOP_TIMING_SIMULATION;
+        }
+
+        if (mSolver.info() != Eigen::Success)
+        {
+            std::cerr << "Solver: factorize failed.\n";
+        }
+
+        mTruncation->truncateBySettingZeroFast(b);
+
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::solve");
+        sol = mSolver.solve(b);
+        STOP_TIMING_SIMULATION;
     }
-
-    VectorXd bCopy = b;
-    mTruncation->truncateByRemoving(bCopy, b);
-
-    VectorXd sol(size*3);
-
-    START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::solve");
-    sol = mSolver.solve(b);
-    STOP_TIMING_SIMULATION;
-
-    sol = mTruncation->createOriginal(sol);
 
     STOP_TIMING_SIMULATION; // FEMObject::solveFEM()::linSolver
 
@@ -349,73 +375,6 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
     integratePositions(timeStep);
 
     STOP_TIMING_SIMULATION; // FEMObject::solveFEM
-
-//    std::cout << "norm = " << sol.norm() << "\n";
-
-    // truncation test
-    // truncation: not working because of zero columns
-//    SparseMatrix<double> A_trunc = A;
-//    VectorXd b_trunc = b;
-//    Truncation truncation(A_trunc, b_trunc, mTruncatedVectorIds);
-//    A_trunc = truncation.getTruncatedA();
-//    b_trunc = truncation.getTruncatedB();
-//    SparseLU<SparseMatrix<double>> solver_trunc;
-//    VectorXd sol_trunc(size*3);
-//    solver_trunc.analyzePattern(A_trunc);
-//    solver_trunc.factorize(A_trunc);
-//    sol_trunc = solver_trunc.solve(b_trunc);
-//    std::cout << "A_trunc:\n" << A_trunc << "\n\n";
-//    std::cout << "b_trunc:\n" << b_trunc << "\n\n";
-//    std::cout << "sol_trunc:\n" << sol_trunc << "\n\n";
-//    sol_trunc = truncation.createOriginal(sol_trunc);
-
-    // bad truncation
-
-//    for (unsigned int id : mTruncatedVectorIds)
-//    {
-//        for (unsigned int r = 0; r < 3; ++r)
-//        {
-//            unsigned int r_global = id*3+r;
-//            // truncation of b
-//            b(r_global) = 0.0;
-
-//            // truncation of A
-//            for (unsigned int c = 0; c < mPositions.size()*3; ++c)
-//            {
-//                unsigned int c_global = c;
-//                // inefficient but sufficient for now
-//                if (r_global == c_global)
-//                    A.coeffRef(r_global, c_global) = 1.0;
-//                else
-//                {
-//                    A.coeffRef(r_global, c_global) = 0.0;
-//                    A.coeffRef(c_global, r_global) = 0.0;
-//                }
-//            }
-
-//        }
-//    }
-
-//    VectorXd sol(size*3);
-//    SparseLU<SparseMatrix<double>> solver;
-//    solver.analyzePattern(A);
-//    if (!solver.lastErrorMessage().empty())
-//        printf("EigenErrorMessage[analyzePattern]: %s\n", solver.lastErrorMessage().c_str());
-//    solver.factorize(A);
-//    if (!solver.lastErrorMessage().empty())
-//        fprintf(stderr, "EigenErrorMessage[factorize]: %s\n", solver.lastErrorMessage().c_str());
-
-//    sol = solver.solve(b);
-
-//    double res = (A*sol).norm();
-//    std::cout << "resitual after solve: " << res << "\n";
-
-
-
-//    std::cout << "sol before:\n" << sol << "\n";
-//    sol = truncation.createOriginal(sol);
-//    std::cout << "sol after:\n" << sol << "\n";
-    //    solver.compute(A);
 }
 
 void FEMObject::revertSolverStep()
@@ -837,4 +796,43 @@ void FEMObject::assembleStiffnessMatrix(bool corotated)
             }
         }
     }
+}
+
+bool FEMObject::factorize(const Eigen::SparseMatrix<double>& A)
+{
+#if 1
+        // if solver is sparse LU
+//        solver.analyzePattern(A);
+//        if (!solver.lastErrorMessage().empty())
+//            printf("EigenErrorMessage[analyzePattern]: %s\n", solver.lastErrorMessage().c_str());
+//        solver.factorize(A);
+//        if (!solver.lastErrorMessage().empty())
+//            fprintf(stderr, "EigenErrorMessage[factorize]: %s\n", solver.lastErrorMessage().c_str());
+
+        if (mAnalyzePatternNecessary)
+        {
+            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze");
+            mSolver.analyzePattern(A);
+            mAnalyzePatternNecessary = false;
+            STOP_TIMING_SIMULATION;
+        }
+
+        if (mSolver.info() != Eigen::Success)
+        {
+            std::cerr << "Solver: analyzePattern failed.\n";
+            return false;
+        }
+
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
+        mSolver.factorize(A);
+        STOP_TIMING_SIMULATION;
+
+#else
+
+        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
+        mSolver.compute(A);
+        STOP_TIMING_SIMULATION;
+
+#endif
+    return true;
 }

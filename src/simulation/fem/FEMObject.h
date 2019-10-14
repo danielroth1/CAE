@@ -184,6 +184,11 @@ private:
     void assembleElasticForces();
     void assembleStiffnessMatrix(bool corotated);
 
+    // Factorizes the given matrix.
+    // \return true if this was succesfull. It can be unsuccesfull if the
+    //  matrix is singular.
+    bool factorize(const Eigen::SparseMatrix<double>& A);
+
     ID mId;
 
     // Polygon3D

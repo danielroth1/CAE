@@ -152,6 +152,48 @@ void Truncation::truncateByRemoving(
     }
 }
 
+void Truncation::analyzePattern(Eigen::SparseMatrix<double>& A)
+{
+    A.makeCompressed();
+    // Not the most efficient implementation but since it is only called once
+    // in the initialization it shouldn't matter.
+    std::set<Eigen::Index> truncatedIdsSet;
+    for (ID id : mTruncatedIds)
+    {
+        truncatedIdsSet.insert(static_cast<Eigen::Index>(id * 3));
+        truncatedIdsSet.insert(static_cast<Eigen::Index>(id * 3 + 1));
+        truncatedIdsSet.insert(static_cast<Eigen::Index>(id * 3 + 2));
+    }
+
+    mSetZeroIndices.clear();
+    mSetOneIndices.clear();
+
+    int* outerIndices = A.outerIndexPtr();
+    int* rowIndices = A.innerIndexPtr();
+
+    for (int c = 0; c < A.cols(); ++c)
+    {
+//        int elementCount = elementCounts[c];
+        int elementCount = outerIndices[c+1] - outerIndices[c];
+        int startingElementsIndex = outerIndices[c];
+
+        for (int i = 0; i < elementCount; ++i)
+        {
+            int memoryIndex = startingElementsIndex + i;
+            int r = rowIndices[memoryIndex];
+
+            if (truncatedIdsSet.find(r) != truncatedIdsSet.end() ||
+                truncatedIdsSet.find(c) != truncatedIdsSet.end())
+            {
+                if (r == c)
+                    mSetOneIndices.push_back(memoryIndex);
+                else
+                    mSetZeroIndices.push_back(memoryIndex);
+            }
+        }
+    }
+}
+
 void Truncation::truncateBySettingZero(
         Eigen::SparseMatrix<double>& A,
         const VectorXd& b,
@@ -194,6 +236,64 @@ void Truncation::truncateBySettingZero(
                         Triplet<double>(static_cast<int>(r - 3 * rTrunc),
                                         static_cast<int>(c - 3 * cTrunc),
                                         A.coeffRef(r,c)));
+        }
+    }
+    ATrunc.setFromTriplets(coefficients.begin(), coefficients.end());
+}
+
+void Truncation::truncateBySettingZeroSlow(Eigen::SparseMatrix<double>& A, VectorXd& b)
+{
+    for (ID id : mTruncatedIds)
+    {
+        for (Eigen::Index r = 0; r < 3; ++r)
+        {
+            Eigen::Index r_global = static_cast<Eigen::Index>(id) * 3 + r;
+            // truncation of b
+            b(r_global) = 0.0;
+
+            // truncation of A
+            for (Eigen::Index c = 0; c < b.size(); ++c)
+            {
+                Eigen::Index c_global = c;
+                // inefficient but sufficient for now
+                if (r_global == c_global)
+                    A.coeffRef(r_global, c_global) = 1.0;
+                else
+                {
+                    A.coeffRef(r_global, c_global) = 0.0;
+                    A.coeffRef(c_global, r_global) = 0.0;
+                }
+            }
+
+        }
+    }
+}
+
+void Truncation::truncateBySettingZeroFast(
+        Eigen::SparseMatrix<double>& A,
+        VectorXd& b)
+{
+    A.makeCompressed();
+    for (const Eigen::Index& index : mSetOneIndices)
+    {
+        A.valuePtr()[index] = 1.0;
+    }
+    for (const Eigen::Index& index : mSetZeroIndices)
+    {
+        A.valuePtr()[index] = 0.0;
+    }
+    truncateBySettingZeroFast(b);
+}
+
+void Truncation::truncateBySettingZeroFast(VectorXd& b)
+{
+    for (ID id : mTruncatedIds)
+    {
+        for (Eigen::Index r = 0; r < 3; ++r)
+        {
+            Eigen::Index r_global = static_cast<Eigen::Index>(id) * 3 + r;
+            // truncation of b
+            b(r_global) = 0.0;
         }
     }
 }
