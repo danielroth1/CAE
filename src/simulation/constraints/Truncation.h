@@ -8,10 +8,10 @@
 #include <set>
 
 // Stores truncated vector ids.
-// There is one Truncation per SimulationObject.
-// Modifies the give sparse matrix A and vector b.
-// They can be retrieved with getTruncatedA() and
-// getTruncatedB().
+// Truncated vertices are those that are completely static. This is achieved
+// by taking them out of the equation, either by setting their entires zero
+// (truncateBySettingZeroFast()) or by completely removing them from the
+// equation (truncateByRemoving()).
 class Truncation
 {
 public:
@@ -54,27 +54,35 @@ public:
     // change before calling truncateBySettingZero().
     void analyzePattern(Eigen::SparseMatrix<double>& A);
 
-    // Truncates A by making all entries of all rows and columns at truncated
-    // vector ids zero. Use createTruncatedMatrixA() for a more efficient
-    // approach that reduces the system of equations.
+    // Truncates A by removing entries of A that correspond to the to be
+    // truncated vector ids. Recreates the reduces matrix and vector and
+    // returns them in ATrunc and bTrunc.
+    // This way of truncation can be rather slow because a new matrix is
+    // created. It could make sense if so many vertices are truncated that
+    // the resulting matrix is small. Though, most of the time
+    // truncateBySetttingZeroFast() should be preferred.
     void truncateBySettingZero(
             Eigen::SparseMatrix<double>& A,
             const Eigen::VectorXd& b,
             Eigen::SparseMatrix<double>& ATrunc,
             Eigen::VectorXd& bTrunc);
 
+    // Truncates A by making all entries of all rows and columns at truncated
+    // vector ids zero. Uses binary search to find the entries and is therefore
+    // a lot slower compared to truncatedBySettingZeroFast().
     void truncateBySettingZeroSlow(
             Eigen::SparseMatrix<double>& A,
             Eigen::VectorXd& b);
 
     // Sets the truncated rows and entries of the given matrix and vector zero.
     // Operates directly on the given data structures and does not require
-    // a recreation and is, therefore, substantially faster than the other
-    // truncateBySettingZero() method.
+    // a recreation which makes it substantially faster than the other
+    // truncation methods.
     void truncateBySettingZeroFast(
             Eigen::SparseMatrix<double>& A,
             Eigen::VectorXd& b);
 
+    // Same as the other method but only operates on the vector.
     void truncateBySettingZeroFast(
             Eigen::VectorXd& b);
 
