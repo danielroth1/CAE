@@ -30,6 +30,8 @@ RigidBody::RigidBody(
     , mMass(mass)
     , mStatic(false)
 {
+    mMassInv = 1.0 / mMass;
+
     std::vector<double> masses;
     masses.reserve(positions.size());
     for (size_t i = 0; i < positions.size(); ++i)
@@ -92,7 +94,7 @@ void RigidBody::solveExplicit(double timeStep)
 
     // 1.) integrate velocities:
     // v_{i+1} = v_i + h * M^{-1} f_i
-    mV = mV + timeStep * (1.0 / mMass) * mForceExt;
+    mV = mV + timeStep * mMassInv * mForceExt;
 
     // \omega_{i+1} = \omega_i + h * I^{-1} (\tau_{ext} - (\omega_i \times (I \omega_i)))
     mOmega = mOmega + timeStep * mInertiaInv * (mTorqueExt - (mOmega.cross(mInertia * mOmega)));
@@ -149,8 +151,8 @@ void RigidBody::applyImpulse(const Eigen::Vector3d& r, const Eigen::Vector3d& p)
     if (mStatic)
         return;
 
-    mV = mV + 1 / mMass * p;
-    mOmega = mOmega + mInertiaInv * (r.cross(p));
+    mV += mMassInv * p;
+    mOmega += mInertiaInv * (r.cross(p));
 }
 
 void RigidBody::applyOrientationImpulse(const Vector& l)
@@ -208,7 +210,7 @@ Matrix3d RigidBody::calculateK(const Vector& rA, const Vector& rB)
             rB(2), 0, -rB(0),
             -rB(1), rB(0), 0;
 
-    return 1 / mMass * Eigen::Matrix3d::Identity() -
+    return mMassInv * Eigen::Matrix3d::Identity() -
             rA_cross * mInertiaInv * rB_cross;
 }
 

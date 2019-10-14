@@ -171,6 +171,7 @@ private:
     Eigen::Matrix3d mInertiaInv;
 
     double mMass;
+    double mMassInv;
 
     double mTranslationalDamping;
     double mRotationalDamping;
