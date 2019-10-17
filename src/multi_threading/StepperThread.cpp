@@ -71,7 +71,7 @@ void StepperThread::threadUpdateMethod()
         // time stepper calculates time to wait from current time
         // and previous times
         auto sleepingTimeMillis =
-                std::chrono::milliseconds(mTimeStepper->finishStep());
+                std::chrono::microseconds(mTimeStepper->finishStep());
         std::this_thread::sleep_for(sleepingTimeMillis);
     }
 }

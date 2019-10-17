@@ -6,6 +6,11 @@ TimeStepper::TimeStepper(int sleepTime)
 
 }
 
+TimeStepper::~TimeStepper()
+{
+
+}
+
 void TimeStepper::reset()
 {
 

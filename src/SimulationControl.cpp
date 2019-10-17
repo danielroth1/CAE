@@ -214,6 +214,7 @@ bool SimulationControl::isSimulationPaused()
 void SimulationControl::setStepSize(double stepSize)
 {
     mStepSize = stepSize;
+    mSimulationThread->setTimeStepSize(stepSize);
 }
 
 double SimulationControl::getStepSize() const

@@ -11,7 +11,7 @@ RenderThread::RenderThread(GLWidget* widget)
     : mWidget(widget)
 {
     // add a TimeStepper that allows FPS control
-    setTimeStepper(std::make_shared<TimeStepper>(20));
+    setTimeStepper(std::make_shared<TimeStepper>(2e+4));
 }
 
 void RenderThread::initialization()

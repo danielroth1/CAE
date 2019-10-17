@@ -8,16 +8,18 @@
 class TimeStepper
 {
 public:
+    // \param sleepTime - used sleep time in micro seconds:
     TimeStepper(int sleepTime);
+    virtual ~TimeStepper();
 
     // Resets the clock. Can be called at any point.
-    void reset();
+    virtual void reset();
 
     // Prepare calculation for sleeping time.
-    void startStep();
+    virtual void startStep();
 
-    // Returns number of milliseconds to sleep.
-    int finishStep();
+    // Returns number of microseconds to sleep.
+    virtual int finishStep();
 
 private:
     int mSleepTime;

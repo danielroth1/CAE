@@ -13,6 +13,8 @@ public:
     SimulationThread(
             SimulationControl* simulationControl);
 
+    void setTimeStepSize(double stepSize);
+
     // StepperThread interface
 public:
     virtual void initialization() override;
