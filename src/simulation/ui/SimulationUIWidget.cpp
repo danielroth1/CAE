@@ -155,12 +155,24 @@ void SimulationUIWidget::onConstraintRemoved(const std::shared_ptr<Constraint>& 
 
 SimulationObject* SimulationUIWidget::getSelectedSimulationObject()
 {
-    return mListWidgetSimulationObjectMap.get(mUi->mListWidgetSimulationObjects->currentItem());
+    QListWidgetItem* item = mUi->mListWidgetSimulationObjects->currentItem();
+    auto it = mListWidgetSimulationObjectMap.find(item);
+    if (it != mListWidgetSimulationObjectMap.end(item))
+    {
+        return it->second;
+    }
+    return nullptr;
 }
 
 Constraint* SimulationUIWidget::getSelectedConstraint()
 {
-    return mListWidgetConstraintMap.get(mUi->mListWidgetConstraints->currentItem());
+    QListWidgetItem* item = mUi->mListWidgetConstraints->currentItem();
+    auto it = mListWidgetConstraintMap.find(item);
+    if (it != mListWidgetConstraintMap.end(item))
+    {
+        return it->second;
+    }
+    return nullptr;
 }
 
 QtMembersWidget* SimulationUIWidget::getMembersWidget()

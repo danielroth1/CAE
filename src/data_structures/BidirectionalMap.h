@@ -17,6 +17,12 @@ public:
     A get(B b);
     B get(A a);
 
+    typename std::map<A, B>::iterator find(A a);
+    typename std::map<A, B>::iterator find(B b);
+
+    typename std::map<A, B>::iterator end(A /*a*/);
+    typename std::map<A, B>::iterator end(B /*b*/);
+
     bool remove(A a);
     bool remove(B b);
 

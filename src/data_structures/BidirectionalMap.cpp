@@ -36,6 +36,30 @@ B BidirectionalMap<A, B>::get(A a)
 }
 
 template<class A, class B>
+typename std::map<A, B>::iterator BidirectionalMap<A, B>::find(A a)
+{
+    return mAToBMap.find(a);
+}
+
+template<class A, class B>
+typename std::map<A, B>::iterator BidirectionalMap<A, B>::find(B b)
+{
+    return mBToAMap.find(b);
+}
+
+template<class A, class B>
+typename std::map<A, B>::iterator BidirectionalMap<A, B>::end(A)
+{
+    return mAToBMap.end();
+}
+
+template<class A, class B>
+typename std::map<A, B>::iterator BidirectionalMap<A, B>::end(B)
+{
+    return mBToAMap.end();
+}
+
+template<class A, class B>
 bool BidirectionalMap<A, B>::remove(A a)
 {
     auto it = mAToBMap.find(a);

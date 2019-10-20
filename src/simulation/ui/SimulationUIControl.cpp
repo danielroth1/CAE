@@ -328,11 +328,10 @@ void SimulationUIControl::onCreateRigidObjectClicked(double mass)
 
 void SimulationUIControl::onRemoveSimulationObjectClicked()
 {
-    std::shared_ptr<SimulationObject> so =
-            mWidget->getSelectedSimulationObject()->shared_from_this();
+    SimulationObject* so = mWidget->getSelectedSimulationObject();
     if (so)
     {
-        mAc->getSGControl()->removeSimulationObject(so);
+        mAc->getSGControl()->removeSimulationObject(so->shared_from_this());
     }
     else
     {
