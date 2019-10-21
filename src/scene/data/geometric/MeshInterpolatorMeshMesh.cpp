@@ -303,6 +303,9 @@ void MeshInterpolatorMeshMesh::solve(
 
     std::vector<double> errors;
 
+    std::vector<std::tuple<TopologyFace*, double>> closestFaces;
+    closestFaces.reserve(mTargetAccessor->getSize());
+
     size_t entriesPerPercent = std::max(static_cast<size_t>(1), static_cast<size_t>(std::floor(mTargetAccessor->getSize() / 100.0)));
     for (size_t i = 0; i < mTargetAccessor->getSize(); ++i)
     {
@@ -317,8 +320,9 @@ void MeshInterpolatorMeshMesh::solve(
         Eigen::Vector p = mTargetAccessor->getPosition(i);
         Polygon2DTopology& topology = mSourceAccessor->getTopology2D();
 
-        // sort all triangles by distance
-        std::vector<std::tuple<TopologyFace, double>> closestFaces;
+        // Iterate for each point over all triangles and store the distance from
+        // the point to that triangle.
+        closestFaces.clear();
         for (size_t fId = 0; fId < topology.getFaces().size(); ++fId)
         {
             TopologyFace& f = topology.getFace(fId);
@@ -333,16 +337,17 @@ void MeshInterpolatorMeshMesh::solve(
             if (projectPointOnTriangle(v[0], v[1], v[2], p, inter, bary))
             {
                 double distance = (p - inter).norm();
-                closestFaces.push_back(std::make_tuple(f, distance));
+                closestFaces.push_back(std::make_tuple(&f, distance));
             }
         }
+
+        // Sort all triangles by distance.
         std::sort(closestFaces.begin(), closestFaces.end(),
-                  [](std::tuple<TopologyFace, double>& t1,
-                  std::tuple<TopologyFace, double>& t2)
+                  [](std::tuple<TopologyFace*, double>& t1,
+                  std::tuple<TopologyFace*, double>& t2)
         {
             return std::get<1>(t1) < std::get<1>(t2);
         });
-
 
         // find q, n_q, and distance so that distance is minimal
 
@@ -350,8 +355,8 @@ void MeshInterpolatorMeshMesh::solve(
         for (size_t faceIndex = 0; faceIndex < maxIndex; ++faceIndex)
 //        for (size_t fId = 0; fId < topology.getFaces().size(); ++fId)
         {
-            std::tuple<TopologyFace, double>& t = closestFaces[faceIndex];
-            TopologyFace& f = std::get<0>(t);
+            std::tuple<TopologyFace*, double>& t = closestFaces[faceIndex];
+            TopologyFace& f = *std::get<0>(t);
             size_t fId = f.getID();
 
             // vertices per face
@@ -367,39 +372,39 @@ void MeshInterpolatorMeshMesh::solve(
             v[2] = mSourceAccessor->getPosition(f.getVertexIds()[2]);
 
             // check if vertex is in range
-            Eigen::Vector fn[6];
-            fn[0] = (v[1] - v[0]).cross(n[0]);
-            fn[1] = (v[0] - v[1]).cross(n[1]);
-            fn[2] = (v[2] - v[1]).cross(n[1]);
-            fn[3] = (v[1] - v[2]).cross(n[2]);
-            fn[4] = (v[0] - v[2]).cross(n[2]);
-            fn[5] = (v[2] - v[0]).cross(n[0]);
+//            Eigen::Vector fn[6];
+//            fn[0] = (v[1] - v[0]).cross(n[0]);
+//            fn[1] = (v[0] - v[1]).cross(n[1]);
+//            fn[2] = (v[2] - v[1]).cross(n[1]);
+//            fn[3] = (v[1] - v[2]).cross(n[2]);
+//            fn[4] = (v[0] - v[2]).cross(n[2]);
+//            fn[5] = (v[2] - v[0]).cross(n[0]);
 
-            for (size_t j = 0; j < 6; ++j)
-            {
-                fn[j].normalize();
-            }
+//            for (size_t j = 0; j < 6; ++j)
+//            {
+//                fn[j].normalize();
+//            }
 
-            if (fn[0].dot(v[2] - v[0]) < 0)
-                fn[0] *= -1;
-            if (fn[1].dot(v[2] - v[1]) < 0)
-                fn[1] *= -1;
-            if (fn[2].dot(v[0] - v[1]) < 0)
-                fn[2] *= -1;
-            if (fn[3].dot(v[0] - v[2]) < 0)
-                fn[3] *= -1;
-            if (fn[4].dot(v[1] - v[2]) < 0)
-                fn[4] *= -1;
-            if (fn[5].dot(v[1] - v[0]) < 0)
-                fn[5] *= -1;
+//            if (fn[0].dot(v[2] - v[0]) < 0)
+//                fn[0] *= -1;
+//            if (fn[1].dot(v[2] - v[1]) < 0)
+//                fn[1] *= -1;
+//            if (fn[2].dot(v[0] - v[1]) < 0)
+//                fn[2] *= -1;
+//            if (fn[3].dot(v[0] - v[2]) < 0)
+//                fn[3] *= -1;
+//            if (fn[4].dot(v[1] - v[2]) < 0)
+//                fn[4] *= -1;
+//            if (fn[5].dot(v[1] - v[0]) < 0)
+//                fn[5] *= -1;
 
-            bool isInside =
-                    ((p - v[0]).dot(fn[0]) > -wnt || (p - v[1]).dot(fn[1]) > -wnt) &&
-                    ((p - v[1]).dot(fn[2]) > -wnt || (p - v[2]).dot(fn[3]) > -wnt) &&
-                    ((p - v[2]).dot(fn[4]) > -wnt || (p - v[0]).dot(fn[5]) > -wnt);
+//            bool isInside =
+//                    ((p - v[0]).dot(fn[0]) > -wnt || (p - v[1]).dot(fn[1]) > -wnt) &&
+//                    ((p - v[1]).dot(fn[2]) > -wnt || (p - v[2]).dot(fn[3]) > -wnt) &&
+//                    ((p - v[2]).dot(fn[4]) > -wnt || (p - v[0]).dot(fn[5]) > -wnt);
 
-            bool atLeastOneInterpolation =
-                    faceIndex != maxIndex - 1 || !allInterpolations.empty();
+//            bool atLeastOneInterpolation =
+//                    faceIndex != maxIndex - 1 || !allInterpolations.empty();
 
 //            if (!isInside && atLeastOneInterpolation)
 //            {

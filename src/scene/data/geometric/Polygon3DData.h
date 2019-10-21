@@ -16,7 +16,7 @@ public:
 
     virtual ~Polygon3DData() override;
 
-    std::shared_ptr<Polygon3DTopology> getTopology() const;
+    const std::shared_ptr<Polygon3DTopology>& getTopology() const;
 
     // PolygonData interface
 public:

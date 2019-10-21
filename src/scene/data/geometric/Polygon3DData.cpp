@@ -12,7 +12,7 @@ Polygon3DData::~Polygon3DData()
 
 }
 
-std::shared_ptr<Polygon3DTopology> Polygon3DData::getTopology() const
+const std::shared_ptr<Polygon3DTopology>& Polygon3DData::getTopology() const
 {
     return mTopology;
 }
