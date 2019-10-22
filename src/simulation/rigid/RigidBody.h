@@ -47,6 +47,8 @@ public:
     // a solveExplicit() inbetween.
     virtual void revertPositions() override;
 
+    virtual void transform(const Eigen::Affine3d& transform) override;
+
     // Rigid Dynamics Methods
         virtual void applyImpulse(
             SimulationPointRef& ref,
@@ -87,12 +89,6 @@ public:
                 const Eigen::Vector& rB);
 
         Eigen::Matrix3d calculateL();
-
-    // Scene Handling
-        // Updates the geometric datas transformation matrix.
-        // Call this to inform the geometric data about changes, e.g.
-        // at the end of a simulation step.
-        void updateGeometricData();
 
     // Setters
         void setTranslationalDamping(double translationalDamping);
@@ -136,6 +132,10 @@ public:
     // SimulationObject interface
 public:
     virtual void accept(SimulationObjectVisitor& visitor) override;
+    // Updates the geometric datas transformation matrix.
+    // Call this to inform the geometric data about changes, e.g.
+    // at the end of a simulation step.
+    virtual void updateGeometricData() override;
     virtual Eigen::Vector& getPosition(size_t id) override;
     virtual void setPosition(Eigen::Vector v, ID id) override;
     virtual void addToPosition(Eigen::Vector v, ID id) override;

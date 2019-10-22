@@ -404,13 +404,17 @@ void FEMObject::revertPositions()
             VectorXd::Map(mInitialPositions[0].data(), size * 3);
 }
 
-void FEMObject::updateGeometricData()
+void FEMObject::transform(const Affine3d& transform)
 {
-    mPoly3->getPositions() = mPositions;
-    // This call is necessary to inform the other modules about
-    // the change in position of the underlying Polygon3D that is
-    // simulated here.
-    mPoly3->update();
+    Eigen::Index size = static_cast<Eigen::Index>(mPositions.size());
+
+    for (size_t i = 0; i < mPositions.size(); ++i)
+    {
+        mPositions[i] = transform * mPositions[i];
+    }
+    VectorXd::Map(mDisplacements[0].data(), size * 3) =
+            VectorXd::Map(mPositions[0].data(), size * 3) -
+            VectorXd::Map(mInitialPositions[0].data(), size * 3);
 }
 
 void FEMObject::addTrunctionIds(const std::vector<ID>& vectorIDs)
@@ -492,6 +496,15 @@ ElasticMaterial FEMObject::getElasticMaterial()
         return mFiniteElements[0].getMaterial();
     }
     return ElasticMaterial();
+}
+
+void FEMObject::updateGeometricData()
+{
+    mPoly3->getPositions() = mPositions;
+    // This call is necessary to inform the other modules about
+    // the change in position of the underlying Polygon3D that is
+    // simulated here.
+    mPoly3->update();
 }
 
 void FEMObject::initializeStiffnessMatrix()

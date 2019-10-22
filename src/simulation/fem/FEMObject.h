@@ -118,7 +118,7 @@ public:
 
     virtual void revertPositions() override;
 
-    void updateGeometricData();
+    virtual void transform(const Eigen::Affine3d& transform) override;
 
     void applyImpulse(ID vertexIndex, const Eigen::Vector& impulse)
     {
@@ -242,23 +242,25 @@ public:
 
     // SimulationObject interface
 public:
-    virtual Eigen::Vector& getPosition(size_t id) override
+    virtual void updateGeometricData() override;
+
+    virtual Eigen::Vector& getPosition(size_t id) override final
     {
         return mPositions[id];
     }
-    virtual void setPosition(Eigen::Vector v, ID id) override
+    virtual void setPosition(Eigen::Vector v, ID id) override final
     {
         mPositions[id] = v;
     }
-    virtual void addToPosition(Eigen::Vector v, ID id) override
+    virtual void addToPosition(Eigen::Vector v, ID id) override final
     {
         mPositions[id] += v;
     }
-    virtual size_t getSize() override
+    virtual size_t getSize() override final
     {
         return mPositions.size();
     }
-    virtual GeometricData* getGeometricData() override
+    virtual GeometricData* getGeometricData() override final
     {
         return mPoly3.get();
     }

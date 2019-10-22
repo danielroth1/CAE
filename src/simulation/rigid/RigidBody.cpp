@@ -136,6 +136,14 @@ void RigidBody::revertPositions()
     update();
 }
 
+void RigidBody::transform(const Affine3d& transform)
+{
+    mX = transform * mX;
+    mQ = transform.rotation() * mQ;
+
+    update();
+}
+
 void RigidBody::applyImpulse(SimulationPointRef& ref, const Eigen::Vector& impulse)
 {
     applyImpulse(getR(ref), impulse);
@@ -219,6 +227,11 @@ Matrix3d RigidBody::calculateL()
     return mInertiaInv;
 }
 
+void RigidBody::accept(SimulationObjectVisitor& visitor)
+{
+    visitor.visit(*this);
+}
+
 void RigidBody::updateGeometricData()
 {
     Eigen::Affine3d transform;
@@ -231,11 +244,6 @@ void RigidBody::updateGeometricData()
 //    mPolygon->getTransform().setIdentity();
 //    mPolygon->getTransform().rotate(mQ);
     //    mPolygon->getTransform().translate(mX);
-}
-
-void RigidBody::accept(SimulationObjectVisitor& visitor)
-{
-    visitor.visit(*this);
 }
 
 Eigen::Vector& RigidBody::getPosition(size_t /*id*/)

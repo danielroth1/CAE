@@ -69,6 +69,10 @@ public:
     virtual void applyForce(
             SimulationPointRef& ref, const Eigen::Vector& force) = 0;
 
+    // Updates the underlying geometric data according to the simulation state
+    // of this object.
+    virtual void updateGeometricData() = 0;
+
     virtual Eigen::Vector& getPosition(size_t id) = 0;
 
     // Set the position of vector at the specified id.
@@ -77,6 +81,8 @@ public:
 
     virtual void integratePositions(double stepSize) = 0;
     virtual void revertPositions() = 0;
+
+    virtual void transform(const Eigen::Affine3d& transform) = 0;
 
     //virtual Eigen::Vector& getExternalForce(size_t id) = 0;
 
@@ -95,8 +101,6 @@ protected:
     Domain* mDomain;
 
     Type mType;
-
-    bool mRequiringUpdate;
 
 };
 

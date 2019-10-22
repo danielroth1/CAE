@@ -18,6 +18,7 @@ public:
     // SimulationObject interface
 public:
     virtual void accept(SimulationObjectVisitor& visitor) override;
+    virtual void updateGeometricData() override;
     virtual void applyImpulse(
             SimulationPointRef& ref, const Eigen::Vector& impulse) override;
     virtual void applyForce(
@@ -27,6 +28,7 @@ public:
     virtual void addToPosition(Eigen::Vector v, ID id) override;
     virtual void integratePositions(double stepSize) override;
     virtual void revertPositions() override;
+    virtual void transform(const Eigen::Affine3d& transform) override;
     virtual size_t getSize() override;
     virtual GeometricData* getGeometricData() override;
 

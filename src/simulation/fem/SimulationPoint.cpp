@@ -19,6 +19,11 @@ void SimulationPoint::accept(SimulationObjectVisitor& visitor)
     visitor.visit(*this);
 }
 
+void SimulationPoint::updateGeometricData()
+{
+
+}
+
 void SimulationPoint::applyImpulse(
         SimulationPointRef& /*ref*/, const Vector& /*impulse*/)
 {
@@ -54,6 +59,11 @@ void SimulationPoint::integratePositions(double /*stepSize*/)
 void SimulationPoint::revertPositions()
 {
 
+}
+
+void SimulationPoint::transform(const Affine3d& transform)
+{
+    mPoint->transform(transform);
 }
 
 size_t SimulationPoint::getSize()
