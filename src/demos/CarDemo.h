@@ -28,7 +28,7 @@ public:
     virtual void unload();
 
 private:
-    void createCar(
+    SGChildrenNode* createCar(
             Eigen::Affine3d transformation,
             double width,
             double length,

@@ -1,6 +1,5 @@
 #include "CarDemo.h"
 
-#include <simulation/rigid/RigidBody.h>
 
 #include <ApplicationControl.h>
 
@@ -8,8 +7,10 @@
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/model/RenderModel.h>
 
+#include <modules/mesh_converter/MeshCriteria.h>
 #include <simulation/forces/LinearForce.h>
 #include <simulation/forces/RotationalMotor.h>
+#include <simulation/rigid/RigidBody.h>
 
 #include <simulation/constraints/BallJoint.h>
 #include <simulation/constraints/DistanceJoint.h>
@@ -39,20 +40,110 @@ void CarDemo::load()
 //    mAc.getSimulationControl()->setGravity(Vector::Zero());
 
     // Floor
-    SGLeafNode* floor = mAc.getSGControl()->createBox(
-                "Floor",
-                mAc.getSGControl()->getSceneGraph()->getRoot(),
-                Vector(0.0, -4.5, 0.0), 12, 0.5, 40, true);
+    {
+        SGLeafNode* floor = mAc.getSGControl()->createBox(
+                    "Floor",
+                    mAc.getSGControl()->getSceneGraph()->getRoot(),
+                    Vector(-15.0, -4.5, 0.0), 40, 0.5, 20, true);
 
-    floor->getData()->getRenderModel()->setAppearances(
-                std::make_shared<Appearances>(
-                    Appearance::createAppearanceFromColor(
-    {0.8f, 0.8f, 0.8f, 1.0f})));
+        floor->getData()->getRenderModel()->setAppearances(
+                    std::make_shared<Appearances>(
+                        Appearance::createAppearanceFromColor(
+        {0.8f, 0.8f, 0.8f, 1.0f})));
 
-    mAc.getSGControl()->createRigidBody(floor->getData(), 1.0, true);
-    mAc.getSGControl()->createCollidable(floor->getData());
+        mAc.getSGControl()->createRigidBody(floor->getData(), 1.0, true);
+        mAc.getSGControl()->createCollidable(floor->getData());
+    }
 
-    createCar(Affine3d::Identity(), 2.0, 4.0, 1.0, 0.2, 0.5, 1000.0, 100.0);
+    // Car
+    {
+        SGChildrenNode* node = createCar(
+                    Affine3d::Identity(), 2.0, 4.0, 1.0, 0.2, 0.5, 1000.0, 100.0);
+
+        // Rotate by 180 degree.
+        Eigen::Affine3d transformation =
+                Affine3d::Identity() * Eigen::AngleAxisd(1.5 * 3.14, Eigen::Vector3d(0.0, 1.0, 0.0));
+        class TransformVisitor : public SGNodeVisitorImpl
+        {
+        public:
+            TransformVisitor(const Eigen::Affine3d& _transformation)
+                : transformation(_transformation)
+            {
+
+            }
+
+            virtual void visit(SGChildrenNode* /*childrenNode*/)
+            {
+
+            }
+
+            virtual void visit(SGLeafNode* leafNode)
+            {
+                leafNode->getData()->getSimulationObject()->transform(transformation);
+                leafNode->getData()->getSimulationObject()->updateGeometricData();
+            }
+
+            Eigen::Affine3d transformation;
+        } visitor(transformation);
+
+        SGTraverser traverser(node);
+        traverser.traverse(visitor);
+    }
+
+    // Boxes
+    {
+        Eigen::Affine3d transformation =
+                Eigen::Translation3d(-15.0, 0.0, 0.0) *
+                Eigen::AngleAxisd(0.5 * 3.14, Eigen::Vector3d(0.0, 1.0, 0.0));
+
+        bool rigid = true;
+        for (int r = 0; r < 6; ++r)
+        {
+            for (int c = 0; c < 3; ++c)
+            {
+                for (int z = 0; z < 3; ++z)
+                {
+                    if (!rigid)
+                    {
+                        MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0, true, 0.0);
+
+                        SGLeafNode* node1 = mAc.getSGControl()->createBox(
+                                    "Box", mAc.getSGControl()->getSceneGraph()->getRoot(),
+                                    Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, -1 + 0.6 * z),
+                                    0.5, 0.5, 0.5, true);
+                        mAc.getSGControl()->create3DGeometryFrom2D(node1, criteria);
+                        mAc.getSGControl()->createFEMObject(node1->getData());
+
+                        node1->getData()->getSimulationObject()->transform(transformation);
+                        node1->getData()->getSimulationObject()->updateGeometricData();
+
+                        mAc.getSGControl()->createCollidable(node1->getData());
+
+                        std::shared_ptr<FEMObject> femObj =
+                                std::dynamic_pointer_cast<FEMObject>(
+                                    node1->getData()->getSimulationObject());
+                        femObj->setYoungsModulus(5e+4);
+
+                    }
+                    else
+                    {
+                        SGLeafNode* node1 = mAc.getSGControl()->createBox(
+                                    "Box", mAc.getSGControl()->getSceneGraph()->getRoot(),
+                                    Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, -1 + 0.6 * z),
+                                    0.5, 0.5, 0.5, true);
+                        mAc.getSGControl()->createRigidBody(node1->getData(), 0.1, false);
+
+                        node1->getData()->getSimulationObject()->transform(transformation);
+                        node1->getData()->getSimulationObject()->updateGeometricData();
+
+                        mAc.getSGControl()->createCollidable(node1->getData());
+                    }
+                }
+
+            }
+        }
+    }
+
 }
 
 void CarDemo::unload()
@@ -60,7 +151,7 @@ void CarDemo::unload()
 
 }
 
-void CarDemo::createCar(
+SGChildrenNode* CarDemo::createCar(
         Eigen::Affine3d transformation,
         double width,  double length, double height,
         double tireWidth, double springLength,
@@ -82,7 +173,7 @@ void CarDemo::createCar(
 
     std::shared_ptr<RigidBody> hullRigid = mSg->createRigidBody(
                 hull->getData(), 5.0, false);
-//    mSg->createCollidable(hull->getData());//, 0.05);
+    mSg->createCollidable(hull->getData(), 0.05);
 
     // create 4 tires
     for (int i = 0; i < 4; ++i)
@@ -119,6 +210,7 @@ void CarDemo::createCar(
 
     }
 
+    return carNode;
 }
 
 void CarDemo::createTire(
@@ -158,7 +250,7 @@ void CarDemo::createTire(
 
     std::shared_ptr<RigidBody> rigid =
             mSg->createRigidBody(tire->getData(), 1.0, false);
-    mSg->createCollidable(tire->getData());//, 0.2);
+    mSg->createCollidable(tire->getData(), 0.04);
 
     // spring
     SimulationPointRef source = SimulationPointRef(
