@@ -51,8 +51,8 @@ SimulationControl::SimulationControl()
     mSimulationThread->addDomain(mDomain);
 
     mStepSize = 0.01;
-    mNumFEMCorrectionIterations = 1;
-    mMaxNumConstraintSolverIterations = 30;
+    mNumFEMCorrectionIterations = 5;
+    mMaxNumConstraintSolverIterations = 5;
     mMaxConstraintError = 1e-5;
 }
 
