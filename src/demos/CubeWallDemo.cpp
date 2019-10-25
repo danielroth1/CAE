@@ -53,35 +53,39 @@ void CubeWallDemo::load()
     else
     {
         // some boxes:
-        for (int r = 0; r < 4; ++r)
+        for (int r = 0; r < 6; ++r)
         {
-            for (int c = 0; c < 4; ++c)
+            for (int c = 0; c < 3; ++c)
             {
-                if (!mRigid)
+                for (int z = 0; z < 3; ++z)
                 {
-                    MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0, true, 0.0);
 
-                    SGLeafNode* node1 = mAc->getSGControl()->createBox(
-                                "Box", mAc->getSGControl()->getSceneGraph()->getRoot(),
-                                Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0),
-                                0.5, 0.5, 0.5, true);
-                    mAc->getSGControl()->create3DGeometryFrom2D(node1, criteria);
-                    mAc->getSGControl()->createFEMObject(node1->getData());
-                    mAc->getSGControl()->createCollidable(node1->getData());
+                    if (!mRigid)
+                    {
+                        MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0, true, 0.0);
 
-                    std::shared_ptr<FEMObject> femObj =
-                            std::dynamic_pointer_cast<FEMObject>(
-                                node1->getData()->getSimulationObject());
-                    femObj->setYoungsModulus(5e+4);
-                }
-                else
-                {
-                    SGLeafNode* node1 = mAc->getSGControl()->createBox(
-                                "Box", mAc->getSGControl()->getSceneGraph()->getRoot(),
-                                Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, 0.0),
-                                0.5, 0.5, 0.5, true);
-                    mAc->getSGControl()->createRigidBody(node1->getData(), 1.0, false);
-                    mAc->getSGControl()->createCollidable(node1->getData());
+                        SGLeafNode* node1 = mAc->getSGControl()->createBox(
+                                    "Box", mAc->getSGControl()->getSceneGraph()->getRoot(),
+                                    Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, -1 + 0.6 * z),
+                                    0.5, 0.5, 0.5, true);
+                        mAc->getSGControl()->create3DGeometryFrom2D(node1, criteria);
+                        mAc->getSGControl()->createFEMObject(node1->getData());
+                        mAc->getSGControl()->createCollidable(node1->getData());
+
+                        std::shared_ptr<FEMObject> femObj =
+                                std::dynamic_pointer_cast<FEMObject>(
+                                    node1->getData()->getSimulationObject());
+                        femObj->setYoungsModulus(5e+4);
+                    }
+                    else
+                    {
+                        SGLeafNode* node1 = mAc->getSGControl()->createBox(
+                                    "Box", mAc->getSGControl()->getSceneGraph()->getRoot(),
+                                    Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, -1 + 0.6 * z),
+                                    0.5, 0.5, 0.5, true);
+                        mAc->getSGControl()->createRigidBody(node1->getData(), 1.0, false);
+                        mAc->getSGControl()->createCollidable(node1->getData());
+                    }
                 }
 
             }

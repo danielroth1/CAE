@@ -93,17 +93,17 @@ void CarDemo::load()
     // Boxes
     {
         Eigen::Affine3d transformation =
-                Eigen::Translation3d(-15.0, 0.0, 0.0) *
+                Eigen::Translation3d(-15.0, -3.0, 0.0) *
                 Eigen::AngleAxisd(0.5 * 3.14, Eigen::Vector3d(0.0, 1.0, 0.0));
 
-        bool rigid = true;
+        double cubeMass = 0.2;
         for (int r = 0; r < 6; ++r)
         {
             for (int c = 0; c < 3; ++c)
             {
-                for (int z = 0; z < 3; ++z)
+                for (int z = 0; z < 2; ++z)
                 {
-                    if (!rigid)
+                    if (z == 1)
                     {
                         MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0, true, 0.0);
 
@@ -112,7 +112,7 @@ void CarDemo::load()
                                     Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, -1 + 0.6 * z),
                                     0.5, 0.5, 0.5, true);
                         mAc.getSGControl()->create3DGeometryFrom2D(node1, criteria);
-                        mAc.getSGControl()->createFEMObject(node1->getData());
+                        mAc.getSGControl()->createFEMObject(node1->getData(), cubeMass);
 
                         node1->getData()->getSimulationObject()->transform(transformation);
                         node1->getData()->getSimulationObject()->updateGeometricData();
@@ -131,7 +131,7 @@ void CarDemo::load()
                                     "Box", mAc.getSGControl()->getSceneGraph()->getRoot(),
                                     Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, -1 + 0.6 * z),
                                     0.5, 0.5, 0.5, true);
-                        mAc.getSGControl()->createRigidBody(node1->getData(), 0.1, false);
+                        mAc.getSGControl()->createRigidBody(node1->getData(), cubeMass, false);
 
                         node1->getData()->getSimulationObject()->transform(transformation);
                         node1->getData()->getSimulationObject()->updateGeometricData();
