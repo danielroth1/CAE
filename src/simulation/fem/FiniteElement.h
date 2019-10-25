@@ -42,6 +42,16 @@ public:
         return mM;
     }
 
+    void setM(const std::array<double, 4>& mass)
+    {
+        mM = mass;
+    }
+
+    double getVolume() const
+    {
+        return mVolume;
+    }
+
     ElasticMaterial& getMaterial()
     {
         return mMaterial;

@@ -56,10 +56,11 @@ SimulationObjectFactory::createSimulationPoint(
 FEMObject*
 SimulationObjectFactory::createFEMObject(
         Domain* domain,
-        std::shared_ptr<Polygon3D> poly3)
+        std::shared_ptr<Polygon3D> poly3,
+        double mass)
 {
     // TODO: ownership of poly3 should be passed here!
-    return new FEMObject(domain, poly3);
+    return new FEMObject(domain, poly3, mass);
 }
 
 RigidBody* SimulationObjectFactory::createRigidBody(

@@ -21,7 +21,8 @@ using namespace Eigen;
 
 FEMObject::FEMObject(
         Domain* domain,
-        std::shared_ptr<Polygon3D> poly3)
+        std::shared_ptr<Polygon3D> poly3,
+        double mass)
     : SimulationObject(domain, SimulationObject::Type::FEM_OBJECT)
     , mPoly3(poly3)
     , mPositions(poly3->getPositions())
@@ -70,6 +71,36 @@ FEMObject::FEMObject(
     mKCorot.setZero();
     mM.setZero();
 
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        fe.initialize();
+    }
+
+    {
+        // To calculate the mass, find the corresponding density for the total
+        // volume of all finite elements.
+
+        // Calculate mass for each finite element from total_mass:
+        // First calculate density:
+        //     mass_total = (density * volume_total) / 4
+        // <=> density = 4 * mass_total / volume_total
+        // Then calculate mass for each element:
+        //     mass = (density * volume_fe) / 4
+        double volumeTotal = 0;
+        for (FiniteElement& fe : mFiniteElements)
+        {
+            volumeTotal += fe.getVolume();
+        }
+        double density = 4 * mass / volumeTotal;
+        std::cout << "density = " << density << "\n";
+        for (FiniteElement& fe : mFiniteElements)
+        {
+            double m = density * fe.getVolume() / 4;
+            std::array<double, 4> masses = {m, m, m, m};
+            fe.setM(masses);
+        }
+    }
+
     // init vertex masses
     std::vector<int> nCellsPerVertex;
     nCellsPerVertex.resize(mPositions.size());
@@ -79,9 +110,9 @@ FEMObject::FEMObject(
         mMasses[i] = 0.0;
         nCellsPerVertex[i] = 0;
     }
+
     for (FiniteElement& fe : mFiniteElements)
     {
-        fe.initialize();
         for (size_t i = 0; i < 4; ++i)
         {
             unsigned int index = fe.getCell().at(i);

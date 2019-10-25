@@ -258,16 +258,19 @@ void SGControl::createLinearForce(
 }
 
 std::shared_ptr<FEMObject> SGControl::createFEMObject(
-        const std::shared_ptr<SceneLeafData>& ld)
+        const std::shared_ptr<SceneLeafData>& ld, double mass)
 {
     // create FEM object if possible
     // check in list of
     class GDVisitor : public GeometricDataVisitor
     {
     public:
-        GDVisitor(SGControl& _sgc, const std::shared_ptr<SceneLeafData>& _ld)
+        GDVisitor(SGControl& _sgc,
+                  const std::shared_ptr<SceneLeafData>& _ld,
+                  double _mass)
             : sgc(_sgc)
             , ld(_ld)
+            , mass(_mass)
         {
 
         }
@@ -289,8 +292,8 @@ std::shared_ptr<FEMObject> SGControl::createFEMObject(
             femObj = std::shared_ptr<FEMObject>(
                         SimulationObjectFactory::createFEMObject(
                             sgc.mAc->getSimulationControl()->getDomain(),
-                            std::static_pointer_cast<Polygon3D>(
-                                polygon3D.shared_from_this())));
+                            std::static_pointer_cast<Polygon3D>(polygon3D.shared_from_this()),
+                            mass));
             sgc.mAc->getSimulationControl()->addSimulationObject(femObj);
 
             polygon3D.changeRepresentationToWS();
@@ -309,7 +312,8 @@ std::shared_ptr<FEMObject> SGControl::createFEMObject(
         SGControl& sgc;
         std::shared_ptr<SceneLeafData> ld;
         std::shared_ptr<FEMObject> femObj;
-    } gdVisitor(*this, ld);
+        double mass;
+    } gdVisitor(*this, ld, mass);
 
     ld->getGeometricData()->accept(gdVisitor);
     return gdVisitor.femObj;
@@ -509,13 +513,15 @@ void SGControl::createAndSetCorrespondingSimulationObject(SGLeafNode* leafNode)
     }
 }
 
-SimulationObject* SGControl::createCorrespondingSimulationObject(GeometricData* geo)
+SimulationObject* SGControl::createCorrespondingSimulationObject(
+        GeometricData* geo, double mass)
 {
     class CorrespondingSimulationObjectCreator : public GeometricDataVisitor
     {
     public:
-        CorrespondingSimulationObjectCreator(SGControl& _sgc)
+        CorrespondingSimulationObjectCreator(SGControl& _sgc, double _mass)
             : sgc(_sgc)
+            , mass(_mass)
         {
         }
 
@@ -523,14 +529,16 @@ SimulationObject* SGControl::createCorrespondingSimulationObject(GeometricData* 
         {
             target = SimulationObjectFactory::createRigidBody(
                         sgc.mAc->getSimulationControl()->getDomain(),
-                        std::static_pointer_cast<Polygon3D>(poly2.shared_from_this()), 1.0);
+                        std::static_pointer_cast<Polygon3D>(poly2.shared_from_this()),
+                        mass);
         }
 
         virtual void visit(Polygon3D& poly3)
         {
             target = SimulationObjectFactory::createFEMObject(
                         sgc.mAc->getSimulationControl()->getDomain(),
-                        std::static_pointer_cast<Polygon3D>(poly3.shared_from_this()));
+                        std::static_pointer_cast<Polygon3D>(poly3.shared_from_this()),
+                        mass);
         }
 
         virtual void visit(GeometricPoint& point)
@@ -543,7 +551,8 @@ SimulationObject* SGControl::createCorrespondingSimulationObject(GeometricData* 
 
         SGControl& sgc;
         SimulationObject* target;
-    } visitor(*this);
+        double mass;
+    } visitor(*this, mass);
 
     geo->accept(visitor);
     return visitor.target;

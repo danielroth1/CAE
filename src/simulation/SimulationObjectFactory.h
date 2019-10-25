@@ -36,7 +36,7 @@ public:
             Domain* domain,
             const std::shared_ptr<GeometricPoint>& point);
 
-    static FEMObject* createFEMObject(Domain* domain, std::shared_ptr<Polygon3D> poly3);
+    static FEMObject* createFEMObject(Domain* domain, std::shared_ptr<Polygon3D> poly3, double mass);
 
     static RigidBody* createRigidBody(Domain* domain, std::shared_ptr<Polygon2D> poly2, double mass);
 

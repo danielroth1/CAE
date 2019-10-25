@@ -87,8 +87,6 @@ void FiniteElement::updateLinearStiffnessMatrix()
                 }
             }
         }
-        double mass = (mDensity * mVolume) / 4;
-        mM[a] = mass;// * Matrix3d::Identity();
     }
 }
 

@@ -93,7 +93,8 @@ public:
 
     // Simulation Methods
         std::shared_ptr<FEMObject> createFEMObject(
-                const std::shared_ptr<SceneLeafData>& ld);
+                const std::shared_ptr<SceneLeafData>& ld,
+                double mass = 1.0);
         std::shared_ptr<RigidBody> createRigidBody(
                 const std::shared_ptr<SceneLeafData>& ld,
                 double mass,
@@ -145,7 +146,8 @@ public:
         // always good 1:1 relationships between geometric and
         // simulation data.
         SimulationObject* createCorrespondingSimulationObject(
-                GeometricData* geo);
+                GeometricData* geo,
+                double mass = 1.0);
 
         SGTraverser createSceneGraphTraverser();
 

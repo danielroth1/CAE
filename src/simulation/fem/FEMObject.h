@@ -50,7 +50,8 @@ public:
     // Initial positions are equal to given positions.
     FEMObject(
             Domain* domain,
-            std::shared_ptr<Polygon3D> poly3);
+            std::shared_ptr<Polygon3D> poly3,
+            double mass = 1.0);
 
     virtual ~FEMObject() override;
 
