@@ -607,7 +607,7 @@ void FEMObject::updateStiffnessMatrix(bool corotated)
     for (FiniteElement& fe : mFiniteElements)
     {
         if (corotated)
-            fe.updateRotation();
+            fe.updateRotationFast(3, 1e-4);
         fe.updateStiffnessMatrix(corotated);
     }
     STOP_TIMING_SIMULATION;

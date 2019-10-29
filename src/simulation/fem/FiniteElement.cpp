@@ -15,6 +15,7 @@ FiniteElement::FiniteElement(
     mDensity = 100.0;
     mCell = cell;
     mStiffnessMatrixDirty = false;
+    mQ.setIdentity();
 }
 
 void FiniteElement::setMaterial(ElasticMaterial material)
@@ -26,7 +27,12 @@ void FiniteElement::setMaterial(ElasticMaterial material)
 void FiniteElement::initialize()
 {
     updateDnx();
-    updateF();
+
+    // Initialize mQ with the correct rotation calculated with the slow singular
+    // value decomposition. Use that result with the iterative approach later.
+    updateRotation();
+    mQ = Eigen::Quaterniond(mR);
+
     updateCauchyStressStrain();
     updateLinearStiffnessMatrix();
 }
@@ -42,6 +48,40 @@ void FiniteElement::updateRotation()
 //    if (det < 0)
 //        std::cout << "inversion detected! det = " << det << "\n";
 
+}
+
+void FiniteElement::updateRotationFast(size_t maxIterations, double tolerance)
+{
+    updateF();
+
+    for (size_t i = 0; i < maxIterations; ++i)
+    {
+        Eigen::Matrix3d R = mQ.toRotationMatrix();
+        double s = std::abs(R.col(0).dot(mF.col(0)) +
+                            R.col(1).dot(mF.col(1)) +
+                            R.col(2).dot(mF.col(2)));
+
+        if (s < 1e-12)
+            break;
+
+        double sInv = 1.0 / s + tolerance;
+        Eigen::Vector3d v = R.col(0).cross(mF.col(0)) +
+                            R.col(1).cross(mF.col(1)) +
+                            R.col(2).cross(mF.col(2));
+
+        Eigen::Vector3d omega = sInv * v;
+        double w = omega.norm();
+
+        if (w < tolerance)
+            break;
+
+        Eigen::Quaterniond omegaQ =
+                Eigen::Quaterniond(Eigen::AngleAxisd(w, 1.0 / w * omega));
+
+        mQ = omegaQ * mQ;
+    }
+
+    mR = mQ.toRotationMatrix();
 }
 
 void FiniteElement::update(bool corotated)
@@ -113,7 +153,6 @@ void FiniteElement::updateForces(bool corotated)
 
 void FiniteElement::updateCorotatedForces()
 {
-//    updateRotation(); // TODO: if not already done
     for (size_t a = 0; a < 4; ++a)
     {
         mForces[a].setZero();

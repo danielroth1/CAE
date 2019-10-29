@@ -64,6 +64,14 @@ public:
     // a singular value decomposition (SVD).
     void updateRotation();
 
+    // Update rotation according to
+    // "A Robust Method to Extract the Rotational Part of Deformations".
+    // This is an iterative approach which avoids the useage of a costly
+    // singular value decomposition. Ideally, only a few iterations are needed.
+    // This is especially true if the object doesn't rotate too much inbetween
+    // time steps.
+    void updateRotationFast(size_t maxIterations = 20, double tolerance = 1e-6);
+
     // Updates stiffness matrix and forces.
     void update(bool corotated);
 
@@ -137,6 +145,7 @@ private:
     ElasticMaterial mMaterial;
 
     Eigen::Matrix3d mR;
+    Eigen::Quaterniond mQ; // Used for fast rotation calculation.
     Eigen::Matrix3d mF;
     Eigen::Matrix3d mCauchyStrain;
     Eigen::Matrix3d mCauchyStress;
