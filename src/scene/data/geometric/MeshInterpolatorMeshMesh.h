@@ -258,13 +258,6 @@ private:
             Eigen::Vector3d n[3],
             const Eigen::Vector3d& weights);
 
-    bool projectPointOnTriangle(const Eigen::Vector3d& p0,
-                         const Eigen::Vector3d& p1,
-                         const Eigen::Vector3d& p2,
-                         const Eigen::Vector3d& p,
-                         Eigen::Vector3d& inter,
-                         Eigen::Vector3d& bary);
-
     Eigen::Vector3d calcA(
             const Eigen::Vector3d& p,
             Eigen::Vector3d v[3],
