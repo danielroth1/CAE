@@ -104,6 +104,11 @@ GeometricPointRef* SimulationPointRef::getGeometricPointRef() const
     return mGeometricPointRef.get();
 }
 
+GeometricData* SimulationPointRef::getGeometricData() const
+{
+    return mGeometricPointRef->getGeometricData();
+}
+
 Eigen::Vector SimulationPointRef::getPoint()
 {
     switch (mUpdatePolicy)

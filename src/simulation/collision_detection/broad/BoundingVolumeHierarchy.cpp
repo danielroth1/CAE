@@ -119,7 +119,8 @@ int BoundingVolumeHierarchy::calculateNumberOfNodes()
     return visitor.count;
 }
 
-bool BoundingVolumeHierarchy::collides(BoundingVolumeHierarchy* hierarchy, Collider& collider)
+bool BoundingVolumeHierarchy::collides(BoundingVolumeHierarchy* hierarchy,
+                                       Collider& collider)
 {
     mCollider = &collider;
     return collidesIterative(getRoot(), hierarchy->getRoot());

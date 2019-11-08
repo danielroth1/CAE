@@ -74,7 +74,7 @@ std::shared_ptr<BVSphere> BoundingVolumeFactory::createBVSphere(
 
         virtual void visit(CollisionSphere* collisionSphere)
         {
-//            PolygonVectorRef(collisionSphere->getPointRef().getGeometricPointRef()->getGeometricData(),
+//            PolygonVectorRef(collisionSphere->getGeometricPointRef()->getGeometricData(),
 //                             collisionSphere->getPointRef().getPoint());
             switch (p.getPositionType())
             {
@@ -90,13 +90,11 @@ std::shared_ptr<BVSphere> BoundingVolumeFactory::createBVSphere(
                 break;
 
             }
-
-
         }
 
         virtual void visit(CollisionTriangle* /*collisionTriangle*/)
         {
-            // TODO: implement this
+            // Nothing to do here.
         }
 
         std::shared_ptr<BVSphere> returnValue;
@@ -127,30 +125,10 @@ std::shared_ptr<BVAABB> BoundingVolumeFactory::createBVAABB(
         CollisionObject& co,
         Polygon& /*polygon*/)
 {
-    class BVAABBCreator : public CollisionObjectVisitor
-    {
-    public:
-        BVAABBCreator()
-        {
+    std::shared_ptr<BVAABB> bv = std::make_shared<BVAABB>();
+    bv->update(co);
 
-        }
-
-        virtual void visit(CollisionSphere* collisionSphere)
-        {
-            returnValue = std::make_shared<BVAABB>();
-            returnValue->update(*collisionSphere);
-        }
-
-        virtual void visit(CollisionTriangle* /*collisionTriangle*/)
-        {
-            // TODO: implement this
-        }
-
-        std::shared_ptr<BVAABB> returnValue;
-    } creator;
-
-    co.accept(creator);
-    return creator.returnValue;
+    return bv;
 }
 
 std::shared_ptr<BVAABB> BoundingVolumeFactory::createBVAABB(

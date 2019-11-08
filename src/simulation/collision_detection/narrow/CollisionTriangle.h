@@ -3,19 +3,70 @@
 
 #include "CollisionObject.h"
 
+#include <scene/data/geometric/Polygon2DAccessor.h>
 
+class SimulationObject;
 
+// TODO: A collision triangle shouldn't store a reference to the simulation object
+// (rigid or deformable) because of the additional memory consumption.
+// global parameters:
+//      Polygon2DAccessor
+// parameters:
+//      triangle id
 class CollisionTriangle : public CollisionObject
 {
 public:
-    CollisionTriangle();
+    CollisionTriangle(
+            const std::shared_ptr<Polygon2DAccessor>& accessor,
+            const Face& face,
+            const std::shared_ptr<SimulationObject>& so);
+
+    const std::shared_ptr<Polygon2DAccessor>& getAccessor()
+    {
+        return mAccessor;
+    }
+
+    const Face& getFace()
+    {
+        return mFace;
+    }
+
+    Eigen::Vector& getP1()
+    {
+        return mAccessor->getPosition(mFace[0]);
+    }
+
+    Eigen::Vector& getP2()
+    {
+        return mAccessor->getPosition(mFace[1]);
+    }
+
+    Eigen::Vector& getP3()
+    {
+        return mAccessor->getPosition(mFace[2]);
+    }
+
+    std::shared_ptr<SimulationObject>& getSimulationObject()
+    {
+        return mSo;
+    }
 
     // CollisionObject interface
 public:
+    virtual void update() override;
+    virtual void updatePrevious() override;
     virtual Type getType() const override;
     virtual void accept(CollisionObjectVisitor& visitor) override;
+    // Not used.
     virtual Eigen::Vector getPosition() override;
 
+private:
+
+    std::shared_ptr<Polygon2DAccessor> mAccessor;
+
+    Face mFace;
+
+    std::shared_ptr<SimulationObject> mSo;
 };
 
 #endif // COLLISIONTRIANGLE_H

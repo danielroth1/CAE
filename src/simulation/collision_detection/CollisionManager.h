@@ -30,6 +30,10 @@ public:
 
     Domain* getDomain();
 
+    void addSimulationObjectTriangles(
+            const std::shared_ptr<SimulationObject>& so,
+            const std::shared_ptr<Polygon>& polygon);
+
     void addSimulationObject(
             std::shared_ptr<SimulationObject> so,
             std::shared_ptr<Polygon> polygon,
@@ -69,6 +73,11 @@ private:
         std::shared_ptr<BoundingVolumeHierarchy> mBvh;
     };
 
+    void addSimulationObject(
+            const std::shared_ptr<SimulationObject>& so,
+            const std::shared_ptr<Polygon>& polygon,
+            const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects);
+
     std::map<unsigned int, double> calculateMinimumDistances(
             const std::vector<TopologyFace>& faces,
             const Vectors& positions);
@@ -83,6 +92,10 @@ private:
 };
 
 PROXY_CLASS(CollisionManagerProxy, CollisionManager, mCm,
+            PROXY_FUNCTION(CollisionManager, mCm, addSimulationObjectTriangles,
+                           PL(std::shared_ptr<SimulationObject> so,
+                              std::shared_ptr<Polygon> polygon),
+                           PL(so, polygon))
             PROXY_FUNCTION(CollisionManager, mCm, addSimulationObject,
                            PL(std::shared_ptr<SimulationObject> so,
                               std::shared_ptr<Polygon> polygon,

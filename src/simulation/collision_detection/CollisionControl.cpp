@@ -57,7 +57,8 @@ void CollisionControl::setCollisionsRenderingVisible(bool visible)
     mColliderRenderModel->setVisible(visible);
 }
 
-void CollisionControl::notifySimulationObjectAdded(std::shared_ptr<SimulationObject>& so)
+void CollisionControl::notifySimulationObjectAdded(
+        const std::shared_ptr<SimulationObject>& so)
 {
     // add BVHData
     std::shared_ptr<BoundingVolumeHierarchy> bvh =

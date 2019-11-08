@@ -119,7 +119,8 @@ public:
     // Simulation access methods
         std::shared_ptr<FEMSimulation> getFEMSimulation();
         // Thread safe
-        void addSimulationObject(std::shared_ptr<SimulationObject> so);
+        void addSimulationObject(
+                const std::shared_ptr<SimulationObject>& so);
 
         // Thread safe
         // Removes the given simulation object from the simulation.

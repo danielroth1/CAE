@@ -8,6 +8,9 @@
 
 #include <simulation/collision_detection/narrow/CollisionObject.h>
 #include <simulation/collision_detection/narrow/CollisionSphere.h>
+#include <simulation/collision_detection/narrow/CollisionTriangle.h>
+
+#include <scene/data/geometric/Polygon2DAccessor.h>
 
 // Bounding Volume Axis Aligned Bounding Box
 class BVAABB : public BoundingVolume
@@ -42,6 +45,21 @@ public:
         }
         case CollisionObject::Type::TRIANGLE:
         {
+            CollisionTriangle* t = static_cast<CollisionTriangle*>(&collisionObject);
+            const Face& f = t->getFace();
+            const std::shared_ptr<Polygon2DAccessor>& acc = t->getAccessor();
+            mBB.mid() = 0.3333 * (
+                    acc->getPosition(f[0]) +
+                    acc->getPosition(f[1]) +
+                    acc->getPosition(f[2]));
+
+            mBB.min() = acc->getPosition(f[0]).cwiseMin(
+                            acc->getPosition(f[1])).cwiseMin(
+                                acc->getPosition(f[2]));
+
+            mBB.max() = acc->getPosition(f[0]).cwiseMax(
+                            acc->getPosition(f[1])).cwiseMax(
+                                acc->getPosition(f[2]));
             break;
         }
         }

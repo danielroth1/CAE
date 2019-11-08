@@ -46,7 +46,7 @@ public:
 
     // CollisionManagerListener interface
 public:
-    virtual void notifySimulationObjectAdded(std::shared_ptr<SimulationObject>& so) override;
+    virtual void notifySimulationObjectAdded(const std::shared_ptr<SimulationObject>& so) override;
     virtual void notifySimulationObjectRemoved(const std::shared_ptr<SimulationObject>& so) override;
     virtual void notifyCollideAllCalled() override;
     virtual void notifyUpdateAllCalled() override;

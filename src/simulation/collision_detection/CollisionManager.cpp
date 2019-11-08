@@ -10,6 +10,7 @@
 #include <scene/data/geometric/Polygon3DTopology.h>
 #include <simulation/SimulationObject.h>
 #include <simulation/collision_detection/narrow/CollisionSphere.h>
+#include <simulation/collision_detection/narrow/CollisionTriangle.h>
 #include <simulation/rigid/RigidBody.h>
 #include <times/timing.h>
 
@@ -24,6 +25,24 @@ CollisionManager::CollisionManager(Domain* domain)
 Domain* CollisionManager::getDomain()
 {
     return mDomain;
+}
+
+void CollisionManager::addSimulationObjectTriangles(
+        const std::shared_ptr<SimulationObject>& so,
+        const std::shared_ptr<Polygon>& polygon)
+{
+    std::shared_ptr<Polygon2DAccessor> accessor = polygon->createAccessor();
+    const Polygon2DTopology& topology = accessor->getTopology2D();
+    std::vector<std::shared_ptr<CollisionObject>> collisionObjects;
+
+    for (size_t i = 0; i <  topology.getFacesIndices().size(); ++i)
+    {
+        const Face& f = topology.getFacesIndices()[i];
+        collisionObjects.push_back(
+                    std::make_shared<CollisionTriangle>(accessor, f, so));
+    }
+
+    addSimulationObject(so, polygon, collisionObjects);
 }
 
 void CollisionManager::addSimulationObject(
@@ -230,7 +249,7 @@ void CollisionManager::addSimulationObject(
         {
             ID index = static_cast<ID>(p3->getOuterPositionIds()[i]);
 //            double radius = minimumDistances[static_cast<unsigned int>(index)] * radiusFactor;
-            double radius = maximumDistance * sphereDiameter;
+            double radius = maximumDistance * 0.2;//sphereDiameter;
             collisionObjects.push_back(
                         std::make_shared<CollisionSphere>(
                             SimulationPointRef(so.get(), index),
@@ -246,24 +265,7 @@ void CollisionManager::addSimulationObject(
     }
     }
 
-    // Create CollisionData
-    CollisionData data;
-
-    data.mSo = so;
-    data.mPolygon = polygon;
-
-    data.mBvh = std::make_shared<BVHDeformable>(
-                so.get(),
-                polygon.get(),
-                collisionObjects,
-                BoundingVolume::Type::AABB);
-
-    mCollisionData.push_back(data);
-
-    std::cout << "added " << collisionObjects.size() << " CollisionObjects.\n";
-
-    for (CollisionManagerListener* listener : mListeners)
-        listener->notifySimulationObjectAdded(so);
+    addSimulationObject(so, polygon, collisionObjects);
 }
 
 bool CollisionManager::removeSimulationObject(const std::shared_ptr<SimulationObject>& so)
@@ -317,6 +319,7 @@ bool CollisionManager::collideAll()
 
 void CollisionManager::updateAll()
 {
+    int updateCounter = 0;
     for (CollisionData& cd : mCollisionData)
     {
         bool dirty = true;
@@ -342,9 +345,11 @@ void CollisionManager::updateAll()
         if (dirty)
         {
             cd.mBvh->udpate();
+            ++updateCounter;
         }
     }
 
+    std::cout << "updates = " << updateCounter << "\n";
     for (CollisionManagerListener* listener : mListeners)
         listener->notifyUpdateAllCalled();
 }
@@ -412,6 +417,31 @@ bool CollisionManager::removeListener(CollisionManagerListener* listener)
         return true;
     }
     return false;
+}
+
+void CollisionManager::addSimulationObject(
+        const std::shared_ptr<SimulationObject>& so,
+        const std::shared_ptr<Polygon>& polygon,
+        const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects)
+{
+    // Create CollisionData
+    CollisionData data;
+
+    data.mSo = so;
+    data.mPolygon = polygon;
+
+    data.mBvh = std::make_shared<BVHDeformable>(
+                so.get(),
+                polygon.get(),
+                collisionObjects,
+                BoundingVolume::Type::AABB);
+
+    mCollisionData.push_back(data);
+
+    std::cout << "added " << collisionObjects.size() << " CollisionObjects.\n";
+
+    for (CollisionManagerListener* listener : mListeners)
+        listener->notifySimulationObjectAdded(so);
 }
 
 std::map<unsigned int, double> CollisionManager::calculateMinimumDistances(

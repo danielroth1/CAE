@@ -1,4 +1,4 @@
-#include "Collider.h"
+﻿#include "Collider.h"
 #include "CollisionObject.h"
 #include "CollisionSphere.h"
 #include "CollisionTriangle.h"
@@ -16,6 +16,8 @@
 #include <simulation/SimulationObject.h>
 
 #include <scene/data/GeometricData.h>
+
+#include <math/MathUtils.h>
 
 Collider::Collider()
     : mInvertNormalsIfNecessary(false)
@@ -60,7 +62,7 @@ bool Collider::collides(
         CollisionObject& co2,
         Collision& collisionReturnValue)
 {
-    switch(co1.getType())
+    switch(co2.getType())
     {
     case CollisionObject::Type::SPHERE:
         return collides(co1, *static_cast<CollisionSphere*>(&co2), collisionReturnValue);
@@ -80,7 +82,14 @@ bool Collider::collides(
     case CollisionObject::Type::SPHERE:
         return collides(*static_cast<CollisionSphere*>(&co), cs, collisionReturnValue);
     case CollisionObject::Type::TRIANGLE:
-        return collides(cs, *static_cast<CollisionTriangle*>(&co), collisionReturnValue);
+    {
+        bool result = collides(cs, *static_cast<CollisionTriangle*>(&co), collisionReturnValue);
+        if (result)
+        {
+            collisionReturnValue.revert();
+        }
+        return result;
+    }
     }
     return false;
 }
@@ -95,7 +104,7 @@ bool Collider::collides(
     case CollisionObject::Type::SPHERE:
         return collides(*static_cast<CollisionSphere*>(&co), ct, collisionReturnValue);
     case CollisionObject::Type::TRIANGLE:
-        return collides(ct, *static_cast<CollisionTriangle*>(&co), collisionReturnValue);
+        return collides(*static_cast<CollisionTriangle*>(&co), ct, collisionReturnValue);
     }
     return false;
 }
@@ -124,19 +133,6 @@ bool Collider::collides(
     Eigen::Vector normal = (p1 - p2).normalized();
     Eigen::Vector pointA = p1 - cs1.getRadius() * normal;
     Eigen::Vector pointB = p2 + cs2.getRadius() * normal;
-
-    // calculate previous points
-//    Eigen::Vector normalPrev =
-//            (cs1.getPointRef().getPointPrevious() -
-//             cs2.getPointRef().getPointPrevious()).normalized();
-
-//    Eigen::Vector pointAPrev =
-//            cs1.getPointRef().getPointPrevious() -
-//            cs1.getRadius() * normalPrev;
-
-//    Eigen::Vector pointBPrev =
-//            cs2.getPointRef().getPointPrevious() +
-//            cs2.getRadius() * normalPrev;
 
     double depth = (pointA - pointB).norm();
     bool isIn = false;
@@ -175,6 +171,10 @@ bool Collider::collides(
     }
 
     // Calculate normal
+    // TODO: Here the simulation object is needed. Thats why CollisionSphere
+    // has to know about it. To connect the collision to the simulation object.
+    // Do this differently.
+    // Collider could have a map from GeometricData to SimulationObject.
     new (&collisionReturnValue) Collision(cs1.getPointRef().getSimulationObject(),
                                           cs2.getPointRef().getSimulationObject(),
                                           pointA, pointB, normal, depth,
@@ -186,11 +186,45 @@ bool Collider::collides(
 }
 
 bool Collider::collides(
-        CollisionSphere& /*cs*/,
-        CollisionTriangle& /*ct*/,
-        Collision& /*collisionReturnValue*/)
+        CollisionSphere& cs,
+        CollisionTriangle& ct,
+        Collision& collisionReturnValue)
 {
-    // TODO: implement this
+    // TODO_TRIANGLE: implement this
+
+    // sphere-triangle
+    Eigen::Vector spherePos = cs.getPosition();
+
+    Eigen::Vector inter; // projected point
+    Eigen::Vector bary; // baryzentric coordinates
+    MathUtils::projectPointOnTriangle(
+                ct.getP1(), ct.getP2(), ct.getP3(),
+                spherePos,
+                inter, bary);
+
+    if ((inter - spherePos).norm() < cs.getRadius())
+    {
+        Eigen::Vector dir = (spherePos - inter).normalized();
+        Eigen::Vector pointB = spherePos - cs.getRadius() * dir;
+
+        ID index = 0;
+        if (bary(1) > bary(0) && bary(1) > bary(2))
+            index = 1;
+        else if (bary(2) > bary(0) && bary(2) > bary(1))
+            index = 2;
+
+        ID triIndex = ct.getFace()[index];
+
+        new (&collisionReturnValue) Collision(cs.getPointRef().getSimulationObject(),
+                                              ct.getSimulationObject(),
+                                              inter, pointB, dir, 0.0,
+                                              cs.getVertexIndex(),
+                                              triIndex,
+                                              false);
+
+        return true;
+    }
+
     return false;
 }
 
@@ -199,7 +233,12 @@ bool Collider::collides(
         CollisionTriangle& /*ct2*/,
         Collision& /*collisionReturnValue*/)
 {
-    // TODO: implement this
+    // TODO_TRIANGLE: implement this
+
+    // sphere-triangle
+
+    // edge-edge
+
     return false;
 }
 
@@ -208,7 +247,7 @@ bool Collider::isInside(CollisionSphere& cs1, CollisionSphere& cs2)
     bool isInside = true;
     if (cs1.getTopologyFeature() != nullptr)
     {
-        GeometricData* g1 = cs1.getPointRef().getSimulationObject()->getGeometricData();
+        GeometricData* g1 = cs1.getPointRef().getGeometricData();
         if (g1->getType() == GeometricData::Type::POLYGON)
         {
             Polygon* p1 = static_cast<Polygon*>(g1);
@@ -233,7 +272,7 @@ bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
 
     if (cs1.getTopologyFeature() != nullptr)
     {
-        GeometricData* g1 = cs1.getPointRef().getSimulationObject()->getGeometricData();
+        GeometricData* g1 = cs1.getPointRef().getGeometricData();
         if (g1->getType() == GeometricData::Type::POLYGON)
         {
             Polygon* p1 = static_cast<Polygon*>(g1);

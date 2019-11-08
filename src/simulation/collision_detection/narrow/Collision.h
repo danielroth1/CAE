@@ -20,6 +20,29 @@ public:
             ID vertexIndexB,
             bool isInside);
 
+    void revert()
+    {
+        Eigen::Vector temp;
+        temp = mPointA;
+        mPointA = mPointB;
+        mPointB = temp;
+
+        const std::shared_ptr<SimulationObject>* tempSo = mSoA;
+        mSoA = mSoB;
+        mSoB = tempSo;
+
+        ID tempVertexIndex = mVertexIndexA;
+        mVertexIndexA = mVertexIndexB;
+        mVertexIndexB = tempVertexIndex;
+
+        mNormal = -mNormal;
+    }
+
+    void setNormal(const Eigen::Vector& normal)
+    {
+        mNormal = normal;
+    }
+
     const std::shared_ptr<SimulationObject>& getSimulationObjectA()
     {
         return *mSoA;

@@ -15,6 +15,7 @@
 class Collider;
 class CollisionObject;
 class Polygon;
+class Polygon2DAccessor;
 class SimulationObject;
 
 class BoundingVolumeHierarchy : public Tree<BVChildrenData*, BVLeafData*>
@@ -44,6 +45,8 @@ public:
     virtual bool collides(BoundingVolumeHierarchy* hierarchy, Collider& collider);
 
     // Iterative check for collisions.
+    // To check for collisins between two trees, pass the corresponding root
+    // nodes of those trees for node1 and node2.
     bool collidesIterative(BVHNode* node1, BVHNode* node2);
 
     // Recursive check for collisions.
@@ -122,6 +125,8 @@ private:
     BoundingVolume::Type mBvType;
 
     OptimizedStack<StackElement> mStack; // For iterative collision call.
+
+    std::shared_ptr<Polygon2DAccessor> mAccessor;
 };
 
 #endif // BOUNDINGVOLUMEHIERARCHY_H

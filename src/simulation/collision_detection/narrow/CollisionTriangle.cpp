@@ -1,7 +1,23 @@
 #include "CollisionObjectVisitor.h"
 #include "CollisionTriangle.h"
 
-CollisionTriangle::CollisionTriangle()
+CollisionTriangle::CollisionTriangle(
+        const std::shared_ptr<Polygon2DAccessor>& accessor,
+        const Face& face,
+        const std::shared_ptr<SimulationObject>& so)
+    : mAccessor(accessor)
+    , mFace(face)
+    , mSo(so)
+{
+
+}
+
+void CollisionTriangle::update()
+{
+
+}
+
+void CollisionTriangle::updatePrevious()
 {
 
 }

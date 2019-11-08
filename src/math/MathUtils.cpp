@@ -63,7 +63,7 @@ bool MathUtils::projectPointOnTriangle(
     double w1 = (c*d1 - b*d2) / det;
     double w2 = (a*d2 - b*d1) / det;
 
-    // this clamping gives not an exact orthogonal point to the edge!!
+    // This clamping gives not an exact orthogonal point to the edge.
     if (w1 < 0) w1 = 0;
     if (w1 > 1) w1 = 1;
     if (w2 < 0) w2 = 0;
@@ -75,7 +75,7 @@ bool MathUtils::projectPointOnTriangle(
 
     if (bary[2] < 0)
     {
-        // this gives not an exact orthogonal point to the edge!!
+        // This gives not an exact orthogonal point to the edge.
         const double w12 = w1 + w2;
         bary[0] -= w2 / (w12)*(w12 - 1);
         bary[1] -= w1 / (w12)*(w12 - 1);

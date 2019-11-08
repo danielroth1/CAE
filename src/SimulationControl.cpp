@@ -274,7 +274,8 @@ std::shared_ptr<FEMSimulation> SimulationControl::getFEMSimulation()
     return mFEMSimulation;
 }
 
-void SimulationControl::addSimulationObject(std::shared_ptr<SimulationObject> so)
+void SimulationControl::addSimulationObject(
+        const std::shared_ptr<SimulationObject>& so)
 {
     mSimulationObjects.push_back(so);
 
@@ -434,10 +435,16 @@ void SimulationControl::addCollisionObject(
 
         virtual void visit(FEMObject& femObject)
         {
+            // // discretize with spheres
             sc.mCollisionManagerProxy->addSimulationObject(
                         femObject.shared_from_this(),
                         femObject.getPolygon(),
                         sphereDiameter);
+
+            // discretize with triangles
+//            sc.mCollisionManagerProxy->addSimulationObjectTriangles(
+//                        femObject.shared_from_this(),
+//                        femObject.getPolygon());
         }
 
         virtual void visit(SimulationPoint& /*sp*/)
@@ -447,10 +454,16 @@ void SimulationControl::addCollisionObject(
 
         virtual void visit(RigidBody& rigidBody)
         {
+            // discretize with spheres
             sc.mCollisionManagerProxy->addSimulationObject(
                         rigidBody.shared_from_this(),
                         rigidBody.getPolygon(),
                         sphereDiameter);
+
+            // discretize with triangles
+//            sc.mCollisionManagerProxy->addSimulationObjectTriangles(
+//                        rigidBody.shared_from_this(),
+//                        rigidBody.getPolygon());
         }
 
         SimulationControl& sc;

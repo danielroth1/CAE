@@ -7,6 +7,7 @@
 
 #include <memory>
 
+class GeometricData;
 class GeometricPointRef;
 class Polygon;
 class SimulationObject;
@@ -68,6 +69,7 @@ public:
 
     const std::shared_ptr<SimulationObject>& getSimulationObject() const;
     GeometricPointRef* getGeometricPointRef() const;
+    GeometricData* getGeometricData() const;
 
     Eigen::Vector getPoint();
 
