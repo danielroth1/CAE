@@ -45,6 +45,11 @@ public:
         }
         case CollisionObject::Type::TRIANGLE:
         {
+            // If a triangle is completely aligned with a coordinate axis, its
+            // bounding box would lose its volume rendering it useless. By adding
+            // a smalls
+            double epsilon = 1e-12;
+
             CollisionTriangle* t = static_cast<CollisionTriangle*>(&collisionObject);
             const Face& f = t->getFace();
             const std::shared_ptr<Polygon2DAccessor>& acc = t->getAccessor();
@@ -55,11 +60,11 @@ public:
 
             mBB.min() = acc->getPosition(f[0]).cwiseMin(
                             acc->getPosition(f[1])).cwiseMin(
-                                acc->getPosition(f[2]));
+                                acc->getPosition(f[2])) - epsilon * Eigen::Vector::Ones();
 
             mBB.max() = acc->getPosition(f[0]).cwiseMax(
                             acc->getPosition(f[1])).cwiseMax(
-                                acc->getPosition(f[2]));
+                                acc->getPosition(f[2])) + epsilon * Eigen::Vector::Ones();
             break;
         }
         }

@@ -39,7 +39,7 @@ void CollisionManager::addSimulationObjectTriangles(
     {
         const Face& f = topology.getFacesIndices()[i];
         collisionObjects.push_back(
-                    std::make_shared<CollisionTriangle>(accessor, f, so));
+                    std::make_shared<CollisionTriangle>(accessor, f, i, so));
     }
 
     addSimulationObject(so, polygon, collisionObjects);

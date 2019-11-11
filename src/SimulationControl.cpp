@@ -190,6 +190,14 @@ void SimulationControl::startSimulationThread()
     mUpdateInterval = 20 ; // update after every 50 milliseconds
 }
 
+void SimulationControl::performSingleStep()
+{
+    if (mPaused)
+    {
+        mProxy->step();
+    }
+}
+
 void SimulationControl::setGravity(Vector gravity)
 {
     mGravity = gravity;
@@ -455,15 +463,15 @@ void SimulationControl::addCollisionObject(
         virtual void visit(RigidBody& rigidBody)
         {
             // discretize with spheres
-            sc.mCollisionManagerProxy->addSimulationObject(
-                        rigidBody.shared_from_this(),
-                        rigidBody.getPolygon(),
-                        sphereDiameter);
+//            sc.mCollisionManagerProxy->addSimulationObject(
+//                        rigidBody.shared_from_this(),
+//                        rigidBody.getPolygon(),
+//                        sphereDiameter);
 
             // discretize with triangles
-//            sc.mCollisionManagerProxy->addSimulationObjectTriangles(
-//                        rigidBody.shared_from_this(),
-//                        rigidBody.getPolygon());
+            sc.mCollisionManagerProxy->addSimulationObjectTriangles(
+                        rigidBody.shared_from_this(),
+                        rigidBody.getPolygon());
         }
 
         SimulationControl& sc;
@@ -548,6 +556,9 @@ void SimulationControl::step()
 
     mRigidSimulation->integratePositions(mStepSize);
     mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
+
+    mRigidSimulation->publish();
+    mFEMSimulation->publish();
 
     START_TIMING_SIMULATION("CollisionManager::udpateAll()");
     mCollisionManager->updateAll();

@@ -26,6 +26,7 @@ public:
     QWidget* getWidget();
 
     void onSimulationButtonToggled(bool checked);
+    void onSingleStepButtonClicked();
     void onTruncateButtonClicked();
 
     // Tries to create a fem object for the selected

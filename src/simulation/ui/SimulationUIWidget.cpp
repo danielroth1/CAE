@@ -287,3 +287,8 @@ void SimulationUIWidget::on_mPushButtonRemoveConstraint_clicked()
 {
     mUiControl->onRemoveConstraintClicked();
 }
+
+void SimulationUIWidget::on_mButtonSingleStep_clicked()
+{
+    mUiControl->onSingleStepButtonClicked();
+}

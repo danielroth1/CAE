@@ -69,6 +69,8 @@ private slots:
 
     void on_mPushButtonRemoveConstraint_clicked();
 
+    void on_mButtonSingleStep_clicked();
+
 private:
     void renderCollisionSpheres();
 

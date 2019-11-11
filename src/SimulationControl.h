@@ -92,6 +92,8 @@ public:
     void initialize();
     void startSimulationThread();
 
+    void performSingleStep();
+
     void setGravity(Eigen::Vector gravity);
     Eigen::Vector getGravity() const;
 
@@ -256,6 +258,9 @@ private:
 };
 
 PROXY_CLASS(SimulationControlProxy, SimulationControl, mSc,
+            PROXY_FUNCTION(SimulationControl, mSc, step,
+                           PL(),
+                           PL())
             PROXY_FUNCTION(SimulationControl, mSc, addForceSlot,
                            PL(const std::shared_ptr<Force>& force),
                            PL(force))

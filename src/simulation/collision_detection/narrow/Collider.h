@@ -35,6 +35,7 @@ public:
                 Collision& collisionReturnValue);
 
 private:
+
     // Mthods for dispatching
         bool collides(
                 CollisionObject& co,
@@ -58,6 +59,13 @@ private:
                 Collision& collisionReturnValue);
 
         bool collides(
+                CollisionTriangle& ct1,
+                CollisionTriangle& ct2,
+                Collision& collisionReturnValue);
+
+        // \param ct1 - source
+        // \param ct2 - target
+        bool collidesTriangle(
                 CollisionTriangle& ct1,
                 CollisionTriangle& ct2,
                 Collision& collisionReturnValue);

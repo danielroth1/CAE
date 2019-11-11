@@ -84,10 +84,6 @@ bool Collider::collides(
     case CollisionObject::Type::TRIANGLE:
     {
         bool result = collides(cs, *static_cast<CollisionTriangle*>(&co), collisionReturnValue);
-        if (result)
-        {
-            collisionReturnValue.revert();
-        }
         return result;
     }
     }
@@ -229,16 +225,74 @@ bool Collider::collides(
 }
 
 bool Collider::collides(
-        CollisionTriangle& /*ct1*/,
-        CollisionTriangle& /*ct2*/,
-        Collision& /*collisionReturnValue*/)
+        CollisionTriangle& ct1,
+        CollisionTriangle& ct2,
+        Collision& collisionReturnValue)
 {
     // TODO_TRIANGLE: implement this
 
+//    double collisionMargin = 1e-4;
+
     // sphere-triangle
+
+    bool collision = collidesTriangle(ct1, ct2, collisionReturnValue);
+    if (!collision)
+    {
+        collision = collidesTriangle(ct2, ct1, collisionReturnValue);
+    }
+    return collision;
+
 
     // edge-edge
 
+//    return false;
+}
+
+bool Collider::collidesTriangle(
+        CollisionTriangle& ct1,
+        CollisionTriangle& ct2,
+        Collision& collisionReturnValue)
+{
+    double collisionMargin = 1e-2;
+
+    Eigen::Vector& p21 = ct2.getP1();
+    Eigen::Vector& p22 = ct2.getP2();
+    Eigen::Vector& p23 = ct2.getP3();
+    for (ID i = 0; i < 3; ++i)
+    {
+        Eigen::Vector& pos = ct1.getPosition(i);
+        ID v1Index = ct1.getFace()[i];
+
+        Eigen::Vector inter; // projected point
+        Eigen::Vector bary; // baryzentric coordinates
+
+        bool ok = MathUtils::projectPointOnTriangle(
+                    p21, p22, p23,
+                    pos,
+                    inter, bary);
+
+        if (ok && (pos - inter).squaredNorm() < collisionMargin)
+        {
+            // Determin collsion normal -> triangle normal...
+            Eigen::Vector dir = ct2.getAccessor()->getFaceNormals()[ct2.getFaceId()];
+
+            ID index = 0;
+            if (bary(1) > bary(0) && bary(1) > bary(2))
+                index = 1;
+            else if (bary(2) > bary(0) && bary(2) > bary(1))
+                index = 2;
+
+            ID v2Index = ct2.getFace()[index];
+
+            new (&collisionReturnValue) Collision(ct1.getSimulationObject(),
+                                                  ct2.getSimulationObject(),
+                                                  pos, inter, dir, 0.0,
+                                                  v1Index,
+                                                  v2Index,
+                                                  false);
+            return true;
+        }
+    }
     return false;
 }
 

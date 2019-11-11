@@ -28,6 +28,8 @@ public:
     TimeStepper* getTimeStepper();
     void setPaused(bool paused);
 
+    void performSingleStep();
+
     // Delegated Domains
     // Either sets the domains threads id now or if not already done
     // when start() is executed.

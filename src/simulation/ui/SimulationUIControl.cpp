@@ -268,6 +268,11 @@ void SimulationUIControl::onSimulationButtonToggled(bool checked)
     mAc->getSimulationControl()->setSimulationPaused(!checked);
 }
 
+void SimulationUIControl::onSingleStepButtonClicked()
+{
+    mAc->getSimulationControl()->performSingleStep();
+}
+
 void SimulationUIControl::onTruncateButtonClicked()
 {
     // For now: add truncation

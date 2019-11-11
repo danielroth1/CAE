@@ -19,6 +19,7 @@ public:
     CollisionTriangle(
             const std::shared_ptr<Polygon2DAccessor>& accessor,
             const Face& face,
+            ID faceId,
             const std::shared_ptr<SimulationObject>& so);
 
     const std::shared_ptr<Polygon2DAccessor>& getAccessor()
@@ -29,6 +30,17 @@ public:
     const Face& getFace()
     {
         return mFace;
+    }
+
+    ID getFaceId() const
+    {
+        return mFaceId;
+    }
+
+    // \param index - number from 0 to 2
+    Eigen::Vector& getPosition(ID index)
+    {
+        return mAccessor->getPosition(mFace[index]);
     }
 
     Eigen::Vector& getP1()
@@ -65,6 +77,8 @@ private:
     std::shared_ptr<Polygon2DAccessor> mAccessor;
 
     Face mFace;
+
+    ID mFaceId;
 
     std::shared_ptr<SimulationObject> mSo;
 };
