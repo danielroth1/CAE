@@ -53,6 +53,9 @@ public:
     // code.
     Vectors calcualtePositions2DFrom3D() const;
 
+    // Creates .ele, .node, and .face files according to the tetgen file format.
+    void outputToFile(const std::string& filename);
+
     // Getters
     Polygon3DTopology& getTopology3D();
     const Polygon3DTopology& getTopology3D() const;

@@ -5,7 +5,9 @@
 #include "Polygon3DDataWS.h"
 #include "Polygon3DTopology.h"
 
+#include <iomanip>
 #include <iostream>
+#include <fstream>
 #include <scene/data/GeometricDataVisitor.h>
 #include <scene/model/ModelUtils.h>
 #include <set>
@@ -35,6 +37,8 @@ Polygon3D::Polygon3D(
 
     fixOuterTriangleIndexOrder();
     fixTopology();
+
+    outputToFile("/home/daniel/objs/work/meshes/interior_panelling");
 }
 
 Polygon3D::Polygon3D(
@@ -138,6 +142,66 @@ Vectors Polygon3D::calcualtePositions2DFrom3D() const
         positions2D.push_back(mPositionData.getPositions()[outerVertexIds[i]]);
     }
     return positions2D;
+}
+
+void Polygon3D::outputToFile(const std::string& filename)
+{
+    std::ofstream file;
+
+    std::shared_ptr<Polygon3DTopology> topo = mData->getTopology();
+
+    file.open(filename + ".node");
+    file << topo->getVertices().size() << "  1\n";
+
+    int vd = static_cast<int>(
+                std::ceil(std::log10(static_cast<double>(topo->getVertices().size()))));
+    for (size_t i = 0; i < topo->getVertices().size(); ++i)
+    {
+        const Vector& pos = getPosition(i);
+        file << std::setw(vd) << i
+             << "   " << pos(0)
+             << " " << pos(1)
+             << " " << pos(2)
+             << "\n";
+    }
+    file.close();
+
+
+    {
+        file.open(filename + ".ele");
+        file << topo->getCells().size() << "  1\n";
+
+        int distance = static_cast<int>(
+                    std::ceil(std::log10(static_cast<double>(topo->getCells().size()))));
+        for (size_t i = 0; i < topo->getCells().size(); ++i)
+        {
+            file << std::setw(distance) << i << "  "
+                 << std::setw(vd) << topo->getCells()[i].getVertexIds()[0] << " "
+                 << std::setw(vd) << topo->getCells()[i].getVertexIds()[1] << " "
+                 << std::setw(vd) << topo->getCells()[i].getVertexIds()[2] << " "
+                 << std::setw(vd) << topo->getCells()[i].getVertexIds()[3] << " "
+                 << "\n";
+        }
+        file.close();
+    }
+
+    {
+        file.open(filename + ".face");
+        file << topo->getFaces().size() << "  1\n";
+
+        int distance = static_cast<int>(
+                    std::ceil(std::log10(static_cast<double>(topo->getFaces().size()))));
+        for (size_t i = 0; i < topo->getFaces().size(); ++i)
+        {
+            file << std::setw(distance) << i << "  "
+                 << std::setw(vd) << topo->getFaces()[i].getVertexIds()[0] << " "
+                 << std::setw(vd) << topo->getFaces()[i].getVertexIds()[1] << " "
+                 << std::setw(vd) << topo->getFaces()[i].getVertexIds()[2] << " "
+                 << std::setw(vd) << "-1"
+                 << "\n";
+        }
+        file.close();
+    }
 }
 
 Polygon3DTopology& Polygon3D::getTopology3D()
