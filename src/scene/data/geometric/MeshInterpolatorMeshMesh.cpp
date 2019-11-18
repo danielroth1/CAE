@@ -336,7 +336,8 @@ void MeshInterpolatorMeshMesh::solve(
 
             Eigen::Vector3d inter;
             Eigen::Vector3d bary;
-            if (MathUtils::projectPointOnTriangle(v[0], v[1], v[2], p, inter, bary))
+            bool isInside;
+            if (MathUtils::projectPointOnTriangle(v[0], v[1], v[2], p, inter, bary, isInside))
             {
                 double distance = (p - inter).norm();
                 closestFaces.push_back(std::make_tuple(&f, distance));

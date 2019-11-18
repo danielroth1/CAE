@@ -45,13 +45,26 @@ public:
     // "inter" and baryzentric coordinates "bary". Returns false if the problem
     // has no solution because it was illconditioned (triangle is an edge
     // because two points are identical.)
+    // \param isInside - is set true if the projection is on top of the triangle
+    //      and clamping wasn't necessary
     static bool projectPointOnTriangle(
             const Eigen::Vector3d& p0,
             const Eigen::Vector3d& p1,
             const Eigen::Vector3d& p2,
             const Eigen::Vector3d& p,
             Eigen::Vector3d& inter,
-            Eigen::Vector3d& bary);
+            Eigen::Vector3d& bary,
+            bool& isInside);
+
+    static bool projectEdgeOnEdge(
+            const Eigen::Vector3d& p0,
+            const Eigen::Vector3d& p1,
+            const Eigen::Vector3d& p2,
+            const Eigen::Vector3d& p3,
+            Eigen::Vector3d& inter1,
+            Eigen::Vector3d& inter2,
+            Eigen::Vector2d& bary,
+            bool& isInside);
 };
 
 #endif // MATHUTILS_H

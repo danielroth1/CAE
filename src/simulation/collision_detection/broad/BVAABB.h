@@ -48,7 +48,7 @@ public:
             // If a triangle is completely aligned with a coordinate axis, its
             // bounding box would lose its volume rendering it useless. By adding
             // a smalls
-            double epsilon = 1e-12;
+            double epsilon = 5e-2;
 
             CollisionTriangle* t = static_cast<CollisionTriangle*>(&collisionObject);
             const Face& f = t->getFace();

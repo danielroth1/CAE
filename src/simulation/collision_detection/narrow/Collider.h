@@ -70,6 +70,18 @@ private:
                 CollisionTriangle& ct2,
                 Collision& collisionReturnValue);
 
+        bool collidesTrianglesPair(
+                CollisionTriangle& ct1,
+                CollisionTriangle& ct2,
+                double marginSquared,
+                Collision& collisionReturnValue);
+
+        bool collidesEdgesPair(
+                CollisionTriangle& ct1,
+                CollisionTriangle& ct2,
+                double marginSquared,
+                Collision& collisionReturnValue);
+
     bool isInside(CollisionSphere& cs1, CollisionSphere& cs2);
 
     bool passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal);

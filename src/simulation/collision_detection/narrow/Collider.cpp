@@ -186,19 +186,18 @@ bool Collider::collides(
         CollisionTriangle& ct,
         Collision& collisionReturnValue)
 {
-    // TODO_TRIANGLE: implement this
-
     // sphere-triangle
     Eigen::Vector spherePos = cs.getPosition();
 
     Eigen::Vector inter; // projected point
     Eigen::Vector bary; // baryzentric coordinates
+    bool isInside;
     MathUtils::projectPointOnTriangle(
                 ct.getP1(), ct.getP2(), ct.getP3(),
                 spherePos,
-                inter, bary);
+                inter, bary, isInside);
 
-    if ((inter - spherePos).norm() < cs.getRadius())
+    if ((inter - spherePos).squaredNorm() < cs.getRadius() * cs.getRadius())
     {
         Eigen::Vector dir = (spherePos - inter).normalized();
         Eigen::Vector pointB = spherePos - cs.getRadius() * dir;
@@ -211,9 +210,16 @@ bool Collider::collides(
 
         ID triIndex = ct.getFace()[index];
 
+        if (mInvertNormalsIfNecessary)
+        {
+            Eigen::Vector faceNormal = ct.getAccessor()->getFaceNormals()[ct.getFaceId()];
+            if (dir.dot(faceNormal) < 0)
+                dir = -dir;
+        }
+
         new (&collisionReturnValue) Collision(cs.getPointRef().getSimulationObject(),
                                               ct.getSimulationObject(),
-                                              inter, pointB, dir, 0.0,
+                                              pointB, inter, dir, 0.0,
                                               cs.getVertexIndex(),
                                               triIndex,
                                               false);
@@ -253,8 +259,29 @@ bool Collider::collidesTriangle(
         CollisionTriangle& ct2,
         Collision& collisionReturnValue)
 {
-    double collisionMargin = 1e-2;
+    double margin = 5e-2;
+    double marginSquared = margin * margin;
 
+    bool result = collidesTrianglesPair(ct1, ct2, marginSquared, collisionReturnValue);
+    if (!result)
+    {
+        result = collidesTrianglesPair(ct2, ct1, marginSquared, collisionReturnValue);
+
+        if (!result)
+        {
+            result = collidesEdgesPair(ct1, ct2, marginSquared, collisionReturnValue);
+        }
+    }
+    return result;
+}
+
+bool Collider::collidesTrianglesPair(
+        CollisionTriangle& ct1,
+        CollisionTriangle& ct2,
+        double marginSquared,
+        Collision& collisionReturnValue)
+{
+    // point triangle
     Eigen::Vector& p21 = ct2.getP1();
     Eigen::Vector& p22 = ct2.getP2();
     Eigen::Vector& p23 = ct2.getP3();
@@ -265,16 +292,29 @@ bool Collider::collidesTriangle(
 
         Eigen::Vector inter; // projected point
         Eigen::Vector bary; // baryzentric coordinates
+        bool isInside;
 
         bool ok = MathUtils::projectPointOnTriangle(
                     p21, p22, p23,
                     pos,
-                    inter, bary);
+                    inter, bary, isInside);
 
-        if (ok && (pos - inter).squaredNorm() < collisionMargin)
+        if (ok && (pos - inter).squaredNorm() < marginSquared)
         {
             // Determin collsion normal -> triangle normal...
-            Eigen::Vector dir = ct2.getAccessor()->getFaceNormals()[ct2.getFaceId()];
+            Eigen::Vector dir;
+            if (isInside)
+            {
+                dir = ct2.getAccessor()->getFaceNormals()[ct2.getFaceId()];
+            }
+            else
+            {
+                dir = (pos - inter).normalized();
+//                if (dir.dot(ct2.getAccessor()->getFaceNormals()[ct2.getFaceId()]) < 0)
+//                {
+//                    dir = -dir;
+//                }
+            }
 
             ID index = 0;
             if (bary(1) > bary(0) && bary(1) > bary(2))
@@ -291,6 +331,82 @@ bool Collider::collidesTriangle(
                                                   v2Index,
                                                   false);
             return true;
+        }
+    }
+
+    return false;
+}
+
+bool Collider::collidesEdgesPair(CollisionTriangle& ct1,
+                                 CollisionTriangle& ct2,
+                                 double marginSquared,
+                                 Collision& collisionReturnValue)
+{
+    // edge-edge
+    for (ID i = 0; i < 3; ++i)
+    {
+        const Eigen::Vector* x11;
+        const Eigen::Vector* x12;
+        if (i == 0)
+        {
+            x11 = &ct1.getP1();
+            x12 = &ct1.getP2();
+        }
+        else if (i == 1)
+        {
+            x11 = &ct1.getP2();
+            x12 = &ct1.getP3();
+        }
+        else
+        {
+            x11 = &ct1.getP3();
+            x12 = &ct1.getP1();
+        }
+
+        for (ID j = 0; j < 3; ++j)
+        {
+            const Eigen::Vector* x21;
+            const Eigen::Vector* x22;
+            if (j == 0)
+            {
+                x21 = &ct2.getP1();
+                x22 = &ct2.getP2();
+            }
+            else if (j == 1)
+            {
+                x21 = &ct2.getP2();
+                x22 = &ct2.getP3();
+            }
+            else
+            {
+                x21 = &ct2.getP3();
+                x22 = &ct2.getP1();
+            }
+
+            Eigen::Vector3d inter1; // projected point 1
+            Eigen::Vector3d inter2; // projected point 2
+            Eigen::Vector2d bary; // baryzentric coordinates
+            bool isInside;
+
+            bool ok = MathUtils::projectEdgeOnEdge(
+                        *x11, *x12, *x21, *x22, inter1, inter2, bary, isInside);
+
+            // TODO: continue here
+            if (ok && (inter1 - inter2).squaredNorm() < marginSquared)
+            {
+                // Determin collsion normal -> triangle normal...
+    //            Eigen::Vector dir = ct2.getAccessor()->getFaceNormals()[ct2.getFaceId()];
+
+                Eigen::Vector dir = (inter1 - inter2).normalized();
+
+                new (&collisionReturnValue) Collision(ct1.getSimulationObject(),
+                                                      ct2.getSimulationObject(),
+                                                      inter1, inter2, dir, 0.0,
+                                                      0,
+                                                      0,
+                                                      false);
+                return true;
+            }
         }
     }
     return false;
