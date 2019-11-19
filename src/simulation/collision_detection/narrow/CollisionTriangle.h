@@ -22,6 +22,8 @@ public:
             ID faceId,
             const std::shared_ptr<SimulationObject>& so);
 
+    virtual ~CollisionTriangle() override;
+
     const std::shared_ptr<Polygon2DAccessor>& getAccessor()
     {
         return mAccessor;

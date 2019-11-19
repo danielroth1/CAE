@@ -14,6 +14,11 @@ CollisionTriangle::CollisionTriangle(
 
 }
 
+CollisionTriangle::~CollisionTriangle()
+{
+
+}
+
 void CollisionTriangle::update()
 {
 

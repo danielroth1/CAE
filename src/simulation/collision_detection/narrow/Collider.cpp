@@ -9,6 +9,7 @@
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon2DData.h>
+#include <scene/data/geometric/Polygon2DTopology.h>
 #include <scene/data/geometric/Polygon3D.h>
 #include <scene/data/geometric/PolygonTopology.h>
 #include <scene/data/geometric/TopologyFeature.h>
@@ -235,23 +236,12 @@ bool Collider::collides(
         CollisionTriangle& ct2,
         Collision& collisionReturnValue)
 {
-    // TODO_TRIANGLE: implement this
-
-//    double collisionMargin = 1e-4;
-
-    // sphere-triangle
-
     bool collision = collidesTriangle(ct1, ct2, collisionReturnValue);
     if (!collision)
     {
         collision = collidesTriangle(ct2, ct1, collisionReturnValue);
     }
     return collision;
-
-
-    // edge-edge
-
-//    return false;
 }
 
 bool Collider::collidesTriangle(
@@ -391,13 +381,27 @@ bool Collider::collidesEdgesPair(CollisionTriangle& ct1,
             bool ok = MathUtils::projectEdgeOnEdge(
                         *x11, *x12, *x21, *x22, inter1, inter2, bary, isInside);
 
-            // TODO: continue here
             if (ok && (inter1 - inter2).squaredNorm() < marginSquared)
             {
                 // Determin collsion normal -> triangle normal...
     //            Eigen::Vector dir = ct2.getAccessor()->getFaceNormals()[ct2.getFaceId()];
 
                 Eigen::Vector dir = (inter1 - inter2).normalized();
+
+                if (mInvertNormalsIfNecessary)
+                {
+                    bool isInside = true;
+                    isInside =
+                            ct1.getAccessor()->getPolygon()->isInside(
+                                ct1.getAccessor()->getTopology2D().getFace(ct1.getFaceId()),
+                               inter2);
+                    isInside |=
+                            ct2.getAccessor()->getPolygon()->isInside(
+                                ct2.getAccessor()->getTopology2D().getFace(ct2.getFaceId()),
+                               inter1);
+                    if (isInside)
+                        dir = -dir;
+                }
 
                 new (&collisionReturnValue) Collision(ct1.getSimulationObject(),
                                                       ct2.getSimulationObject(),

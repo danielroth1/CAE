@@ -293,6 +293,18 @@ std::shared_ptr<Polygon2DAccessor> Polygon2D::createAccessor()
 
         }
 
+        virtual bool isInside(
+                const TopologyFeature& feature, const Eigen::Vector& source,
+                double distance, const Eigen::Vector& target) override
+        {
+            return poly2->isInside(feature, source, distance, target);
+        }
+
+        virtual std::shared_ptr<Polygon> getPolygon() const override
+        {
+            return poly2;
+        }
+
         virtual size_t getSize() override
         {
             return poly2->getSize();
