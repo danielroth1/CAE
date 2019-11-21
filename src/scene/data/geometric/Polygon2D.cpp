@@ -35,6 +35,8 @@ Polygon2D::Polygon2D(
     mFaceNormals.initializeFromWorldSpace(faceNormals);
 
 //    fixTopology();
+
+    mAccessor2D = createAccessor();
 }
 
 Polygon2D::Polygon2D(
@@ -55,6 +57,8 @@ Polygon2D::Polygon2D(
     mFaceNormals.initializeFromWorldSpace(faceNormals);
 
 //    fixTopology();
+
+    mAccessor2D = createAccessor();
 }
 
 Polygon2D::Polygon2D(
@@ -87,6 +91,8 @@ Polygon2D::Polygon2D(
                                            Eigen::Affine3d(transform.linear()));
 
 //    fixTopology();
+
+    mAccessor2D = createAccessor();
 }
 
 Polygon2D::Polygon2D(
@@ -117,6 +123,8 @@ Polygon2D::Polygon2D(
                                          Eigen::Affine3d(transform.linear()));
 
 //    fixTopology();
+
+    mAccessor2D = createAccessor();
 }
 
 Polygon2DTopology& Polygon2D::getTopology2D()
@@ -275,6 +283,11 @@ std::shared_ptr<PolygonData> Polygon2D::getData()
 PolygonTopology& Polygon2D::getTopology()
 {
     return mData->getTopology();
+}
+
+const std::shared_ptr<Polygon2DAccessor>& Polygon2D::getAccessor2D() const
+{
+    return mAccessor2D;
 }
 
 std::shared_ptr<Polygon2DAccessor> Polygon2D::createAccessor()

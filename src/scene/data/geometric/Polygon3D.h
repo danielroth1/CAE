@@ -114,6 +114,9 @@ public:
 
     virtual PolygonTopology& getTopology() override;
 
+    // Returns an accessor that allows to access this polygons outer mesh.
+    virtual const std::shared_ptr<Polygon2DAccessor>& getAccessor2D() const override;
+
     // Creates and returns a Polygon2DAccessor for the outer polygon mesh.
     // This accessor allows to access the outer polygon mesh just like a
     // Polygon2D with its respective Polygon2DAccessor.
@@ -165,6 +168,8 @@ protected:
 private:
 
     std::shared_ptr<Polygon3DData> mData;
+
+    std::shared_ptr<Polygon2DAccessor> mAccessor2D;
 
     BSWSVectors mOuterVertexNormals;
     BSWSVectors mOuterFaceNormals;

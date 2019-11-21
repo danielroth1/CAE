@@ -96,6 +96,9 @@ public:
 
     virtual PolygonTopology& getTopology() override;
 
+    // Returns an accessor that allows to access this polygon.
+    virtual const std::shared_ptr<Polygon2DAccessor>& getAccessor2D() const override;
+
     // Creates and returns a Polygon2DAccessor that allows to access this object.
     // The Polygon2DAccessor offers an interface to abstract the access to
     // Polygon2D and outer meshes of Polygon3D.
@@ -126,6 +129,8 @@ public:
 private:
 
     std::shared_ptr<Polygon2DData> mData;
+
+    std::shared_ptr<Polygon2DAccessor> mAccessor2D;
 
     // These members are used to either store
     // the vectros in world space coordinates
