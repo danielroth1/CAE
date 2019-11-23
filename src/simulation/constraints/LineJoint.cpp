@@ -19,10 +19,10 @@ LineJoint::LineJoint(
 
 }
 
-bool LineJoint::references(const std::shared_ptr<SimulationObject>& so)
+bool LineJoint::references(SimulationObject* so)
 {
-    return so == mPointARef.getSimulationObject() ||
-            so == mPointBRef.getSimulationObject();
+    return so == mPointARef.getSimulationObject().get() ||
+            so == mPointBRef.getSimulationObject().get();
 }
 
 void LineJoint::initialize(double stepSize)
@@ -44,22 +44,22 @@ void LineJoint::initialize(double stepSize)
     // now apply impulses just like in BallJoint
     mImpulseFactor = (ImpulseConstraintSolver::calculateK(mPointBRef) +
                       ImpulseConstraintSolver::calculateK(
-                          mPointARef.getSimulationObject(),
+                          mPointARef.getSimulationObject().get(),
                           mPointABS, mPointARef.getIndex())).inverse();
 
     mTargetURel = -(mPointAWS - mPointBWS) / stepSize;
 
     mPointBBS = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointBRef.getSimulationObject(), mPointBWS);
+                mPointBRef.getSimulationObject().get(), mPointBWS);
 }
 
 bool LineJoint::solve(double maxConstraintError)
 {
     Eigen::Vector uRel =
             ImpulseConstraintSolver::calculateSpeed(
-                mPointARef.getSimulationObject(), mPointABS, mPointARef.getIndex()) -
+                mPointARef.getSimulationObject().get(), mPointABS, mPointARef.getIndex()) -
             ImpulseConstraintSolver::calculateSpeed(
-                mPointBRef.getSimulationObject(), mPointBBS, mPointBRef.getIndex());
+                mPointBRef.getSimulationObject().get(), mPointBBS, mPointBRef.getIndex());
 
     // project uRel
     Eigen::Vector deltaURel = mTargetURel - uRel;
@@ -75,10 +75,10 @@ bool LineJoint::solve(double maxConstraintError)
     Eigen::Vector impulse = mImpulseFactor * deltaURel;
 
     ImpulseConstraintSolver::applyImpulse(
-                mPointARef.getSimulationObject(), impulse,
+                mPointARef.getSimulationObject().get(), impulse,
                 mPointABS, mPointARef.getIndex());
     ImpulseConstraintSolver::applyImpulse(
-                mPointBRef.getSimulationObject(), -impulse,
+                mPointBRef.getSimulationObject().get(), -impulse,
                 mPointBBS, mPointBRef.getIndex());
 
     return false;

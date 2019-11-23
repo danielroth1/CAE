@@ -35,8 +35,6 @@ Polygon2D::Polygon2D(
     mFaceNormals.initializeFromWorldSpace(faceNormals);
 
 //    fixTopology();
-
-    mAccessor2D = createAccessor();
 }
 
 Polygon2D::Polygon2D(
@@ -57,8 +55,6 @@ Polygon2D::Polygon2D(
     mFaceNormals.initializeFromWorldSpace(faceNormals);
 
 //    fixTopology();
-
-    mAccessor2D = createAccessor();
 }
 
 Polygon2D::Polygon2D(
@@ -91,8 +87,6 @@ Polygon2D::Polygon2D(
                                            Eigen::Affine3d(transform.linear()));
 
 //    fixTopology();
-
-    mAccessor2D = createAccessor();
 }
 
 Polygon2D::Polygon2D(
@@ -123,8 +117,6 @@ Polygon2D::Polygon2D(
                                          Eigen::Affine3d(transform.linear()));
 
 //    fixTopology();
-
-    mAccessor2D = createAccessor();
 }
 
 Polygon2DTopology& Polygon2D::getTopology2D()
@@ -285,8 +277,10 @@ PolygonTopology& Polygon2D::getTopology()
     return mData->getTopology();
 }
 
-const std::shared_ptr<Polygon2DAccessor>& Polygon2D::getAccessor2D() const
+const std::shared_ptr<Polygon2DAccessor>& Polygon2D::getAccessor2D()
 {
+    if (!mAccessor2D)
+        mAccessor2D = createAccessor();
     return mAccessor2D;
 }
 
@@ -295,7 +289,7 @@ std::shared_ptr<Polygon2DAccessor> Polygon2D::createAccessor()
     class Polygon2DAccessorImpl : public Polygon2DAccessor
     {
     public:
-        Polygon2DAccessorImpl(const std::shared_ptr<Polygon2D>& _poly2)
+        Polygon2DAccessorImpl(Polygon2D* _poly2)
             : poly2(_poly2)
         {
 
@@ -313,7 +307,7 @@ std::shared_ptr<Polygon2DAccessor> Polygon2D::createAccessor()
             return poly2->isInside(feature, source, distance, target);
         }
 
-        virtual std::shared_ptr<Polygon> getPolygon() const override
+        virtual Polygon* getPolygon() const override
         {
             return poly2;
         }
@@ -354,11 +348,10 @@ std::shared_ptr<Polygon2DAccessor> Polygon2D::createAccessor()
         }
 
     private:
-        std::shared_ptr<Polygon2D> poly2;
+        Polygon2D* poly2;
     };
 
-    return std::make_shared<Polygon2DAccessorImpl>(
-                std::dynamic_pointer_cast<Polygon2D>(shared_from_this()));
+    return std::make_shared<Polygon2DAccessorImpl>(this);
 }
 
 //void Polygon2D::changeRepresentationToBS(

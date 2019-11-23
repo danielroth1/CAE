@@ -21,9 +21,9 @@ DoubleAxisRotationalJoint::DoubleAxisRotationalJoint(
     mAxis2BS.normalize();
 }
 
-bool DoubleAxisRotationalJoint::references(const std::shared_ptr<SimulationObject>& so)
+bool DoubleAxisRotationalJoint::references(SimulationObject* so)
 {
-    return so == mRbA || so == mRbB;
+    return so == mRbA.get() || so == mRbB.get();
 }
 
 void DoubleAxisRotationalJoint::initialize(double stepSize)

@@ -37,9 +37,9 @@ void BallJoint::initialize(double stepSize)
     mTargetURel = -(mPointA.getPoint() - mPointB.getPoint()) / stepSize;
 
     mPoint1 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointA.getSimulationObject(), mPointA.getPoint());
+                mPointA.getSimulationObject().get(), mPointA.getPoint());
     mPoint2 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointB.getSimulationObject(), mPointB.getPoint());
+                mPointB.getSimulationObject().get(), mPointB.getPoint());
 
     // comment in to print the norm
 //    std::cout << "position error = " << mTargetURel.norm() <<
@@ -51,9 +51,9 @@ bool BallJoint::solve(double maxConstraintError)
 {
     Eigen::Vector uRel =
             ImpulseConstraintSolver::calculateSpeed(
-                mPointA.getSimulationObject(), mPoint1, mPointA.getIndex()) -
+                mPointA.getSimulationObject().get(), mPoint1, mPointA.getIndex()) -
             ImpulseConstraintSolver::calculateSpeed(
-                mPointB.getSimulationObject(), mPoint2, mPointB.getIndex());
+                mPointB.getSimulationObject().get(), mPoint2, mPointB.getIndex());
 
     Eigen::Vector deltaURel = mTargetURel - uRel;
 
@@ -65,9 +65,9 @@ bool BallJoint::solve(double maxConstraintError)
     Eigen::Vector impulse = mImpulseFactor * deltaURel;
 
     ImpulseConstraintSolver::applyImpulse(
-                mPointA.getSimulationObject(), impulse, mPoint1, mPointA.getIndex());
+                mPointA.getSimulationObject().get(), impulse, mPoint1, mPointA.getIndex());
     ImpulseConstraintSolver::applyImpulse(
-                mPointB.getSimulationObject(), -impulse, mPoint2, mPointB.getIndex());
+                mPointB.getSimulationObject().get(), -impulse, mPoint2, mPointB.getIndex());
 
     return false;
 }
@@ -77,8 +77,8 @@ void BallJoint::accept(ConstraintVisitor& cv)
     cv.visit(this);
 }
 
-bool BallJoint::references(const std::shared_ptr<SimulationObject>& so)
+bool BallJoint::references(SimulationObject* so)
 {
-    return so == mPointA.getSimulationObject() ||
-            so == mPointB.getSimulationObject();
+    return so == mPointA.getSimulationObject().get() ||
+            so == mPointB.getSimulationObject().get();
 }

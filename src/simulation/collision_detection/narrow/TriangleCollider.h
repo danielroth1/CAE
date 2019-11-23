@@ -1,8 +1,11 @@
 #ifndef TRIANGLECOLLIDER_H
 #define TRIANGLECOLLIDER_H
 
+#include <boost/functional/hash.hpp>
 #include <map>
 #include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 class Collision;
@@ -69,12 +72,16 @@ private:
         return mFeatureToSoMap[feature];
     }
 
+    typedef std::pair<TopologyFace*, TopologyVertex*> FVPair;
+    typedef std::pair<TopologyEdge*, TopologyEdge*> EEPair;
+
     // The features pairs that potentially could collide.
-    std::set<std::pair<TopologyFace*, TopologyVertex*>> mFeaturePairsFV;
-    std::set<std::pair<TopologyEdge*, TopologyEdge*>> mFeaturePairsEE;
+    std::unordered_set<FVPair, boost::hash<FVPair>> mFeaturePairsFV;
+    std::unordered_set<EEPair, boost::hash<EEPair>> mFeaturePairsEE;
 
-    std::map<TopologyFeature*, SimulationObject*> mFeatureToSoMap;
+    std::unordered_map<TopologyFeature*, SimulationObject*> mFeatureToSoMap;
 
+    double mMargin;
     double mMarginSquared;
     bool mInvertNormalsIfNecessary;
 

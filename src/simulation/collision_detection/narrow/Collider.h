@@ -8,6 +8,7 @@
 class CollisionObject;
 class CollisionSphere;
 class CollisionTriangle;
+class TriangleCollider;
 
 class Collider
 {
@@ -20,8 +21,19 @@ public:
                 CollisionObject& co1,
                 CollisionObject& co2);
 
+        bool collidesTrianglesImproved(
+                CollisionObject& co1,
+                CollisionObject& co2);
+
         // Removes currently stored collisions.
         void clear();
+
+        void prepare();
+
+        // Performs the narrow phase collision detection for the feature pairs.
+        // Call this method after calling all collider for close CollisionObjects
+        // but before getCollisions().
+        bool evaluate();
 
         std::vector<Collision>& getCollisions();
 
@@ -89,6 +101,10 @@ private:
     std::vector<Collision> mCollisions;
     bool mInvertNormalsIfNecessary;
 
+    std::shared_ptr<TriangleCollider> mTriangleCollider;
+
+    double mCollisionMargin;
+    double mCollisionMarginSquared;
 };
 
 #endif // COLLIDER_H

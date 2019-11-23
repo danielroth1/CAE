@@ -83,7 +83,7 @@ public:
     virtual PolygonTopology& getTopology() = 0;
 
     // Returns an accessor that allows to access this polygons outer mesh.
-    virtual const std::shared_ptr<Polygon2DAccessor>& getAccessor2D() const = 0;
+    virtual const std::shared_ptr<Polygon2DAccessor>& getAccessor2D() = 0;
 
     // Creates an accessor that allows to access this polygons outer mesh.
     virtual std::shared_ptr<Polygon2DAccessor> createAccessor() = 0;

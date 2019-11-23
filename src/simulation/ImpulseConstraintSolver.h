@@ -40,38 +40,38 @@ public:
             const Eigen::Vector& normal);
 
     static Eigen::Vector calculateSpeed(
-            const std::shared_ptr<SimulationObject>& so,
+            SimulationObject* so,
             const Eigen::Vector& point,
             const ID vertexIndex);
 
     static void applyImpulse(
-            const std::shared_ptr<SimulationObject>& so,
+            SimulationObject* so,
             const Eigen::Vector& impulse,
             const Eigen::Vector& point,
             const ID vertexIndex);
 
     static Eigen::Matrix3d calculateK(
-            const std::shared_ptr<SimulationObject>& so,
+            SimulationObject* so,
             const Eigen::Vector& point,
             const ID vertexIndex);
 
     static Eigen::Matrix3d calculateK(SimulationPointRef& ref);
 
-    static Eigen::Matrix3d calculateL(const std::shared_ptr<SimulationObject>& so);
+    static Eigen::Matrix3d calculateL(SimulationObject* so);
 
     static Eigen::Vector calculateRelativePoint(
-            const std::shared_ptr<SimulationObject>& so,
+            SimulationObject* so,
             const Eigen::Vector& pointGlobal)
     {
         if (so->getType() == SimulationObject::Type::RIGID_BODY)
         {
-            return pointGlobal - static_cast<RigidBody*>(so.get())->getCenterOfMass();
+            return pointGlobal - static_cast<RigidBody*>(so)->getCenterOfMass();
         }
         return pointGlobal;
     }
 
-    static Eigen::Quaterniond getOrientation(const std::shared_ptr<SimulationObject>& so);
-    static Eigen::Vector getOrientationVelocity(const std::shared_ptr<SimulationObject>& so);
+    static Eigen::Quaterniond getOrientation(SimulationObject* so);
+    static Eigen::Vector getOrientationVelocity(SimulationObject* so);
 
     static Eigen::Vector3d calculateProjectionMatrix(
             const Eigen::Vector& axis1,

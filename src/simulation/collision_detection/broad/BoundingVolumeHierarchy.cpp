@@ -128,6 +128,8 @@ bool BoundingVolumeHierarchy::collides(BoundingVolumeHierarchy* hierarchy,
 
 bool BoundingVolumeHierarchy::collidesIterative(BVHNode* node1, BVHNode* node2)
 {
+    mCollider->prepare();
+
     bool collides = false;
 
     StackElement& first = mStack.push();
@@ -191,7 +193,7 @@ bool BoundingVolumeHierarchy::collidesIterative(BVHNode* node1, BVHNode* node2)
         }
     }
 
-    return collides;
+    return mCollider->evaluate();
 }
 
 bool BoundingVolumeHierarchy::collides(BVHNode* node, BVHLeafNode* leafNode)

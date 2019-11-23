@@ -97,7 +97,7 @@ public:
     virtual PolygonTopology& getTopology() override;
 
     // Returns an accessor that allows to access this polygon.
-    virtual const std::shared_ptr<Polygon2DAccessor>& getAccessor2D() const override;
+    virtual const std::shared_ptr<Polygon2DAccessor>& getAccessor2D() override;
 
     // Creates and returns a Polygon2DAccessor that allows to access this object.
     // The Polygon2DAccessor offers an interface to abstract the access to

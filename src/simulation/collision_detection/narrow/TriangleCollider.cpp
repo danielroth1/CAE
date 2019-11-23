@@ -17,6 +17,7 @@ TriangleCollider::TriangleCollider(
         bool invertNormalsIfNecessary)
     : mInvertNormalsIfNecessary(invertNormalsIfNecessary)
 {
+    mMargin = collisionMargin;
     mMarginSquared = collisionMargin * collisionMargin;
 }
 
@@ -27,6 +28,7 @@ TriangleCollider::~TriangleCollider()
 
 void TriangleCollider::setCollisionMargin(double collisionMargin)
 {
+    mMargin = collisionMargin;
     mMarginSquared = collisionMargin * collisionMargin;
 }
 
@@ -43,11 +45,16 @@ void TriangleCollider::addTriangleSpherePair(
     TopologyFace& face = topoSource.getFace(ct.getFaceId());
 
     // target
-    Polygon2DTopology& topoTarget = ct.getAccessor()->getTopology2D();
-    TopologyFeature& feature = *cs.getTopologyFeature().get();
+    GeometricData* gd = cs.getPointRef().getSimulationObject()->getGeometricData();
+    if (gd->getType() == GeometricData::Type::POLYGON)
+    {
+        Polygon* poly =static_cast<Polygon*>(gd);
+        Polygon2DTopology& topoTarget = poly->getAccessor2D()->getTopology2D();
+        TopologyFeature& feature = *cs.getTopologyFeature().get();
 
-    addPair(topoSource, face, ct.getSimulationObject().get(),
-            topoTarget, feature, cs.getPointRef().getSimulationObject().get());
+        addPair(topoSource, face, ct.getSimulationObject().get(),
+                topoTarget, feature, cs.getPointRef().getSimulationObject().get());
+    }
 }
 
 void TriangleCollider::addTrianglePair(
@@ -59,10 +66,10 @@ void TriangleCollider::addTrianglePair(
 
     // target
     Polygon2DTopology& topoTarget = ct2.getAccessor()->getTopology2D();
-    TopologyFace& face2 = topoSource.getFace(ct2.getFaceId());
+    TopologyFace& face2 = topoTarget.getFace(ct2.getFaceId());
 
     addPair(topoSource, face1, ct1.getSimulationObject().get(),
-            topoTarget, face2, ct1.getSimulationObject().get());
+            topoTarget, face2, ct2.getSimulationObject().get());
 }
 
 void TriangleCollider::addPair(
@@ -81,21 +88,29 @@ void TriangleCollider::addPair(
         for (TopologyFeature* fTarget : targetFeatures)
         {
             if (fSource->getType() == TopologyFeature::Type::FACE &&
-                fSource->getType() == TopologyFeature::Type::VERTEX)
+                fTarget->getType() == TopologyFeature::Type::VERTEX)
             {
                 mFeaturePairsFV.insert(
                             std::make_pair(
                                 static_cast<TopologyFace*>(fSource),
                                 static_cast<TopologyVertex*>(fTarget)));
             }
+            else if (fSource->getType() == TopologyFeature::Type::VERTEX &&
+                     fTarget->getType() == TopologyFeature::Type::FACE)
+            {
+                mFeaturePairsFV.insert(
+                            std::make_pair(
+                                static_cast<TopologyFace*>(fTarget),
+                                static_cast<TopologyVertex*>(fSource)));
+            }
             else if (fSource->getType() == TopologyFeature::Type::EDGE &&
-                     fSource->getType() == TopologyFeature::Type::EDGE)
-             {
-                 mFeaturePairsEE.insert(
-                             std::make_pair(
-                                 static_cast<TopologyEdge*>(fSource),
-                                 static_cast<TopologyEdge*>(fTarget)));
-             }
+                     fTarget->getType() == TopologyFeature::Type::EDGE)
+            {
+                mFeaturePairsEE.insert(
+                            std::make_pair(
+                                static_cast<TopologyEdge*>(fSource),
+                                static_cast<TopologyEdge*>(fTarget)));
+            }
         }
     }
 
@@ -145,8 +160,8 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
 bool TriangleCollider::collide(
         TopologyFace& f, TopologyVertex& v, Collision& collision)
 {
-    SimulationObject* so1 = getSimulationObject(&f);
-    SimulationObject* so2 = getSimulationObject(&v);
+    SimulationObject* so1 = getSimulationObject(&v);
+    SimulationObject* so2 = getSimulationObject(&f);
 
     // Collisions between non-polygons aren't supported
     if (so1->getGeometricData()->getType() != GeometricData::Type::POLYGON ||
@@ -158,16 +173,16 @@ bool TriangleCollider::collide(
     Polygon* poly1 = static_cast<Polygon*>(so1->getGeometricData());
     Polygon* poly2 = static_cast<Polygon*>(so2->getGeometricData());
 
-    Eigen::Vector& pos = so2->getPosition(v.getID());
-    ID v1Index = f.getID(); // TODO: not correct
+    Eigen::Vector& pos = poly1->getAccessor2D()->getPosition(v.getID());
+    ID v1Index = v.getID(); // TODO: not correct
 
     Eigen::Vector inter; // projected point
     Eigen::Vector bary; // baryzentric coordinates
     bool isInside;
 
-    Eigen::Vector& p1 = poly1->getPosition(f.getVertexIds()[0]);
-    Eigen::Vector& p2 = poly1->getPosition(f.getVertexIds()[1]);
-    Eigen::Vector& p3 = poly1->getPosition(f.getVertexIds()[2]);
+    Eigen::Vector& p1 = poly2->getPosition(f.getVertexIds()[0]);
+    Eigen::Vector& p2 = poly2->getPosition(f.getVertexIds()[1]);
+    Eigen::Vector& p3 = poly2->getPosition(f.getVertexIds()[2]);
 
     bool ok = MathUtils::projectPointOnTriangle(
                 p1, p2, p3,
@@ -199,14 +214,16 @@ bool TriangleCollider::collide(
 
         ID v2Index = v.getID();
 
-        new (&collision) Collision(so1->shared_from_this(),
-                                   so2->shared_from_this(),
-                                   pos, inter, dir, 0.0,
+        new (&collision) Collision(so1, so2,
+                                   inter, pos,
+                                   dir, 0.0,
                                    v1Index,
                                    v2Index,
                                    false);
         return true;
     }
+
+    return false;
 }
 
 bool TriangleCollider::collide(
@@ -225,15 +242,26 @@ bool TriangleCollider::collide(
     Polygon* poly1 = static_cast<Polygon*>(so1->getGeometricData());
     Polygon* poly2 = static_cast<Polygon*>(so2->getGeometricData());
 
-    const Eigen::Vector& x11 =
+    Eigen::Vector x11 =
             poly1->getAccessor2D()->getPosition(e1.getVertexIds()[0]);
-    const Eigen::Vector& x12 =
-            poly1->getAccessor2D()->getPosition(e1.getVertexIds()[2]);
+    Eigen::Vector x12 =
+            poly1->getAccessor2D()->getPosition(e1.getVertexIds()[1]);
 
-    const Eigen::Vector& x21 =
+    Eigen::Vector x21 =
             poly2->getAccessor2D()->getPosition(e2.getVertexIds()[0]);
-    const Eigen::Vector& x22 =
-            poly2->getAccessor2D()->getPosition(e2.getVertexIds()[2]);
+    Eigen::Vector x22 =
+            poly2->getAccessor2D()->getPosition(e2.getVertexIds()[1]);
+
+    // Reduce the affected area so they don't overlap with vertex-triangle collisions.
+    // There are porbably faster ways of doing this.
+    Eigen::Vector x1dir = (x12 - x11).normalized();
+    Eigen::Vector x2dir = (x22 - x21).normalized();
+
+    x11 += mMargin * x1dir;
+    x12 -= mMargin * x1dir;
+
+    x21 += mMargin * x2dir;
+    x22 -= mMargin * x2dir;
 
     Eigen::Vector3d inter1; // projected point 1
     Eigen::Vector3d inter2; // projected point 2
@@ -243,26 +271,21 @@ bool TriangleCollider::collide(
     bool ok = MathUtils::projectEdgeOnEdge(
                 x11, x12, x21, x22, inter1, inter2, bary, isInside);
 
-    if (ok && (inter1 - inter2).squaredNorm() < mMarginSquared)
+    if (ok && isInside && (inter1 - inter2).squaredNorm() < mMarginSquared)
     {
-        // Determin collsion normal -> triangle normal...
-//            Eigen::Vector dir = ct2.getAccessor()->getFaceNormals()[ct2.getFaceId()];
-
         Eigen::Vector dir = (inter1 - inter2).normalized();
 
         if (mInvertNormalsIfNecessary)
         {
-            bool isInside = true;
-            isInside =
-                    poly1->isInside(e1, inter2);
-            isInside |=
+            bool isInside =
+                    poly1->isInside(e1, inter2) ||
                     poly2->isInside(e2, inter1);
             if (isInside)
                 dir = -dir;
         }
 
         new (&collision) Collision(
-                    so1->shared_from_this(), so2->shared_from_this(),
+                    so1, so2,
                     inter1, inter2, dir, 0.0, 0, 0, false);
         return true;
     }

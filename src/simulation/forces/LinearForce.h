@@ -36,7 +36,7 @@ public:
     void setStrength(double strength);
 
     // Visitor method
-    virtual bool references(const std::shared_ptr<SimulationObject>& so) override;
+    virtual bool references(SimulationObject* so) override;
 
 private:
 

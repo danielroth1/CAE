@@ -177,7 +177,7 @@ void CollisionConstraint::accept(ConstraintVisitor& cv)
     cv.visit(this);
 }
 
-bool CollisionConstraint::references(const std::shared_ptr<SimulationObject>& so)
+bool CollisionConstraint::references(SimulationObject* so)
 {
     return so == mCollision.getSimulationObjectA() ||
             so == mCollision.getSimulationObjectB();

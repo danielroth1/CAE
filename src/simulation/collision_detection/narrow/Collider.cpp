@@ -2,6 +2,7 @@
 #include "CollisionObject.h"
 #include "CollisionSphere.h"
 #include "CollisionTriangle.h"
+#include "TriangleCollider.h"
 
 #include <iostream>
 #include <new>
@@ -23,24 +24,60 @@
 Collider::Collider()
     : mInvertNormalsIfNecessary(false)
 {
-
+    mCollisionMargin = 5e-2;
+    mCollisionMarginSquared = mCollisionMargin * mCollisionMargin;
+    mTriangleCollider = std::make_shared<TriangleCollider>(
+                mCollisionMargin);
 }
 
 bool Collider::collides(CollisionObject& co1, CollisionObject& co2)
 {
-    Collision c;
-    bool isColliding = collides(co1, co2, c);
-    if (isColliding)
+//    Collision c;
+//    bool isColliding = collides(co1, co2, c);
+//    if (isColliding)
+//    {
+//        mCollisions.push_back(c);
+//        return true;
+//    }
+//    return false;
+
+    return collidesTrianglesImproved(co1, co2);
+}
+
+bool Collider::collidesTrianglesImproved(
+        CollisionObject& co1, CollisionObject& co2)
+{
+    if (co1.getType() == CollisionObject::Type::TRIANGLE &&
+        co2.getType() == CollisionObject::Type::TRIANGLE)
     {
-        mCollisions.push_back(c);
-        return true;
+        mTriangleCollider->addTrianglePair(
+                    static_cast<CollisionTriangle&>(co1),
+                    static_cast<CollisionTriangle&>(co2));
     }
-    return false;
+    else if (co1.getType() == CollisionObject::Type::TRIANGLE &&
+             co2.getType() == CollisionObject::Type::SPHERE)
+    {
+        mTriangleCollider->addTriangleSpherePair(
+                    static_cast<CollisionTriangle&>(co2),
+                    static_cast<CollisionSphere&>(co1));
+    }
+    return true;
 }
 
 void Collider::clear()
 {
     mCollisions.clear();
+}
+
+void Collider::prepare()
+{
+    mTriangleCollider->clear();
+}
+
+bool Collider::evaluate()
+{
+    mTriangleCollider->collide(mCollisions);
+    return !mCollisions.empty();
 }
 
 std::vector<Collision>& Collider::getCollisions()
@@ -172,8 +209,8 @@ bool Collider::collides(
     // has to know about it. To connect the collision to the simulation object.
     // Do this differently.
     // Collider could have a map from GeometricData to SimulationObject.
-    new (&collisionReturnValue) Collision(cs1.getPointRef().getSimulationObject(),
-                                          cs2.getPointRef().getSimulationObject(),
+    new (&collisionReturnValue) Collision(cs1.getPointRef().getSimulationObject().get(),
+                                          cs2.getPointRef().getSimulationObject().get(),
                                           pointA, pointB, normal, depth,
                                           cs1.getVertexIndex(),
                                           cs2.getVertexIndex(),
@@ -218,8 +255,8 @@ bool Collider::collides(
                 dir = -dir;
         }
 
-        new (&collisionReturnValue) Collision(cs.getPointRef().getSimulationObject(),
-                                              ct.getSimulationObject(),
+        new (&collisionReturnValue) Collision(cs.getPointRef().getSimulationObject().get(),
+                                              ct.getSimulationObject().get(),
                                               pointB, inter, dir, 0.0,
                                               cs.getVertexIndex(),
                                               triIndex,
@@ -249,17 +286,14 @@ bool Collider::collidesTriangle(
         CollisionTriangle& ct2,
         Collision& collisionReturnValue)
 {
-    double margin = 5e-2;
-    double marginSquared = margin * margin;
-
-    bool result = collidesTrianglesPair(ct1, ct2, marginSquared, collisionReturnValue);
+    bool result = collidesTrianglesPair(ct1, ct2, mCollisionMarginSquared, collisionReturnValue);
     if (!result)
     {
-        result = collidesTrianglesPair(ct2, ct1, marginSquared, collisionReturnValue);
+        result = collidesTrianglesPair(ct2, ct1, mCollisionMarginSquared, collisionReturnValue);
 
         if (!result)
         {
-            result = collidesEdgesPair(ct1, ct2, marginSquared, collisionReturnValue);
+            result = collidesEdgesPair(ct1, ct2, mCollisionMarginSquared, collisionReturnValue);
         }
     }
     return result;
@@ -314,8 +348,8 @@ bool Collider::collidesTrianglesPair(
 
             ID v2Index = ct2.getFace()[index];
 
-            new (&collisionReturnValue) Collision(ct1.getSimulationObject(),
-                                                  ct2.getSimulationObject(),
+            new (&collisionReturnValue) Collision(ct1.getSimulationObject().get(),
+                                                  ct2.getSimulationObject().get(),
                                                   pos, inter, dir, 0.0,
                                                   v1Index,
                                                   v2Index,
@@ -403,8 +437,8 @@ bool Collider::collidesEdgesPair(CollisionTriangle& ct1,
                         dir = -dir;
                 }
 
-                new (&collisionReturnValue) Collision(ct1.getSimulationObject(),
-                                                      ct2.getSimulationObject(),
+                new (&collisionReturnValue) Collision(ct1.getSimulationObject().get(),
+                                                      ct2.getSimulationObject().get(),
                                                       inter1, inter2, dir, 0.0,
                                                       0,
                                                       0,

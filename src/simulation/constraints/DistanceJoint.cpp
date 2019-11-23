@@ -36,9 +36,9 @@ void DistanceJoint::initialize(double stepSize)
     mStepSize = stepSize;
 
     mPoint1 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointA.getSimulationObject(), mPointA.getPoint());
+                mPointA.getSimulationObject().get(), mPointA.getPoint());
     mPoint2 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointB.getSimulationObject(), mPointB.getPoint());
+                mPointB.getSimulationObject().get(), mPointB.getPoint());
 
     mImpulseFactor = (ImpulseConstraintSolver::calculateK(mPointB) +
                       ImpulseConstraintSolver::calculateK(mPointA)).inverse();
@@ -62,9 +62,9 @@ void DistanceJoint::initialize(double stepSize)
 bool DistanceJoint::solve(double maxConstraintError)
 {
     Eigen::Vector v1 = ImpulseConstraintSolver::calculateSpeed(
-                mPointA.getSimulationObject(), mPoint1, mPointA.getIndex());
+                mPointA.getSimulationObject().get(), mPoint1, mPointA.getIndex());
     Eigen::Vector v2 = ImpulseConstraintSolver::calculateSpeed(
-                mPointB.getSimulationObject(), mPoint2, mPointB.getIndex());
+                mPointB.getSimulationObject().get(), mPoint2, mPointB.getIndex());
 
     Eigen::Vector uRel = v1 - v2;
 
@@ -90,9 +90,9 @@ bool DistanceJoint::solve(double maxConstraintError)
     Eigen::Vector impulse = mImpulseFactor * deltaURel;
 
     ImpulseConstraintSolver::applyImpulse(
-                mPointA.getSimulationObject(), impulse, mPoint1, mPointA.getIndex());
+                mPointA.getSimulationObject().get(), impulse, mPoint1, mPointA.getIndex());
     ImpulseConstraintSolver::applyImpulse(
-                mPointB.getSimulationObject(), -impulse, mPoint2, mPointB.getIndex());
+                mPointB.getSimulationObject().get(), -impulse, mPoint2, mPointB.getIndex());
 
     return false;
 }
@@ -102,8 +102,8 @@ void DistanceJoint::accept(ConstraintVisitor& cv)
     cv.visit(this);
 }
 
-bool DistanceJoint::references(const std::shared_ptr<SimulationObject>& so)
+bool DistanceJoint::references(SimulationObject* so)
 {
-    return so == mPointA.getSimulationObject() ||
-            so == mPointB.getSimulationObject();
+    return so == mPointA.getSimulationObject().get() ||
+            so == mPointB.getSimulationObject().get();
 }

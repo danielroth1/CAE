@@ -194,7 +194,7 @@ private:
         std::vector<std::shared_ptr<MechanicalPropertyType>> conRef;
         for (const std::shared_ptr<MechanicalPropertyType>& c : constraints)
         {
-            if (c->references(so))
+            if (c->references(so.get()))
             {
                 conRef.push_back(c);
             }

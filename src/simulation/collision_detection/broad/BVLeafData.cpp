@@ -12,11 +12,6 @@ BVLeafData::BVLeafData(
 
 }
 
-CollisionObject* BVLeafData::getCollisionObject()
-{
-    return mCollisionObject.get();
-}
-
 void BVLeafData::update()
 {
     mBoundingVolume->update(*mCollisionObject);

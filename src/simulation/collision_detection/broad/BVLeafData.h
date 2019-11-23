@@ -17,7 +17,15 @@ public:
             std::shared_ptr<BoundingVolume> boundingVolume,
             std::shared_ptr<CollisionObject> collisionObject);
 
-    CollisionObject* getCollisionObject();
+    CollisionObject* getCollisionObjectPtr()
+    {
+        return mCollisionObject.get();
+    }
+
+    const std::shared_ptr<CollisionObject>& getCollisionObject() const
+    {
+        return mCollisionObject;
+    }
 
     // BVData interface
 public:

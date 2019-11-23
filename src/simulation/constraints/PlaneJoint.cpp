@@ -21,10 +21,10 @@ PlaneJoint::PlaneJoint(
 
 }
 
-bool PlaneJoint::references(const std::shared_ptr<SimulationObject>& so)
+bool PlaneJoint::references(SimulationObject* so)
 {
-    return so == mPointA.getSimulationObject() ||
-            so == mPointB.getSimulationObject();
+    return so == mPointA.getSimulationObject().get() ||
+            so == mPointB.getSimulationObject().get();
 }
 
 void PlaneJoint::initialize(double stepSize)
@@ -42,37 +42,36 @@ void PlaneJoint::initialize(double stepSize)
 
     if (mPointA.getSimulationObject()->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        const std::shared_ptr<RigidBody>& rb =
-                std::static_pointer_cast<RigidBody>(mPointA.getSimulationObject());
+        RigidBody* rb = static_cast<RigidBody*>(mPointA.getSimulationObject().get());
         mCurrentA = mCurrentAWS - rb->getCenterOfMass();
     }
 
     // now apply impulses just like in BallJoint
     mImpulseFactor = (ImpulseConstraintSolver::calculateK(mPointB) +
                       ImpulseConstraintSolver::calculateK(
-                          mPointA.getSimulationObject(),
+                          mPointA.getSimulationObject().get(),
                           mCurrentA, mPointA.getIndex())).inverse();
 
     mTargetURel = -(mCurrentAWS - B) / stepSize;
 
     mPoint1 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointA.getSimulationObject(), mCurrentAWS);
+                mPointA.getSimulationObject().get(), mCurrentAWS);
     mPoint2 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointB.getSimulationObject(), B);
+                mPointB.getSimulationObject().get(), B);
 }
 
 bool PlaneJoint::solve(double maxConstraintError)
 {
 //    Eigen::Vector p1 = ImpulseConstraintSolver::calculateRelativePoint(
-//                mPointA.getSimulationObject(), mCurrentAWS);
+//                mPointA.getSimulationObject().get(), mCurrentAWS);
 //    Eigen::Vector p2 = ImpulseConstraintSolver::calculateRelativePoint(
-//                mPointB.getSimulationObject(), mPointB.getPoint());
+//                mPointB.getSimulationObject().get(), mPointB.getPoint());
 
     Eigen::Vector uRel =
             ImpulseConstraintSolver::calculateSpeed(
-                mPointA.getSimulationObject(), mPoint1, mPointA.getIndex()) -
+                mPointA.getSimulationObject().get(), mPoint1, mPointA.getIndex()) -
             ImpulseConstraintSolver::calculateSpeed(
-                mPointB.getSimulationObject(), mPoint2, mPointB.getIndex());
+                mPointB.getSimulationObject().get(), mPoint2, mPointB.getIndex());
 
     // project uRel
     Eigen::Vector deltaURel = mTargetURel - uRel;
@@ -91,10 +90,10 @@ bool PlaneJoint::solve(double maxConstraintError)
     Eigen::Vector impulse = mImpulseFactor * deltaURel;
 
     ImpulseConstraintSolver::applyImpulse(
-                mPointA.getSimulationObject(), impulse,
+                mPointA.getSimulationObject().get(), impulse,
                 mPoint1, mPointA.getIndex());
     ImpulseConstraintSolver::applyImpulse(
-                mPointB.getSimulationObject(), -impulse,
+                mPointB.getSimulationObject().get(), -impulse,
                 mPoint2, mPointB.getIndex());
 
     return false;

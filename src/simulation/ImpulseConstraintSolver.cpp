@@ -60,7 +60,7 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
 }
 
 Matrix3d ImpulseConstraintSolver::calculateK(
-        const std::shared_ptr<SimulationObject>& so,
+        SimulationObject* so,
         const Vector& point,
         const ID vertexIndex)
 {
@@ -68,12 +68,12 @@ Matrix3d ImpulseConstraintSolver::calculateK(
     {
     case SimulationObject::Type::FEM_OBJECT:
     {
-        FEMObject* femObj = static_cast<FEMObject*>(so.get());
+        FEMObject* femObj = static_cast<FEMObject*>(so);
         return 1 / femObj->getMass(vertexIndex) * Eigen::Matrix3d::Identity();
     }
     case SimulationObject::Type::RIGID_BODY:
     {
-        RigidBody* rb = static_cast<RigidBody*>(so.get());
+        RigidBody* rb = static_cast<RigidBody*>(so);
         return rb->calculateK(point, point);
     }
     case SimulationObject::Type::SIMULATION_POINT:
@@ -112,7 +112,7 @@ Matrix3d ImpulseConstraintSolver::calculateK(SimulationPointRef& ref)
     return Eigen::Matrix3d::Identity();
 }
 
-Matrix3d ImpulseConstraintSolver::calculateL(const std::shared_ptr<SimulationObject>& so)
+Matrix3d ImpulseConstraintSolver::calculateL(SimulationObject* so)
 {
     switch(so->getType())
     {
@@ -122,7 +122,7 @@ Matrix3d ImpulseConstraintSolver::calculateL(const std::shared_ptr<SimulationObj
     }
     case SimulationObject::Type::RIGID_BODY:
     {
-        RigidBody* rb = static_cast<RigidBody*>(so.get());
+        RigidBody* rb = static_cast<RigidBody*>(so);
         return rb->getInverseInertiaTensorWS();
     }
     case SimulationObject::Type::SIMULATION_POINT:
@@ -142,7 +142,7 @@ Vector ImpulseConstraintSolver::calculateRelativeNormalSpeed(
 }
 
 Vector ImpulseConstraintSolver::calculateSpeed(
-        const std::shared_ptr<SimulationObject>& so,
+        SimulationObject* so,
         const Vector& point,
         const ID vertexIndex)
 {
@@ -150,12 +150,12 @@ Vector ImpulseConstraintSolver::calculateSpeed(
     {
     case SimulationObject::Type::RIGID_BODY:
     {
-        RigidBody* rb = static_cast<RigidBody*>(so.get());
+        RigidBody* rb = static_cast<RigidBody*>(so);
         return rb->calculateSpeedAt(point);
     }
     case SimulationObject::Type::FEM_OBJECT:
     {
-        FEMObject* femObj = static_cast<FEMObject*>(so.get());
+        FEMObject* femObj = static_cast<FEMObject*>(so);
         return femObj->getVelocities()[vertexIndex];
     }
     case SimulationObject::Type::SIMULATION_POINT:
@@ -165,7 +165,7 @@ Vector ImpulseConstraintSolver::calculateSpeed(
 }
 
 void ImpulseConstraintSolver::applyImpulse(
-        const std::shared_ptr<SimulationObject>& so,
+        SimulationObject* so,
         const Vector& impulse,
         const Vector& point,
         const ID vertexIndex)
@@ -174,13 +174,13 @@ void ImpulseConstraintSolver::applyImpulse(
     {
     case SimulationObject::Type::RIGID_BODY:
     {
-        RigidBody* rb = static_cast<RigidBody*>(so.get());
+        RigidBody* rb = static_cast<RigidBody*>(so);
         rb->applyImpulse(point, impulse);
         break;
     }
     case SimulationObject::Type::FEM_OBJECT:
     {
-        FEMObject* femObj = static_cast<FEMObject*>(so.get());
+        FEMObject* femObj = static_cast<FEMObject*>(so);
         femObj->applyImpulse(vertexIndex, impulse);
         break;
     }
@@ -191,21 +191,21 @@ void ImpulseConstraintSolver::applyImpulse(
 
 
 
-Quaterniond ImpulseConstraintSolver::getOrientation(const std::shared_ptr<SimulationObject>& so)
+Quaterniond ImpulseConstraintSolver::getOrientation(SimulationObject* so)
 {
     if (so->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(so.get());
+        RigidBody* rb = static_cast<RigidBody*>(so);
         return rb->getOrientation();
     }
     return Eigen::Quaterniond::Identity();
 }
 
-Eigen::Vector ImpulseConstraintSolver::getOrientationVelocity(const std::shared_ptr<SimulationObject>& so)
+Eigen::Vector ImpulseConstraintSolver::getOrientationVelocity(SimulationObject* so)
 {
     if (so->getType() == SimulationObject::Type::RIGID_BODY)
     {
-        RigidBody* rb = static_cast<RigidBody*>(so.get());
+        RigidBody* rb = static_cast<RigidBody*>(so);
         return rb->getOrientationVelocity();
     }
     return Eigen::Vector::Zero();

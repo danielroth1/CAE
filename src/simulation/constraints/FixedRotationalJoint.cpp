@@ -15,9 +15,9 @@ FixedRotationalJoint::FixedRotationalJoint(
 {
 }
 
-bool FixedRotationalJoint::references(const std::shared_ptr<SimulationObject>& so)
+bool FixedRotationalJoint::references(SimulationObject* so)
 {
-    return so == mRbA || so == mRbB;
+    return so == mRbA.get() || so == mRbB.get();
 }
 
 void FixedRotationalJoint::initialize(double stepSize)

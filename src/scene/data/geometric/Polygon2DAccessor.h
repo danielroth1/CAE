@@ -31,7 +31,7 @@ public:
             const TopologyFeature& feature, const Eigen::Vector& source,
             double distance, const Eigen::Vector& target) = 0;
 
-    virtual std::shared_ptr<Polygon> getPolygon() const = 0;
+    virtual Polygon* getPolygon() const = 0;
 
     virtual size_t getSize() = 0;
 

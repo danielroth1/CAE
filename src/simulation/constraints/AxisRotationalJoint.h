@@ -17,7 +17,7 @@ public:
 
     // MechanicalProperty interface
 public:
-    virtual bool references(const std::shared_ptr<SimulationObject>& so);
+    virtual bool references(SimulationObject* so);
 
     // Constraint interface
 public:

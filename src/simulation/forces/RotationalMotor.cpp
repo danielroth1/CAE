@@ -25,9 +25,9 @@ double RotationalMotor::getStrength() const
     return mStrength;
 }
 
-bool RotationalMotor::references(const std::shared_ptr<SimulationObject>& so)
+bool RotationalMotor::references(SimulationObject* so)
 {
-    return mRb1 == so || mRb2 == so;
+    return mRb1.get() == so || mRb2.get() == so;
 }
 
 void RotationalMotor::applyForce()

@@ -389,7 +389,7 @@ PolygonTopology& Polygon3D::getTopology()
     return *mData->getTopology().get();
 }
 
-const std::shared_ptr<Polygon2DAccessor>& Polygon3D::getAccessor2D() const
+const std::shared_ptr<Polygon2DAccessor>& Polygon3D::getAccessor2D()
 {
     return mAccessor2D;
 }
@@ -399,7 +399,7 @@ std::shared_ptr<Polygon2DAccessor> Polygon3D::createAccessor()
     class OuterPolygon2DAccessor : public Polygon2DAccessor
     {
     public:
-        OuterPolygon2DAccessor(const std::shared_ptr<Polygon3D>& _poly3)
+        OuterPolygon2DAccessor(Polygon3D* _poly3)
             : poly3(_poly3)
         {
 
@@ -417,7 +417,7 @@ std::shared_ptr<Polygon2DAccessor> Polygon3D::createAccessor()
             return poly3->isInside(feature, source, distance, target);
         }
 
-        virtual std::shared_ptr<Polygon> getPolygon() const override
+        virtual Polygon* getPolygon() const override
         {
             return poly3;
         }
@@ -458,11 +458,10 @@ std::shared_ptr<Polygon2DAccessor> Polygon3D::createAccessor()
         }
 
     private:
-        std::shared_ptr<Polygon3D> poly3;
+        Polygon3D* poly3;
     };
 
-    return std::make_shared<OuterPolygon2DAccessor>(
-                std::dynamic_pointer_cast<Polygon3D>(shared_from_this()));
+    return std::make_shared<OuterPolygon2DAccessor>(this);
 }
 
 void Polygon3D::changeRepresentationToBS(const Vector& center)
