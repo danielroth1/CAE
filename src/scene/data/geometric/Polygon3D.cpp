@@ -38,8 +38,6 @@ Polygon3D::Polygon3D(
     fixOuterTriangleIndexOrder();
     fixTopology();
 
-    mAccessor2D = createAccessor();
-
 //    outputToFile("/home/daniel/objs/work/meshes/interior_panelling");
 }
 
@@ -69,8 +67,6 @@ Polygon3D::Polygon3D(
 
     fixOuterTriangleIndexOrder();
     fixTopology();
-
-    mAccessor2D = createAccessor();
 }
 
 Polygon3D::Polygon3D(
@@ -100,8 +96,6 @@ Polygon3D::Polygon3D(
 
     fixOuterTriangleIndexOrder();
     fixTopology();
-
-    mAccessor2D = createAccessor();
 }
 
 Polygon3D::Polygon3D(
@@ -131,8 +125,6 @@ Polygon3D::Polygon3D(
 
     fixOuterTriangleIndexOrder();
     fixTopology();
-
-    mAccessor2D = createAccessor();
 }
 
 Polygon3D::~Polygon3D()
@@ -391,6 +383,8 @@ PolygonTopology& Polygon3D::getTopology()
 
 const std::shared_ptr<Polygon2DAccessor>& Polygon3D::getAccessor2D()
 {
+    if (!mAccessor2D)
+        mAccessor2D = createAccessor();
     return mAccessor2D;
 }
 
