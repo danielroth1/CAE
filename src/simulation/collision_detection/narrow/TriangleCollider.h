@@ -35,6 +35,7 @@ public:
 
     void addTriangleSpherePair(CollisionTriangle& ct, CollisionSphere& cs);
     void addTrianglePair(CollisionTriangle& ct1, CollisionTriangle& ct2);
+    void addSphereSpherePair(CollisionSphere& cs1, CollisionSphere& cs2);
     void addPair(
             Polygon2DTopology& topoSource,
             TopologyFeature& featureSource,

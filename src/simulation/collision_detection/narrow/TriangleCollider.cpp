@@ -72,6 +72,27 @@ void TriangleCollider::addTrianglePair(
             topoTarget, face2, ct2.getSimulationObject().get());
 }
 
+void TriangleCollider::addSphereSpherePair(CollisionSphere& cs1, CollisionSphere& cs2)
+{
+    // target
+    GeometricData* gd1 = cs1.getPointRef().getSimulationObject()->getGeometricData();
+    GeometricData* gd2 = cs2.getPointRef().getSimulationObject()->getGeometricData();
+    if (gd1->getType() == GeometricData::Type::POLYGON &&
+        gd2->getType() == GeometricData::Type::POLYGON)
+    {
+        Polygon* poly1 =static_cast<Polygon*>(gd1);
+        Polygon2DTopology& topoSource = poly1->getAccessor2D()->getTopology2D();
+        TopologyFeature& feature1 = *cs1.getTopologyFeature().get();
+
+        Polygon* poly2 =static_cast<Polygon*>(gd1);
+        Polygon2DTopology& topoTarget = poly2->getAccessor2D()->getTopology2D();
+        TopologyFeature& feature2 = *cs2.getTopologyFeature().get();
+
+        addPair(topoSource, feature1, cs2.getPointRef().getSimulationObject().get(),
+                topoTarget, feature2, cs2.getPointRef().getSimulationObject().get());
+    }
+}
+
 void TriangleCollider::addPair(
         Polygon2DTopology& topoSource,
         TopologyFeature& featureSource,

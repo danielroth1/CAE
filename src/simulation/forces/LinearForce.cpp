@@ -63,15 +63,15 @@ void LinearForce::applyForce()
             // -mDamoing * (v2 - v1).dot(normal) * direction
             // how to obtain v?
             Eigen::Vector v1 = ImpulseConstraintSolver::calculateSpeed(
-                        mSource.getSimulationObject(),
+                        mSource.getSimulationObject().get(),
                         ImpulseConstraintSolver::calculateRelativePoint(
-                            mSource.getSimulationObject(), mSource.getPoint()),
+                            mSource.getSimulationObject().get(), mSource.getPoint()),
                         mSource.getIndex());
 
             Eigen::Vector v2 = ImpulseConstraintSolver::calculateSpeed(
-                        mTarget.getSimulationObject(),
+                        mTarget.getSimulationObject().get(),
                         ImpulseConstraintSolver::calculateRelativePoint(
-                            mTarget.getSimulationObject(), mTarget.getPoint()),
+                            mTarget.getSimulationObject().get(), mTarget.getPoint()),
                         mTarget.getIndex());
 
             force += mDamping * (v2 - v1).dot(direction) * direction;
@@ -112,8 +112,8 @@ void LinearForce::setStrength(double strength)
     mStrength = strength;
 }
 
-bool LinearForce::references(const std::shared_ptr<SimulationObject>& so)
+bool LinearForce::references(SimulationObject* so)
 {
-    return so == mSource.getSimulationObject() ||
-            so == mTarget.getSimulationObject();
+    return so == mSource.getSimulationObject().get() ||
+            so == mTarget.getSimulationObject().get();
 }

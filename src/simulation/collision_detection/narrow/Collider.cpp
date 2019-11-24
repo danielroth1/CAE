@@ -54,12 +54,40 @@ bool Collider::collidesTrianglesImproved(
                     static_cast<CollisionTriangle&>(co1),
                     static_cast<CollisionTriangle&>(co2));
     }
-    else if (co1.getType() == CollisionObject::Type::TRIANGLE &&
-             co2.getType() == CollisionObject::Type::SPHERE)
+    else if (co1.getType() == CollisionObject::Type::SPHERE &&
+             co2.getType() == CollisionObject::Type::TRIANGLE)
     {
         mTriangleCollider->addTriangleSpherePair(
                     static_cast<CollisionTriangle&>(co2),
                     static_cast<CollisionSphere&>(co1));
+    }
+    else if (co1.getType() == CollisionObject::Type::TRIANGLE &&
+             co2.getType() == CollisionObject::Type::SPHERE)
+    {
+        mTriangleCollider->addTriangleSpherePair(
+                    static_cast<CollisionTriangle&>(co1),
+                    static_cast<CollisionSphere&>(co2));
+    }
+    else if (co1.getType() == CollisionObject::Type::SPHERE &&
+             co2.getType() == CollisionObject::Type::SPHERE)
+    {
+//        mTriangleCollider->addSphereSpherePair(
+//                    static_cast<CollisionSphere&>(co1),
+//                    static_cast<CollisionSphere&>(co2));
+
+        // It is not necessary to use the TriangleCollider because there won't
+        // be any duplicated feature collision pairs because a vertex (unlike
+        // an edge) can't be shared by multiple collision faces (because
+        // there are none).
+        Collision c;
+        bool isColliding = collides(static_cast<CollisionSphere&>(co1),
+                                    static_cast<CollisionSphere&>(co2), c);
+        if (isColliding)
+        {
+            mCollisions.push_back(c);
+            return true;
+        }
+        return false;
     }
     return true;
 }
