@@ -9,6 +9,7 @@
 #include <scene/data/GeometricData.h>
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon2DTopology.h>
+#include <scene/data/geometric/TopologyFeatureIterator.h>
 #include <simulation/SimulationObject.h>
 
 
@@ -23,7 +24,6 @@ TriangleCollider::TriangleCollider(
 
 TriangleCollider::~TriangleCollider()
 {
-
 }
 
 void TriangleCollider::setCollisionMargin(double collisionMargin)
@@ -101,48 +101,57 @@ void TriangleCollider::addPair(
         TopologyFeature& featureTarget,
         SimulationObject* soTarget)
 {
-    std::vector<TopologyFeature*> sourceFeatures = getFeatures(topoSource, featureSource);
-    std::vector<TopologyFeature*> targetFeatures = getFeatures(topoTarget, featureTarget);
+    TopologyFeatureIterator* sourceFeatures = getFeatures(topoSource, featureSource, mSourceTemp);
+    TopologyFeatureIterator* targetFeatures = getFeatures(topoTarget, featureTarget, mTargetTemp);
 
-    for (TopologyFeature* fSource : sourceFeatures)
+    if (!sourceFeatures || !targetFeatures)
+        return;
+
+    for (size_t i = 0; i < sourceFeatures->getSize(); ++i, ++(*sourceFeatures))
     {
-        for (TopologyFeature* fTarget : targetFeatures)
+        TopologyFeature& fSource = **sourceFeatures;
+        for (size_t j = 0; j < targetFeatures->getSize(); ++j, ++(*targetFeatures))
         {
-            if (fSource->getType() == TopologyFeature::Type::FACE &&
-                fTarget->getType() == TopologyFeature::Type::VERTEX)
+            TopologyFeature& fTarget = **targetFeatures;
+            if (fSource.getType() == TopologyFeature::Type::FACE &&
+                fTarget.getType() == TopologyFeature::Type::VERTEX)
             {
                 mFeaturePairsFV.insert(
-                            std::make_pair(
-                                static_cast<TopologyFace*>(fSource),
-                                static_cast<TopologyVertex*>(fTarget)));
+                            FVPair(
+                                static_cast<TopologyFace*>(&fSource),
+                                static_cast<TopologyVertex*>(&fTarget)));
             }
-            else if (fSource->getType() == TopologyFeature::Type::VERTEX &&
-                     fTarget->getType() == TopologyFeature::Type::FACE)
+            else if (fSource.getType() == TopologyFeature::Type::VERTEX &&
+                     fTarget.getType() == TopologyFeature::Type::FACE)
             {
                 mFeaturePairsFV.insert(
-                            std::make_pair(
-                                static_cast<TopologyFace*>(fTarget),
-                                static_cast<TopologyVertex*>(fSource)));
+                            FVPair(
+                                static_cast<TopologyFace*>(&fTarget),
+                                static_cast<TopologyVertex*>(&fSource)));
             }
-            else if (fSource->getType() == TopologyFeature::Type::EDGE &&
-                     fTarget->getType() == TopologyFeature::Type::EDGE)
+            else if (fSource.getType() == TopologyFeature::Type::EDGE &&
+                     fTarget.getType() == TopologyFeature::Type::EDGE)
             {
                 mFeaturePairsEE.insert(
-                            std::make_pair(
-                                static_cast<TopologyEdge*>(fSource),
-                                static_cast<TopologyEdge*>(fTarget)));
+                            EEPair(
+                                static_cast<TopologyEdge*>(&fSource),
+                                static_cast<TopologyEdge*>(&fTarget)));
             }
         }
+        targetFeatures->reset();
     }
 
-    for (TopologyFeature* fSource : sourceFeatures)
+    sourceFeatures->reset();
+    targetFeatures->reset();
+
+    for (size_t i = 0; i < sourceFeatures->getSize(); ++i, ++(*sourceFeatures))
     {
-        mFeatureToSoMap[fSource] = soSource;
+        mFeatureToSoMap[&**sourceFeatures] = soSource;
     }
 
-    for (TopologyFeature* fTarget : targetFeatures)
+    for (size_t i = 0; i < targetFeatures->getSize(); ++i, ++(*targetFeatures))
     {
-        mFeatureToSoMap[fTarget] = soTarget;
+        mFeatureToSoMap[&**targetFeatures] = soTarget;
     }
 }
 
@@ -314,8 +323,10 @@ bool TriangleCollider::collide(
     return false;
 }
 
-std::vector<TopologyFeature*> TriangleCollider::getFeatures(
-        Polygon2DTopology& topo, TopologyFeature& feature)
+TopologyFeatureIterator* TriangleCollider::getFeatures(
+        Polygon2DTopology& topo,
+        TopologyFeature& feature,
+        IteratorPair& temp)
 {
     std::vector<TopologyFeature*> features;
 
@@ -326,34 +337,133 @@ std::vector<TopologyFeature*> TriangleCollider::getFeatures(
     {
         // face
         TopologyFace* face = static_cast<TopologyFace*>(&feature);
-        features.push_back(face);
 
-        // edge
-        for (ID id : face->getEdgeIds())
+        class FaceFeatureIterator : public TopologyFeatureIterator
         {
-            features.push_back(&topo.getEdge(id));
-        }
+        public:
+            FaceFeatureIterator(TopologyFace& _face, Polygon2DTopology& _topo)
+                : face(_face)
+                , topo(_topo)
+            {
+                index = 0;
+            }
 
-        // vertex
-        for (ID id : face->getVertexIds())
-        {
-            features.push_back(&topo.getVertex(id));
-        }
+            TopologyFeatureIterator& operator++() override
+            {
+                ++index;
+                return *this;
+            }
 
-        break;
+            TopologyFeature& operator*() override
+            {
+                if (index == 0)
+                {
+                    return face;
+                }
+                else if (index < 3)
+                {
+                    return topo.getEdge(face.getEdgeIds()[index - 1]);
+                }
+                else
+                {
+                    return topo.getVertex(face.getVertexIds()[index - 3]);
+                }
+            }
+
+            void reset() override
+            {
+                index = 0;
+            }
+
+            size_t getSize() override
+            {
+                return 6;
+            }
+
+            TopologyFace& face;
+            Polygon2DTopology& topo;
+
+            size_t index;
+        };
+
+        if (!temp.mFaceIteratorTemp)
+            temp.mFaceIteratorTemp = new FaceFeatureIterator(*face, topo);
+        else
+            new (temp.mFaceIteratorTemp) FaceFeatureIterator(*face, topo);
+        return temp.mFaceIteratorTemp;
     }
     case TopologyFeature::Type::VERTEX:
     {
         TopologyVertex* vertex = static_cast<TopologyVertex*>(&feature);
 
-        features.push_back(vertex);
+        class VertexFeatureIterator : public TopologyFeatureIterator
+        {
+        public:
+            VertexFeatureIterator(TopologyVertex& _vertex)
+                : vertex(_vertex)
+            {
+            }
 
-        break;
+            TopologyFeatureIterator& operator++() override
+            {
+                return *this;
+            }
+
+            TopologyFeature& operator*() override
+            {
+                return vertex;
+            }
+
+            void reset() override
+            {
+            }
+
+            size_t getSize() override
+            {
+                return 1;
+            }
+
+            TopologyVertex& vertex;
+        };
+
+        if (!temp.mVertexIteratorTemp)
+            temp.mVertexIteratorTemp = new VertexFeatureIterator(*vertex);
+        else
+            new (temp.mVertexIteratorTemp) VertexFeatureIterator(*vertex);
+        return temp.mVertexIteratorTemp;
     }
     case TopologyFeature::Type::EDGE:
     case TopologyFeature::Type::CELL:
         std::cout << "Warning: unsupported feature type.\n";
     }
 
-    return features;
+//    class DefaultTopologyFeatureIterator : public TopologyFeatureIterator
+//    {
+//    public:
+//        DefaultTopologyFeatureIterator(TopologyFeature& _feature)
+//            : feature(_feature)
+//        {
+
+//        }
+
+//        TopologyFeatureIterator& operator++() override
+//        {
+//            return *this;
+//        }
+
+//        TopologyFeature& operator*() override
+//        {
+//            return feature;
+//        }
+
+//        size_t getSize() override
+//        {
+//            return 1;
+//        }
+
+//    private:
+//        TopologyFeature& feature;
+//    };
+
+    return nullptr;
 }

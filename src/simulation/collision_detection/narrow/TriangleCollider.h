@@ -3,6 +3,7 @@
 
 #include <boost/functional/hash.hpp>
 #include <map>
+#include <scene/data/geometric/TopologyFeatureIterator.h>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -13,10 +14,10 @@ class CollisionSphere;
 class CollisionTriangle;
 class Polygon2DTopology;
 class SimulationObject;
-class TopologyVertex;
-class TopologyEdge;
 class TopologyFace;
 class TopologyFeature;
+class TopologyVertex;
+class TopologyEdge;
 
 // Perfoms triangle based collision detection.
 // Fills a data structure that stores all feature pairs that are close enough
@@ -65,8 +66,43 @@ private:
         TopologyFace& face;
     };
 
-    std::vector<TopologyFeature*> getFeatures(
-            Polygon2DTopology& topo, TopologyFeature& feature);
+    struct IteratorPair
+    {
+        IteratorPair()
+        {
+            mFaceIteratorTemp = nullptr;
+            mVertexIteratorTemp = nullptr;
+        }
+
+        ~IteratorPair()
+        {
+            if (mFaceIteratorTemp)
+                delete mFaceIteratorTemp;
+
+            if (mVertexIteratorTemp)
+                delete mVertexIteratorTemp;
+        }
+
+        TopologyFeatureIterator* mFaceIteratorTemp;
+        TopologyFeatureIterator* mVertexIteratorTemp;
+    };
+
+    // Returns a pointer to an iteratator that iterates over all features
+    // of the given feature, so e.g. if feature is a face, then it iterates
+    // over the face, its edges, and its vertices.
+    //
+    // Note: feature must be either a face or a vertex
+    //
+    // \param topp - the topology that the given feature is part of.
+    // \param feature - the given feature
+    // \param temp - temporary memory for the returned pointer. Either use
+    //      mSourceTemp or mTargetTemp. The returned iterator can used for as
+    //      long as this method isn't called another time with the same
+    //      temporary variable.
+    TopologyFeatureIterator* getFeatures(
+            Polygon2DTopology& topo,
+            TopologyFeature& feature,
+            IteratorPair& temp);
 
     SimulationObject* getSimulationObject(TopologyFeature* feature)
     {
@@ -81,6 +117,10 @@ private:
     std::unordered_set<EEPair, boost::hash<EEPair>> mFeaturePairsEE;
 
     std::unordered_map<TopologyFeature*, SimulationObject*> mFeatureToSoMap;
+
+    // Used as temporary memory to avoid unnecessary memory allocations
+    IteratorPair mSourceTemp;
+    IteratorPair mTargetTemp;
 
     double mMargin;
     double mMarginSquared;
