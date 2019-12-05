@@ -42,6 +42,8 @@ public:
     // is drawn.
     void handlePreRenderingStep();
 
+    void updateSimulationObjects();
+
     // Called when the main window is closed.
     void onExit();
 

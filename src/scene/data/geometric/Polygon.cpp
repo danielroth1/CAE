@@ -36,11 +36,11 @@ void Polygon::initBodySpace(Vectors* positionsBS, const Affine3d& transform)
     mPositionData.initializeFromBodySpace(positionsBS, transform);
 }
 
-void Polygon::update(bool updateFaceNormals, bool updateVertexNormals)
+void Polygon::update(bool updateFaceNormals, bool updateVertexNormals, bool notifyListeners)
 {
     mPositionData.update();
 
-    GeometricData::update(updateFaceNormals, updateVertexNormals);
+    GeometricData::update(updateFaceNormals, updateVertexNormals, notifyListeners);
 }
 
 void Polygon::removeVertex(ID index)

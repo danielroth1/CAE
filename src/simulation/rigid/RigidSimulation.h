@@ -46,7 +46,9 @@ public:
 
     // Tells the renderer, that the data changed and can be visualized.
     // Call this after a position change should be visualized.
-    void publish();
+    // \param notifyListeners - if true, listeners are notified about the publishing,
+    //      e.g. the renderer renders the published state.
+    void publish(bool notifyListeners = true);
 
     // TODO:
     // SimulationObject::getSize()

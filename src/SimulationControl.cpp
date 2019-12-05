@@ -557,8 +557,8 @@ void SimulationControl::step()
     mRigidSimulation->integratePositions(mStepSize);
     mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
 
-    mRigidSimulation->publish();
-    mFEMSimulation->publish();
+    mRigidSimulation->publish(false);
+    mFEMSimulation->publish(false);
 
     START_TIMING_SIMULATION("CollisionManager::udpateAll()");
     mCollisionManager->updateAll();
@@ -576,8 +576,8 @@ void SimulationControl::step()
                     mCollisionManager->getCollider()->getCollisions(),
                     mStepSize,
                     0.0, // Restitution (bounciness factor))
-                    0.0, // static friction
-                    0.001); // dynamic friction
+                    0.05, // static friction
+                    0.8); // dynamic friction
 
         // Revert the illegal state
         mRigidSimulation->revertPositions();
@@ -628,6 +628,8 @@ void SimulationControl::step()
     mRigidSimulation->publish();
     mFEMSimulation->publish();
     STOP_TIMING_SIMULATION;
+
+    mAc->updateSimulationObjects();
 
     STOP_TIMING_SIMULATION;
 }

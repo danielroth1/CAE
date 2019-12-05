@@ -225,7 +225,7 @@ void FEMObject::updatePositions()
 
 void FEMObject::updateFEM(bool corotated)
 {
-    START_TIMING_SIMULATION("FEMObject::updateFEM()");
+    START_TIMING_SIMULATION("FEMObject::updateFEM()")
 
     updateStiffnessMatrix(corotated);
     updateElasticForces();
@@ -529,13 +529,13 @@ ElasticMaterial FEMObject::getElasticMaterial()
     return ElasticMaterial();
 }
 
-void FEMObject::updateGeometricData()
+void FEMObject::updateGeometricData(bool notifyListeners)
 {
     mPoly3->getPositions() = mPositions;
     // This call is necessary to inform the other modules about
     // the change in position of the underlying Polygon3D that is
     // simulated here.
-    mPoly3->update();
+    mPoly3->update(notifyListeners);
 }
 
 void FEMObject::initializeStiffnessMatrix()

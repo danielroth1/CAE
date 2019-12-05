@@ -26,11 +26,17 @@ GeometricData::GeometricData(const GeometricData& gd)
     mBoundingBox = gd.mBoundingBox;
 }
 
-void GeometricData::update(bool /*updateFaceNormals*/, bool /*updateVertexNormals*/)
+void GeometricData::update(
+        bool /*updateFaceNormals*/,
+        bool /*updateVertexNormals*/,
+        bool notifyListeners)
 {
-    auto listeners = mListeners.lock();
-    for (std::shared_ptr<GeometricDataListener> listener : *listeners)
-        listener->notifyGeometricDataChanged();
+    if (notifyListeners)
+    {
+        auto listeners = mListeners.lock();
+        for (std::shared_ptr<GeometricDataListener> listener : *listeners)
+            listener->notifyGeometricDataChanged();
+    }
 }
 
 void GeometricData::addGeometricDataListener(std::shared_ptr<GeometricDataListener> listener)

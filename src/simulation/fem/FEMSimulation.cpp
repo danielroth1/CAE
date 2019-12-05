@@ -84,7 +84,10 @@ void FEMSimulation::initializeStep()
         {
             fo->getExternalForce(i) = Eigen::Vector::Zero();
         }
-
+}
+    for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
+    {
+        // profile this method call
         fo->updateFEM(true);
     }
 }
@@ -126,11 +129,11 @@ void FEMSimulation::applyDamping()
 
 }
 
-void FEMSimulation::publish()
+void FEMSimulation::publish(bool notifyListeners)
 {
     for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
     {
-        fo->updateGeometricData();
+        fo->updateGeometricData(notifyListeners);
     }
 }
 

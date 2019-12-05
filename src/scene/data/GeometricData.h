@@ -77,7 +77,8 @@ public:
     // Calls this method when the geometric data changed. Informs listeners
     // about the change by calling notifyGeometricDataChanged.
     virtual void update(bool updateFaceNormals = true,
-                        bool updateVertexNormals = true);
+                        bool updateVertexNormals = true,
+                        bool notifyListeners = true);
 
     // Listener support
     void addGeometricDataListener(

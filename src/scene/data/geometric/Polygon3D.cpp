@@ -245,9 +245,11 @@ void Polygon3D::accept(GeometricDataVisitor& visitor)
     visitor.visit(*this);
 }
 
-void Polygon3D::update(bool updateFaceNormals, bool updateVertexNormals)
+void Polygon3D::update(bool updateFaceNormals,
+                       bool updateVertexNormals,
+                       bool notifyListeners)
 {
-    Polygon::update(updateFaceNormals, updateVertexNormals);
+    Polygon::update(updateFaceNormals, updateVertexNormals, notifyListeners);
 
     if (mOuterVertexNormals.getType() == BSWSVectors::Type::BODY_SPACE)
     {

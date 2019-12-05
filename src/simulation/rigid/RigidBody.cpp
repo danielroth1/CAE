@@ -232,7 +232,7 @@ void RigidBody::accept(SimulationObjectVisitor& visitor)
     visitor.visit(*this);
 }
 
-void RigidBody::updateGeometricData()
+void RigidBody::updateGeometricData(bool notifyListeners)
 {
     Eigen::Affine3d transform;
     transform.setIdentity();
@@ -240,7 +240,7 @@ void RigidBody::updateGeometricData()
     transform.rotate(mQ);
     mPolygon->setTransform(transform);
 //    mPolygon->updatePositions();
-    mPolygon->update();
+    mPolygon->update(notifyListeners);
 //    mPolygon->getTransform().setIdentity();
 //    mPolygon->getTransform().rotate(mQ);
     //    mPolygon->getTransform().translate(mX);

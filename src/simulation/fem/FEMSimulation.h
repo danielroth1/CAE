@@ -67,7 +67,7 @@ public:
 
     // Tells the renderer, that the data changed and can be visualized.
     // Call this after a position change should be visualized.
-    void publish();
+    void publish(bool notifyListeners = true);
 
     // public Simulation interface
 public:

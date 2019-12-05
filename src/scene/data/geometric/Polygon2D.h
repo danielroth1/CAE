@@ -61,7 +61,8 @@ public:
 public:
 
     virtual void update(bool updateFaceNormals = true,
-                        bool updateVertexNormals = true) override;
+                        bool updateVertexNormals = true,
+                        bool notifyListeners = true) override;
 
     // Fix the topology by removing all vertices that are not referenced by
     // other topological elements like edges, and faces. This is important

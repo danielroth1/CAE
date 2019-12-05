@@ -200,6 +200,7 @@ void ApplicationControl::initiateApplication()
 //                    ac.mSGControl->create3DGeometryFrom2D(node1, criteria, true);
 
             ac.mSGControl->createFEMObject(node1->getData());
+            ac.mSGControl->createCollidable(node1->getData());
         }
 
         virtual void unload()
@@ -325,21 +326,65 @@ void ApplicationControl::handlePreRenderingStep()
                         renderModel->setAddedToRenderer(true);
                     }
 
+                    // Ignore simulation objects because their models are
+                    // updated in the simulation thread at the end of
+                    // each time step.
+                    if (leafNode->getData()->getSimulationObjectRaw() != nullptr)
+                    {
+                        return;
+                    }
+
                     // update render models that always want to be updated
                     if (renderModel->isAlwaysUpdate())
+                    {
                         renderModel->update();
+                    }
+                    else
+                    {
+                        // TODO: for the moment, controlling if data needs
+                        // to be updated or not is done in the specific
+                        // render models, so, RenderModel::update() is called
+                        // for every object.
+                        renderModel->update();
+                    }
 
-                    // update render models when their simulation objects think they need an update
-//                    if (SimulationObject* so = leafNode->getData()->getSimulationObjectRaw())
-//                    {
-                        // only render model of leaf datas are called
-                        // there must be some kind of vector of rende models that can be called independently
-                        // of scene nodes or each linear force must be added to the scene graph.
-                        // The scene graph option seems to be the better one because it allows the user to
-                        // interact with the linear force
-                        leafNode->getData()->getRenderModel()->update();
-//                    }
 
+                }
+            }
+            ApplicationControl& ac;
+        } nodeVisitor(*this);
+
+        traverser.traverse(nodeVisitor);
+    }
+}
+
+void ApplicationControl::updateSimulationObjects()
+{
+    if (mSGControl)
+    {
+        SGTraverser traverser = SGTraverserFactory::createDefaultSGTraverser(
+                    mSGControl->getSceneGraph()->getRoot());
+        class UpdateSOVisitor : public SGNodeVisitor
+        {
+        public:
+            UpdateSOVisitor(ApplicationControl& _ac)
+                : ac(_ac)
+            {
+
+            }
+            virtual void visit(SGChildrenNode* /*childrenNode*/)
+            {
+
+            }
+            virtual void visit(SGLeafNode* leafNode)
+            {
+                RenderModel* renderModel = leafNode->getData()->getRenderModelRaw();
+                if (renderModel != nullptr)
+                {
+                    if (leafNode->getData()->getSimulationObjectRaw() != nullptr)
+                    {
+                        renderModel->update();
+                    }
                 }
             }
             ApplicationControl& ac;

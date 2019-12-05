@@ -243,7 +243,7 @@ public:
 
     // SimulationObject interface
 public:
-    virtual void updateGeometricData() override;
+    virtual void updateGeometricData(bool notifyListeners = true) override;
 
     virtual Eigen::Vector& getPosition(size_t id) override final
     {

@@ -18,7 +18,7 @@ public:
     // SimulationObject interface
 public:
     virtual void accept(SimulationObjectVisitor& visitor) override;
-    virtual void updateGeometricData() override;
+    virtual void updateGeometricData(bool notifyListeners = true) override;
     virtual void applyImpulse(
             SimulationPointRef& ref, const Eigen::Vector& impulse) override;
     virtual void applyForce(

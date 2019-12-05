@@ -157,9 +157,11 @@ void Polygon2D::updateBoundingBox()
                 mBoundingBox);
 }
 
-void Polygon2D::update(bool updateFaceNormals, bool updateVertexNormals)
+void Polygon2D::update(bool updateFaceNormals,
+                       bool updateVertexNormals,
+                       bool notifyListeners)
 {
-    Polygon::update(updateFaceNormals, updateVertexNormals);
+    Polygon::update(updateFaceNormals, updateVertexNormals, notifyListeners);
 
     if (mVertexNormals.getType() == BSWSVectors::Type::BODY_SPACE)
     {

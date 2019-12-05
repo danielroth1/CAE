@@ -19,7 +19,7 @@ void SimulationPoint::accept(SimulationObjectVisitor& visitor)
     visitor.visit(*this);
 }
 
-void SimulationPoint::updateGeometricData()
+void SimulationPoint::updateGeometricData(bool /*notifyListeners*/)
 {
 
 }

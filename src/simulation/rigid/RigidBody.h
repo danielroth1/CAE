@@ -135,7 +135,7 @@ public:
     // Updates the geometric datas transformation matrix.
     // Call this to inform the geometric data about changes, e.g.
     // at the end of a simulation step.
-    virtual void updateGeometricData() override;
+    virtual void updateGeometricData(bool notifyListeners = true) override;
     virtual Eigen::Vector& getPosition(size_t id) override;
     virtual void setPosition(Eigen::Vector v, ID id) override;
     virtual void addToPosition(Eigen::Vector v, ID id) override;

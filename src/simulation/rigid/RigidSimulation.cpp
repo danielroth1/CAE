@@ -93,11 +93,11 @@ void RigidSimulation::applyDamping()
     }
 }
 
-void RigidSimulation::publish()
+void RigidSimulation::publish(bool notifyListeners)
 {
     for (std::shared_ptr<RigidBody>& rb : mRigidBodies)
     {
-        rb->updateGeometricData();
+        rb->updateGeometricData(notifyListeners);
     }
 }
 

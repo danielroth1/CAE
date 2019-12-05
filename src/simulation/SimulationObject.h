@@ -71,7 +71,8 @@ public:
 
     // Updates the underlying geometric data according to the simulation state
     // of this object.
-    virtual void updateGeometricData() = 0;
+    // \param notifyListeners -
+    virtual void updateGeometricData(bool notifyListeners = true) = 0;
 
     virtual Eigen::Vector& getPosition(size_t id) = 0;
 
