@@ -21,8 +21,9 @@
 //
 // Call operations can be grouped in instances. Timings are printed all at once
 // per instance.
-// There can be multiple call operations per instance. Call operations of one
-// instance must be used in the same thread to avoid any race conditions.
+// There can be multiple call operations per instance.
+// * No thread safety! Call operations of one instance must be used in the same
+//   thread to avoid any race conditions.
 // It is recomended to define an own macro (how its done below) for each instance
 // to increase readibily, so it is possible to write in the simulation thread:
 //
@@ -61,6 +62,12 @@ namespace times
 
     #define STOP_TIMING_SIMULATION \
         times::Timing::getInstance(1)->stopTiming();
+
+    #define START_TIMING_MODELLING(timerName) \
+        times::Timing::getInstance(2)->startTiming(timerName);
+
+    #define STOP_TIMING_MODELLING \
+        times::Timing::getInstance(2)->stopTiming();
 
     class Timing
     {

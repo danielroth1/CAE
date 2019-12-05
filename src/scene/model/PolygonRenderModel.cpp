@@ -578,7 +578,7 @@ void PolygonRenderModel::updatePositions()
                 mPolygon->getPositions(); // for 3d case, this are all 3d positions, but often only 2d positions are required
 
     {
-        START_TIMING_RENDERING("PolygonRenderModel::updatePositions::positions");
+        START_TIMING_MODELLING("PolygonRenderModel::updatePositions::positions");
         auto positionsLock = mPositionsBufferedData->getData().lock();
 
         if (mPolygonIndexMapping)
@@ -619,9 +619,9 @@ void PolygonRenderModel::updatePositions()
             }
         }
 
-        STOP_TIMING_RENDERING;
+        STOP_TIMING_MODELLING;
 
-        START_TIMING_RENDERING("PolygonRenderModel::updatePositions::normals");
+        START_TIMING_MODELLING("PolygonRenderModel::updatePositions::normals");
         // TODO: vim
         auto normalsLock = mNormalsBufferedData->getData().lock();
         auto facesLock = mFacesBufferedData->getData().lock();
@@ -639,7 +639,7 @@ void PolygonRenderModel::updatePositions()
                     mPolygon->getTopology(),
                     *normalsLock);
 
-        STOP_TIMING_RENDERING;
+        STOP_TIMING_MODELLING;
 
 //        if (positionsLock->size() != positions.size() ||
 //            normalsLock->size() != positions.size() )
