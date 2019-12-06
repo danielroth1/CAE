@@ -245,7 +245,7 @@ bool TriangleCollider::collide(
         ID v2Index = v.getID();
 
         new (&collision) Collision(so1, so2,
-                                   inter, pos,
+                                   pos, inter,
                                    dir, 0.0,
                                    v1Index,
                                    v2Index,
@@ -436,34 +436,6 @@ TopologyFeatureIterator* TriangleCollider::getFeatures(
     case TopologyFeature::Type::CELL:
         std::cout << "Warning: unsupported feature type.\n";
     }
-
-//    class DefaultTopologyFeatureIterator : public TopologyFeatureIterator
-//    {
-//    public:
-//        DefaultTopologyFeatureIterator(TopologyFeature& _feature)
-//            : feature(_feature)
-//        {
-
-//        }
-
-//        TopologyFeatureIterator& operator++() override
-//        {
-//            return *this;
-//        }
-
-//        TopologyFeature& operator*() override
-//        {
-//            return feature;
-//        }
-
-//        size_t getSize() override
-//        {
-//            return 1;
-//        }
-
-//    private:
-//        TopologyFeature& feature;
-//    };
 
     return nullptr;
 }
