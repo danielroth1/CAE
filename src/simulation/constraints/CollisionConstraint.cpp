@@ -42,6 +42,7 @@ const Eigen::Vector& CollisionConstraint::getSumOfAllAppliedImpulses() const
 
 void CollisionConstraint::initialize(double stepSize)
 {
+    mSticking = false;
     mSumOfAllAppliedImpulses = Eigen::Vector::Zero();
     mSumFrictionImpulses = Eigen::Vector::Zero();
 
@@ -52,9 +53,9 @@ void CollisionConstraint::initialize(double stepSize)
 
     const Eigen::Vector& n = mCollision.getNormal();
 
-    Eigen::Vector u1 = ImpulseConstraintSolver::calculateSpeed(
+    u1 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectA(), mPoint1, mCollision.getVertexIndexA());
-    Eigen::Vector u2 = ImpulseConstraintSolver::calculateSpeed(
+    u2 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectB(), mPoint2, mCollision.getVertexIndexB());
 
     // TODO:
@@ -65,7 +66,7 @@ void CollisionConstraint::initialize(double stepSize)
 //    double positionCorrection = -std::max(0.0, (mCollision.getPointB() - mCollision.getPointA()).dot(n) / stepSize);
     if (positionCorrection > 1e-10)
         std::cout << "position correction = " << positionCorrection << "\n";
-    Eigen::Vector uRel = u1 - u2;
+    uRel = u1 - u2;
 
     mTargetUNormalRel = (-mRestitution * uRel.dot(n) + positionCorrection) * n;
 
@@ -101,75 +102,101 @@ bool CollisionConstraint::solve(double maxConstraintError)
     uRelN = uRel.dot(n) * n;
 
     deltaUNormalRel = mTargetUNormalRel - uRelN;
+
+    bool appliedCollisionImpulse;
     if (deltaUNormalRel.squaredNorm() < maxConstraintError * maxConstraintError)
     {
-        return true;
+        appliedCollisionImpulse = false;
     }
-    impulse = mImpulseFactor * deltaUNormalRel;
-    if (mCollision.getNormal().dot(mSumOfAllAppliedImpulses + impulse) < 0)
+    else
     {
-        impulse = -mSumOfAllAppliedImpulses;
+        appliedCollisionImpulse = true;
+        impulse = mImpulseFactor * deltaUNormalRel;
+        if (mCollision.getNormal().dot(mSumOfAllAppliedImpulses + impulse) < 0)
+        {
+            impulse = -mSumOfAllAppliedImpulses;
+        }
+        mSumOfAllAppliedImpulses += impulse;
+
+        ImpulseConstraintSolver::applyImpulse(
+                    mCollision.getSimulationObjectA(), impulse,
+                    mPoint1, mCollision.getVertexIndexA());
+
+        ImpulseConstraintSolver::applyImpulse(
+                    mCollision.getSimulationObjectB(), -impulse,
+                    mPoint2, mCollision.getVertexIndexB());
+
     }
-    mSumOfAllAppliedImpulses += impulse;
-
-    ImpulseConstraintSolver::applyImpulse(
-                mCollision.getSimulationObjectA(), impulse,
-                mPoint1, mCollision.getVertexIndexA());
-
-    ImpulseConstraintSolver::applyImpulse(
-                mCollision.getSimulationObjectB(), -impulse,
-                mPoint2, mCollision.getVertexIndexB());
 
     // Friction
     // Don't apply friction if two objects are currently penetrating so that
     // the process of resolving the interpenetration isn't slowed down.
-    // do this in collider?
 
-    // this is not the best way of doing it. instead disable friction between
-    // all contacts if there is at least one "isInside" contact
+    // Note: This is not the best way of doing it. instead disable friction
+    // between all contacts if there is at least one "isInside" contact.
+
+    bool appliedFriction = false;
+
     if (!mCollision.isInside() &&
-        (mCFrictionStatic > 1e-10 ||
-        mCFrictionDynamic > 1e-10))
+        (mCFrictionStatic > 1e-15 ||
+        mCFrictionDynamic > 1e-15))
     {
+        // recalculate uRel after the collision impulse was applied
+        u1 = ImpulseConstraintSolver::calculateSpeed(
+                    mCollision.getSimulationObjectA(),
+                    mPoint1,
+                    mCollision.getVertexIndexA());
+        u2 = ImpulseConstraintSolver::calculateSpeed(
+                    mCollision.getSimulationObjectB(),
+                    mPoint2,
+                    mCollision.getVertexIndexB());
+        uRel = u1 - u2;
+        uRelN = uRel.dot(n) * n;
         uRelT = uRel - uRelN;
+
         if (uRelT.norm() > 1e-8)
         {
-            t = uRelT.normalized();
-            frictionImpulseMax = - 1 / (t.transpose() * mK * t) * uRelT;
+            Eigen::Vector tangent = uRelT.normalized();
 
-            if (mSumFrictionImpulses.norm() <= mCFrictionStatic * mSumOfAllAppliedImpulses.norm())
+            frictionImpulseMax = - 1 / (tangent.transpose() * mK * tangent) * uRelT;
+
+            // This is the equation from the paper.
+            frictionImpulse = -mCFrictionDynamic * impulse.dot(n) * tangent;
+
+            if (mSticking || (mSumOfAllAppliedImpulses.norm() > 1e-8 &&
+                              (mSumFrictionImpulses + frictionImpulse).norm() <= mCFrictionStatic * mSumOfAllAppliedImpulses.norm()))
             {
-                // static friction
+                // Static friction
+                mSticking = true;
                 frictionImpulse = frictionImpulseMax;
             }
-            else
+            else if (appliedCollisionImpulse)
             {
                 // dynamic friction
-                // This is the equation in the paper but the other one is used
-                // in IBDS.
-//                frictionImpulse = -mCFrictionDynamic * impulse.norm() * t;
-                frictionImpulse = -mCFrictionDynamic * impulse.dot(n) * t;
-
-                if (frictionImpulse.dot(t) < frictionImpulseMax.dot(t))
+                if (frictionImpulse.dot(tangent) < frictionImpulseMax.dot(tangent))
                 {
                     frictionImpulse = frictionImpulseMax;
+                    mSticking = true;
                 }
-
             }
 
             mSumFrictionImpulses += frictionImpulse;
 
-            ImpulseConstraintSolver::applyImpulse(
-                        mCollision.getSimulationObjectA(), frictionImpulse,
-                        mPoint1, mCollision.getVertexIndexA());
+            if (frictionImpulse.squaredNorm() > maxConstraintError * maxConstraintError)
+            {
+                appliedFriction = true;
+                ImpulseConstraintSolver::applyImpulse(
+                            mCollision.getSimulationObjectA(), frictionImpulse,
+                            mPoint1, mCollision.getVertexIndexA());
 
-            ImpulseConstraintSolver::applyImpulse(
-                        mCollision.getSimulationObjectB(), -frictionImpulse,
-                        mPoint2, mCollision.getVertexIndexB());
+                ImpulseConstraintSolver::applyImpulse(
+                            mCollision.getSimulationObjectB(), -frictionImpulse,
+                            mPoint2, mCollision.getVertexIndexB());
+            }
         }
     }
 
-    return false;
+    return !appliedCollisionImpulse && !appliedFriction;
 }
 
 void CollisionConstraint::accept(ConstraintVisitor& cv)

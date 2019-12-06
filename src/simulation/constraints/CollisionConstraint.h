@@ -7,6 +7,11 @@
 
 class Collision;
 
+// Implements collision and friction based on
+// "Constraint-based collision and contact handling using impulses"
+// by Bender et al. Another implementation can be found in Benders library
+// "IBDS".
+//
 // Collision Constraint:
 // Correction impulse calculation:
 //
@@ -55,6 +60,7 @@ private:
     double mRestitution;
     double mCFrictionDynamic;
     double mCFrictionStatic;
+    bool mSticking;
 
     // Temporary variables used in methods
     Eigen::Vector3d mPoint1;
@@ -67,7 +73,6 @@ private:
     Eigen::Vector impulse;
     Eigen::Vector frictionImpulse;
     Eigen::Vector uRelT;
-    Eigen::Vector t;
     Eigen::Vector frictionImpulseMax;
 };
 
