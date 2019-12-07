@@ -221,6 +221,8 @@ inline const Eigen::Quaterniond& RigidBody::getOrientation() const
 
 inline const Eigen::Quaterniond& RigidBody::getOrientationPrevious() const
 {
+    if (mStatic)
+        return mQ;
     return mQOld;
 }
 
@@ -256,6 +258,8 @@ inline const Eigen::Vector& RigidBody::getPosition() const
 
 inline const Eigen::Vector& RigidBody::getPositionPrevious() const
 {
+    if (mStatic)
+        return mX;
     return mXOld;
 }
 

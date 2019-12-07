@@ -38,6 +38,14 @@ public:
         mNormal = -mNormal;
     }
 
+    Eigen::Vector calculatePositionPreviousA();
+    Eigen::Vector calculatePositionPreviousB();
+
+    static Eigen::Vector calculatePositionPrevious(
+            SimulationObject* so,
+            const Eigen::Vector& point,
+            ID vertexIndex);
+
     void setNormal(const Eigen::Vector& normal)
     {
         mNormal = normal;

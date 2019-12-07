@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+#include <simulation/fem/FEMObject.h>
+
 CollisionConstraint::CollisionConstraint(
         Collision& collision,
         double restitution,
@@ -58,14 +60,14 @@ void CollisionConstraint::initialize(double stepSize)
     u2 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectB(), mPoint2, mCollision.getVertexIndexB());
 
-    // TODO:
-    // (mCollision.getPointA() - mCollision.getPointB()).dot(n) is the
-    // penetration depth of the collision in the predictor step.
-    // This is not the distance from the contact points in the current step!
-    double positionCorrection = 0.0;//0.2 * std::max(0.0, (mCollision.getPointA() - mCollision.getPointB()).dot(n) / stepSize);
-//    double positionCorrection = -std::max(0.0, (mCollision.getPointB() - mCollision.getPointA()).dot(n) / stepSize);
-    if (positionCorrection > 1e-10)
-        std::cout << "position correction = " << positionCorrection << "\n";
+    // Correction of the position error of the previous time step.
+    Eigen::Vector posPrevA = mCollision.calculatePositionPreviousA();
+    Eigen::Vector posPrevB = mCollision.calculatePositionPreviousB();
+
+    double posError = (posPrevA - posPrevB).dot(n);
+    posError = std::min(posError - 5e-2, 0.0);
+    double positionCorrection = -0.2 * posError / stepSize;
+
     uRel = u1 - u2;
 
     mTargetUNormalRel = (-mRestitution * uRel.dot(n) + positionCorrection) * n;
@@ -81,6 +83,7 @@ void CollisionConstraint::initialize(double stepSize)
                 mCollision.getSimulationObjectB(), mPoint2, mCollision.getVertexIndexB());
 
     mImpulseFactor = 1 / (n.transpose() * mK * n);
+
 }
 
 bool CollisionConstraint::solve(double maxConstraintError)

@@ -349,7 +349,6 @@ void CollisionManager::updateAll()
         }
     }
 
-    std::cout << "updates = " << updateCounter << "\n";
     for (CollisionManagerListener* listener : mListeners)
         listener->notifyUpdateAllCalled();
 }
