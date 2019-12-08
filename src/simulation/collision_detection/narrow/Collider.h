@@ -14,7 +14,7 @@ class Collider
 {
 public:
     // Constructor
-        Collider();
+        Collider(double collisionMargin);
 
         // Saves collisions in mCollisions of this class.
         bool collides(
@@ -39,6 +39,9 @@ public:
 
         bool getInvertNormalsIfNecessary() const;
         void setInvertNormalsIfNecessary(bool invertNormalsIfNecessary);
+
+        void setCollisionMargin(double collisionMargin);
+        double getCollisionMargin() const;
 
     // Mthods for dispatching
         bool collides(

@@ -24,7 +24,8 @@ public:
     BoundingVolumeHierarchy(SimulationObject* so,
                             Polygon* mPolygon,
                             const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
-                            BoundingVolume::Type bvType);
+                            BoundingVolume::Type bvType,
+                            double collisionMargin);
 
     virtual void initialize() = 0;
 
@@ -90,6 +91,9 @@ public:
 
     BoundingVolume::Type getBoundingVolumeType() const;
 
+    void setCollisionMargin(double collisionMargin);
+    double getCollisionMargin() const;
+
 protected:
 
     SimulationObject* mSimulationObject;
@@ -97,6 +101,8 @@ protected:
     Polygon* mPolygon;
 
     std::vector<std::shared_ptr<CollisionObject>> mCollisionObjects;
+
+    double mCollisionMargin;
 
 private:
 

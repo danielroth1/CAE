@@ -24,7 +24,8 @@ public:
     virtual bool intersects(BoundingVolume* bv) = 0;
 
     // Leaf node update method
-    virtual void update(CollisionObject& collisionObject) = 0;
+    virtual void update(CollisionObject& collisionObject,
+                        double collisionMargin) = 0;
 
     // Children node update method
     virtual void update(BoundingVolume* bv1, BoundingVolume* bv2) = 0;

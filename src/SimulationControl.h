@@ -118,6 +118,9 @@ public:
     void setPositionCorrectionFactor(double positionCorrectionFactor);
     double getPositionCorrectionFactor() const;
 
+    void setCollisionMargin(double collisionMargin);
+    double getCollisionMargin() const;
+
     // repaints the gl widget
 //    void repaint();
 

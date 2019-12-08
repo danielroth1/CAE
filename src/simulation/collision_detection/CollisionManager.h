@@ -59,6 +59,9 @@ public:
     bool addListener(CollisionManagerListener* listener);
     bool removeListener(CollisionManagerListener* listener);
 
+    void setCollisionMargin(double collisionMargin);
+    double getCollisionMargin() const;
+
     static bool createEdges;
 
 private:
@@ -89,6 +92,9 @@ private:
     std::vector<CollisionData> mCollisionData;
 
     std::vector<CollisionManagerListener*> mListeners;
+
+    // If true, the next hierarchy update is forced for all objects.
+    bool mForceUpdate;
 };
 
 PROXY_CLASS(CollisionManagerProxy, CollisionManager, mCm,

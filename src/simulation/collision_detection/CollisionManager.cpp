@@ -19,7 +19,8 @@
 CollisionManager::CollisionManager(Domain* domain)
     : mDomain(domain)
 {
-    mCollider = std::make_unique<Collider>();
+    mCollider = std::make_unique<Collider>(5e-2);
+    mForceUpdate = false;
 }
 
 Domain* CollisionManager::getDomain()
@@ -327,11 +328,11 @@ void CollisionManager::updateAll()
         // Only update a collision hierarchy if position or orientation of
         // the rigid changed. This is especially important to prevent
         // unnecessary updates of static rigids.
-        if (cd.mSo->getType() == SimulationObject::Type::RIGID_BODY)
+        if (!mForceUpdate && cd.mSo->getType() == SimulationObject::Type::RIGID_BODY)
         {
             RigidBody* rb = static_cast<RigidBody*>(cd.mSo.get());
             if (cd.mQ.isApprox(rb->getOrientation()) &&
-                cd.mX.isApprox(rb->getPosition()))
+                    cd.mX.isApprox(rb->getPosition()))
             {
                 dirty = false;
             }
@@ -348,6 +349,8 @@ void CollisionManager::updateAll()
             ++updateCounter;
         }
     }
+
+    mForceUpdate = false;
 
     for (CollisionManagerListener* listener : mListeners)
         listener->notifyUpdateAllCalled();
@@ -418,6 +421,24 @@ bool CollisionManager::removeListener(CollisionManagerListener* listener)
     return false;
 }
 
+void CollisionManager::setCollisionMargin(double collisionMargin)
+{
+    // Update bounding volume
+    for (CollisionData& data : mCollisionData)
+    {
+        data.mBvh->setCollisionMargin(collisionMargin);
+    }
+    mForceUpdate = true;
+
+    // Update Collider
+    mCollider->setCollisionMargin(collisionMargin);
+}
+
+double CollisionManager::getCollisionMargin() const
+{
+    return mCollider->getCollisionMargin();
+}
+
 void CollisionManager::addSimulationObject(
         const std::shared_ptr<SimulationObject>& so,
         const std::shared_ptr<Polygon>& polygon,
@@ -433,7 +454,8 @@ void CollisionManager::addSimulationObject(
                 so.get(),
                 polygon.get(),
                 collisionObjects,
-                BoundingVolume::Type::AABB);
+                BoundingVolume::Type::AABB,
+                getCollisionMargin());
 
     mCollisionData.push_back(data);
 

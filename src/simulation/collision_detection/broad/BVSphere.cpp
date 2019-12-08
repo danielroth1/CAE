@@ -37,7 +37,8 @@ bool BVSphere::intersects(BoundingVolume* bv)
     return mIntersectVisitor.returnValue;
 }
 
-void BVSphere::update(CollisionObject& collisionObject)
+void BVSphere::update(CollisionObject& collisionObject,
+                      double /*collisionMargin*/)
 {
     mPosition = collisionObject.getPosition();
 

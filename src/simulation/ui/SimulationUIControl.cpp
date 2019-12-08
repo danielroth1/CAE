@@ -114,6 +114,17 @@ void SimulationUIControl::init(QWidget* parent)
                     mAc->getSimulationControl()->getDomain()),
                 0.0, 1.0, 1e-1, 3);
 
+    mWidget->getMembersWidget()->addDouble(
+                "Col. Margin",
+                MemberAccessorFactory::createGetterSetter<double, SimulationControl>(
+                    &SimulationControl::getCollisionMargin,
+                    &SimulationControl::setCollisionMargin,
+                    1e-2,
+                    mAc->getSimulationControl(),
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                0.0, 10.0, 1e-2, 8);
+
     mWidget->getMembersWidget()->addVectorDouble(
                 "Gravity",
                 MemberAccessorFactory::createGetterSetter<Eigen::Vector3d, SimulationControl>(

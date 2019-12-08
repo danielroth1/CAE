@@ -282,6 +282,16 @@ double SimulationControl::getPositionCorrectionFactor() const
     return mPositionCorrectionFactor;
 }
 
+void SimulationControl::setCollisionMargin(double collisionMargin)
+{
+    mCollisionManager->setCollisionMargin(collisionMargin);
+}
+
+double SimulationControl::getCollisionMargin() const
+{
+    return mCollisionManager->getCollisionMargin();
+}
+
 //void SimulationControl::repaint()
 //{
 //    if (mUiControl)
@@ -589,7 +599,8 @@ void SimulationControl::step()
                     0.0, // Restitution (bounciness factor))
                     0.05, // static friction
                     0.8,
-                    mPositionCorrectionFactor); // dynamic friction
+                    mPositionCorrectionFactor,
+                    mCollisionManager->getCollisionMargin()); // dynamic friction
 
         // Revert the illegal state
         mRigidSimulation->revertPositions();

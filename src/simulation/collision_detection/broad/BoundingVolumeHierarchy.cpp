@@ -9,12 +9,14 @@ BoundingVolumeHierarchy::BoundingVolumeHierarchy(
         SimulationObject* simulationObject,
         Polygon* polygon,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
-        BoundingVolume::Type bvType)
+        BoundingVolume::Type bvType,
+        double collisionMargin)
     : Tree<BVChildrenData*, BVLeafData*> ("BVH")
     , mSimulationObject(simulationObject)
     , mPolygon(polygon)
     , mCollisionObjects(collisionObjects)
     , mBvType(bvType)
+    , mCollisionMargin(collisionMargin)
 {
     getRoot()->setData(nullptr);
 }
@@ -251,4 +253,14 @@ bool BoundingVolumeHierarchy::collides(BVHLeafNode* leafNode1, BVHLeafNode* leaf
 BoundingVolume::Type BoundingVolumeHierarchy::getBoundingVolumeType() const
 {
     return mBvType;
+}
+
+void BoundingVolumeHierarchy::setCollisionMargin(double collisionMargin)
+{
+    mCollisionMargin = collisionMargin;
+}
+
+double BoundingVolumeHierarchy::getCollisionMargin() const
+{
+    return mCollisionMargin;
 }

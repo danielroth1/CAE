@@ -33,7 +33,8 @@ public:
             double restitution,
             double cFrictionDynamic,
             double cFrictionStatic,
-            double positionCorrectionFactor);
+            double positionCorrectionFactor,
+            double collisionMargin);
 
     virtual ~CollisionConstraint() override;
 
@@ -62,6 +63,7 @@ private:
     double mCFrictionDynamic;
     double mCFrictionStatic;
     double mPositionCorrectionFactor;
+    double mCollisionMargin;
     bool mSticking;
 
     // Temporary variables used in methods

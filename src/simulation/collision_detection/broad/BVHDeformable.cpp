@@ -14,8 +14,10 @@ BVHDeformable::BVHDeformable(
         SimulationObject* so,
         Polygon* polygon,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
-        BoundingVolume::Type bvType)
-    : BoundingVolumeHierarchy(so, polygon, collisionObjects, bvType)
+        BoundingVolume::Type bvType,
+        double collisionMargin)
+    : BoundingVolumeHierarchy(
+          so, polygon, collisionObjects, bvType, collisionMargin)
 {
     initialize();
 }
@@ -65,7 +67,8 @@ void BVHDeformable::udpate()
         {
             BVLeafData* data = static_cast<BVHLeafNode*>(node)->getData();
             data->getCollisionObject()->update();
-            data->getBoundingVolume()->update(*data->getCollisionObject());
+            data->getBoundingVolume()->update(*data->getCollisionObject(),
+                                              mCollisionMargin);
         }
         else
         {

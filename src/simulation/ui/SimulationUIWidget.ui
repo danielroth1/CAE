@@ -46,8 +46,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>197</width>
-        <height>374</height>
+        <width>208</width>
+        <height>392</height>
        </rect>
       </property>
       <attribute name="label">
@@ -105,7 +105,7 @@
               <number>0</number>
              </property>
              <property name="topMargin">
-              <number>0</number>
+              <number>9</number>
              </property>
              <property name="rightMargin">
               <number>0</number>
@@ -274,7 +274,7 @@
         <x>0</x>
         <y>0</y>
         <width>211</width>
-        <height>284</height>
+        <height>286</height>
        </rect>
       </property>
       <attribute name="label">
@@ -321,8 +321,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>209</width>
-               <height>282</height>
+               <width>222</width>
+               <height>284</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_14">

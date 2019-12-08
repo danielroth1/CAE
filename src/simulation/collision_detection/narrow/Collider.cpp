@@ -21,13 +21,12 @@
 
 #include <math/MathUtils.h>
 
-Collider::Collider()
+Collider::Collider(double collisionMargin)
     : mInvertNormalsIfNecessary(false)
 {
-    mCollisionMargin = 5e-2;
-    mCollisionMarginSquared = mCollisionMargin * mCollisionMargin;
     mTriangleCollider = std::make_shared<TriangleCollider>(
                 mCollisionMargin);
+    setCollisionMargin(collisionMargin);
 }
 
 bool Collider::collides(CollisionObject& co1, CollisionObject& co2)
@@ -121,6 +120,18 @@ bool Collider::getInvertNormalsIfNecessary() const
 void Collider::setInvertNormalsIfNecessary(bool invertNormalsIfNecessary)
 {
     mInvertNormalsIfNecessary = invertNormalsIfNecessary;
+}
+
+void Collider::setCollisionMargin(double collisionMargin)
+{
+    mCollisionMargin = collisionMargin;
+    mCollisionMarginSquared = mCollisionMargin * mCollisionMargin;
+    mTriangleCollider->setCollisionMargin(collisionMargin);
+}
+
+double Collider::getCollisionMargin() const
+{
+    return mCollisionMargin;
 }
 
 bool Collider::collides(

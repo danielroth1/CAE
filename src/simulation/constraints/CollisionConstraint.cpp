@@ -14,12 +14,14 @@ CollisionConstraint::CollisionConstraint(
         double restitution,
         double cFrictionDynamic,
         double cFrictionStatic,
-        double positionCorrectionFactor)
+        double positionCorrectionFactor,
+        double collisionMargin)
     : mCollision(collision)
     , mRestitution(restitution)
     , mCFrictionDynamic(cFrictionDynamic)
     , mCFrictionStatic(cFrictionStatic)
     , mPositionCorrectionFactor(positionCorrectionFactor)
+    , mCollisionMargin(collisionMargin)
 {
 
 }
@@ -67,7 +69,7 @@ void CollisionConstraint::initialize(double stepSize)
     Eigen::Vector posPrevB = mCollision.calculatePositionPreviousB();
 
     double posError = (posPrevA - posPrevB).dot(n);
-    posError = std::min(posError - 5e-2, 0.0);
+    posError = std::min(posError - mCollisionMargin, 0.0);
     double positionCorrection = -mPositionCorrectionFactor * posError / stepSize;
 
     uRel = u1 - u2;

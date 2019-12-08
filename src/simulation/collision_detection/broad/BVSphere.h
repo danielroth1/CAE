@@ -8,6 +8,7 @@
 #include <simulation/references/SimulationPointRef.h>
 
 
+// Only supports CollisionSphere.
 class BVSphere : public BoundingVolume
 {
 public:
@@ -21,7 +22,11 @@ public:
 public:
     virtual void accept(BoundingVolumeVisitor& visitor) override;
     virtual bool intersects(BoundingVolume* bv) override;
-    virtual void update(CollisionObject& collisionObject) override;
+
+    // \param collisionObject - must be of type CollisionSphere. CollisionTriangle
+    //      is not supported.
+    virtual void update(CollisionObject& collisionObject,
+                        double collisionMargin) override;
     virtual void update(BoundingVolume* bv1, BoundingVolume* bv2) override;
     virtual BoundingVolume::Type getType() const override;
     virtual Eigen::Vector getPosition() const override;

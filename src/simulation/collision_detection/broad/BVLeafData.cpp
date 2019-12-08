@@ -14,5 +14,5 @@ BVLeafData::BVLeafData(
 
 void BVLeafData::update()
 {
-    mBoundingVolume->update(*mCollisionObject);
+    mBoundingVolume->update(*mCollisionObject, 0);
 }

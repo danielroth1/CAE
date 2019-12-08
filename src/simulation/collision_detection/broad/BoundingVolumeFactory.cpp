@@ -126,7 +126,7 @@ std::shared_ptr<BVAABB> BoundingVolumeFactory::createBVAABB(
         Polygon& /*polygon*/)
 {
     std::shared_ptr<BVAABB> bv = std::make_shared<BVAABB>();
-    bv->update(co);
+    bv->update(co, 0);
 
     return bv;
 }

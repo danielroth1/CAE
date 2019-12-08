@@ -30,12 +30,17 @@ public:
         return mBB.intersects(static_cast<BVAABB*>(bv)->getBoundingBox());
     }
 
-    virtual void update(CollisionObject& collisionObject) override final
+    // Doesn't use the collision margin for Spheres (because its not used
+    // for anythin else than triangle-triangle collision detection).
+    virtual void update(CollisionObject& collisionObject,
+                        double collisionMargin) override final
     {
         switch(collisionObject.getType())
         {
         case CollisionObject::Type::SPHERE:
         {
+            // Note: No collision margin used here
+
             CollisionSphere* cs = static_cast<CollisionSphere*>(&collisionObject);
             mBB.mid() = cs->getPosition();
             mBB.min() = mBB.mid() - cs->getRadius() * Eigen::Vector::Ones();
@@ -45,11 +50,6 @@ public:
         }
         case CollisionObject::Type::TRIANGLE:
         {
-            // If a triangle is completely aligned with a coordinate axis, its
-            // bounding box would lose its volume rendering it useless. By adding
-            // a smalls
-            double epsilon = 5e-2;
-
             CollisionTriangle* t = static_cast<CollisionTriangle*>(&collisionObject);
             const Face& f = t->getFace();
             const std::shared_ptr<Polygon2DAccessor>& acc = t->getAccessor();
@@ -60,11 +60,11 @@ public:
 
             mBB.min() = acc->getPosition(f[0]).cwiseMin(
                             acc->getPosition(f[1])).cwiseMin(
-                                acc->getPosition(f[2])) - epsilon * Eigen::Vector::Ones();
+                                acc->getPosition(f[2])) - collisionMargin * Eigen::Vector::Ones();
 
             mBB.max() = acc->getPosition(f[0]).cwiseMax(
                             acc->getPosition(f[1])).cwiseMax(
-                                acc->getPosition(f[2])) + epsilon * Eigen::Vector::Ones();
+                                acc->getPosition(f[2])) + collisionMargin * Eigen::Vector::Ones();
             break;
         }
         }

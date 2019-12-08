@@ -19,7 +19,8 @@ public:
     BVHDeformable(SimulationObject* so,
                   Polygon* polygon,
                   const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
-                  BoundingVolume::Type bvType);
+                  BoundingVolume::Type bvType,
+                  double collisionMargin);
 
     // BoundingVolumeHierarchy interface
 public:
