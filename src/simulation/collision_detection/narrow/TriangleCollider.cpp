@@ -360,13 +360,13 @@ TopologyFeatureIterator* TriangleCollider::getFeatures(
                 {
                     return face;
                 }
-                else if (index < 3)
+                else if (index < 4)
                 {
                     return topo.getEdge(face.getEdgeIds()[index - 1]);
                 }
                 else
                 {
-                    return topo.getVertex(face.getVertexIds()[index - 3]);
+                    return topo.getVertex(face.getVertexIds()[index - 4]);
                 }
             }
 
@@ -377,7 +377,7 @@ TopologyFeatureIterator* TriangleCollider::getFeatures(
 
             size_t getSize() override
             {
-                return 6;
+                return 7;
             }
 
             TopologyFace& face;
