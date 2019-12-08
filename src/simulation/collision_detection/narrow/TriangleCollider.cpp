@@ -132,10 +132,22 @@ void TriangleCollider::addPair(
             else if (fSource.getType() == TopologyFeature::Type::EDGE &&
                      fTarget.getType() == TopologyFeature::Type::EDGE)
             {
-                mFeaturePairsEE.insert(
-                            EEPair(
-                                static_cast<TopologyEdge*>(&fSource),
-                                static_cast<TopologyEdge*>(&fTarget)));
+                // Avoid duplications, e.g. (a, b) and (b, a), by ordering
+                // the pair.
+                if (&fSource < &fTarget)
+                {
+                    mFeaturePairsEE.insert(
+                                EEPair(
+                                    static_cast<TopologyEdge*>(&fSource),
+                                    static_cast<TopologyEdge*>(&fTarget)));
+                }
+                else
+                {
+                    mFeaturePairsEE.insert(
+                                EEPair(
+                                    static_cast<TopologyEdge*>(&fTarget),
+                                    static_cast<TopologyEdge*>(&fSource)));
+                }
             }
         }
         targetFeatures->reset();

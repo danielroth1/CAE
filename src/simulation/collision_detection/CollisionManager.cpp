@@ -313,9 +313,6 @@ bool CollisionManager::collideAll()
         listener->notifyCollideAllCalled();
 
     return collisionOccured;
-
-//    if (mCollider->getCollisions().size() > 0)
-//        std::cout << "collisions detected = " << mCollider->getCollisions().size() << "\n";
 }
 
 void CollisionManager::updateAll()
