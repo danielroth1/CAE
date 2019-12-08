@@ -115,6 +115,9 @@ public:
     void setInvertNormalsIfNecessary(bool invertNormalsIfNecessary);
     bool getInvertNormalsIfNecessary() const;
 
+    void setPositionCorrectionFactor(double positionCorrectionFactor);
+    double getPositionCorrectionFactor() const;
+
     // repaints the gl widget
 //    void repaint();
 
@@ -167,7 +170,7 @@ public:
 
     Domain* getDomain();
 
-    // Delegated Simulations
+    // Delegated SimulationspositionCorrectionFactor
 public:
     void addSimulation(const std::shared_ptr<Simulation>& simulation,
                        const std::shared_ptr<SimulationProxy>& proxy);
@@ -240,6 +243,7 @@ private:
     int mMaxNumConstraintSolverIterations;
     int mNumFEMCorrectionIterations;
     double mMaxConstraintError;
+    double mPositionCorrectionFactor;
 
     bool mPaused;
 

@@ -32,7 +32,8 @@ public:
             double stepSize,
             double restitution,
             double cFrictionStatic,
-            double cFrictionDynamic);
+            double cFrictionDynamic,
+            double positionCorrectionFactor);
 
     static Eigen::Vector calculateRelativeNormalSpeed(
             const Eigen::Vector& relativeSpeedA,

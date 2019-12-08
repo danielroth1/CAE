@@ -54,6 +54,7 @@ SimulationControl::SimulationControl()
     mNumFEMCorrectionIterations = 5;
     mMaxNumConstraintSolverIterations = 5;
     mMaxConstraintError = 1e-5;
+    mPositionCorrectionFactor = 0.2;
 }
 
 SimulationControl::~SimulationControl()
@@ -269,6 +270,16 @@ void SimulationControl::setInvertNormalsIfNecessary(bool invertNormalsIfNecessar
 bool SimulationControl::getInvertNormalsIfNecessary() const
 {
     return mCollisionManager->getInvertNormalsIfNecessary();
+}
+
+void SimulationControl::setPositionCorrectionFactor(double positionCorrectionFactor)
+{
+    mPositionCorrectionFactor = positionCorrectionFactor;
+}
+
+double SimulationControl::getPositionCorrectionFactor() const
+{
+    return mPositionCorrectionFactor;
 }
 
 //void SimulationControl::repaint()
@@ -577,7 +588,8 @@ void SimulationControl::step()
                     mStepSize,
                     0.0, // Restitution (bounciness factor))
                     0.05, // static friction
-                    0.8); // dynamic friction
+                    0.8,
+                    mPositionCorrectionFactor); // dynamic friction
 
         // Revert the illegal state
         mRigidSimulation->revertPositions();

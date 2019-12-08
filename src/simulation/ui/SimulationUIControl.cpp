@@ -93,7 +93,7 @@ void SimulationUIControl::init(QWidget* parent)
                 0, 100, 1);
 
     mWidget->getMembersWidget()->addInteger(
-                "FEM Correction Iterations",
+                "FEM Collision Iterations",
                 MemberAccessorFactory::createGetterSetter<int, SimulationControl>(
                     &SimulationControl::getNumFEMCorrectionIterations,
                     &SimulationControl::setNumFEMCorrectionIterations,
@@ -102,6 +102,17 @@ void SimulationUIControl::init(QWidget* parent)
                     MemberAccessorFactory::createIntComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 0, 100, 1);
+
+    mWidget->getMembersWidget()->addDouble(
+                "Col. Correction Factor",
+                MemberAccessorFactory::createGetterSetter<double, SimulationControl>(
+                    &SimulationControl::getPositionCorrectionFactor,
+                    &SimulationControl::setPositionCorrectionFactor,
+                    0.2,
+                    mAc->getSimulationControl(),
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                0.0, 1.0, 1e-1, 3);
 
     mWidget->getMembersWidget()->addVectorDouble(
                 "Gravity",
