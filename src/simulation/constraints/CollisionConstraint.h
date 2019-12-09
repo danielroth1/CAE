@@ -31,8 +31,6 @@ public:
     CollisionConstraint(
             Collision& collision,
             double restitution,
-            double cFrictionDynamic,
-            double cFrictionStatic,
             double positionCorrectionFactor,
             double collisionMargin);
 

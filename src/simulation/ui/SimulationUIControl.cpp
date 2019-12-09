@@ -226,6 +226,28 @@ void SimulationUIControl::init(QWidget* parent)
                     mAc->getSimulationControl()->getDomain()),
                 0.0, 0.499, 0.05, 4);
 
+    femWidget->addDouble(
+                "Friction Static",
+                MemberAccessorFactory::createGetterSetter<double, FEMObject>(
+                    &FEMObject::getFrictionStatic,
+                    &FEMObject::setFrictionStatic,
+                    1e-3,
+                    nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                0, 1e+5, 0.1, 5);
+
+    femWidget->addDouble(
+                "Friction Dynamic",
+                MemberAccessorFactory::createGetterSetter<double, FEMObject>(
+                    &FEMObject::getFrictionDynamic,
+                    &FEMObject::setFrictionDynamic,
+                    1e-3,
+                    nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                0, 1e+5, 0.1, 5);
+
     rigidBodyWidget->addBool(
                 "Static",
                 MemberAccessorFactory::createGetterSetter<bool, RigidBody>(
@@ -246,6 +268,28 @@ void SimulationUIControl::init(QWidget* parent)
                     MemberAccessorFactory::createDoubleComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 1e-5, 1e+5, 0.1, 5);
+
+    rigidBodyWidget->addDouble(
+                "Friction Static",
+                MemberAccessorFactory::createGetterSetter<double, RigidBody>(
+                    &RigidBody::getFrictionStatic,
+                    &RigidBody::setFrictionStatic,
+                    1e-3,
+                    nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                0, 1e+5, 0.1, 5);
+
+    rigidBodyWidget->addDouble(
+                "Friction Dynamic",
+                MemberAccessorFactory::createGetterSetter<double, RigidBody>(
+                    &RigidBody::getFrictionDynamic,
+                    &RigidBody::setFrictionDynamic,
+                    1e-3,
+                    nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                0, 1e+5, 0.1, 5);
 
     // No domain needed. The render models already thread safety.
     polyModelWidget->addBool(

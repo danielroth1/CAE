@@ -92,6 +92,12 @@ public:
 
     virtual GeometricData* getGeometricData() = 0;
 
+    void setFrictionDynamic(double frictionDynamic);
+    double getFrictionDynamic() const;
+
+    void setFrictionStatic(double frictionStatic);
+    double getFrictionStatic() const;
+
     Domain* getDomain();
 
     virtual ~SimulationObject();
@@ -102,6 +108,9 @@ protected:
     Domain* mDomain;
 
     Type mType;
+
+    double mFrictionDynamic;
+    double mFrictionStatic;
 
 };
 

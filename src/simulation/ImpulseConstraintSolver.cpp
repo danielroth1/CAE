@@ -35,8 +35,6 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
         std::vector<Collision>& collisions,
         double stepSize,
         double restitution,
-        double cFrictionStatic,
-        double cFrictionDynamic,
         double positionCorrectionFactor,
         double collisionMargin)
 {
@@ -50,8 +48,6 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
         Collision& c = collisions[i];
         mCollisionConstraints.push_back(
                     CollisionConstraint(c, restitution,
-                                        cFrictionDynamic,
-                                        cFrictionStatic,
                                         positionCorrectionFactor,
                                         collisionMargin));
     }

@@ -597,8 +597,6 @@ void SimulationControl::step()
                     mCollisionManager->getCollider()->getCollisions(),
                     mStepSize,
                     0.0, // Restitution (bounciness factor))
-                    0.05, // static friction
-                    0.8,
                     mPositionCorrectionFactor,
                     mCollisionManager->getCollisionMargin()); // dynamic friction
 

@@ -31,8 +31,6 @@ public:
             std::vector<Collision>& collisions,
             double stepSize,
             double restitution,
-            double cFrictionStatic,
-            double cFrictionDynamic,
             double positionCorrectionFactor,
             double collisionMargin);
 

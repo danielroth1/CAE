@@ -12,18 +12,20 @@
 CollisionConstraint::CollisionConstraint(
         Collision& collision,
         double restitution,
-        double cFrictionDynamic,
-        double cFrictionStatic,
         double positionCorrectionFactor,
         double collisionMargin)
     : mCollision(collision)
     , mRestitution(restitution)
-    , mCFrictionDynamic(cFrictionDynamic)
-    , mCFrictionStatic(cFrictionStatic)
     , mPositionCorrectionFactor(positionCorrectionFactor)
     , mCollisionMargin(collisionMargin)
 {
+    mCFrictionStatic = std::sqrt(
+                (collision.getSimulationObjectA()->getFrictionStatic() *
+                 collision.getSimulationObjectB()->getFrictionStatic()));
 
+    mCFrictionDynamic = std::sqrt(
+                (collision.getSimulationObjectA()->getFrictionDynamic() *
+                 collision.getSimulationObjectB()->getFrictionDynamic()));
 }
 
 CollisionConstraint::~CollisionConstraint()
