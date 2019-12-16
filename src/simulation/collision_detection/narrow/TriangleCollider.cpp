@@ -9,6 +9,7 @@
 #include <scene/data/GeometricData.h>
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon2DTopology.h>
+#include <scene/data/geometric/Polygon3DTopology.h>
 #include <scene/data/geometric/TopologyFeatureIterator.h>
 #include <simulation/SimulationObject.h>
 
@@ -216,7 +217,6 @@ bool TriangleCollider::collide(
     Polygon* poly2 = static_cast<Polygon*>(so2->getGeometricData());
 
     Eigen::Vector& pos = poly1->getAccessor2D()->getPosition(v.getID());
-    ID v1Index = v.getID(); // TODO: not correct
 
     Eigen::Vector inter; // projected point
     Eigen::Vector bary; // baryzentric coordinates
@@ -248,13 +248,28 @@ bool TriangleCollider::collide(
 //                }
         }
 
-        ID index = 0;
-        if (bary(1) > bary(0) && bary(1) > bary(2))
-            index = 1;
-        else if (bary(2) > bary(0) && bary(2) > bary(1))
-            index = 2;
+        ID v1Index = 0;
+        if (poly1->getDimensionType() == Polygon::DimensionType::THREE_D)
+        {
+            Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly1->getTopology());
+            v1Index = t3->getOuterVertexIds()[v.getID()];
+        }
 
-        ID v2Index = v.getID();
+        ID v2Index = 0;
+        if (poly2->getDimensionType() == Polygon::DimensionType::THREE_D)
+        {
+            Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly2->getTopology());
+
+            ID index = 0;
+            if (bary(1) > bary(0) && bary(1) > bary(2))
+                index = 1;
+            else if (bary(2) > bary(0) && bary(2) > bary(1))
+                index = 2;
+
+            v2Index = t3->getFace(t3->getOuterFaceIds()[f.getID()]).getVertexIds()[index];
+//            v1Index = t3->getOuterFaces()[f.getID()].getVertexIds()[index];
+//            v1Index = t3->getOuterVertexIds()[f.getVertexIds()[index]];
+        }
 
         new (&collision) Collision(so1, so2,
                                    pos, inter,
@@ -262,6 +277,13 @@ bool TriangleCollider::collide(
                                    v1Index,
                                    v2Index,
                                    false);
+
+        ID elementId;
+        fillBarycentricCoordinates(poly1, v, elementId, collision.getBarycentricCoordiantesA());
+        collision.setElementIdA(elementId);
+
+        fillBarycentricCoordinates(poly2, f, bary, elementId, collision.getBarycentricCoordiantesB());
+        collision.setElementIdB(elementId);
         return true;
     }
 
@@ -326,9 +348,40 @@ bool TriangleCollider::collide(
                 dir = -dir;
         }
 
+        ID v1Index = 0;
+        ID v2Index = 0;
+
+        if (poly1->getDimensionType() == Polygon::DimensionType::THREE_D)
+        {
+            Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly1->getTopology());
+
+            if (bary(0) < 0.5)
+                v1Index = t3->getOuterEdges()[e1.getID()].getVertexIds()[0];
+            else
+                v1Index = t3->getOuterEdges()[e1.getID()].getVertexIds()[1];
+
+        }
+
+        if (poly2->getDimensionType() == Polygon::DimensionType::THREE_D)
+        {
+            Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly2->getTopology());
+            if (bary(1) < 0.5)
+                v2Index = t3->getOuterEdges()[e2.getID()].getVertexIds()[0];
+            else
+                v2Index = t3->getOuterEdges()[e2.getID()].getVertexIds()[0];
+        }
+
         new (&collision) Collision(
                     so1, so2,
-                    inter1, inter2, dir, 0.0, 0, 0, false);
+                    inter1, inter2, dir, 0.0, v1Index, v2Index, false);
+
+        ID elementId;
+        fillBarycentricCoordinates(poly1, e1, bary(0), elementId, collision.getBarycentricCoordiantesA());
+        collision.setElementIdA(elementId);
+
+        fillBarycentricCoordinates(poly2, e2, bary(1), elementId, collision.getBarycentricCoordiantesB());
+        collision.setElementIdB(elementId);
+
         return true;
     }
 
@@ -450,4 +503,138 @@ TopologyFeatureIterator* TriangleCollider::getFeatures(
     }
 
     return nullptr;
+}
+
+bool TriangleCollider::fillBarycentricCoordinates(
+        Polygon* poly,
+        TopologyFace& f,
+        const Vector& bary,
+        ID& elementIdOut,
+        std::array<double, 4>& baryOut)
+{
+    baryOut = {0, 0, 0, 0};
+    if (poly->getDimensionType() == Polygon::DimensionType::THREE_D)
+    {
+        Polygon3DTopology* topo = static_cast<Polygon3DTopology*>(&poly->getTopology());
+        // obtain cell id
+        // face is of outer topology2d
+        // required cell is w.r.t. face of corresponding Topology3D
+        TopologyFace& face3D = topo->getFace(topo->getOuterFaceIds()[f.getID()]);
+        if (face3D.getCellIds().size() > 0)
+        {
+            ID cellId = face3D.getCellIds()[0];
+            TopologyCell& cell = topo->getCells()[cellId];
+
+            elementIdOut = cellId;
+
+            // Map cell vertex ids to face vertex ids.
+            for (size_t i = 0; i < 3; ++i)
+            {
+                for (size_t j = 0; j < 4; ++j)
+                {
+                    if (face3D.getVertexIds()[i] == cell.getVertexIds()[j])
+                    {
+                        baryOut[j] = bary[static_cast<Eigen::Index>(i)];
+                        break;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        std::cout << "cell ids empty\n";
+    }
+    return false;
+}
+
+bool TriangleCollider::fillBarycentricCoordinates(
+        Polygon* poly,
+        TopologyEdge& e,
+        double bary,
+        ID& elementIdOut,
+        std::array<double, 4>& baryOut)
+{
+    baryOut = {0, 0, 0, 0};
+    if (poly->getDimensionType() == Polygon::DimensionType::THREE_D)
+    {
+        Polygon3DTopology* topo = static_cast<Polygon3DTopology*>(&poly->getTopology());
+
+        // obtain cell id
+        // face is of outer topology2d
+        // required cell is w.r.t. face of corresponding Topology3D
+//        TopologyEdge& edge3D = topo->getOuterEdges()[e.getID()];
+        TopologyEdge& edge3D = topo->getEdge(topo->getOuterEdgeIds()[e.getID()]);
+        if (!edge3D.getCellIds().empty())
+        {
+            ID cellId = edge3D.getCellIds()[0];
+            TopologyCell& cell = topo->getCells()[cellId];
+
+            elementIdOut = cellId;
+
+            // Map cell vertex ids to face vertex ids.
+            for (size_t i = 0; i < 2; ++i)
+            {
+                for (size_t j = 0; j < 4; ++j)
+                {
+                    if (edge3D.getVertexIds()[i] == cell.getVertexIds()[j])
+                    {
+                        if (i == 0)
+                        {
+                            baryOut[j] = bary;
+                        }
+                        else
+                        {
+                            baryOut[j] = 1 - bary;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return true;
+        }
+        std::cout << "cell ids empty\n";
+
+    }
+    return false;
+}
+
+bool TriangleCollider::fillBarycentricCoordinates(
+        Polygon* poly,
+        TopologyVertex& v,
+        ID& elementIdOut,
+        std::array<double, 4>& baryOut)
+{
+    baryOut = {0, 0, 0, 0};
+    if (poly->getDimensionType() == Polygon::DimensionType::THREE_D)
+    {
+        Polygon3DTopology* topo = static_cast<Polygon3DTopology*>(&poly->getTopology());
+
+        // obtain cell id
+        // face is of outer topology2d
+        // required cell is w.r.t. face of corresponding Topology3D
+        TopologyVertex& vertex3D = topo->getVertex(topo->getOuterVertexIds()[v.getID()]);
+        if (vertex3D.getCellIds().size() > 0)
+        {
+            ID cellId = vertex3D.getCellIds()[0];
+            TopologyCell& cell = topo->getCells()[cellId];
+
+            elementIdOut = cellId;
+
+            // Map cell vertex ids to face vertex ids.
+            for (size_t j = 0; j < 4; ++j)
+            {
+                if (vertex3D.getID() == cell.getVertexIds()[j])
+                {
+                    baryOut[j] = 1.0;
+                    break;
+                }
+            }
+
+            return true;
+        }
+        std::cout << "cell ids empty\n";
+    }
+    return false;
 }

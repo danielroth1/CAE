@@ -10,23 +10,47 @@ class TopologyEdge : public TopologyFeature
 public:
     TopologyEdge(ID id);
 
-    std::vector<ID>& getVertexIds();
-    const std::vector<ID>& getVertexIds() const;
+    Edge& getVertexIds()
+    {
+        return mVertices;
+    }
 
-    std::vector<ID>& getFaceIds();
-    const std::vector<ID>& getFaceIds() const;
+    const Edge& getVertexIds() const
+    {
+        return mVertices;
+    }
 
-    std::vector<ID>& getCellIds();
-    const std::vector<ID>& getCellIds() const;
+    std::vector<ID>& getFaceIds()
+    {
+        return mFaces;
+    }
 
-    ID getOtherFaceId(ID faceId);
+    const std::vector<ID>& getFaceIds() const
+    {
+        return mFaces;
+    }
+
+    std::vector<ID>& getCellIds()
+    {
+        return mCells;
+    }
+
+    const std::vector<ID>& getCellIds() const
+    {
+        return mCells;
+    }
+
+    ID getOtherFaceId(ID faceId)
+    {
+        return faceId == mFaces[0] ? mFaces[1] : mFaces[0];
+    }
 
     // TopologyFeature interface
 public:
     virtual Type getType() const;
 
 private:
-    std::vector<ID> mVertices;
+    Edge mVertices;
     std::vector<ID> mFaces;
     std::vector<ID> mCells;
 };

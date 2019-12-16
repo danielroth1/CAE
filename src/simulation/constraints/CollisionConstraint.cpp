@@ -62,9 +62,11 @@ void CollisionConstraint::initialize(double stepSize)
     const Eigen::Vector& n = mCollision.getNormal();
 
     u1 = ImpulseConstraintSolver::calculateSpeed(
-                mCollision.getSimulationObjectA(), mPoint1, mCollision.getVertexIndexA());
+                mCollision.getSimulationObjectA(), mPoint1,
+                mCollision.getBarycentricCoordiantesA(), mCollision.getElementIdA());
     u2 = ImpulseConstraintSolver::calculateSpeed(
-                mCollision.getSimulationObjectB(), mPoint2, mCollision.getVertexIndexB());
+                mCollision.getSimulationObjectB(), mPoint2,
+                mCollision.getBarycentricCoordiantesB(), mCollision.getElementIdB());
 
     // Correction of the position error of the previous time step.
     Eigen::Vector posPrevA = mCollision.calculatePositionPreviousA();
@@ -84,9 +86,11 @@ void CollisionConstraint::initialize(double stepSize)
     }
 
     mK = ImpulseConstraintSolver::calculateK(
-                mCollision.getSimulationObjectA(), mPoint1, mCollision.getVertexIndexA()) +
+                mCollision.getSimulationObjectA(), mPoint1,
+                mCollision.getBarycentricCoordiantesA(), mCollision.getElementIdA()) +
             ImpulseConstraintSolver::calculateK(
-                mCollision.getSimulationObjectB(), mPoint2, mCollision.getVertexIndexB());
+                mCollision.getSimulationObjectB(), mPoint2,
+                mCollision.getBarycentricCoordiantesB(), mCollision.getElementIdB());
 
     mImpulseFactor = 1 / (n.transpose() * mK * n);
 
@@ -97,14 +101,11 @@ bool CollisionConstraint::solve(double maxConstraintError)
     const Eigen::Vector& n = mCollision.getNormal();
 
     u1 = ImpulseConstraintSolver::calculateSpeed(
-                mCollision.getSimulationObjectA(),
-                mPoint1,
-                mCollision.getVertexIndexA());
-
+                mCollision.getSimulationObjectA(), mPoint1,
+                mCollision.getBarycentricCoordiantesA(), mCollision.getElementIdA());
     u2 = ImpulseConstraintSolver::calculateSpeed(
-                mCollision.getSimulationObjectB(),
-                mPoint2,
-                mCollision.getVertexIndexB());
+                mCollision.getSimulationObjectB(), mPoint2,
+                mCollision.getBarycentricCoordiantesB(), mCollision.getElementIdB());
 
     uRel = u1 - u2;
 
@@ -129,11 +130,13 @@ bool CollisionConstraint::solve(double maxConstraintError)
 
         ImpulseConstraintSolver::applyImpulse(
                     mCollision.getSimulationObjectA(), impulse,
-                    mPoint1, mCollision.getVertexIndexA());
+                    mPoint1, mCollision.getBarycentricCoordiantesA(),
+                    mCollision.getElementIdA());
 
         ImpulseConstraintSolver::applyImpulse(
                     mCollision.getSimulationObjectB(), -impulse,
-                    mPoint2, mCollision.getVertexIndexB());
+                    mPoint2, mCollision.getBarycentricCoordiantesB(),
+                    mCollision.getElementIdB());
 
     }
 
@@ -152,13 +155,12 @@ bool CollisionConstraint::solve(double maxConstraintError)
     {
         // recalculate uRel after the collision impulse was applied
         u1 = ImpulseConstraintSolver::calculateSpeed(
-                    mCollision.getSimulationObjectA(),
-                    mPoint1,
-                    mCollision.getVertexIndexA());
+                    mCollision.getSimulationObjectA(), mPoint1,
+                    mCollision.getBarycentricCoordiantesA(), mCollision.getElementIdA());
         u2 = ImpulseConstraintSolver::calculateSpeed(
-                    mCollision.getSimulationObjectB(),
-                    mPoint2,
-                    mCollision.getVertexIndexB());
+                    mCollision.getSimulationObjectB(), mPoint2,
+                    mCollision.getBarycentricCoordiantesB(), mCollision.getElementIdB());
+
         uRel = u1 - u2;
         uRelN = uRel.dot(n) * n;
         uRelT = uRel - uRelN;
@@ -194,13 +196,16 @@ bool CollisionConstraint::solve(double maxConstraintError)
             if (frictionImpulse.squaredNorm() > maxConstraintError * maxConstraintError)
             {
                 appliedFriction = true;
+
                 ImpulseConstraintSolver::applyImpulse(
                             mCollision.getSimulationObjectA(), frictionImpulse,
-                            mPoint1, mCollision.getVertexIndexA());
+                            mPoint1, mCollision.getBarycentricCoordiantesA(),
+                            mCollision.getElementIdA());
 
                 ImpulseConstraintSolver::applyImpulse(
                             mCollision.getSimulationObjectB(), -frictionImpulse,
-                            mPoint2, mCollision.getVertexIndexB());
+                            mPoint2, mCollision.getBarycentricCoordiantesB(),
+                            mCollision.getElementIdB());
             }
         }
     }

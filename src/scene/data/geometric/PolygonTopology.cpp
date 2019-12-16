@@ -103,9 +103,7 @@ Edges PolygonTopology::retrieveEdges() const
     edges.reserve(mEdges.size());
     for (const TopologyEdge& e : mEdges)
     {
-        const std::vector<ID>& vIds = e.getVertexIds();
-        edges.push_back({static_cast<unsigned int>(vIds[0]),
-                         static_cast<unsigned int>(vIds[1])});
+        edges.push_back(e.getVertexIds());
     }
     return edges;
 }
@@ -233,8 +231,8 @@ PolygonTopology::calculateEdges(const Faces& faces) const
         for (ID i2 : entry.second)
         {
             TopologyEdge e(edges.size());
-            e.getVertexIds().push_back(entry.first);
-            e.getVertexIds().push_back(i2);
+            e.getVertexIds()[0] = entry.first;
+            e.getVertexIds()[1] = static_cast<unsigned int>(i2);
             edges.push_back(e);
         }
     }
@@ -273,8 +271,8 @@ void PolygonTopology::buildTopology(
     {
         TopologyEdge te(edgesOut.size());
         // add edge start and end vertex
-        te.getVertexIds().push_back(p.first);
-        te.getVertexIds().push_back(p.second);
+        te.getVertexIds()[0] = static_cast<unsigned int>(p.first);
+        te.getVertexIds()[1] = static_cast<unsigned int>(p.second);
 
         // add this edge to both its vertices
         verticesOut[p.first].getEdgeIds().push_back(edgesOut.size());

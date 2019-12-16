@@ -6,6 +6,9 @@
 
 #include <simulation/rigid/RigidBody.h>
 
+#include <scene/data/geometric/Polygon3DTopology.h>
+#include <scene/data/geometric/TopologyCell.h>
+
 
 
 Collision::Collision()
@@ -39,26 +42,44 @@ Collision::Collision(
 
 Vector Collision::calculatePositionPreviousA()
 {
-    return calculatePositionPrevious(mSoA, mPointA, mVertexIndexA);
+    return calculatePositionPrevious(mSoA, mPointA, mBaryA, mElementIdA);
 }
 
 Vector Collision::calculatePositionPreviousB()
 {
-    return calculatePositionPrevious(mSoB, mPointB, mVertexIndexB);
+    return calculatePositionPrevious(mSoB, mPointB, mBaryB, mElementIdB);
 }
 
 Vector Collision::calculatePositionPrevious(
         SimulationObject* so,
         const Eigen::Vector& point,
-        ID vertexIndex)
+        const std::array<double, 4>& bary,
+        ID elementId)
 {
     Eigen::Vector posPrevious;
     switch(so->getType())
     {
     case SimulationObject::FEM_OBJECT:
     {
-        posPrevious = static_cast<FEMObject*>(so)->getPositionPrevious(vertexIndex) +
-                point - static_cast<FEMObject*>(so)->getPosition(vertexIndex);
+        FEMObject* femObj = static_cast<FEMObject*>(so);
+        TopologyCell& cell =
+                femObj->getPolygon()->getTopology3D().getCells()[elementId];
+
+        posPrevious =
+                (femObj->getPositionPrevious(cell.getVertexIds()[0]) * bary[0] +
+                femObj->getPositionPrevious(cell.getVertexIds()[1]) * bary[1] +
+                femObj->getPositionPrevious(cell.getVertexIds()[2]) * bary[2] +
+                femObj->getPositionPrevious(cell.getVertexIds()[3]) * bary[3]);
+//        posPrevious =
+//                (femObj->getPositionPrevious(cell.getVertexIds()[0]) * bary[0] +
+//                femObj->getPositionPrevious(cell.getVertexIds()[1]) * bary[1] +
+//                femObj->getPositionPrevious(cell.getVertexIds()[2]) * bary[2] +
+//                femObj->getPositionPrevious(cell.getVertexIds()[3]) * bary[3]) +
+//                point -
+//                (femObj->getPosition(cell.getVertexIds()[0]) * bary[0] +
+//                femObj->getPosition(cell.getVertexIds()[1]) * bary[1] +
+//                femObj->getPosition(cell.getVertexIds()[2]) * bary[2] +
+//                femObj->getPosition(cell.getVertexIds()[3]) * bary[3]);
         break;
     }
     case SimulationObject::RIGID_BODY:

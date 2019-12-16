@@ -464,16 +464,17 @@ void SimulationControl::addCollisionObject(
 
         virtual void visit(FEMObject& femObject)
         {
-            // // discretize with spheres
-            sc.mCollisionManagerProxy->addSimulationObject(
-                        femObject.shared_from_this(),
-                        femObject.getPolygon(),
-                        sphereDiameter);
-
-            // discretize with triangles
-//            sc.mCollisionManagerProxy->addSimulationObjectTriangles(
+            // Mass-pont based collisions handling -> a colliison sphere put
+            // to where each mass point is.
+//            sc.mCollisionManagerProxy->addSimulationObject(
 //                        femObject.shared_from_this(),
-//                        femObject.getPolygon());
+//                        femObject.getPolygon(),
+//                        sphereDiameter);
+
+            // Triangle based collision handling
+            sc.mCollisionManagerProxy->addSimulationObjectTriangles(
+                        femObject.shared_from_this(),
+                        femObject.getPolygon());
         }
 
         virtual void visit(SimulationPoint& /*sp*/)
@@ -483,7 +484,8 @@ void SimulationControl::addCollisionObject(
 
         virtual void visit(RigidBody& rigidBody)
         {
-            // discretize with spheres
+            // Use spheres to dicetrize each triangle of the body (not only
+            // the vertices like in the FEM case).
 //            sc.mCollisionManagerProxy->addSimulationObject(
 //                        rigidBody.shared_from_this(),
 //                        rigidBody.getPolygon(),

@@ -44,16 +44,48 @@ public:
             const Eigen::Vector& point,
             const ID vertexIndex);
 
+    // If so is a rigid body:
+    // -> Calculates the speed of the given simulation object at the given point.
+    // If so is a fem object:
+    // -> Calculates the speed of the given simulation object at the point
+    // which is at the barycentric coordinates of the element of the given
+    // elementId.
+    static Eigen::Vector calculateSpeed(
+            SimulationObject* so,
+            const Eigen::Vector& point,
+            const std::array<double, 4>& bary,
+            ID elementId);
+
     static void applyImpulse(
             SimulationObject* so,
             const Eigen::Vector& impulse,
             const Eigen::Vector& point,
             const ID vertexIndex);
 
+    // Applies an impulse either if so is a:
+    // -> rigid: at the given relative point
+    // -> deformable: at the barycentric coordinates and elementId combination
+    static void applyImpulse(
+            SimulationObject* so,
+            const Eigen::Vector& impulse,
+            const Eigen::Vector& point,
+            const std::array<double, 4>& bary,
+            ID elementId);
+
     static Eigen::Matrix3d calculateK(
             SimulationObject* so,
             const Eigen::Vector& point,
             const ID vertexIndex);
+
+    // Calculates K either if so is a:
+    // -> rigid: w.r.t. the given point and the rigids mass
+    // -> deformable: w.r.t. barycentric coordinates and elementId combination
+    //      and the linear interpolated mass.
+    static Eigen::Matrix3d calculateK(
+            SimulationObject* so,
+            const Eigen::Vector& point,
+            const std::array<double, 4>& bary,
+            ID elementId);
 
     static Eigen::Matrix3d calculateK(SimulationPointRef& ref);
 

@@ -47,6 +47,13 @@ public:
         std::vector<unsigned int>& getOuterVertexIds();
         void setOuterVertexIds(const std::vector<unsigned int>& outerVertexIds);
 
+        // Maps each index that is w.r.t. OUTER edges to an index
+        // that is w.r.t. ALL edges.
+        std::vector<unsigned int>& getOuterEdgeIds()
+        {
+            return mOuterEdgeIds;
+        }
+
         // Maps each index that is w.r.t. OUTER vertices to an index
         // that is w.r.t. ALL vertices.
         std::vector<unsigned int>& getOuterFaceIds();
@@ -114,9 +121,14 @@ private:
     // stores for each outer vertex the corresponding id of all vertices
     std::vector<unsigned int> mOuterVertexIds;
 
+    // size = number of outer edges
+    // stores for each outer edge the corresponding id of all edges
+    std::vector<unsigned int> mOuterEdgeIds;
+
     // size = number of outer face
     // stores for each outer face the corresponding id of all faces
     std::vector<unsigned int> mOuterFaceIds;
+
 
     // All cells.
     Cells mCellIds;

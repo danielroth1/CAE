@@ -2,6 +2,7 @@
 #define TRIANGLECOLLIDER_H
 
 #include <boost/functional/hash.hpp>
+#include <data_structures/DataStructures.h>
 #include <map>
 #include <scene/data/geometric/TopologyFeatureIterator.h>
 #include <set>
@@ -12,6 +13,7 @@
 class Collision;
 class CollisionSphere;
 class CollisionTriangle;
+class Polygon;
 class Polygon2DTopology;
 class SimulationObject;
 class TopologyFace;
@@ -25,6 +27,9 @@ class TopologyEdge;
 // Makes sure that no collision is duplicated by storing each feature pair
 // only once.
 // There won't by duplicated collisions from shared edges.
+//
+// Calculates for rigid the global collision point and for fem objects the
+// element id and barycentric coordinates of the collision point.
 class TriangleCollider
 {
 public:
@@ -108,6 +113,35 @@ private:
     {
         return mFeatureToSoMap[feature];
     }
+
+    // Maps the given 3 barycentric coordinates bary of the face f to the
+    // 4 barycentric coordinates of the element that the face is part of.
+    // In baryOut at least 1 value will be zero.
+    bool fillBarycentricCoordinates(
+            Polygon* poly,
+            TopologyFace& f,
+            const Eigen::Vector& bary,
+            ID& elementIdOut,
+            std::array<double, 4>& baryOut);
+
+    // Maps the given 2 barycentric coordinates bary of the edge e to the
+    // 4 barycentric coordinates of the element that the edge is part of.
+    // In baryOut at least 2 values will be zero.
+    bool fillBarycentricCoordinates(
+            Polygon* poly,
+            TopologyEdge& e,
+            double bary,
+            ID& elementIdOut,
+            std::array<double, 4>& baryOut);
+
+    // Maps the given 1 barycentric coordinates bary of the vertex v to the
+    // 4 barycentric coordinates of the element that the vertex is part of.
+    // In baryOut 3 values are zero and 1 is one.
+    bool fillBarycentricCoordinates(
+            Polygon* poly,
+            TopologyVertex& v,
+            ID& elementIdOut,
+            std::array<double, 4>& baryOut);
 
     typedef std::pair<TopologyFace*, TopologyVertex*> FVPair;
     typedef std::pair<TopologyEdge*, TopologyEdge*> EEPair;

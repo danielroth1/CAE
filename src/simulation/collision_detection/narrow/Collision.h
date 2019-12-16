@@ -4,6 +4,11 @@
 #include <data_structures/DataStructures.h>
 #include <simulation/references/SimulationPointRef.h>
 
+// Stores for
+// -> Rigids:
+//  The collision point in the global coorindate system.
+// -> FEM Object:
+//  The element id and barycentric corrdinates of the collision point.
 class Collision
 {
 public:
@@ -44,7 +49,8 @@ public:
     static Eigen::Vector calculatePositionPrevious(
             SimulationObject* so,
             const Eigen::Vector& point,
-            ID vertexIndex);
+            const std::array<double, 4>& bary,
+            ID elementId);
 
     void setNormal(const Eigen::Vector& normal)
     {
@@ -88,6 +94,36 @@ public:
         return mIsInside;
     }
 
+    std::array<double, 4>& getBarycentricCoordiantesA()
+    {
+        return mBaryA;
+    }
+
+    std::array<double, 4>& getBarycentricCoordiantesB()
+    {
+        return mBaryB;
+    }
+
+    void setElementIdA(ID elementId)
+    {
+        mElementIdA = elementId;
+    }
+
+    ID getElementIdA() const
+    {
+        return mElementIdA;
+    }
+
+    void setElementIdB(ID elementId)
+    {
+        mElementIdB = elementId;
+    }
+
+    ID getElementIdB() const
+    {
+        return mElementIdB;
+    }
+
     // TODO: should this class know of CollisionSpheres?
     // it would be able to caluclate the current distance/ current PointA and PointB (before the collision)
 
@@ -101,6 +137,14 @@ private:
     ID mVertexIndexA; // For deformable objects.
     ID mVertexIndexB; // For deformable objects.
     bool mIsInside;
+
+    // Barycentric coordinates of the affected element / triangle.
+    // If its a triangle, only the 3 numbers are non-zero.
+    // If its an edge, only 2 numbers are non-zero.
+    std::array<double, 4> mBaryA;
+    std::array<double, 4> mBaryB;
+    ID mElementIdA;
+    ID mElementIdB;
 };
 
 #endif // COLLISION_H

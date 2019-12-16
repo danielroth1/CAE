@@ -281,6 +281,12 @@ void Polygon3DTopology::init()
         return f;
     };
 
+    auto sortedEdge = [](std::array<unsigned int, 2> e)
+    {
+        std::sort(e.begin(), e.end());
+        return e;
+    };
+
     // create triangle map: maps triangle vertex ids to triangle ids
     // Triangles are stored in their array representation with sorted ascending
     // vertex ids. This makes them better findable when iterating over cells.
@@ -349,9 +355,13 @@ void Polygon3DTopology::init()
             continue;
         }
 
-        for (unsigned int i = 0; i < 6; ++i)
+        size_t it = 0;
+        for (auto edgeId : edgeIds)
         {
-            tc.getEdgeIds()[i] = (*edgeIds.begin() + i);
+            if (it == 6)
+                break;
+            tc.getEdgeIds()[it] = edgeId;
+            ++it;
         }
     }
 
@@ -368,6 +378,32 @@ void Polygon3DTopology::init()
         for (unsigned int fId : tc.getFaceIds())
         {
             mFaces[fId].getCellIds().push_back(cId);
+        }
+    }
+
+    // mOuterEdgeIds
+    {
+        // edgeMap: edge -> id
+        std::map<Edge, size_t> edgeMap;
+        for (size_t eId = 0; eId < mEdges.size(); ++eId)
+        {
+            auto it = edgeMap.find(sortedEdge(mEdges[eId].getVertexIds()));
+            if (it != edgeMap.end())
+                std::cout << "Warning: found doubled edge.\n";
+            edgeMap[sortedEdge(mEdges[eId].getVertexIds())] = eId;
+        }
+
+        // what are the outer edges?
+        mOuterEdgeIds.clear();
+        mOuterEdgeIds.reserve(mOuterTopology.getEdges().size());
+        for (TopologyEdge& te : mOuterTopology.getEdges())
+        {
+            Edge e = {mOuterVertexIds[te.getVertexIds()[0]],
+                     mOuterVertexIds[te.getVertexIds()[1]]};
+
+            unsigned int index = static_cast<unsigned int>(
+                        edgeMap[sortedEdge(e)]);
+            mOuterEdgeIds.push_back(index);
         }
     }
 
