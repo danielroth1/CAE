@@ -172,8 +172,15 @@ bool CollisionConstraint::solve(double maxConstraintError)
             frictionImpulseMax = - 1 / (tangent.transpose() * mK * tangent) * uRelT;
 
             // This is the equation from the paper.
-            frictionImpulse = -mCFrictionDynamic * impulse.dot(n) * tangent;
+            if (appliedCollisionImpulse)
+                frictionImpulse = -mCFrictionDynamic * impulse.dot(n) * tangent;
+            else
+                frictionImpulse.setZero();
 
+            // If the maximum friction impulse is applied, the movement of the
+            // object in the tangential direction is completely stopped.
+            // This is either the case of static friction or if the dynamic
+            // friction impulse would cause overshooting.
             if (mSticking || (mSumOfAllAppliedImpulses.norm() > 1e-8 &&
                               (mSumFrictionImpulses + frictionImpulse).norm() <= mCFrictionStatic * mSumOfAllAppliedImpulses.norm()))
             {
@@ -181,9 +188,8 @@ bool CollisionConstraint::solve(double maxConstraintError)
                 mSticking = true;
                 frictionImpulse = frictionImpulseMax;
             }
-            else if (appliedCollisionImpulse)
+            else
             {
-                // dynamic friction
                 if (frictionImpulse.dot(tangent) < frictionImpulseMax.dot(tangent))
                 {
                     frictionImpulse = frictionImpulseMax;
@@ -191,11 +197,10 @@ bool CollisionConstraint::solve(double maxConstraintError)
                 }
             }
 
-            mSumFrictionImpulses += frictionImpulse;
-
             if (frictionImpulse.squaredNorm() > maxConstraintError * maxConstraintError)
             {
                 appliedFriction = true;
+                mSumFrictionImpulses += frictionImpulse;
 
                 ImpulseConstraintSolver::applyImpulse(
                             mCollision.getSimulationObjectA(), frictionImpulse,
