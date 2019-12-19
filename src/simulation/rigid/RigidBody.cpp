@@ -192,7 +192,7 @@ void RigidBody::applyDamping()
 
 Vector RigidBody::getR(SimulationPointRef& pointRef)
 {
-    switch(pointRef.getGeometricPointRef()->getType())
+    switch(pointRef.getGeometricType())
     {
     case GeometricPointRef::Type::POLYGON_VECTOR:
         return mQ * static_cast<PolygonVectorRef*>(
@@ -201,6 +201,7 @@ Vector RigidBody::getR(SimulationPointRef& pointRef)
         return mQ * mPolygon->getPositionBS(static_cast<GeometricVertexRef*>(
                                                 pointRef.getGeometricPointRef())->getIndex());
     }
+    return Vector::Zero();
 }
 
 Matrix3d RigidBody::calculateK(const Vector& rA, const Vector& rB)

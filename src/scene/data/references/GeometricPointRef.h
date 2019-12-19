@@ -21,7 +21,7 @@ public:
 
     GeometricData* getGeometricData();
 
-    Type getType()
+    Type getType() const
     {
         return mType;
     }

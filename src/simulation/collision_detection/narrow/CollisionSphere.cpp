@@ -37,7 +37,7 @@ ID CollisionSphere::getVertexIndex()
         ID index;
     } visitor;
 
-    mPointRef.getGeometricPointRef()->accept(visitor);
+    mPointRef.accept(visitor);
     return visitor.index;
 }
 

@@ -162,7 +162,7 @@ void FEMObject::applyImpulse(SimulationPointRef& ref, const Vector& impulse)
         const Eigen::Vector& impulse;
     } visitor(*this, impulse);
 
-    ref.getGeometricPointRef()->accept(visitor);
+    ref.accept(visitor);
 }
 
 void FEMObject::applyForce(SimulationPointRef& ref, const Vector& force)
@@ -190,7 +190,7 @@ void FEMObject::applyForce(SimulationPointRef& ref, const Vector& force)
         const Eigen::Vector& force;
     } visitor(*this, force);
 
-    ref.getGeometricPointRef()->accept(visitor);
+    ref.accept(visitor);
 }
 
 void FEMObject::initializeFEM()

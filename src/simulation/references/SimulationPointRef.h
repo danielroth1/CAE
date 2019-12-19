@@ -3,12 +3,13 @@
 
 #include <data_structures/DataStructures.h>
 #include <data_structures/references/PointRef.h>
+#include <scene/data/references/GeometricPointRef.h>
 #include <simulation/SimulationObjectVisitor.h>
 
 #include <memory>
 
 class GeometricData;
-class GeometricPointRef;
+class GeometricPointRefVisitor;
 class Polygon;
 class SimulationObject;
 
@@ -75,13 +76,19 @@ public:
 
     Eigen::Vector getPointPrevious();
 
+    // GeometricPointRef delegated methods
+
+    GeometricPointRef::Type getGeometricType() const;
+
     // Either returns the index of the referenced vertex or if no vertex is
     // referenced, returns ILLEGAL_INDEX.
     ID getIndex() const;
 
+    void accept(GeometricPointRefVisitor& visitor);
+
     // PointRef interface
 public:
-    virtual Eigen::Vector getGeometricPoint() const;
+    Eigen::Vector getGeometricPoint() const;
 
 private:
     class GetSimulationPointDispatcher : public SimulationObjectVisitor

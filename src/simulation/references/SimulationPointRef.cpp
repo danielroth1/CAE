@@ -137,9 +137,19 @@ Vector SimulationPointRef::getPointPrevious()
     return calculatePoint();
 }
 
+GeometricPointRef::Type SimulationPointRef::getGeometricType() const
+{
+    return mGeometricPointRef->getType();
+}
+
 ID SimulationPointRef::getIndex() const
 {
     return mGeometricPointRef->getIndex();
+}
+
+void SimulationPointRef::accept(GeometricPointRefVisitor& visitor)
+{
+    mGeometricPointRef->accept(visitor);
 }
 
 Vector SimulationPointRef::getGeometricPoint() const
