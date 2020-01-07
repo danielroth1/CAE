@@ -50,6 +50,7 @@
 #include <demos/InterpolationFEMDemo.h>
 #include <demos/FallingObjectsDemo.h>
 #include <demos/CubeWallDemo.h>
+#include <demos/ConstrainedDeformableDemo.h>
 #include <ui/scene_graph/SGUIControl.h>
 #include <io/importers/OBJImporter.h>
 #include <modules/geometry_info/GeometryInfoModule.h>
@@ -235,6 +236,8 @@ void ApplicationControl::initiateApplication()
                                    this, "Falling Objects (rigid)", true));
     mDemoLoaderModule->addDemo(std::make_shared<FallingObjectsDemo>(
                                    this, "Falling Objects (deformable)", false));
+
+    mDemoLoaderModule->addDemo(std::make_shared<ConstrainedDeformableDemo>(this));
 
     mDemoLoaderModule->loadDemo(emptyDemo);
 
