@@ -12,7 +12,7 @@ class GeometricPointRef// : public PointRef<GeometricData*, Eigen::Vector&>
 public:
     enum class Type
     {
-        GEOMETRIC_VERTEX, POLYGON_VECTOR
+        GEOMETRIC_VERTEX, POLYGON_VECTOR, POLYGON_BARY
     };
 
     GeometricPointRef(GeometricData* geometricData, Type type);

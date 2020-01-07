@@ -2,6 +2,7 @@
 #define GEOMETRICPOINTREFVISITOR_H
 
 class GeometricVertexRef;
+class PolygonBaryRef;
 class PolygonVectorRef;
 
 class GeometricPointRefVisitor
@@ -9,6 +10,7 @@ class GeometricPointRefVisitor
 public:
     virtual void visit(GeometricVertexRef& ref) = 0;
     virtual void visit(PolygonVectorRef& ref) = 0;
+    virtual void visit(PolygonBaryRef& ref) = 0;
 
 protected:
     GeometricPointRefVisitor();

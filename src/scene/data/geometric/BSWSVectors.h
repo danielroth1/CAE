@@ -1,8 +1,6 @@
 #ifndef BSWSVECTORS_H
 #define BSWSVECTORS_H
 
-#include "BSWSVectors.h"
-
 #include <data_structures/DataStructures.h>
 #include <data_structures/VectorOperations.h>
 #include <iterator>

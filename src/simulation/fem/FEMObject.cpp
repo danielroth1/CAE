@@ -12,6 +12,7 @@
 #include <scene/data/geometric/Polygon3DTopology.h>
 #include <scene/data/references/GeometricPointRefVisitor.h>
 #include <scene/data/references/GeometricVertexRef.h>
+#include <scene/data/references/PolygonBaryRef.h>
 #include <times/timing.h>
 
 
@@ -158,6 +159,11 @@ void FEMObject::applyImpulse(SimulationPointRef& ref, const Vector& impulse)
             // nothing to do here
         }
 
+        virtual void visit(PolygonBaryRef& /*ref*/)
+        {
+
+        }
+
         FEMObject& femObj;
         const Eigen::Vector& impulse;
     } visitor(*this, impulse);
@@ -184,6 +190,11 @@ void FEMObject::applyForce(SimulationPointRef& ref, const Vector& force)
         virtual void visit(PolygonVectorRef& /*ref*/)
         {
             // nothing to do here
+        }
+
+        virtual void visit(PolygonBaryRef& /*ref*/)
+        {
+
         }
 
         FEMObject& femObj;

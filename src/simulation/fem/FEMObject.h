@@ -13,6 +13,7 @@
 #include <simulation/constraints/Truncation.h>
 
 #include <scene/data/geometric/Polygon3D.h>
+#include <scene/data/geometric/Polygon3DTopology.h>
 
 class FiniteElement;
 class Polygon3D;
@@ -128,6 +129,28 @@ public:
             mVelocities[vertexIndex] += 1 / mMasses[vertexIndex] * impulse;
         else
             std::cout << "error: mass is negative\n";
+    }
+
+    // Applies an impulse according to the given barycentric coordinates.
+    void applyImpulse(
+            ID elementId, const std::array<double, 4>& bary, const Eigen::Vector& impulse)
+    {
+        Cell& c = mPoly3->getTopology3D().getCellIds()[elementId];
+        for (size_t i = 0; i < 4; ++i)
+        {
+            applyImpulse(c[i], bary[i] * impulse);
+        }
+    }
+
+    Eigen::Vector calculateVelocity(ID elementId, const std::array<double, 4>& bary)
+    {
+        Eigen::Vector v = Eigen::Vector::Zero();
+        Cell& c = mPoly3->getTopology3D().getCellIds()[elementId];
+        for (size_t i = 0; i < 4; ++i)
+        {
+            v += bary[i] * mVelocities[c[i]];
+        }
+        return v;
     }
 
     void applyForce(ID vertexIndex, const Eigen::Vector& force)

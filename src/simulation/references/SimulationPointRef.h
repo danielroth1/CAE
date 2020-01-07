@@ -11,6 +11,7 @@
 class GeometricData;
 class GeometricPointRefVisitor;
 class Polygon;
+class Polygon3D;
 class SimulationObject;
 
 // Reference a point on a simulation object. Points on deformables are referenced
@@ -52,7 +53,14 @@ public:
 
     // Constructor for referencing a vertex of simulation object.
     // Use for rigid bodies.
-    SimulationPointRef(SimulationObject* simOb, ID index);
+    SimulationPointRef(SimulationObject* simObj, ID index);
+
+    // Constructor for referencing a vertex of simulation object.
+    // Use for rigid bodies.
+    SimulationPointRef(SimulationObject* simObn,
+                       Polygon3D* polygon,
+                       const std::array<double, 4>& bary,
+                       ID elementId);
 
     // Copy constructor
     SimulationPointRef(const SimulationPointRef& ref);
@@ -62,6 +70,12 @@ public:
 //    SimulationPointRef& operator=(SimulationPointRef&& ref) = default;
 
     virtual ~SimulationPointRef();
+
+    // Applies a given impulse
+    void applyImpulse(const Eigen::Vector& impulse);
+
+    // Calculates and returns the speed.
+    Eigen::Vector calculateSpeed();
 
     void update();
     void updatePrevious();
@@ -86,58 +100,9 @@ public:
 
     void accept(GeometricPointRefVisitor& visitor);
 
-    // PointRef interface
-public:
     Eigen::Vector getGeometricPoint() const;
 
 private:
-    class GetSimulationPointDispatcher : public SimulationObjectVisitor
-    {
-    public:
-        GetSimulationPointDispatcher(SimulationPointRef& _ref);
-
-        virtual void visit(FEMObject& femObject)
-        {
-            point = ref.getPoint(femObject);
-        }
-
-        virtual void visit(SimulationPoint& sp)
-        {
-            point = ref.getPoint(sp);
-        }
-
-        virtual void visit(RigidBody& rigidBody)
-        {
-            point = ref.getPoint(rigidBody);
-        }
-
-        SimulationPointRef& ref;
-        Eigen::Vector point;
-    };
-
-    class GetPrevSimulationPointDispatcher : public SimulationObjectVisitor
-    {
-    public:
-        GetPrevSimulationPointDispatcher(SimulationPointRef& _ref);
-
-        virtual void visit(FEMObject& femObject)
-        {
-            point = ref.getPreviousPoint(femObject);
-        }
-
-        virtual void visit(SimulationPoint& sp)
-        {
-            point = ref.getPreviousPoint(sp);
-        }
-
-        virtual void visit(RigidBody& rigidBody)
-        {
-            point = ref.getPreviousPoint(rigidBody);
-        }
-
-        SimulationPointRef& ref;
-        Eigen::Vector point;
-    };
 
     virtual Eigen::Vector getPoint(SimulationPoint& sp);
     virtual Eigen::Vector getPoint(RigidBody& rb);
@@ -154,9 +119,6 @@ private:
     std::unique_ptr<GeometricPointRef> mGeometricPointRef;
 
     std::shared_ptr<SimulationObject> mSimulationObject;
-
-    GetSimulationPointDispatcher mGetSimulationPointDispatcher;
-    GetPrevSimulationPointDispatcher mGetPrevSimulationPointDispatcher;
 
     Eigen::Vector mPoint; // Only used if mUpdatePolicy == ON_UPDATE_CALL
     Eigen::Vector mPointPrevious; // Only used if mUpdatePolicy == ON_UPDATE_CALL

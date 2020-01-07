@@ -5,12 +5,17 @@
 
 #include <iostream>
 
+#include <scene/data/references/PolygonBaryRef.h>
+
 BallJoint::BallJoint(
         SimulationPointRef pointA,
         SimulationPointRef pointB)
     : mPointA(pointA)
     , mPointB(pointB)
 {
+    mPointA.setUpdatePolicy(SimulationPointRef::UpdatePolicy::ON_UPDATE_CALL);
+    mPointB.setUpdatePolicy(SimulationPointRef::UpdatePolicy::ON_UPDATE_CALL);
+
     mTargetURel = Eigen::Vector::Zero();
 }
 
@@ -31,15 +36,18 @@ void BallJoint::setSumOfAllAppliedImpulses(const Eigen::Vector& impulses)
 
 void BallJoint::initialize(double stepSize)
 {
+    mPointA.update();
+    mPointB.update();
+
     mImpulseFactor = (ImpulseConstraintSolver::calculateK(mPointB) +
                       ImpulseConstraintSolver::calculateK(mPointA)).inverse();
 
     mTargetURel = -(mPointA.getPoint() - mPointB.getPoint()) / stepSize;
 
-    mPoint1 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointA.getSimulationObject().get(), mPointA.getPoint());
-    mPoint2 = ImpulseConstraintSolver::calculateRelativePoint(
-                mPointB.getSimulationObject().get(), mPointB.getPoint());
+//    mPoint1 = ImpulseConstraintSolver::calculateRelativePoint(
+//                mPointA.getSimulationObject().get(), mPointA.getPoint());
+//    mPoint2 = ImpulseConstraintSolver::calculateRelativePoint(
+//                mPointB.getSimulationObject().get(), mPointB.getPoint());
 
     // comment in to print the norm
 //    std::cout << "position error = " << mTargetURel.norm() <<
@@ -49,11 +57,18 @@ void BallJoint::initialize(double stepSize)
 
 bool BallJoint::solve(double maxConstraintError)
 {
-    Eigen::Vector uRel =
-            ImpulseConstraintSolver::calculateSpeed(
-                mPointA.getSimulationObject().get(), mPoint1, mPointA.getIndex()) -
-            ImpulseConstraintSolver::calculateSpeed(
-                mPointB.getSimulationObject().get(), mPoint2, mPointB.getIndex());
+//    if (mPointA.getGeometricPointRef()->getType() == GeometricPointRef::Type::POLYGON_BARY)
+//    {
+//        PolygonBaryRef* pointA = static_cast<PolygonBaryRef*>(mPointA.getGeometricPointRef());
+//        ImpulseConstraintSolver::calculateSpeed(
+//                    mPointA.getSimulationObject().get(), mPoint1, pointA->getBary(), pointA->getElementId());
+//    }
+
+    Eigen::Vector uRel = mPointA.calculateSpeed() - mPointB.calculateSpeed();
+//            ImpulseConstraintSolver::calculateSpeed(
+//                mPointA.getSimulationObject().get(), mPoint1, mPointA.getIndex()) -
+//            ImpulseConstraintSolver::calculateSpeed(
+//                mPointB.getSimulationObject().get(), mPoint2, mPointB.getIndex());
 
     Eigen::Vector deltaURel = mTargetURel - uRel;
 
@@ -64,10 +79,12 @@ bool BallJoint::solve(double maxConstraintError)
 
     Eigen::Vector impulse = mImpulseFactor * deltaURel;
 
-    ImpulseConstraintSolver::applyImpulse(
-                mPointA.getSimulationObject().get(), impulse, mPoint1, mPointA.getIndex());
-    ImpulseConstraintSolver::applyImpulse(
-                mPointB.getSimulationObject().get(), -impulse, mPoint2, mPointB.getIndex());
+    mPointA.applyImpulse(impulse);
+    mPointB.applyImpulse(-impulse);
+//    ImpulseConstraintSolver::applyImpulse(
+//                mPointA.getSimulationObject().get(), impulse, mPoint1, mPointA.getIndex());
+//    ImpulseConstraintSolver::applyImpulse(
+//                mPointB.getSimulationObject().get(), -impulse, mPoint2, mPointB.getIndex());
 
     return false;
 }

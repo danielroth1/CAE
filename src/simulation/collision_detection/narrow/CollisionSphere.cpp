@@ -34,6 +34,11 @@ ID CollisionSphere::getVertexIndex()
             index = -1UL;
         }
 
+        virtual void visit(PolygonBaryRef& /*ref*/)
+        {
+            index = -1UL;
+        }
+
         ID index;
     } visitor;
 

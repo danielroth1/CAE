@@ -3,12 +3,20 @@
 
 #include <scene/data/geometric/Polygon.h>
 
-PolygonVectorRef::PolygonVectorRef(Polygon* polygon, Vector r)
+PolygonVectorRef::PolygonVectorRef(
+        Polygon* polygon,
+        Vector r,
+        BSWSVectors::Type type)
     : GeometricPointRef(polygon, Type::POLYGON_VECTOR)
     , mPolygon(polygon)
     , mR(r)
 {
 
+}
+
+void PolygonVectorRef::setR(const Vector& r)
+{
+    mR = r;
 }
 
 Vector PolygonVectorRef::getR() const

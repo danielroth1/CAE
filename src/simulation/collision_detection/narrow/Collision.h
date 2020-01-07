@@ -9,6 +9,10 @@
 //  The collision point in the global coorindate system.
 // -> FEM Object:
 //  The element id and barycentric corrdinates of the collision point.
+//
+// The collision normal points from the collision point of object A to
+// collision point of object B. Because the objects are intersecting, the normal
+// points from B to A.
 class Collision
 {
 public:

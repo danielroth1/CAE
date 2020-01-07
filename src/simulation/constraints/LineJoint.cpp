@@ -16,7 +16,8 @@ LineJoint::LineJoint(
     , mPointBRef(pointB)
     , mLineDirectionBS(lineDirectionBS)
 {
-
+    mPointARef.setUpdatePolicy(SimulationPointRef::UpdatePolicy::ON_UPDATE_CALL);
+    mPointBRef.setUpdatePolicy(SimulationPointRef::UpdatePolicy::ON_UPDATE_CALL);
 }
 
 bool LineJoint::references(SimulationObject* so)
@@ -27,6 +28,9 @@ bool LineJoint::references(SimulationObject* so)
 
 void LineJoint::initialize(double stepSize)
 {
+    mPointARef.update();
+    mPointBRef.update();
+
     // calculate A
     Eigen::Vector A = mPointARef.getPoint();
     mCurrentLineDir = calculateLineDirection();
