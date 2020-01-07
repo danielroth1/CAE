@@ -181,7 +181,7 @@ void MeshInterpolatorMeshMesh::update()
                      "calling MeshInterpolatorMeshMesh::solveNewton().\n";
         return;
     }
-    START_TIMING("MeshInterpolatorMeshMesh::update()", 2);
+    START_TIMING_INTERPOLATION("MeshInterpolatorMeshMesh::update()");
 
     fixRepresentationType();
 
@@ -229,12 +229,12 @@ void MeshInterpolatorMeshMesh::update()
         break;
     }
     }
-    STOP_TIMING(2);
+    STOP_TIMING_INTERPOLATION;
 
-    START_TIMING("MeshInterpolatorMeshMesh::Polygon::update()", 2);
+    START_TIMING_INTERPOLATION("MeshInterpolatorMeshMesh::Polygon::update()");
     mTarget->update(false, false);
 
-    STOP_TIMING(2);
+    STOP_TIMING_INTERPOLATION;
 
 //    for (size_t i = 0; i < mTargetAccessor->getSize(); ++i)
 //    {

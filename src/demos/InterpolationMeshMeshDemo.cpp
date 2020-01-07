@@ -82,7 +82,7 @@ void InterpolationMeshMeshDemo::load()
     }
     if (addSphere)
     {
-        double sphereDim = 0.3;
+        double sphereDim = 0.4;
         SGLeafNode* node = mAc->getSGControl()->createLeafNode(
                     "Box (detailed)",
                     mAc->getSGControl()->getSceneGraph()->getRoot(),
@@ -95,6 +95,7 @@ void InterpolationMeshMeshDemo::load()
         std::shared_ptr<Polygon> poly =
                 std::static_pointer_cast<Polygon>(node->getData()->getGeometricData());
 
+        node->getData()->getRenderModel()->setWireframeEnabled(true);
 //        Eigen::Vector mid = Eigen::Vector::Zero();
 //        for (size_t i = 0; i < poly->getPositions().size(); ++i)
 //            mid += poly->getPositions()[i];
@@ -231,35 +232,35 @@ void InterpolationMeshMeshDemo::load()
             std::static_pointer_cast<PolygonRenderModel>(
                 sourceNode->getData()->getRenderModel());
 
-    // load some example image and set it as texture to render model
-    std::shared_ptr<Texture> texture =
-            std::make_shared<Texture>(
-                ImageLoader::instance()->loadBMP(
-                    "/home/daniel/objs/LibertyStatue/Liberty-PortaBronzo-1.bmp"));
+//    // load some example image and set it as texture to render model
+//    std::shared_ptr<Texture> texture =
+//            std::make_shared<Texture>(
+//                ImageLoader::instance()->loadBMP(
+//                    "/home/daniel/objs/LibertyStatue/Liberty-PortaBronzo-1.bmp"));
 
-    std::shared_ptr<Appearances> appearances =
-            std::make_shared<Appearances>(
-                std::make_shared<Appearance>(texture));
+//    std::shared_ptr<Appearances> appearances =
+//            std::make_shared<Appearances>(
+//                std::make_shared<Appearance>(texture));
 
-    renderModel->setAppearances(appearances);
+//    renderModel->setAppearances(appearances);
 
-    std::shared_ptr<Polygon> poly =
-            std::dynamic_pointer_cast<Polygon>(
-                sourceNode->getData()->getGeometricData());
+//    std::shared_ptr<Polygon> poly =
+//            std::dynamic_pointer_cast<Polygon>(
+//                sourceNode->getData()->getGeometricData());
 
-    std::vector<Eigen::Vector2f> textureCoordinates =
-            TextureUtils::createSpericalTextureCoordinates<float, double>(
-                poly->getPositions());
+//    std::vector<Eigen::Vector2f> textureCoordinates =
+//            TextureUtils::createSpericalTextureCoordinates<float, double>(
+//                poly->getPositions());
 
-    std::cout << "texture coordinates:\n";
-    for (size_t i = 0; i < textureCoordinates.size(); ++i)
-    {
-        std::cout << textureCoordinates[i].transpose() << " -> " <<
-                     poly->getPosition(i).transpose() << "\n";
-    }
+//    std::cout << "texture coordinates:\n";
+//    for (size_t i = 0; i < textureCoordinates.size(); ++i)
+//    {
+//        std::cout << textureCoordinates[i].transpose() << " -> " <<
+//                     poly->getPosition(i).transpose() << "\n";
+//    }
 
-    renderModel->setTextureCoordinates(textureCoordinates);
-    renderModel->setTexturingEnabled(true);
+//    renderModel->setTextureCoordinates(textureCoordinates);
+//    renderModel->setTexturingEnabled(true);
 }
 
 void InterpolationMeshMeshDemo::addInterpolation(

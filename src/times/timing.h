@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iostream>
 #include <map>
+#include <mutex>
 #include <stack>
 #include <string>
 #include <vector>
@@ -64,10 +65,16 @@ namespace times
         times::Timing::getInstance(1)->stopTiming();
 
     #define START_TIMING_MODELLING(timerName) \
-        times::Timing::getInstance(2)->startTiming(timerName);
+        times::Timing::getInstance(2)->startTiming(timerName, true);
 
     #define STOP_TIMING_MODELLING \
-        times::Timing::getInstance(2)->stopTiming();
+        times::Timing::getInstance(2)->stopTiming(true);
+
+    #define START_TIMING_INTERPOLATION(timerName) \
+        times::Timing::getInstance(3)->startTiming(timerName, true);
+
+    #define STOP_TIMING_INTERPOLATION \
+        times::Timing::getInstance(3)->stopTiming(true);
 
     class Timing
     {
@@ -124,8 +131,12 @@ namespace times
 //            return std::chrono::duration_cast<std::chrono::milliseconds>(duration);
 //        }
 
-        inline void startTiming(const std::string& name = std::string(""))
+        inline void startTiming(const std::string& name = std::string(""),
+                                bool threadSafe = false)
         {
+            if (threadSafe)
+                mMutex.lock();
+
             mStack.push(TimingNode(name, getCurrentTime()));
 
             auto it = mTimingMap.find(name);
@@ -136,7 +147,7 @@ namespace times
             }
         }
 
-        inline void stopTiming()
+        inline void stopTiming(bool threadSafe = false)
         {
             TimingNode& node = mStack.top();
             Duration executionTime = getCurrentTime() - node.mStartingTime;
@@ -150,6 +161,9 @@ namespace times
             }
 
             mStack.pop();
+
+            if (threadSafe)
+                mMutex.unlock();
         }
 
         inline void print()
@@ -202,6 +216,8 @@ namespace times
         std::stack<TimingNode> mStack;
 
         std::vector<std::string> mTimingOrder;
+
+        std::mutex mMutex;
     };
 }
 
