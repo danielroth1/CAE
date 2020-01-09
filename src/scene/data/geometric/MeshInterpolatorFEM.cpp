@@ -1,5 +1,6 @@
 #include "MeshInterpolatorFEM.h"
 #include "Polygon.h"
+#include "Polygon2D.h"
 #include "Polygon3D.h"
 #include "Polygon3DTopology.h"
 
@@ -19,6 +20,30 @@ MeshInterpolatorFEM::MeshInterpolatorFEM(
 MeshInterpolatorFEM::~MeshInterpolatorFEM()
 {
 
+}
+
+Vector4d MeshInterpolatorFEM::calculateBary3(ID targetTriangleId,
+                                             const Vector3d& bary2,
+                                             ID& cellIdOut)
+{
+    TriangleInterpolation& ti = mTriangleInterpolations[targetTriangleId];
+    Eigen::Vector4d bary;
+    for (size_t i = 0; i < ti.elementFunctions.size(); ++i)
+    {
+        const std::array<Eigen::Vector4d, 3>& ef = ti.elementFunctions[i];
+
+        bary = bary2[0] * ef[0] + bary2[1] * ef[1] + bary2[2] * ef[2];
+        cellIdOut = ti.cellIds[i];
+        if (0 <= bary(0) && bary(0) <= 1
+                && 0 <= bary(1) && bary(1) <= 1
+                && 0 <= bary(2) && bary(2) <= 1
+                && 0 <= bary(3) && bary(3) <= 1)
+        {
+            return bary;
+        }
+    }
+    std::cout << "Did not find legal barycentric coordinates: " << bary.transpose() << ".\n";
+    return bary;
 }
 
 void MeshInterpolatorFEM::solve()
@@ -42,25 +67,20 @@ void MeshInterpolatorFEM::solve()
 
     bool printErrors = true;
     double wt = 0.001; // weight tolerance
-    Eigen::Vector4d bary; // baryzentric coordinatees
-//    std::array<double, 4> bary; // baryzentric coordinatees
+    Eigen::Vector4d bary; // baryzentric coordinates
     // Fill mRelevantSourceVertices.
     for (std::size_t i = 0; i < mTarget->getSize(); ++i)
     {
         Eigen::Vector p = mTarget->getPosition(i);
 
-        // filter out elements that do not contain vertex
-
-        // if there are vertices wihtout elemnt, we need to find the element
-        // with the closest distance to the vertex.
-
+        // Find all cells that contain the vertex (can be multiple if the vertex
+        // lies between two cells within the margin wt).
         std::vector<VertexInterpolation> candidateInterpolations;
-
         for (size_t j = 0; j < mSource3->getTopology3D().getCells().size(); ++j)
         {
             Cell& c = mSource3->getTopology3D().getCellIds()[j];
 
-            bary = calculateBaryzentricCoordinates(c, p);
+            bary = calculateBaryzentricCoordinates(mSource3, c, p);
 
             VertexInterpolation vi(bary, j, i);
             if (-wt < bary[0] && bary[0] < 1 + wt &&
@@ -74,6 +94,8 @@ void MeshInterpolatorFEM::solve()
 
         bool candidateFound = false;
 
+        // if there are vertices wihtout element, we need to find the element
+        // with the closest distance to the vertex.
         if (candidateInterpolations.empty())
         {
             // The point lies outside. Search for the closests outside triangle.
@@ -90,8 +112,6 @@ void MeshInterpolatorFEM::solve()
                     mSource3->getTopology3D().getOuterTopology().getFaces();
             for (size_t j = 0; j < outerFaces.size(); ++j)
             {
-//                TopologyFace& f = outerFaces[j];
-
                 // If this outer triangle is not bound to a cell, ignore it.
                 Polygon3DTopology& pt = mSource3->getTopology3D();
                 ID f3D = pt.to3DFaceIndex(j);
@@ -104,7 +124,7 @@ void MeshInterpolatorFEM::solve()
                 v[1] = mSource3->getPosition(f3d.getVertexIds()[1]);
                 v[2] = mSource3->getPosition(f3d.getVertexIds()[2]);
 
-                Eigen::Vector3d bary = calculateBaryzentricCoordinates(f3d, p);
+                Eigen::Vector3d bary = calculateBaryzentricCoordinates(mSource3, f3d, p);
 
                 Eigen::Vector pTriangle =
                         bary(0) * v[0] + bary(1) * v[1] + bary(2) * v[2];
@@ -127,11 +147,8 @@ void MeshInterpolatorFEM::solve()
                 size_t closestTriangleIndex = std::get<0>(tuples[0]);
                 double distance = std::get<1>(tuples[0]);
 
-                // we have a face if of the outer face mesh
-                // we need to convert it to the one of the corresponding inner mesh
-                // sth. like Polygon3DTopology::getOuterFaceIds()
-                // similar to Polygon3DTopology::getOuterVertexIds()
-
+                // We have a face of the outer face mesh. First, we need to
+                // convert it to the one of the corresponding inner mesh.
                 Polygon3DTopology& pt = mSource3->getTopology3D();
                 ID f3D = pt.to3DFaceIndex(closestTriangleIndex);
                 TopologyFace& f = pt.getFace(f3D);
@@ -149,10 +166,9 @@ void MeshInterpolatorFEM::solve()
                     }
 
                     ID cellId = f.getCellIds()[0];
-//                    Cell& c = mSource3->getTopology3D().getOuterTopology().getCellIds()[cellId];
                     Cell& c = mSource3->getTopology3D().getCellIds()[cellId];
 
-                    bary = calculateBaryzentricCoordinates(c, p);
+                    bary = calculateBaryzentricCoordinates(mSource3, c, p);
                     VertexInterpolation vi(bary, cellId, i);
                     candidateInterpolations.push_back(vi);
                 }
@@ -182,6 +198,8 @@ void MeshInterpolatorFEM::solve()
             std::cerr << "no interpolation found for vertex with index " << i << ".\n";
         }
     }
+
+    solveContinuous();
 
     mSolved = true;
 }
@@ -248,17 +266,56 @@ Vector3d MeshInterpolatorFEM::interpolate(
     return v;
 }
 
+void MeshInterpolatorFEM::solveContinuous()
+{
+    // For each target triangle, a TriangleInterpolation is created.
+    for (ID triId = 0; triId < mTarget->getTopology().getFaces().size(); ++triId)
+    {
+        TriangleInterpolation triInter;
+
+        TopologyFace& face = mTarget->getTopology().getFace(triId);
+
+        // Gather all cells that contain vertices of this triangle or are
+        // intersecting it (intersection not implemented yet).
+        std::set<size_t> sourceCellIds;
+        for (int i = 0; i < 3; ++i)
+        {
+            sourceCellIds.insert(mInterpolations[face.getVertexIds()[i]].mSourceCellIndex);
+        }
+
+        // Add for each cell an mElementFunctions entry.
+        for (size_t cellId : sourceCellIds)
+        {
+            std::array<Eigen::Vector4d, 3> elementFunction;
+            // For each vertex, calculate the barycentric coordinates w.r.t. the cell.
+            for (size_t i = 0; i < 3; ++i)
+            {
+                Eigen::Vector3d pos = mTarget->getPosition(face.getVertexIds()[i]);
+                TopologyCell& cell = mSource3->getTopology3D().getCells()[cellId];
+                elementFunction[i] =
+                        MeshInterpolatorFEM::calculateBaryzentricCoordinates(
+                            mSource3, cell.getVertexIds(), pos);
+            }
+            triInter.cellIds.push_back(cellId);
+            triInter.elementFunctions.push_back(elementFunction);
+        }
+        mTriangleInterpolations.push_back(triInter);
+    }
+}
+
 Vector4d MeshInterpolatorFEM::calculateBaryzentricCoordinates(
-        const Cell& c, const Eigen::Vector& p) const
+        const std::shared_ptr<Polygon3D>& source,
+        const Cell& c,
+        const Eigen::Vector& p)
 {
     std::array<Vector, 4> v; // vertices
     Eigen::Vector4d bary; // baryzentric coordinatees
 
     // Vertex positions
-    v[0] = mSource3->getPosition(c[0]);
-    v[1] = mSource3->getPosition(c[1]);
-    v[2] = mSource3->getPosition(c[2]);
-    v[3] = mSource3->getPosition(c[3]);
+    v[0] = source->getPosition(c[0]);
+    v[1] = source->getPosition(c[1]);
+    v[2] = source->getPosition(c[2]);
+    v[3] = source->getPosition(c[3]);
 
     Vector r1 = v[1] - v[0];
     Vector r2 = v[2] - v[0];
@@ -280,15 +337,17 @@ Vector4d MeshInterpolatorFEM::calculateBaryzentricCoordinates(
 }
 
 Vector3d MeshInterpolatorFEM::calculateBaryzentricCoordinates(
-        const TopologyFace& f, const Vector& p) const
+        const std::shared_ptr<Polygon3D>& source,
+        const TopologyFace& f,
+        const Vector& p)
 {
 
     std::array<Vector, 3> v; // vertices
 
     // Vertex positions
-    v[0] = mSource3->getPosition(f.getVertexIds()[0]);
-    v[1] = mSource3->getPosition(f.getVertexIds()[1]);
-    v[2] = mSource3->getPosition(f.getVertexIds()[2]);
+    v[0] = source->getPosition(f.getVertexIds()[0]);
+    v[1] = source->getPosition(f.getVertexIds()[1]);
+    v[2] = source->getPosition(f.getVertexIds()[2]);
 
     Eigen::Vector3d v13 = v[9] - v[2];
     Eigen::Vector3d v23 = v[1] - v[2];
@@ -338,4 +397,3 @@ Vector3d MeshInterpolatorFEM::calculateBaryzentricCoordinates(
 
     return bary;
 }
-

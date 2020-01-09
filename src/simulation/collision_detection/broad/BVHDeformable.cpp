@@ -13,11 +13,12 @@
 BVHDeformable::BVHDeformable(
         SimulationObject* so,
         Polygon* polygon,
+        MeshInterpolatorFEM* interpolator,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
         BoundingVolume::Type bvType,
         double collisionMargin)
     : BoundingVolumeHierarchy(
-          so, polygon, collisionObjects, bvType, collisionMargin)
+          so, polygon, interpolator, collisionObjects, bvType, collisionMargin)
 {
     initialize();
 }

@@ -7,6 +7,8 @@
 class ApplicationControl;
 class GeometricDataListener;
 class MeshInterpolator;
+class MeshInterpolatorFEM;
+class MeshInterpolatorMeshMesh;
 class MeshInterpolatorRenderModel;
 class Polygon;
 class Polygon3D;
@@ -22,14 +24,16 @@ public:
     // Adds a FEM based interpolation.
     //\return false if there is already an interpolation for the given target.
     //      Does nothing in that case.
-    bool addInterpolatorFEM(const std::shared_ptr<Polygon3D>& source,
-                             const std::shared_ptr<Polygon>& target);
+    std::shared_ptr<MeshInterpolatorFEM> addInterpolatorFEM(
+            const std::shared_ptr<Polygon3D>& source,
+            const std::shared_ptr<Polygon>& target);
 
     // Adds a MeshMesh based interpolation.
     //\return false if there is already an interpolation for the given target.
     //      Does nothing in that case.
-    bool addInterpolatorMeshMesh(const std::shared_ptr<Polygon>& source,
-                                  const std::shared_ptr<Polygon>& target);
+    std::shared_ptr<MeshInterpolatorMeshMesh> addInterpolatorMeshMesh(
+            const std::shared_ptr<Polygon>& source,
+            const std::shared_ptr<Polygon>& target);
 
     // Removes the interpolation that references the given polygon (either
     // source or target).

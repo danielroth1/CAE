@@ -14,6 +14,7 @@
 
 class Collider;
 class CollisionObject;
+class MeshInterpolatorFEM;
 class Polygon;
 class Polygon2DAccessor;
 class SimulationObject;
@@ -23,6 +24,7 @@ class BoundingVolumeHierarchy : public Tree<BVChildrenData*, BVLeafData*>
 public:
     BoundingVolumeHierarchy(SimulationObject* so,
                             Polygon* mPolygon,
+                            MeshInterpolatorFEM* interpolator,
                             const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
                             BoundingVolume::Type bvType,
                             double collisionMargin);
@@ -46,9 +48,7 @@ public:
     virtual bool collides(BoundingVolumeHierarchy* hierarchy, Collider& collider);
 
     // Iterative check for collisions.
-    // To check for collisins between two trees, pass the corresponding root
-    // nodes of those trees for node1 and node2.
-    bool collidesIterative(BVHNode* node1, BVHNode* node2);
+    bool collidesIterative(BoundingVolumeHierarchy* hierarchy);
 
     // Recursive check for collisions.
     //
@@ -94,11 +94,15 @@ public:
     void setCollisionMargin(double collisionMargin);
     double getCollisionMargin() const;
 
+    Polygon* getPolygon() const;
+    SimulationObject* getSimulationObject() const;
+    MeshInterpolatorFEM* getInterpolator() const;
+
 protected:
 
-    SimulationObject* mSimulationObject;
-
     Polygon* mPolygon;
+    SimulationObject* mSimulationObject;
+    MeshInterpolatorFEM* mInterpolator;
 
     std::vector<std::shared_ptr<CollisionObject>> mCollisionObjects;
 

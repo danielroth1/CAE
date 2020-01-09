@@ -9,6 +9,7 @@
 
 class ApplicationControl;
 class MeshCriteria;
+class MeshInterpolationMeshMesh;
 
 // Manages a SGSceneGraph
 // The scnee graph should only be accessed over this class to ensure
@@ -99,8 +100,12 @@ public:
                 const std::shared_ptr<SceneLeafData>& ld,
                 double mass,
                 bool iStatic = false);
-        void createCollidable(const std::shared_ptr<SceneLeafData>& ld,
-                              double collisionSphereRadiusFactor = 0.1);
+        void createCollidable(
+                const std::shared_ptr<SceneLeafData>& ld,
+                double collisionSphereRadiusFactor = 0.1);
+        void createCollidable(
+                const std::shared_ptr<SceneLeafData>& ld,
+                const std::shared_ptr<MeshInterpolatorFEM>& interpolation);
 
         // Removes the simulation object from the simulation and sets the
         // reference in the scene node null.

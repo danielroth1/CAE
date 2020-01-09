@@ -53,7 +53,7 @@ Vector Collision::calculatePositionPreviousB()
 Vector Collision::calculatePositionPrevious(
         SimulationObject* so,
         const Eigen::Vector& point,
-        const std::array<double, 4>& bary,
+        const Eigen::Vector4d& bary,
         ID elementId)
 {
     Eigen::Vector posPrevious;

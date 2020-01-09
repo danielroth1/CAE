@@ -15,7 +15,7 @@ MeshInterpolationManager::MeshInterpolationManager(Renderer* renderer)
 
 }
 
-bool MeshInterpolationManager::addInterpolatorFEM(
+std::shared_ptr<MeshInterpolatorFEM> MeshInterpolationManager::addInterpolatorFEM(
         const std::shared_ptr<Polygon3D>& source,
         const std::shared_ptr<Polygon>& target)
 {
@@ -24,7 +24,7 @@ bool MeshInterpolationManager::addInterpolatorFEM(
     {
         std::cout << "Cannot add interpolation for target Polygon because there"
                      " is already one.\n";
-        return false;
+        return nullptr;
     }
 
     std::shared_ptr<MeshInterpolatorFEM> interpolator =
@@ -32,10 +32,10 @@ bool MeshInterpolationManager::addInterpolatorFEM(
     interpolator->solve();
 
     addInterpolator(interpolator);
-    return true;
+    return interpolator;
 }
 
-bool MeshInterpolationManager::addInterpolatorMeshMesh(
+std::shared_ptr<MeshInterpolatorMeshMesh> MeshInterpolationManager::addInterpolatorMeshMesh(
         const std::shared_ptr<Polygon>& source,
         const std::shared_ptr<Polygon>& target)
 {
@@ -44,7 +44,7 @@ bool MeshInterpolationManager::addInterpolatorMeshMesh(
     {
         std::cout << "Cannot add interpolation for target Polygon because there"
                      " is already one.\n";
-        return false;
+        return nullptr;
     }
 
     std::shared_ptr<MeshInterpolatorMeshMesh> interpolator =
@@ -53,7 +53,7 @@ bool MeshInterpolationManager::addInterpolatorMeshMesh(
 
     addInterpolator(interpolator);
 
-    return true;
+    return interpolator;
 }
 
 bool MeshInterpolationManager::removeInterpolator(

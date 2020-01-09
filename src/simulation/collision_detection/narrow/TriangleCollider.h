@@ -13,6 +13,7 @@
 class Collision;
 class CollisionSphere;
 class CollisionTriangle;
+class MeshInterpolatorFEM;
 class Polygon;
 class Polygon2DTopology;
 class SimulationObject;
@@ -45,10 +46,14 @@ public:
     void addPair(
             Polygon2DTopology& topoSource,
             TopologyFeature& featureSource,
-            SimulationObject* soSource,
             Polygon2DTopology& topoTarget,
-            TopologyFeature& featureTarget,
-            SimulationObject* soTarget);
+            TopologyFeature& featureTarget);
+
+    // Prepare new search operation between the two given polygons.
+    void prepare(
+            Polygon* poly1, Polygon* poly2,
+            SimulationObject* so1, SimulationObject* so2,
+            MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2);
 
     void clear();
 
@@ -56,12 +61,19 @@ public:
     void collide(std::vector<Collision>& collisions);
 
     // Checks for a collision between the face and vertex. If there is one,
-    // returns true and fills collision,
-    bool collide(TopologyFace& f, TopologyVertex& v, Collision& collision);
+    // returns true and fills collision.
+    // \param revertedFeatures - true if the feature e1 belongs to poly2 and
+    //      e2 belongs to poly1
+    bool collide(TopologyFace& f,
+                 TopologyVertex& v,
+                 bool revertedFeatures,
+                 Collision& collision);
 
     // Checks for a collision between the given edges. If there is one,
-    // returns true and fills collision,
-    bool collide(TopologyEdge& e1, TopologyEdge& e2, Collision& collision);
+    // returns true and fills collision.
+    bool collide(TopologyEdge& e1,
+                 TopologyEdge& e2,
+                 Collision& collision);
 
 private:
 
@@ -109,11 +121,6 @@ private:
             TopologyFeature& feature,
             IteratorPair& temp);
 
-    SimulationObject* getSimulationObject(TopologyFeature* feature)
-    {
-        return mFeatureToSoMap[feature];
-    }
-
     // Maps the given 3 barycentric coordinates bary of the face f to the
     // 4 barycentric coordinates of the element that the face is part of.
     // In baryOut at least 1 value will be zero.
@@ -121,8 +128,9 @@ private:
             Polygon* poly,
             TopologyFace& f,
             const Eigen::Vector& bary,
+            MeshInterpolatorFEM* interpolator,
             ID& elementIdOut,
-            std::array<double, 4>& baryOut);
+            Eigen::Vector4d& baryOut);
 
     // Maps the given 2 barycentric coordinates bary of the edge e to the
     // 4 barycentric coordinates of the element that the edge is part of.
@@ -131,8 +139,9 @@ private:
             Polygon* poly,
             TopologyEdge& e,
             double bary,
+            MeshInterpolatorFEM* interpolator,
             ID& elementIdOut,
-            std::array<double, 4>& baryOut);
+            Eigen::Vector4d& baryOut);
 
     // Maps the given 1 barycentric coordinates bary of the vertex v to the
     // 4 barycentric coordinates of the element that the vertex is part of.
@@ -140,17 +149,21 @@ private:
     bool fillBarycentricCoordinates(
             Polygon* poly,
             TopologyVertex& v,
+            MeshInterpolatorFEM* interpolator,
             ID& elementIdOut,
-            std::array<double, 4>& baryOut);
+            Eigen::Vector4d& baryOut);
 
+    typedef std::pair<TopologyVertex*, TopologyFace*> VFPair;
     typedef std::pair<TopologyFace*, TopologyVertex*> FVPair;
     typedef std::pair<TopologyEdge*, TopologyEdge*> EEPair;
 
-    // The features pairs that potentially could collide.
-    std::unordered_set<FVPair, boost::hash<FVPair>> mFeaturePairsFV;
-    std::unordered_set<EEPair, boost::hash<EEPair>> mFeaturePairsEE;
-
-    std::unordered_map<TopologyFeature*, SimulationObject*> mFeatureToSoMap;
+    // The features pairs that potentially could collide. Sets are used
+    // to avoid duplicates.
+    std::vector<FVPair> mFeaturePairsFV;
+    std::vector<VFPair> mFeaturePairsVF;
+    std::vector<EEPair> mFeaturePairsEE;
+    std::unordered_set<FVPair, boost::hash<FVPair>> mFeaturePairsFVSet;
+    std::unordered_set<EEPair, boost::hash<EEPair>> mFeaturePairsEESet;
 
     // Used as temporary memory to avoid unnecessary memory allocations
     IteratorPair mSourceTemp;
@@ -160,6 +173,13 @@ private:
     double mMarginSquared;
     bool mInvertNormalsIfNecessary;
 
+    // Simulation and geometric data of the two colliding objects.
+    SimulationObject* mSo1;
+    SimulationObject* mSo2;
+    Polygon* mPoly1;
+    Polygon* mPoly2;
+    MeshInterpolatorFEM* mInterpolator1;
+    MeshInterpolatorFEM* mInterpolator2;
 };
 
 #endif // TRIANGLECOLLIDER_H

@@ -53,7 +53,7 @@ public:
     static Eigen::Vector calculatePositionPrevious(
             SimulationObject* so,
             const Eigen::Vector& point,
-            const std::array<double, 4>& bary,
+            const Eigen::Vector4d& bary,
             ID elementId);
 
     void setNormal(const Eigen::Vector& normal)
@@ -98,12 +98,12 @@ public:
         return mIsInside;
     }
 
-    std::array<double, 4>& getBarycentricCoordiantesA()
+    Eigen::Vector4d& getBarycentricCoordiantesA()
     {
         return mBaryA;
     }
 
-    std::array<double, 4>& getBarycentricCoordiantesB()
+    Eigen::Vector4d& getBarycentricCoordiantesB()
     {
         return mBaryB;
     }
@@ -145,8 +145,8 @@ private:
     // Barycentric coordinates of the affected element / triangle.
     // If its a triangle, only the 3 numbers are non-zero.
     // If its an edge, only 2 numbers are non-zero.
-    std::array<double, 4> mBaryA;
-    std::array<double, 4> mBaryB;
+    Eigen::Vector4d mBaryA;
+    Eigen::Vector4d mBaryB;
     ID mElementIdA;
     ID mElementIdB;
 };

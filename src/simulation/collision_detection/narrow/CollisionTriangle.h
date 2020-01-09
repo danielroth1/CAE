@@ -3,6 +3,7 @@
 
 #include "CollisionObject.h"
 
+#include <scene/data/geometric/MeshInterpolatorFEM.h>
 #include <scene/data/geometric/Polygon2DAccessor.h>
 
 class SimulationObject;
@@ -19,12 +20,11 @@ public:
     CollisionTriangle(
             const std::shared_ptr<Polygon2DAccessor>& accessor,
             const Face& face,
-            ID faceId,
-            const std::shared_ptr<SimulationObject>& so);
+            ID faceId);
 
     virtual ~CollisionTriangle() override;
 
-    const std::shared_ptr<Polygon2DAccessor>& getAccessor()
+    const std::shared_ptr<Polygon2DAccessor>& getAccessor() const
     {
         return mAccessor;
     }
@@ -60,11 +60,6 @@ public:
         return mAccessor->getPosition(mFace[2]);
     }
 
-    std::shared_ptr<SimulationObject>& getSimulationObject()
-    {
-        return mSo;
-    }
-
     // CollisionObject interface
 public:
     virtual void update() override;
@@ -81,8 +76,6 @@ private:
     Face mFace;
 
     ID mFaceId;
-
-    std::shared_ptr<SimulationObject> mSo;
 };
 
 #endif // COLLISIONTRIANGLE_H

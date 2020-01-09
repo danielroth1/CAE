@@ -8,6 +8,7 @@
 class CollisionObject;
 class CollisionSphere;
 class CollisionTriangle;
+class MeshInterpolatorFEM;
 class TriangleCollider;
 
 class Collider
@@ -28,7 +29,10 @@ public:
         // Removes currently stored collisions.
         void clear();
 
-        void prepare();
+        void prepare(
+                Polygon* poly1, Polygon* poly2,
+                SimulationObject* so1, SimulationObject* so2,
+                MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2);
 
         // Performs the narrow phase collision detection for the feature pairs.
         // Call this method after calling all collider for close CollisionObjects
@@ -52,11 +56,13 @@ public:
 private:
 
     // Mthods for dispatching
+        // Deprecated: use TriangleCollider instead
         bool collides(
                 CollisionObject& co,
                 CollisionSphere& cs,
                 Collision& collisionReturnValue);
 
+        // Deprecated: use TriangleCollider instead
         bool collides(
                 CollisionObject& co,
                 CollisionTriangle& ct,
@@ -68,16 +74,19 @@ private:
                 CollisionSphere& cs2,
                 Collision& collisionReturnValue);
 
+        // Deprecated: use TriangleCollider instead
         bool collides(
                 CollisionSphere& cs,
                 CollisionTriangle& ct,
                 Collision& collisionReturnValue);
 
+        // Deprecated: use TriangleCollider instead
         bool collides(
                 CollisionTriangle& ct1,
                 CollisionTriangle& ct2,
                 Collision& collisionReturnValue);
 
+        // Deprecated: use TriangleCollider instead
         // \param ct1 - source
         // \param ct2 - target
         bool collidesTriangle(
@@ -85,12 +94,14 @@ private:
                 CollisionTriangle& ct2,
                 Collision& collisionReturnValue);
 
+        // Deprecated: use TriangleCollider instead
         bool collidesTrianglesPair(
                 CollisionTriangle& ct1,
                 CollisionTriangle& ct2,
                 double marginSquared,
                 Collision& collisionReturnValue);
 
+        // Deprecated: use TriangleCollider instead
         bool collidesEdgesPair(
                 CollisionTriangle& ct1,
                 CollisionTriangle& ct2,

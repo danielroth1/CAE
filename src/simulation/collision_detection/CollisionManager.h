@@ -10,6 +10,7 @@
 
 class BoundingVolumeHierarchy;
 class CollisionManagerListener;
+class MeshInterpolatorFEM;
 class Polygon;
 class SimulationObject;
 
@@ -32,7 +33,17 @@ public:
 
     void addSimulationObjectTriangles(
             const std::shared_ptr<SimulationObject>& so,
-            const std::shared_ptr<Polygon>& polygon);
+            const std::shared_ptr<Polygon>& polygon,
+            const std::shared_ptr<MeshInterpolatorFEM>& interpolator = nullptr);
+
+    // Adds a deformable object that has two different geometries:
+    // - the one used for deformation simulation = interpolation source
+    // - the one used for collision handling = interpolation target
+    // The simulation objects polygon must be the same as the source polygon
+    // of the given interpolation.
+    void addSimulationObjectTriangles(
+            const std::shared_ptr<SimulationObject>& so,
+            const std::shared_ptr<MeshInterpolatorFEM>& interpolator);
 
     void addSimulationObject(
             std::shared_ptr<SimulationObject> so,
@@ -79,7 +90,8 @@ private:
     void addSimulationObject(
             const std::shared_ptr<SimulationObject>& so,
             const std::shared_ptr<Polygon>& polygon,
-            const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects);
+            const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
+            const std::shared_ptr<MeshInterpolatorFEM>& interpolator);
 
     std::map<unsigned int, double> calculateMinimumDistances(
             const std::vector<TopologyFace>& faces,
@@ -102,6 +114,10 @@ PROXY_CLASS(CollisionManagerProxy, CollisionManager, mCm,
                            PL(std::shared_ptr<SimulationObject> so,
                               std::shared_ptr<Polygon> polygon),
                            PL(so, polygon))
+            PROXY_FUNCTION(CollisionManager, mCm, addSimulationObjectTriangles,
+                           PL(std::shared_ptr<SimulationObject> so,
+                              std::shared_ptr<MeshInterpolatorFEM> interpolation),
+                           PL(so, interpolation))
             PROXY_FUNCTION(CollisionManager, mCm, addSimulationObject,
                            PL(std::shared_ptr<SimulationObject> so,
                               std::shared_ptr<Polygon> polygon,

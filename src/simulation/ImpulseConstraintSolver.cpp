@@ -89,7 +89,7 @@ Matrix3d ImpulseConstraintSolver::calculateK(
 Matrix3d ImpulseConstraintSolver::calculateK(
         SimulationObject* so,
         const Vector& point,
-        const std::array<double, 4>& bary,
+        const Eigen::Vector4d& bary,
         ID elementId)
 {
     switch(so->getType())
@@ -201,7 +201,7 @@ Vector ImpulseConstraintSolver::calculateSpeed(
 Vector ImpulseConstraintSolver::calculateSpeed(
         SimulationObject* so,
         const Vector& point,
-        const std::array<double, 4>& bary,
+        const Eigen::Vector4d& bary,
         ID elementId)
 {
     switch(so->getType())
@@ -256,7 +256,7 @@ void ImpulseConstraintSolver::applyImpulse(
         SimulationObject* so,
         const Vector& impulse,
         const Vector& point,
-        const std::array<double, 4>& bary,
+        const Eigen::Vector4d& bary,
         ID elementId)
 {
     switch(so->getType())

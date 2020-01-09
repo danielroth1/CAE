@@ -8,15 +8,17 @@
 BoundingVolumeHierarchy::BoundingVolumeHierarchy(
         SimulationObject* simulationObject,
         Polygon* polygon,
+        MeshInterpolatorFEM* interpolator,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
         BoundingVolume::Type bvType,
         double collisionMargin)
     : Tree<BVChildrenData*, BVLeafData*> ("BVH")
-    , mSimulationObject(simulationObject)
     , mPolygon(polygon)
+    , mSimulationObject(simulationObject)
+    , mInterpolator(interpolator)
     , mCollisionObjects(collisionObjects)
-    , mBvType(bvType)
     , mCollisionMargin(collisionMargin)
+    , mBvType(bvType)
 {
     getRoot()->setData(nullptr);
 }
@@ -125,18 +127,20 @@ bool BoundingVolumeHierarchy::collides(BoundingVolumeHierarchy* hierarchy,
                                        Collider& collider)
 {
     mCollider = &collider;
-    return collidesIterative(getRoot(), hierarchy->getRoot());
+    return collidesIterative(hierarchy);
 }
 
-bool BoundingVolumeHierarchy::collidesIterative(BVHNode* node1, BVHNode* node2)
+bool BoundingVolumeHierarchy::collidesIterative(BoundingVolumeHierarchy* hierarchy)
 {
-    mCollider->prepare();
+    mCollider->prepare(mPolygon, hierarchy->getPolygon(),
+                       mSimulationObject, hierarchy->getSimulationObject(),
+                       mInterpolator, hierarchy->getInterpolator());
 
     bool collides = false;
 
     StackElement& first = mStack.push();
-    first.node1 = node1;
-    first.node2 = node2;
+    first.node1 = getRoot();
+    first.node2 = hierarchy->getRoot();
 
     while (!mStack.empty())
     {
@@ -156,15 +160,18 @@ bool BoundingVolumeHierarchy::collidesIterative(BVHNode* node1, BVHNode* node2)
             }
             else
             {
+                bool ordered;
                 BVHNode* searchedNode;
                 BVHNode* otherNode;
                 if (el.node1->isLeaf())
                 {
+                    ordered = false;
                     searchedNode = el.node2;
                     otherNode = el.node1;
                 }
                 else if (el.node2->isLeaf())
                 {
+                    ordered = true;
                     searchedNode = el.node1;
                     otherNode = el.node2;
                 }
@@ -173,11 +180,13 @@ bool BoundingVolumeHierarchy::collidesIterative(BVHNode* node1, BVHNode* node2)
                     // take children node with bigger bvh next
                     if (bv1->getSize() > bv2->getSize())
                     {
+                        ordered = true;
                         searchedNode = el.node1;
                         otherNode = el.node2;
                     }
                     else
                     {
+                        ordered = false;
                         searchedNode = el.node2;
                         otherNode = el.node1;
                     }
@@ -187,8 +196,16 @@ bool BoundingVolumeHierarchy::collidesIterative(BVHNode* node1, BVHNode* node2)
                 for (size_t i = 0; i < searchedNode->getNumberOfChildren(); ++i)
                 {
                     StackElement& elTemp = mStack.push();
-                    elTemp.node1 = childrenNode->getChild(static_cast<unsigned int>(i));
-                    elTemp.node2 = otherNode;
+                    if (ordered)
+                    {
+                        elTemp.node1 = childrenNode->getChild(static_cast<unsigned int>(i));
+                        elTemp.node2 = otherNode;
+                    }
+                    else
+                    {
+                        elTemp.node1 = otherNode;
+                        elTemp.node2 = childrenNode->getChild(static_cast<unsigned int>(i));
+                    }
                 }
             }
 
@@ -263,4 +280,19 @@ void BoundingVolumeHierarchy::setCollisionMargin(double collisionMargin)
 double BoundingVolumeHierarchy::getCollisionMargin() const
 {
     return mCollisionMargin;
+}
+
+Polygon* BoundingVolumeHierarchy::getPolygon() const
+{
+    return mPolygon;
+}
+
+SimulationObject* BoundingVolumeHierarchy::getSimulationObject() const
+{
+    return mSimulationObject;
+}
+
+MeshInterpolatorFEM* BoundingVolumeHierarchy::getInterpolator() const
+{
+    return mInterpolator;
 }

@@ -26,6 +26,7 @@
 #include <simulation/rigid/RigidBody.h>
 #include <simulation/ImpulseConstraintSolver.h>
 #include <simulation/rigid/RigidSimulation.h>
+#include <scene/data/geometric/MeshInterpolatorFEM.h>
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon3D.h>
 #include <times/timing.h>
@@ -447,7 +448,8 @@ void SimulationControl::removeConstraint(const std::shared_ptr<Constraint>& c)
 }
 
 void SimulationControl::addCollisionObject(
-        std::shared_ptr<SimulationObject> so,
+        const std::shared_ptr<SimulationObject>& so,
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolation,
         double sphereDiameter)
 {
     class CollisionObjectAdder : public SimulationObjectVisitor
@@ -455,8 +457,10 @@ void SimulationControl::addCollisionObject(
     public:
         CollisionObjectAdder(
                     SimulationControl& _sc,
+                    const std::shared_ptr<MeshInterpolatorFEM>& _interpolation,
                     double _sphereDiameter)
             : sc(_sc)
+            , interpolation(_interpolation)
             , sphereDiameter(_sphereDiameter)
         {
 
@@ -471,10 +475,19 @@ void SimulationControl::addCollisionObject(
 //                        femObject.getPolygon(),
 //                        sphereDiameter);
 
-            // Triangle based collision handling
-            sc.mCollisionManagerProxy->addSimulationObjectTriangles(
-                        femObject.shared_from_this(),
-                        femObject.getPolygon());
+            if (interpolation)
+            {
+                sc.mCollisionManagerProxy->addSimulationObjectTriangles(
+                            femObject.shared_from_this(),
+                            interpolation);
+            }
+            else
+            {
+                // Triangle based collision handling
+                sc.mCollisionManagerProxy->addSimulationObjectTriangles(
+                            femObject.shared_from_this(),
+                            femObject.getPolygon());
+            }
         }
 
         virtual void visit(SimulationPoint& /*sp*/)
@@ -491,15 +504,25 @@ void SimulationControl::addCollisionObject(
 //                        rigidBody.getPolygon(),
 //                        sphereDiameter);
 
-            // discretize with triangles
-            sc.mCollisionManagerProxy->addSimulationObjectTriangles(
-                        rigidBody.shared_from_this(),
-                        rigidBody.getPolygon());
+            if (interpolation)
+            {
+                sc.mCollisionManagerProxy->addSimulationObjectTriangles(
+                            rigidBody.shared_from_this(),
+                            interpolation);
+            }
+            else
+            {
+                // discretize with triangles
+                sc.mCollisionManagerProxy->addSimulationObjectTriangles(
+                            rigidBody.shared_from_this(),
+                            rigidBody.getPolygon());
+            }
         }
 
         SimulationControl& sc;
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolation;
         double sphereDiameter;
-    } v(*this, sphereDiameter);
+    } v(*this, interpolation, sphereDiameter);
     so->accept(v);
 }
 

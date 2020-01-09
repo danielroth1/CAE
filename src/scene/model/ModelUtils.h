@@ -22,7 +22,7 @@ public:
     //      of the same size as positions (call resize
     //      on a newly created vector).
     template<class Type>
-    static std::vector<Eigen::Matrix<Type, 3, 1>>
+    static void
     calculateNormals(
             const std::vector<Eigen::Matrix<Type, 3, 1>>& positions,
             const Faces& faces,
@@ -71,7 +71,6 @@ public:
         {
             normal.normalize();
         }
-        return normals;
     }
 
     // Calculates the vertex normals by averaging for each vertex the neighboring

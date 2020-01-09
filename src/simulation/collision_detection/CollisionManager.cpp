@@ -3,6 +3,7 @@
 
 #include <simulation/collision_detection/broad/BVHDeformable.h>
 #include <simulation/collision_detection/broad/BoundingVolumeHierarchy.h>
+#include <scene/data/geometric/MeshInterpolatorFEM.h>
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon2DTopology.h>
@@ -30,7 +31,8 @@ Domain* CollisionManager::getDomain()
 
 void CollisionManager::addSimulationObjectTriangles(
         const std::shared_ptr<SimulationObject>& so,
-        const std::shared_ptr<Polygon>& polygon)
+        const std::shared_ptr<Polygon>& polygon,
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolator)
 {
     std::shared_ptr<Polygon2DAccessor> accessor = polygon->createAccessor();
     const Polygon2DTopology& topology = accessor->getTopology2D();
@@ -40,10 +42,17 @@ void CollisionManager::addSimulationObjectTriangles(
     {
         const Face& f = topology.getFacesIndices()[i];
         collisionObjects.push_back(
-                    std::make_shared<CollisionTriangle>(accessor, f, i, so));
+                    std::make_shared<CollisionTriangle>(accessor, f, i));
     }
 
-    addSimulationObject(so, polygon, collisionObjects);
+    addSimulationObject(so, polygon, collisionObjects, interpolator);
+}
+
+void CollisionManager::addSimulationObjectTriangles(
+        const std::shared_ptr<SimulationObject>& so,
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolator)
+{
+    addSimulationObjectTriangles(so, interpolator->getTarget(), interpolator);
 }
 
 void CollisionManager::addSimulationObject(
@@ -266,7 +275,7 @@ void CollisionManager::addSimulationObject(
     }
     }
 
-    addSimulationObject(so, polygon, collisionObjects);
+    addSimulationObject(so, polygon, collisionObjects, nullptr);
 }
 
 bool CollisionManager::removeSimulationObject(const std::shared_ptr<SimulationObject>& so)
@@ -439,7 +448,8 @@ double CollisionManager::getCollisionMargin() const
 void CollisionManager::addSimulationObject(
         const std::shared_ptr<SimulationObject>& so,
         const std::shared_ptr<Polygon>& polygon,
-        const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects)
+        const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolator)
 {
     // Create CollisionData
     CollisionData data;
@@ -450,6 +460,7 @@ void CollisionManager::addSimulationObject(
     data.mBvh = std::make_shared<BVHDeformable>(
                 so.get(),
                 polygon.get(),
+                interpolator.get(),
                 collisionObjects,
                 BoundingVolume::Type::AABB,
                 getCollisionMargin());

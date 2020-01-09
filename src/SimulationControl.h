@@ -27,8 +27,9 @@ class GLWidget;
 class FEMSimulation;
 class FEMSimulationProxy;
 class FEMObject;
-class RigidBody;
 class ImpulseConstraintSolver;
+class MeshInterpolatorFEM;
+class RigidBody;
 class RigidSimulation;
 class RigidSimulationProxy;
 class SimulationControlListener;
@@ -148,8 +149,10 @@ public:
         void addConstraint(const std::shared_ptr<Constraint>& c);
         void removeConstraint(const std::shared_ptr<Constraint>& c);
 
-        void addCollisionObject(std::shared_ptr<SimulationObject> so,
-                                double collisionSphereRadiusFactor = 0.2);
+        void addCollisionObject(
+                const std::shared_ptr<SimulationObject>& so,
+                const std::shared_ptr<MeshInterpolatorFEM>& interpolation,
+                double collisionSphereRadiusFactor = 0.2);
         void removeCollisionObject(const std::shared_ptr<SimulationObject>& so);
 
     // Is called by SimulationThread once after the thread is started.

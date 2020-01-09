@@ -3,6 +3,7 @@
 #include "CollisionTriangle.h"
 #include "TriangleCollider.h"
 
+#include <cassert>
 #include <iostream>
 #include <math/MathUtils.h>
 #include <math/MathUtils.h>
@@ -53,8 +54,7 @@ void TriangleCollider::addTriangleSpherePair(
         Polygon2DTopology& topoTarget = poly->getAccessor2D()->getTopology2D();
         TopologyFeature& feature = *cs.getTopologyFeature().get();
 
-        addPair(topoSource, face, ct.getSimulationObject().get(),
-                topoTarget, feature, cs.getPointRef().getSimulationObject().get());
+        addPair(topoSource, face, topoTarget, feature);
     }
 }
 
@@ -69,8 +69,9 @@ void TriangleCollider::addTrianglePair(
     Polygon2DTopology& topoTarget = ct2.getAccessor()->getTopology2D();
     TopologyFace& face2 = topoTarget.getFace(ct2.getFaceId());
 
-    addPair(topoSource, face1, ct1.getSimulationObject().get(),
-            topoTarget, face2, ct2.getSimulationObject().get());
+    assert(ct1.getAccessor()->getPolygon() == mPoly1 && ct2.getAccessor()->getPolygon()== mPoly2);
+
+    addPair(topoSource, face1, topoTarget, face2);
 }
 
 void TriangleCollider::addSphereSpherePair(CollisionSphere& cs1, CollisionSphere& cs2)
@@ -89,18 +90,15 @@ void TriangleCollider::addSphereSpherePair(CollisionSphere& cs1, CollisionSphere
         Polygon2DTopology& topoTarget = poly2->getAccessor2D()->getTopology2D();
         TopologyFeature& feature2 = *cs2.getTopologyFeature().get();
 
-        addPair(topoSource, feature1, cs2.getPointRef().getSimulationObject().get(),
-                topoTarget, feature2, cs2.getPointRef().getSimulationObject().get());
+        addPair(topoSource, feature1, topoTarget, feature2);
     }
 }
 
 void TriangleCollider::addPair(
         Polygon2DTopology& topoSource,
         TopologyFeature& featureSource,
-        SimulationObject* soSource,
         Polygon2DTopology& topoTarget,
-        TopologyFeature& featureTarget,
-        SimulationObject* soTarget)
+        TopologyFeature& featureTarget)
 {
     TopologyFeatureIterator* sourceFeatures = getFeatures(topoSource, featureSource, mSourceTemp);
     TopologyFeatureIterator* targetFeatures = getFeatures(topoTarget, featureTarget, mTargetTemp);
@@ -117,37 +115,54 @@ void TriangleCollider::addPair(
             if (fSource.getType() == TopologyFeature::Type::FACE &&
                 fTarget.getType() == TopologyFeature::Type::VERTEX)
             {
-                mFeaturePairsFV.insert(
-                            FVPair(
-                                static_cast<TopologyFace*>(&fSource),
-                                static_cast<TopologyVertex*>(&fTarget)));
+                FVPair pair(static_cast<TopologyFace*>(&fSource),
+                            static_cast<TopologyVertex*>(&fTarget));
+                if (mFeaturePairsFVSet.find(pair) == mFeaturePairsFVSet.end())
+                {
+                    mFeaturePairsFVSet.insert(pair);
+                    mFeaturePairsFV.push_back(pair);
+                }
             }
             else if (fSource.getType() == TopologyFeature::Type::VERTEX &&
                      fTarget.getType() == TopologyFeature::Type::FACE)
             {
-                mFeaturePairsFV.insert(
-                            FVPair(
-                                static_cast<TopologyFace*>(&fTarget),
-                                static_cast<TopologyVertex*>(&fSource)));
+                FVPair fvPair(
+                    static_cast<TopologyFace*>(&fTarget),
+                    static_cast<TopologyVertex*>(&fSource));
+                if (mFeaturePairsFVSet.find(fvPair) == mFeaturePairsFVSet.end())
+                {
+                    mFeaturePairsFVSet.insert(fvPair);
+                    VFPair pair(static_cast<TopologyVertex*>(&fSource),
+                                static_cast<TopologyFace*>(&fTarget));
+                    mFeaturePairsVF.push_back(pair);
+                }
             }
             else if (fSource.getType() == TopologyFeature::Type::EDGE &&
                      fTarget.getType() == TopologyFeature::Type::EDGE)
             {
                 // Avoid duplications, e.g. (a, b) and (b, a), by ordering
                 // the pair.
+                EEPair pair(static_cast<TopologyEdge*>(&fSource),
+                            static_cast<TopologyEdge*>(&fTarget));
                 if (&fSource < &fTarget)
                 {
-                    mFeaturePairsEE.insert(
-                                EEPair(
-                                    static_cast<TopologyEdge*>(&fSource),
-                                    static_cast<TopologyEdge*>(&fTarget)));
+                    if (mFeaturePairsEESet.find(pair) == mFeaturePairsEESet.end())
+                    {
+                        mFeaturePairsEESet.insert(pair);
+                        mFeaturePairsEE.push_back(pair);
+                    }
                 }
                 else
                 {
-                    mFeaturePairsEE.insert(
-                                EEPair(
-                                    static_cast<TopologyEdge*>(&fTarget),
-                                    static_cast<TopologyEdge*>(&fSource)));
+                    EEPair eePair(static_cast<TopologyEdge*>(&fTarget),
+                                  static_cast<TopologyEdge*>(&fSource));
+
+                    if (mFeaturePairsEESet.find(eePair) == mFeaturePairsEESet.end())
+                    {
+                        mFeaturePairsEESet.insert(eePair);
+                        mFeaturePairsEE.push_back(pair);
+                    }
+
                 }
             }
         }
@@ -156,32 +171,50 @@ void TriangleCollider::addPair(
 
     sourceFeatures->reset();
     targetFeatures->reset();
+}
 
-    for (size_t i = 0; i < sourceFeatures->getSize(); ++i, ++(*sourceFeatures))
-    {
-        mFeatureToSoMap[&**sourceFeatures] = soSource;
-    }
+void TriangleCollider::prepare(
+        Polygon* poly1, Polygon* poly2,
+        SimulationObject* so1, SimulationObject* so2,
+        MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2)
+{
+    mPoly1 = poly1;
+    mPoly2 = poly2;
+    mSo1 = so1;
+    mSo2 = so2;
+    mInterpolator1 = interpolator1;
+    mInterpolator2 = interpolator2;
 
-    for (size_t i = 0; i < targetFeatures->getSize(); ++i, ++(*targetFeatures))
-    {
-        mFeatureToSoMap[&**targetFeatures] = soTarget;
-    }
+    clear();
 }
 
 void TriangleCollider::clear()
 {
+    mFeaturePairsFVSet.clear();
+    mFeaturePairsEESet.clear();
     mFeaturePairsFV.clear();
+    mFeaturePairsVF.clear();
     mFeaturePairsEE.clear();
-    mFeatureToSoMap.clear();
 }
 
 void TriangleCollider::collide(std::vector<Collision>& collisions)
 {
+    // Vertex-Face
+    for (const std::pair<TopologyVertex*, TopologyFace*>& pair : mFeaturePairsVF)
+    {
+        Collision c;
+        bool collides = collide(*pair.second, *pair.first, true, c);
+        if (collides)
+        {
+            collisions.push_back(c);
+        }
+    }
+
     // Face-Vertex
     for (const std::pair<TopologyFace*, TopologyVertex*>& pair : mFeaturePairsFV)
     {
         Collision c;
-        bool collides = collide(*pair.first, *pair.second, c);
+        bool collides = collide(*pair.first, *pair.second, false, c);
         if (collides)
         {
             collisions.push_back(c);
@@ -201,10 +234,35 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
 }
 
 bool TriangleCollider::collide(
-        TopologyFace& f, TopologyVertex& v, Collision& collision)
+        TopologyFace& f,
+        TopologyVertex& v,
+        bool reverted,
+        Collision& collision)
 {
-    SimulationObject* so1 = getSimulationObject(&v);
-    SimulationObject* so2 = getSimulationObject(&f);
+    SimulationObject* so1;
+    SimulationObject* so2;
+    Polygon* poly1;
+    Polygon* poly2;
+    MeshInterpolatorFEM* interpolator1;
+    MeshInterpolatorFEM* interpolator2;
+    if (reverted)
+    {
+        so1 = mSo1;
+        so2 = mSo2;
+        poly1 = mPoly1;
+        poly2 = mPoly2;
+        interpolator1 = mInterpolator1;
+        interpolator2 = mInterpolator2;
+    }
+    else
+    {
+        so1 = mSo2;
+        so2 = mSo1;
+        poly1 = mPoly2;
+        poly2 = mPoly1;
+        interpolator1 = mInterpolator2;
+        interpolator2 = mInterpolator1;
+    }
 
     // Collisions between non-polygons aren't supported
     if (so1->getGeometricData()->getType() != GeometricData::Type::POLYGON ||
@@ -212,9 +270,6 @@ bool TriangleCollider::collide(
     {
         return false;
     }
-
-    Polygon* poly1 = static_cast<Polygon*>(so1->getGeometricData());
-    Polygon* poly2 = static_cast<Polygon*>(so2->getGeometricData());
 
     Eigen::Vector& pos = poly1->getAccessor2D()->getPosition(v.getID());
 
@@ -279,10 +334,10 @@ bool TriangleCollider::collide(
                                    false);
 
         ID elementId;
-        fillBarycentricCoordinates(poly1, v, elementId, collision.getBarycentricCoordiantesA());
+        fillBarycentricCoordinates(poly1, v, interpolator1, elementId, collision.getBarycentricCoordiantesA());
         collision.setElementIdA(elementId);
 
-        fillBarycentricCoordinates(poly2, f, bary, elementId, collision.getBarycentricCoordiantesB());
+        fillBarycentricCoordinates(poly2, f, bary, interpolator2, elementId, collision.getBarycentricCoordiantesB());
         collision.setElementIdB(elementId);
         return true;
     }
@@ -291,10 +346,16 @@ bool TriangleCollider::collide(
 }
 
 bool TriangleCollider::collide(
-        TopologyEdge& e1, TopologyEdge& e2, Collision& collision)
+        TopologyEdge& e1,
+        TopologyEdge& e2,
+        Collision& collision)
 {
-    SimulationObject* so1 = getSimulationObject(&e1);
-    SimulationObject* so2 = getSimulationObject(&e2);
+    SimulationObject* so1 = mSo1;
+    SimulationObject* so2 = mSo2;
+    MeshInterpolatorFEM* interpolator1 = mInterpolator1;
+    MeshInterpolatorFEM* interpolator2 = mInterpolator2;
+    Polygon* poly1 = mPoly1;
+    Polygon* poly2 = mPoly2;
 
     // Collisions between non-polygons aren't supported
     if (so1->getGeometricData()->getType() != GeometricData::Type::POLYGON ||
@@ -302,9 +363,6 @@ bool TriangleCollider::collide(
     {
         return false;
     }
-
-    Polygon* poly1 = static_cast<Polygon*>(so1->getGeometricData());
-    Polygon* poly2 = static_cast<Polygon*>(so2->getGeometricData());
 
     Eigen::Vector x11 =
             poly1->getAccessor2D()->getPosition(e1.getVertexIds()[0]);
@@ -376,10 +434,10 @@ bool TriangleCollider::collide(
                     inter1, inter2, dir, 0.0, v1Index, v2Index, false);
 
         ID elementId;
-        fillBarycentricCoordinates(poly1, e1, bary(0), elementId, collision.getBarycentricCoordiantesA());
+        fillBarycentricCoordinates(poly1, e1, bary(0), interpolator1, elementId, collision.getBarycentricCoordiantesA());
         collision.setElementIdA(elementId);
 
-        fillBarycentricCoordinates(poly2, e2, bary(1), elementId, collision.getBarycentricCoordiantesB());
+        fillBarycentricCoordinates(poly2, e2, bary(1), interpolator2, elementId, collision.getBarycentricCoordiantesB());
         collision.setElementIdB(elementId);
 
         return true;
@@ -413,13 +471,13 @@ TopologyFeatureIterator* TriangleCollider::getFeatures(
                 index = 0;
             }
 
-            TopologyFeatureIterator& operator++() override
+            TopologyFeatureIterator& operator++() override final
             {
                 ++index;
                 return *this;
             }
 
-            TopologyFeature& operator*() override
+            TopologyFeature& operator*() override final
             {
                 if (index == 0)
                 {
@@ -435,12 +493,12 @@ TopologyFeatureIterator* TriangleCollider::getFeatures(
                 }
             }
 
-            void reset() override
+            void reset() override final
             {
                 index = 0;
             }
 
-            size_t getSize() override
+            size_t getSize() override final
             {
                 return 7;
             }
@@ -469,21 +527,21 @@ TopologyFeatureIterator* TriangleCollider::getFeatures(
             {
             }
 
-            TopologyFeatureIterator& operator++() override
+            TopologyFeatureIterator& operator++() override final
             {
                 return *this;
             }
 
-            TopologyFeature& operator*() override
+            TopologyFeature& operator*() override final
             {
                 return vertex;
             }
 
-            void reset() override
+            void reset() override final
             {
             }
 
-            size_t getSize() override
+            size_t getSize() override final
             {
                 return 1;
             }
@@ -509,10 +567,11 @@ bool TriangleCollider::fillBarycentricCoordinates(
         Polygon* poly,
         TopologyFace& f,
         const Vector& bary,
+        MeshInterpolatorFEM* interpolator,
         ID& elementIdOut,
-        std::array<double, 4>& baryOut)
+        Eigen::Vector4d& baryOut)
 {
-    baryOut = {0, 0, 0, 0};
+    baryOut = Eigen::Vector4d::Zero();
     if (poly->getDimensionType() == Polygon::DimensionType::THREE_D)
     {
         Polygon3DTopology* topo = static_cast<Polygon3DTopology*>(&poly->getTopology());
@@ -545,6 +604,16 @@ bool TriangleCollider::fillBarycentricCoordinates(
 
         std::cout << "cell ids empty\n";
     }
+    else if (poly->getDimensionType() == Polygon::DimensionType::TWO_D)
+    {
+        if (interpolator)
+        {
+            ID cellId;
+            baryOut = interpolator->calculateBary3(f.getID(), bary, cellId);
+            elementIdOut = cellId;
+            return true;
+        }
+    }
     return false;
 }
 
@@ -552,10 +621,11 @@ bool TriangleCollider::fillBarycentricCoordinates(
         Polygon* poly,
         TopologyEdge& e,
         double bary,
+        MeshInterpolatorFEM* interpolator,
         ID& elementIdOut,
-        std::array<double, 4>& baryOut)
+        Eigen::Vector4d& baryOut)
 {
-    baryOut = {0, 0, 0, 0};
+    baryOut = Eigen::Vector4d::Zero();
     if (poly->getDimensionType() == Polygon::DimensionType::THREE_D)
     {
         Polygon3DTopology* topo = static_cast<Polygon3DTopology*>(&poly->getTopology());
@@ -594,19 +664,52 @@ bool TriangleCollider::fillBarycentricCoordinates(
 
             return true;
         }
-        std::cout << "cell ids empty\n";
 
+        std::cout << "cell ids empty\n";
     }
+    else if (poly->getDimensionType() == Polygon::DimensionType::TWO_D)
+    {
+        if (interpolator)
+        {
+            ID cellId;
+            Polygon2DTopology* topo = static_cast<Polygon2DTopology*>(&poly->getTopology());
+            TopologyFace& f = topo->getFace(e.getFaceIds()[0]);
+            Eigen::Vector3d bary2 = Eigen::Vector::Zero();
+            for (size_t i = 0; i < 2; ++i)
+            {
+                for (size_t j = 0; j < 3; ++j)
+                {
+                    if (e.getVertexIds()[i] == f.getVertexIds()[j])
+                    {
+                        if (i == 0)
+                        {
+                            bary2[j] = bary;
+                        }
+                        else
+                        {
+                            bary2[j] = 1 - bary;
+                        }
+                        break;
+                    }
+                }
+            }
+            baryOut = interpolator->calculateBary3(f.getID(), bary2, cellId);
+            elementIdOut = cellId;
+            return true;
+        }
+    }
+
     return false;
 }
 
 bool TriangleCollider::fillBarycentricCoordinates(
         Polygon* poly,
         TopologyVertex& v,
+        MeshInterpolatorFEM* interpolator,
         ID& elementIdOut,
-        std::array<double, 4>& baryOut)
+        Eigen::Vector4d& baryOut)
 {
-    baryOut = {0, 0, 0, 0};
+    baryOut = Eigen::Vector4d::Zero();
     if (poly->getDimensionType() == Polygon::DimensionType::THREE_D)
     {
         Polygon3DTopology* topo = static_cast<Polygon3DTopology*>(&poly->getTopology());
@@ -635,6 +738,27 @@ bool TriangleCollider::fillBarycentricCoordinates(
             return true;
         }
         std::cout << "cell ids empty\n";
+    }
+    else if (poly->getDimensionType() == Polygon::DimensionType::TWO_D)
+    {
+        if (interpolator)
+        {
+            ID cellId;
+            Polygon2DTopology* topo = static_cast<Polygon2DTopology*>(&poly->getTopology());
+            TopologyFace& f = topo->getFace(v.getFaceIds()[0]);
+            Eigen::Vector3d bary2 = Eigen::Vector::Zero();
+            for (size_t j = 0; j < 4; ++j)
+            {
+                if (v.getID() == f.getVertexIds()[j])
+                {
+                    bary2[j] = 1.0;
+                    break;
+                }
+            }
+            baryOut = interpolator->calculateBary3(f.getID(), bary2, cellId);
+            elementIdOut = cellId;
+            return true;
+        }
     }
     return false;
 }

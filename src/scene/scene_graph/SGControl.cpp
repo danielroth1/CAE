@@ -403,7 +403,22 @@ void SGControl::createCollidable(const std::shared_ptr<SceneLeafData>& ld,
     if (so)
     {
         mAc->getSimulationControl()->addCollisionObject(
-                    so, collisionSphereRadiusFactor);
+                    so, nullptr, collisionSphereRadiusFactor);
+    }
+    else
+    {
+        std::cout << "There is no SimulationObject from which a CollisionObject could be created.\n";
+    }
+}
+
+void SGControl::createCollidable(
+        const std::shared_ptr<SceneLeafData>& ld,
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolation)
+{
+    std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
+    if (so)
+    {
+        mAc->getSimulationControl()->addCollisionObject(so, interpolation);
     }
     else
     {

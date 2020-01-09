@@ -53,7 +53,7 @@ public:
     static Eigen::Vector calculateSpeed(
             SimulationObject* so,
             const Eigen::Vector& point,
-            const std::array<double, 4>& bary,
+            const Eigen::Vector4d& bary,
             ID elementId);
 
     static void applyImpulse(
@@ -69,7 +69,7 @@ public:
             SimulationObject* so,
             const Eigen::Vector& impulse,
             const Eigen::Vector& point,
-            const std::array<double, 4>& bary,
+            const Eigen::Vector4d& bary,
             ID elementId);
 
     static Eigen::Matrix3d calculateK(
@@ -84,7 +84,7 @@ public:
     static Eigen::Matrix3d calculateK(
             SimulationObject* so,
             const Eigen::Vector& point,
-            const std::array<double, 4>& bary,
+            const Eigen::Vector4d& bary,
             ID elementId);
 
     static Eigen::Matrix3d calculateK(SimulationPointRef& ref);

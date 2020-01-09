@@ -45,7 +45,7 @@ bool Collider::collides(CollisionObject& co1, CollisionObject& co2)
 
 bool Collider::collidesTrianglesImproved(
         CollisionObject& co1, CollisionObject& co2)
-{
+{    
     if (co1.getType() == CollisionObject::Type::TRIANGLE &&
         co2.getType() == CollisionObject::Type::TRIANGLE)
     {
@@ -96,9 +96,12 @@ void Collider::clear()
     mCollisions.clear();
 }
 
-void Collider::prepare()
+void Collider::prepare(
+        Polygon* poly1, Polygon* poly2,
+        SimulationObject* so1, SimulationObject* so2,
+        MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2)
 {
-    mTriangleCollider->clear();
+    mTriangleCollider->prepare(poly1, poly2, so1, so2, interpolator1, interpolator2);
 }
 
 bool Collider::evaluate()
@@ -294,12 +297,12 @@ bool Collider::collides(
                 dir = -dir;
         }
 
-        new (&collisionReturnValue) Collision(cs.getPointRef().getSimulationObject().get(),
-                                              ct.getSimulationObject().get(),
-                                              pointB, inter, dir, 0.0,
-                                              cs.getVertexIndex(),
-                                              triIndex,
-                                              false);
+//        new (&collisionReturnValue) Collision(cs.getPointRef().getSimulationObject().get(),
+//                                              ct.getSimulationObject().get(),
+//                                              pointB, inter, dir, 0.0,
+//                                              cs.getVertexIndex(),
+//                                              triIndex,
+//                                              false);
 
         return true;
     }
@@ -387,12 +390,12 @@ bool Collider::collidesTrianglesPair(
 
             ID v2Index = ct2.getFace()[index];
 
-            new (&collisionReturnValue) Collision(ct1.getSimulationObject().get(),
-                                                  ct2.getSimulationObject().get(),
-                                                  pos, inter, dir, 0.0,
-                                                  v1Index,
-                                                  v2Index,
-                                                  false);
+//            new (&collisionReturnValue) Collision(ct1.getSimulationObject().get(),
+//                                                  ct2.getSimulationObject().get(),
+//                                                  pos, inter, dir, 0.0,
+//                                                  v1Index,
+//                                                  v2Index,
+//                                                  false);
             return true;
         }
     }
@@ -476,12 +479,12 @@ bool Collider::collidesEdgesPair(CollisionTriangle& ct1,
                         dir = -dir;
                 }
 
-                new (&collisionReturnValue) Collision(ct1.getSimulationObject().get(),
-                                                      ct2.getSimulationObject().get(),
-                                                      inter1, inter2, dir, 0.0,
-                                                      0,
-                                                      0,
-                                                      false);
+//                new (&collisionReturnValue) Collision(ct1.getSimulationObject().get(),
+//                                                      ct2.getSimulationObject().get(),
+//                                                      inter1, inter2, dir, 0.0,
+//                                                      0,
+//                                                      0,
+//                                                      false);
                 return true;
             }
         }
