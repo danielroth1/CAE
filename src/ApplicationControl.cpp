@@ -51,6 +51,7 @@
 #include <demos/FallingObjectsDemo.h>
 #include <demos/CubeWallDemo.h>
 #include <demos/ConstrainedDeformableDemo.h>
+#include <demos/InterpolationFEMCollisionDemo.h>
 #include <ui/scene_graph/SGUIControl.h>
 #include <io/importers/OBJImporter.h>
 #include <modules/geometry_info/GeometryInfoModule.h>
@@ -227,10 +228,9 @@ void ApplicationControl::initiateApplication()
     std::shared_ptr<CarDemo> carDemo = std::make_shared<CarDemo>(*this);
     mDemoLoaderModule->addDemo(carDemo);
 
-    std::shared_ptr<InterpolationMeshMeshDemo> interpolationDemo =
-            std::make_shared<InterpolationMeshMeshDemo>(this);
-    mDemoLoaderModule->addDemo(interpolationDemo);
+    mDemoLoaderModule->addDemo(std::make_shared<InterpolationMeshMeshDemo>(this));
     mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMDemo>(this));
+    mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMCollisionDemo>(*this));
     mDemoLoaderModule->addDemo(std::make_shared<TexturingDemo>(this));
     mDemoLoaderModule->addDemo(std::make_shared<FallingObjectsDemo>(
                                    this, "Falling Objects (rigid)", true));
