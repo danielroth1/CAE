@@ -227,6 +227,39 @@ void SimulationUIControl::init(QWidget* parent)
                 0.0, 0.499, 0.05, 4);
 
     femWidget->addDouble(
+                "Plastic Yield",
+                MemberAccessorFactory::createGetterSetter<double, FEMObject>(
+                    &FEMObject::getPlasticYield,
+                    &FEMObject::setPlasticYield,
+                    1e-3,
+                    nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                0.0, 1e+5, 100.0, 3);
+
+    femWidget->addDouble(
+                "Plastic Creep",
+                MemberAccessorFactory::createGetterSetter<double, FEMObject>(
+                    &FEMObject::getPlasticCreep,
+                    &FEMObject::setPlasticCreep,
+                    1e-3,
+                    nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                0.0, 1e+5, 100.0, 3);
+
+    femWidget->addDouble(
+                "Plastic Max. Strain",
+                MemberAccessorFactory::createGetterSetter<double, FEMObject>(
+                    &FEMObject::getPlasticMaxStrain,
+                    &FEMObject::setPlasticMaxStrain,
+                    1e-3,
+                    nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                0.0, 1e+5, 100.0, 3);
+
+    femWidget->addDouble(
                 "Friction Static",
                 MemberAccessorFactory::createGetterSetter<double, FEMObject>(
                     &FEMObject::getFrictionStatic,

@@ -93,6 +93,9 @@ void InterpolationFEMCollisionDemo::load()
         sg->createFEMObject(sourceNode->getData());
         ElasticMaterial material;
         material.setFromYoungsPoisson(500, 0.45);
+        material.setPlasticYield(0.5);
+        material.setPlasticCreep(10);
+        material.setPlasticMaxStrain(10);
         static_cast<FEMObject*>(sourceNode->getData()->getSimulationObjectRaw())->setElasticMaterial(material);
         sg->createCollidable(sourceNode->getData(), interpolator);
 
@@ -150,6 +153,9 @@ void InterpolationFEMCollisionDemo::load()
         sg->createFEMObject(sourceNode->getData());
         ElasticMaterial material;
         material.setFromYoungsPoisson(500, 0.45);
+        material.setPlasticYield(0.5);
+        material.setPlasticCreep(10);
+        material.setPlasticMaxStrain(10);
         static_cast<FEMObject*>(sourceNode->getData()->getSimulationObjectRaw())->setElasticMaterial(material);
         sg->createCollidable(sourceNode->getData(), interpolator);
 

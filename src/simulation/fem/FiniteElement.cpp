@@ -128,6 +128,8 @@ void FiniteElement::updateLinearStiffnessMatrix()
             }
         }
     }
+
+    updatePlasticityMatrix();
 }
 
 void FiniteElement::updateCorotatedStiffnessMatrix()
@@ -143,6 +145,24 @@ void FiniteElement::updateCorotatedStiffnessMatrix()
     }
 }
 
+void FiniteElement::updatePlasticityMatrix()
+{
+    Eigen::Matrix<double, 6, 6> D;
+    double mu = mMaterial.getLameMu();
+    double lambda = mMaterial.getLameLambda();
+
+    double temp = lambda + 2 * mu;
+
+    D << temp, lambda, lambda, 0, 0, 0,
+            lambda, temp, lambda, 0, 0, 0,
+            lambda, lambda, temp, 0, 0, 0,
+            0, 0, 0, mu, 0, 0,
+            0, 0, 0, 0, mu, 0,
+            0, 0, 0, 0, 0, mu;
+
+    mP = mVolume * mB.transpose() * D;
+}
+
 void FiniteElement::updateForces(bool corotated)
 {
     if (corotated)
@@ -153,6 +173,9 @@ void FiniteElement::updateForces(bool corotated)
 
 void FiniteElement::updateCorotatedForces()
 {
+    // TODO: Optimizations
+    // - Apply rotation only once
+    // - reformulate equation to precalculate parts of it
     for (size_t a = 0; a < 4; ++a)
     {
         mForces[a].setZero();
@@ -162,6 +185,8 @@ void FiniteElement::updateCorotatedForces()
                     (mR.transpose() * y(b) - x(b));
         }
     }
+
+    updatePlasticForces(0.01);
 }
 
 void FiniteElement::updateLinearForces()
@@ -180,6 +205,36 @@ void FiniteElement::updateLinearForces()
     }
 }
 
+void FiniteElement::updatePlasticForces(double stepSize)
+{
+    if (mMaterial.getPlasticMaxStrain() > 1e-12)
+    {
+        // Calculate total strain.
+        Eigen::Matrix<double, 6, 1> strainTotal =
+                Eigen::Matrix<double, 6, 1>::Zero();
+        Eigen::Matrix3d RInv = mR.inverse();
+        for (Eigen::Index a = 0; a < 4; ++a)
+        {
+            strainTotal += mB.block(0, a * 3, 6, 3) * (RInv * y(a) - x(a));
+        }
+
+        // Update plastic strain.
+        Eigen::Matrix<double, 6, 1> strainElastic =
+                strainTotal - mStrainPlastic;
+        if (strainElastic.norm() > mMaterial.getPlasticYield())
+            mStrainPlastic += stepSize * mMaterial.getPlasticCreep() * strainElastic;
+        double strainPlasticNorm = mStrainPlastic.norm();
+        if (strainPlasticNorm > mMaterial.getPlasticMaxStrain())
+            mStrainPlastic *= mMaterial.getPlasticMaxStrain() / strainPlasticNorm;
+
+        // Calculate plastic forces.
+        for (Eigen::Index a = 0; a < 4; ++a)
+        {
+            mForces[a] -= mR * mP.block(a * 3, 0, 3, 6) * mStrainPlastic;
+        }
+    }
+}
+
 void FiniteElement::updateF()
 {
 //    mF = Matrix3d::Identity();
@@ -190,6 +245,13 @@ void FiniteElement::updateF()
     for (size_t i = 0; i < 4; ++i) {
         mF += y(i) * mDnx[i].transpose();
     }
+
+    mB << mDnx[0](0), 0, 0, mDnx[1](0), 0, 0, mDnx[2](0), 0, 0, mDnx[3](0), 0, 0,
+            0, mDnx[0](1), 0, 0, mDnx[1](1), 0, 0, mDnx[2](1), 0, 0, mDnx[3](1), 0,
+            0, 0, mDnx[0](2), 0, 0, mDnx[1](2), 0, 0, mDnx[2](2), 0, 0, mDnx[3](2),
+            mDnx[0](1), mDnx[0](0), 0, mDnx[1](1), mDnx[1](0), 0, mDnx[2](1), mDnx[2](0), 0, mDnx[3](1), mDnx[3](0), 0,
+            mDnx[0](2), 0, mDnx[0](0), mDnx[1](2), 0, mDnx[1](0), mDnx[2](2), 0, mDnx[2](0), mDnx[3](2), 0, mDnx[3](0),
+            0, mDnx[0](2), mDnx[0](1), 0, mDnx[1](2), mDnx[1](1), 0, mDnx[2](2), mDnx[2](1), 0, mDnx[3](2), mDnx[3](1);
 }
 
 void FiniteElement::updateCauchyStressStrain()

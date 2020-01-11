@@ -6,6 +6,10 @@ ElasticMaterial::ElasticMaterial()
     mPoissonRatio = 0.0;
     mLameMu = 0.0;
     mLameLambda = 0.0;
+
+    mPlasticYield = 0.0;
+    mPlasticCreep = 0.0;
+    mPlasticMaxStrain = 0.0;
 }
 
 void ElasticMaterial::setFromLame(double lameMu, double lameLambda)
@@ -29,6 +33,21 @@ void ElasticMaterial::setFromYoungsPoisson(
             ( ( 1 + poissonRatio ) * ( 1 - 2 * poissonRatio ) );
 }
 
+void ElasticMaterial::setPlasticYield(double plasticYield)
+{
+    mPlasticYield = plasticYield;
+}
+
+void ElasticMaterial::setPlasticCreep(double plasticCreep)
+{
+    mPlasticCreep = plasticCreep;
+}
+
+void ElasticMaterial::setPlasticMaxStrain(double plasticMaxStrain)
+{
+    mPlasticMaxStrain = plasticMaxStrain;
+}
+
 double ElasticMaterial::getYoungsModulus() const
 {
     return mYoungsModulus;
@@ -47,4 +66,19 @@ double ElasticMaterial::getLameLambda() const
 double ElasticMaterial::getLameMu() const
 {
     return mLameMu;
+}
+
+double ElasticMaterial::getPlasticYield() const
+{
+    return mPlasticYield;
+}
+
+double ElasticMaterial::getPlasticCreep() const
+{
+    return mPlasticCreep;
+}
+
+double ElasticMaterial::getPlasticMaxStrain() const
+{
+    return mPlasticMaxStrain;
 }

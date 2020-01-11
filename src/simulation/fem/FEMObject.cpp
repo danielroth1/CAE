@@ -523,6 +523,57 @@ double FEMObject::getPoissonRatio()
     return 0.0;
 }
 
+void FEMObject::setPlasticYield(double plasticYield)
+{
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        fe.getMaterial().setPlasticYield(plasticYield);
+    }
+}
+
+double FEMObject::getPlasticYield()
+{
+    if (!mFiniteElements.empty())
+    {
+        return mFiniteElements[0].getMaterial().getPlasticYield();
+    }
+    return 0.0;
+}
+
+void FEMObject::setPlasticCreep(double plasticCreep)
+{
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        fe.getMaterial().setPlasticCreep(plasticCreep);
+    }
+}
+
+double FEMObject::getPlasticCreep()
+{
+    if (!mFiniteElements.empty())
+    {
+        return mFiniteElements[0].getMaterial().getPlasticCreep();
+    }
+    return 0.0;
+}
+
+void FEMObject::setPlasticMaxStrain(double plasticMaxStrain)
+{
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        fe.getMaterial().setPlasticMaxStrain(plasticMaxStrain);
+    }
+}
+
+double FEMObject::getPlasticMaxStrain()
+{
+    if (!mFiniteElements.empty())
+    {
+        return mFiniteElements[0].getMaterial().getPlasticMaxStrain();
+    }
+    return 0.0;
+}
+
 void FEMObject::setElasticMaterial(const ElasticMaterial& material)
 {
     for (FiniteElement& fe : mFiniteElements)

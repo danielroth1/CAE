@@ -86,6 +86,11 @@ public:
         // If positions changed, requires a call to updateRotation().
         void updateCorotatedStiffnessMatrix();
 
+        // Updates plasticity matrix According to equation 15 in
+        // "Interactive Virtual Materials" by Mueller and Gross.
+        // Only needs to be executed once in the initialization.
+        void updatePlasticityMatrix();
+
     // Update forces
         // Calculates and updates the forces according to the FEM.
         // \param corotated - if true, calculates forces according to corotated FEM,
@@ -99,6 +104,8 @@ public:
         // Calculates and updates mForces according to the linear FEM:
         // F += K[a][b] * u(b);
         void updateLinearForces();
+
+        void updatePlasticForces(double stepSize);
 
 private:
 
@@ -146,7 +153,8 @@ private:
 
     Eigen::Matrix3d mR;
     Eigen::Quaterniond mQ; // Used for fast rotation calculation.
-    Eigen::Matrix3d mF;
+    Eigen::Matrix3d mF; // Deformation tensor
+    Eigen::Matrix<double, 6, 12> mB; // Deformation tensor rewritten.
     Eigen::Matrix3d mCauchyStrain;
     Eigen::Matrix3d mCauchyStress;
     std::array<Eigen::Vector, 4> mDnx;
@@ -157,6 +165,10 @@ private:
     std::array<double, 4> mM;
     double mDensity;
     double mVolume;
+
+    Eigen::Matrix<double, 12, 6> mP; // Plsticity matrix
+    // The current plastic strain that causes a non-elastic deformation.
+    Eigen::Matrix<double, 6, 1> mStrainPlastic;
 
     // This flag is only relevant for the Linear FEM simulation (not corotated).
     // Is true if the stiffnessmatrix requires an update.

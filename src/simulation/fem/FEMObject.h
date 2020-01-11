@@ -200,6 +200,13 @@ public:
     void setPoissonRatio(double poissonRatio);
     double getPoissonRatio();
 
+    void setPlasticYield(double plasticYield);
+    double getPlasticYield();
+    void setPlasticCreep(double plasticCreep);
+    double getPlasticCreep();
+    void setPlasticMaxStrain(double plasticMaxStrain);
+    double getPlasticMaxStrain();
+
     void setElasticMaterial(const ElasticMaterial& material);
     ElasticMaterial getElasticMaterial();
 
