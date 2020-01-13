@@ -49,8 +49,6 @@ private slots:
 
     void on_mCellSizeCheckBox_stateChanged(int arg1);
 
-    void on_mCellRadiusEdgeRatioBox_2_stateChanged(int arg1);
-
     void on_mFacetAngleCheckBox_stateChanged(int arg1);
 
     void on_mFacetSizeCheckBox_stateChanged(int arg1);
@@ -58,6 +56,8 @@ private slots:
     void on_mFacetDistanceCheckBox_stateChanged(int arg1);
 
     void on_mSharpFeaturesEnabled_stateChanged(int arg1);
+
+    void on_mCellRadiusEdgeRatioCheckBox_stateChanged(int arg1);
 
 private:
 

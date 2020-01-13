@@ -119,11 +119,6 @@ void MeshConverterUIForm::on_mCellSizeCheckBox_stateChanged(int value)
     ui->mCellSizeBox->setEnabled(value == Qt::Checked);
 }
 
-void MeshConverterUIForm::on_mCellRadiusEdgeRatioBox_2_stateChanged(int value)
-{
-    ui->mCellRadiusEdgeRatioBox->setEnabled(value == Qt::Checked);
-}
-
 void MeshConverterUIForm::on_mFacetAngleCheckBox_stateChanged(int value)
 {
     ui->mFacetAngle->setEnabled(value == Qt::Checked);
@@ -142,6 +137,11 @@ void MeshConverterUIForm::on_mFacetDistanceCheckBox_stateChanged(int value)
 void MeshConverterUIForm::on_mSharpFeaturesEnabled_stateChanged(int value)
 {
     ui->mMinFeatureEdgeAngleDeg->setEnabled(value == Qt::Checked);
+}
+
+void MeshConverterUIForm::on_mCellRadiusEdgeRatioCheckBox_stateChanged(int value)
+{
+    ui->mCellRadiusEdgeRatioBox->setEnabled(value == Qt::Checked);
 }
 
 void MeshConverterUIForm::updateDoubleSpinBox(
