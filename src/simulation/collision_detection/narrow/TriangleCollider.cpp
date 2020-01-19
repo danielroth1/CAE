@@ -71,7 +71,43 @@ void TriangleCollider::addTrianglePair(
 
     assert(ct1.getAccessor()->getPolygon() == mPoly1 && ct2.getAccessor()->getPolygon()== mPoly2);
 
-    addPair(topoSource, face1, topoTarget, face2);
+    // Slower version
+//    addPair(topoSource, face1, topoTarget, face2);
+
+    // Find all possible feature combinations of (vertex, face), (face, vertex),
+    // and (edge, edge) between face1 and face2 using Representative-Triangles
+    // (see class documentation of PolygonTopology for more infos).
+    for (size_t i = 0; i < 3; ++i)
+    {
+        // Vertex -> Face
+        if (face1.isVertexOwner(i))
+        {
+            unsigned int vId = face1.getVertexIds()[i];
+            mFeaturePairsVF.push_back(VFPair(&topoSource.getVertices()[vId], &face2));
+        }
+
+        // Face -> Vertex
+        if (face2.isVertexOwner(i))
+        {
+            unsigned int vId = face2.getVertexIds()[i];
+            mFeaturePairsFV.push_back(FVPair(&face1, &topoTarget.getVertices()[vId]));
+        }
+
+        // Edge -> Edge
+        if (face1.isEdgeOwner(i))
+        {
+            for (size_t j = 0; j < 3; ++j)
+            {
+                if (face2.isEdgeOwner(j))
+                {
+                    unsigned int eId1 = face1.getEdgeIds()[i];
+                    unsigned int eId2 = face2.getEdgeIds()[j];
+                    mFeaturePairsEE.push_back(EEPair(&topoSource.getEdges()[eId1],
+                                                     &topoTarget.getEdges()[eId2]));
+                }
+            }
+        }
+    }
 }
 
 void TriangleCollider::addSphereSpherePair(CollisionSphere& cs1, CollisionSphere& cs2)

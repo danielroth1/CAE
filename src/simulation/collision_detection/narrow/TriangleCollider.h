@@ -43,6 +43,9 @@ public:
     void addTriangleSpherePair(CollisionTriangle& ct, CollisionSphere& cs);
     void addTrianglePair(CollisionTriangle& ct1, CollisionTriangle& ct2);
     void addSphereSpherePair(CollisionSphere& cs1, CollisionSphere& cs2);
+
+    // Slow way of adding a pair because it checks all possible feature combinations
+    // and uses a slow unordered_set look up.
     void addPair(
             Polygon2DTopology& topoSource,
             TopologyFeature& featureSource,

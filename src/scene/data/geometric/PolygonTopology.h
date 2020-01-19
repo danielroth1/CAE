@@ -16,6 +16,17 @@
 //  * 2 faces per edge
 //  * n edges per vertex
 //  * m faces per vertex
+//
+// Representative-Triangles:
+// Sets for each face the feature owner ships, see
+// Curtis et al. "Fast Collision Detection for Deformable Models using Representative-Triangles"
+//
+// The idea is that each vertex and each edge is owned by only one face.
+// Features that are shared by multiple faces are only assigned to one face.
+// This can be used to speed up things like collision detection because it
+// allows to avoid collision duplications. When iterating over triangle, only
+// consider the features that the triangle owns.
+//
 class PolygonTopology
 {
 public:
@@ -149,6 +160,10 @@ private:
                 std::vector<TopologyVertex>& verticesOut,
                 std::vector<TopologyEdge>& edgesOut,
                 std::vector<TopologyFace>& facesOut) const;
+
+    // Implements a greedy algorithm. Iterate each face and add assign all
+    // features as owner that are not already assigned.
+    void setFaceOwnerships();
 
     TopologyEdge createEdge(ID f1, ID f2);
 

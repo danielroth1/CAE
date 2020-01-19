@@ -135,6 +135,7 @@ void PolygonTopology::init(const Faces& faces, ID nVertices)
 {
     mFacesIndices = faces;
     buildTopology(mFacesIndices, nVertices, mVertices, mEdges, mFaces);
+    setFaceOwnerships();
 }
 
 std::vector<TopologyEdge>
@@ -326,6 +327,38 @@ void PolygonTopology::buildTopology(
             TopologyEdge& e = edgesOut[tFace.getEdgeIds()[j]];
             if (e.getFaceIds().size() > 1)
                 tFace.getAdjacentFaces().push_back(e.getOtherFaceId(i));
+        }
+    }
+}
+
+void PolygonTopology::setFaceOwnerships()
+{
+    std::set<ID> vertexIds;
+    std::set<ID> edgeIds;
+    for (TopologyFace& f : mFaces)
+    {
+        for (size_t i = 0; i < 3; ++i)
+        {
+            unsigned int vId = f.getVertexIds()[i];
+
+            if (vertexIds.find(vId) == vertexIds.end())
+            {
+                // Assign ownership
+                f.setVertexOwner(i, true);
+                vertexIds.insert(vId);
+            }
+        }
+
+        for (size_t i = 0; i < 3; ++i)
+        {
+            unsigned int eId = f.getEdgeIds()[i];
+
+            if (edgeIds.find(eId) == edgeIds.end())
+            {
+                // Assign ownership
+                f.setEdgeOwner(i, true);
+                edgeIds.insert(eId);
+            }
         }
     }
 }
