@@ -85,6 +85,39 @@ void QtDeferredElementSelectionWidget<T>::selectElementsIfButtonPressed(
 }
 
 template<class T>
+void QtDeferredElementSelectionWidget<T>::updateNames(const std::vector<std::string>& names)
+{
+    if (names.size() != mSelectedElements.size())
+    {
+        std::cout << "Size missmatch. Can not update names.\n";
+        return;
+    }
+
+    mComboBox->clear();
+    for (size_t i = 0; i < names.size(); ++i)
+    {
+        mComboBox->addItem(QString::fromStdString(names[i]));
+    }
+}
+
+template<class T>
+void QtDeferredElementSelectionWidget<T>::updateName(size_t index, const std::string& name)
+{
+    mComboBox->setItemText(index, QString::fromStdString(name));
+}
+
+template<class T>
+size_t QtDeferredElementSelectionWidget<T>::getIndex(T element)
+{
+    for (size_t i = 0; i < mSelectedElements.size(); ++i)
+    {
+        if (mSelectedElements[i] == element)
+            return i;
+    }
+    return 0;
+}
+
+template<class T>
 T QtDeferredElementSelectionWidget<T>::getSelectedElement() const
 {
     if (static_cast<size_t>(mComboBox->currentIndex()) >= mSelectedElements.size())

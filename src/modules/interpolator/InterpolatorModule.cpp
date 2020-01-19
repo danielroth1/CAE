@@ -138,37 +138,6 @@ void InterpolatorModule::removeInterpolator(SGNode* source, SGNode* target)
 
 }
 
-//void InterpolatorModule::addInterpolator(
-//        const std::shared_ptr<Polygon>& source,
-//        const std::shared_ptr<Polygon>& target,
-//        const MeshInterpolator::Type& type)
-//{
-//    switch (type)
-//    {
-//    case MeshInterpolator::Type::FEM:
-//        if (target->getDimensionType() == Polygon::DimensionType::THREE_D)
-//        {
-//            mAc->getMeshInterpolationManager()->addInterpolatorFEM(
-//                        std::static_pointer_cast<Polygon3D>(source), target);
-//        }
-//        break;
-//    case MeshInterpolator::Type::MESH_MESH:
-//        mAc->getMeshInterpolationManager()->addInterpolatorMeshMesh(
-//                    source, target);
-//        break;
-//    }
-
-//    // TODO: how to guarantee thread safety? In which thread to execute insertion
-//    // operation?
-//    //-> maybe implement the inteprolators threadsafe (accessing polygons)?
-//    //-> add mutex to interpolation manager (iterating over interpolators)
-    
-//    // Update UI
-//    // How to represent interpolators in UI? In a list? Under which name?
-//    // Just use the source and target name of the affected nodes
-    
-//}
-
 void InterpolatorModule::init(ApplicationControl* ac)
 {
     mAc = ac;
@@ -203,7 +172,7 @@ void InterpolatorModule::notifyParentChanged(SGNode* /*source*/, SGNode* /*paren
 
 void InterpolatorModule::notifyNameChanged(SGNode* source, std::string name)
 {
-//    mUIControl->changeNodeName(source, name);
+    mUIControl->updateNodeName(source, name);
 }
 
 void InterpolatorModule::notifyTreeChanged(SGNode* /*source*/, SGTree* /*tree*/)

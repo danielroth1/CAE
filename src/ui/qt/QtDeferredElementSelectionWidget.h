@@ -43,6 +43,18 @@ public:
             const std::vector<T>& selectedElements,
             const std::vector<std::string>& names);
 
+    // Updates the names of all elements.
+    // \param names - must be of size of the selected elements that were passed
+    //      to selectElements().
+    void updateNames(const std::vector<std::string>& names);
+
+    // Updates the name of the element at the given index.
+    void updateName(size_t index, const std::string& name);
+
+    // Returns the index that the element has in the combo box.
+    // Returns 0 if there is none.
+    size_t getIndex(T element);
+
     // Returns the selected element that is chosen in the combo box.
     T getSelectedElement() const;
 

@@ -29,30 +29,54 @@ void QtDeferredSceneNodeSelectionWidget::onSceneNodeSelected(
     // "Select vertices" only uses this listener call.
     if (mSelectionControl->getSelectionType() == SelectionControl::SelectionType::SELECT_VERTICES)
     {
-        std::vector<SGNode*> nodes;
-        std::vector<std::string> names;
-        nodes.push_back(static_cast<SGNode*>(sd->getNode()));
-        names.push_back(sd->getNode()->getName());
-        selectElementsIfButtonPressed(nodes, names);
+        if (getButtonSetSelection()->isChecked())
+        {
+            std::vector<SGNode*> nodes;
+            std::vector<std::string> names;
+            nodes.push_back(static_cast<SGNode*>(sd->getNode()));
+            names.push_back(sd->getNode()->getName());
+            selectElementsIfButtonPressed(nodes, names);
+            updateListeners();
+        }
     }
 }
 
 void QtDeferredSceneNodeSelectionWidget::onSelectedSceneNodesChanged(
         const std::set<std::shared_ptr<SceneData> >& sds)
 {
-    std::vector<SGNode*> nodes;
-    std::vector<std::string> names;
-    for (const std::shared_ptr<SceneData>& sd : sds)
+    if (getButtonSetSelection()->isChecked())
     {
-        nodes.push_back(static_cast<SGNode*>(sd->getNode()));
-        names.push_back(sd->getNode()->getName());
+        std::vector<SGNode*> nodes;
+        std::vector<std::string> names;
+        for (const std::shared_ptr<SceneData>& sd : sds)
+        {
+            SGNode* node = static_cast<SGNode*>(sd->getNode());
+            nodes.push_back(node);
+            names.push_back(sd->getNode()->getName());
+        }
+        selectElementsIfButtonPressed(nodes, names);
+        updateListeners();
     }
-    selectElementsIfButtonPressed(nodes, names);
 }
 
 void QtDeferredSceneNodeSelectionWidget::onSelectedVerticesChanged(
         const std::map<std::shared_ptr<SceneLeafData>,
         std::vector<ID> >& /*sv*/)
+{
+    // Nothing to do here.
+}
+
+void QtDeferredSceneNodeSelectionWidget::notifyParentChanged(SGNode* /*source*/, SGNode* /*parent*/)
+{
+    // Nothing to do here.
+}
+
+void QtDeferredSceneNodeSelectionWidget::notifyNameChanged(SGNode* source, std::string name)
+{
+    updateName(getIndex(source), name);
+}
+
+void QtDeferredSceneNodeSelectionWidget::notifyTreeChanged(SGNode* /*source*/, SGTree* /*tree*/)
 {
     // Nothing to do here.
 }
@@ -69,10 +93,24 @@ void QtDeferredSceneNodeSelectionWidget::setSelectionReleasedSlot(bool checked)
             names.push_back(nodes.back()->getName());
         }
         selectElements(nodes, names);
+        updateListeners();
     }
 }
 
 void QtDeferredSceneNodeSelectionWidget::changeSelectionClickedSlot(bool /*checked*/)
 {
     mSelectionControl->selectSceneNode(getSelectedElement());
+}
+
+void QtDeferredSceneNodeSelectionWidget::updateListeners()
+{
+    for (SGNode* node : mListenedSceneNodes)
+    {
+        node->removeListener(this);
+    }
+    mListenedSceneNodes = getSelectedElements();
+    for (SGNode* node : mListenedSceneNodes)
+    {
+        node->addListener(this);
+    }
 }
