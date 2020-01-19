@@ -186,6 +186,25 @@ void SelectionControl::selectSceneNode(SGNode* node)
     updateModels();
 }
 
+void SelectionControl::selectSceneNodes(const std::vector<SGNode*>& nodes)
+{
+    std::set<std::shared_ptr<SceneData>> nodesSet;
+    for (SGNode* node : nodes)
+    {
+        if (node->isLeaf())
+            nodesSet.insert(static_cast<SGLeafNode*>(node)->getData());
+        else
+            nodesSet.insert(static_cast<SGChildrenNode*>(node)->getData());
+    }
+    updateSelection(nodesSet, VertexCollection());
+    updateModels();
+}
+
+SelectionControl::SelectionType SelectionControl::getSelectionType() const
+{
+    return mSelectionType;
+}
+
 SelectionSceneData* SelectionControl::getSelectionSceneData()
 {
     return mSelectionSceneData.get();

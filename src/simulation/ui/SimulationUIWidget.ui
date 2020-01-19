@@ -46,8 +46,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>208</width>
-        <height>392</height>
+        <width>197</width>
+        <height>377</height>
        </rect>
       </property>
       <attribute name="label">
@@ -81,13 +81,6 @@
           <property name="bottomMargin">
            <number>9</number>
           </property>
-          <item row="11" column="0" colspan="2">
-           <widget class="Line" name="line_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
           <item row="7" column="0" colspan="2">
            <widget class="Line" name="line">
             <property name="orientation">
@@ -95,67 +88,30 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0" colspan="2">
-           <widget class="QGroupBox" name="groupBox">
-            <property name="title">
-             <string>Creation</string>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_4">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>9</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item row="2" column="1">
-              <widget class="QPushButton" name="mButtonCreateRigidBody">
-               <property name="text">
-                <string>Rigid Body</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0">
-              <widget class="QPushButton" name="mButtonCollidable">
-               <property name="text">
-                <string>Collidable</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QPushButton" name="mCreateFEMObject">
-               <property name="text">
-                <string>Deformable</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="Line" name="line_5">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0" colspan="2">
-           <widget class="QtOwnersMembersWidget" name="mOwnersMembersWidget" native="true">
-            <layout class="QVBoxLayout" name="verticalLayout_2"/>
-           </widget>
-          </item>
-          <item row="4" column="0" colspan="2">
-           <widget class="QtMembersWidget" name="mMembersWidget" native="true"/>
-          </item>
           <item row="9" column="0" colspan="2">
            <widget class="Line" name="line_2">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>Simulate</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="mButtonSingleStep">
+            <property name="text">
+             <string>Single Step</string>
             </property>
            </widget>
           </item>
@@ -243,25 +199,69 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QPushButton" name="pushButton">
-            <property name="text">
-             <string>Simulate</string>
+          <item row="6" column="0" colspan="2">
+           <widget class="QtOwnersMembersWidget" name="mOwnersMembersWidget" native="true">
+            <layout class="QVBoxLayout" name="verticalLayout_2"/>
+           </widget>
+          </item>
+          <item row="8" column="0" colspan="2">
+           <widget class="QGroupBox" name="groupBox">
+            <property name="title">
+             <string>Creation</string>
             </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
+            <layout class="QGridLayout" name="gridLayout_4">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>9</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item row="5" column="0">
+              <widget class="QPushButton" name="mButtonCollidable">
+               <property name="text">
+                <string>Collidable</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QPushButton" name="mButtonCreateRigidBody">
+               <property name="text">
+                <string>Rigid Body</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QPushButton" name="mCreateFEMObject">
+               <property name="text">
+                <string>Deformable</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="11" column="0" colspan="2">
+           <widget class="Line" name="line_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="mButtonSingleStep">
-            <property name="text">
-             <string>Single Step</string>
+          <item row="5" column="0" colspan="2">
+           <widget class="Line" name="line_5">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="QtMembersWidget" name="mMembersWidget" native="true"/>
           </item>
          </layout>
         </widget>
@@ -321,7 +321,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>222</width>
+               <width>214</width>
                <height>284</height>
               </rect>
              </property>

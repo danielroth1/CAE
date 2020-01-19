@@ -29,9 +29,7 @@ public:
 
     QGroupsListWidget* getGroupsListWidget();
     QTreeWidget* getSGTreeWidget();
-    QTabWidget* getModulesTabWidget();
-
-    void insertNewModule(QWidget* moduleWidget, std::string name);
+    QWidget* getModulesParentWidget();
 
     // QWidget interface
 protected:

@@ -249,6 +249,11 @@ void MeshInterpolatorFEM::update()
     mTarget->update();
 }
 
+MeshInterpolator::Type MeshInterpolatorFEM::getType() const
+{
+    return Type::FEM;
+}
+
 Vector3d MeshInterpolatorFEM::getSourcePosition(size_t targetId) const
 {
     return interpolate(mInterpolations[targetId]);

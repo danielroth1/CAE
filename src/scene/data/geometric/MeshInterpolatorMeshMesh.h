@@ -164,6 +164,8 @@ public:
     // Calls geometricDataChanged() of target.
     virtual void update() override;
 
+    virtual Type getType() const override;
+
     // Returns the position of the source vertex that correspondons to the
     // target vertex with the given id.
     virtual Eigen::Vector3d getSourcePosition(size_t targetId) const override;

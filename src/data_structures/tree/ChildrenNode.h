@@ -20,7 +20,7 @@ class ChildrenNode : public Node<T, L>
 public:
     ChildrenNode(std::string name = "");
     ChildrenNode(ChildrenNode* parent, std::string name = "");
-    virtual ~ChildrenNode();
+    virtual ~ChildrenNode() override;
 
     // Delegated children methods =======
         Node<T, L>* getChild(unsigned int i) const;
@@ -35,7 +35,7 @@ public:
         void removeChild(Node<T, L>* node);
         // Removes all children.
         void clear();
-        virtual std::size_t getNumberOfChildren() const;
+        virtual std::size_t getNumberOfChildren() const override;
         typename std::vector<Node<T, L>*>::iterator begin();
         typename std::vector<Node<T, L>*>::iterator end();
     // ===================================

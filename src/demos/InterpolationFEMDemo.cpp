@@ -65,7 +65,7 @@ void InterpolationFEMDemo::load()
     {
         double sphereDim = 0.4;
         SGLeafNode* node = mAc->getSGControl()->createLeafNode(
-                    "Box (detailed)",
+                    "Sphere (detailed)",
                     mAc->getSGControl()->getSceneGraph()->getRoot(),
                     std::make_shared<Polygon2D>(
                         GeometricDataFactory::create2DSphere(sphereDim, 4)),

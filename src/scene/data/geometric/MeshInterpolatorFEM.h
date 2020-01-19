@@ -38,6 +38,7 @@ public:
     // Calls geometricDataChanged() of target.
     virtual void solve() override;
     virtual void update() override;
+    virtual Type getType() const override;
     virtual Eigen::Vector3d getSourcePosition(size_t targetId) const override;
 
 private:

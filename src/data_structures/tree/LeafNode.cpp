@@ -41,7 +41,7 @@ void LeafNode<T, L>::registerTree(Tree<T, L>* tree)
 }
 
 template<class T, class L>
-L& LeafNode<T, L>::getData()
+L LeafNode<T, L>::getData()
 {
     return mData;
 }

@@ -18,8 +18,7 @@ void DemoLoaderModule::init(ApplicationControl* ac)
 
 void DemoLoaderModule::initUI(QWidget* parent)
 {
-    mUIControl = std::make_shared<DemoLoaderUIControl>(
-                this, parent);
+    mUIControl = std::make_shared<DemoLoaderUIControl>(this, parent);
 }
 
 void DemoLoaderModule::finalize()

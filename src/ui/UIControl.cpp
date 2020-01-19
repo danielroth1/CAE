@@ -13,6 +13,7 @@
 #include <QMouseEvent>
 #include <QListWidgetItem>
 #include <qtreewidget.h>
+#include <QLayout>
 #include "rendering/Renderer.h"
 #include <scene/data/SimulationData.h>
 #include <scene/data/simulation/FEMData.h>
@@ -84,7 +85,8 @@ void UIControl::initialize(ApplicationControl* applicationControl)
     mSelectionControl->changeSelectionType(SelectionControl::SelectionType::SELECT_VERTICES);
 
     mSGQtWidgetManager = new SGQtWidgetManager(mMainWindow->getSGTreeWidget());
-    mModulesUIControl = std::make_unique<ModulesUIControl>(mMainWindow->getModulesTabWidget());
+    mModulesUIControl = std::make_unique<ModulesUIControl>(mMainWindow->getModulesParentWidget());
+    mMainWindow->getModulesParentWidget()->layout()->addWidget(mModulesUIControl->getModulesWidget());
     handleNewSceneGraph();
 }
 

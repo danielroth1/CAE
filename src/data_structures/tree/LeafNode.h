@@ -36,7 +36,7 @@ public:
     // ===================================
 
     // Getters
-        L& getData();
+        L getData();
         virtual std::size_t getNumberOfChildren() const;
 
     // Setters

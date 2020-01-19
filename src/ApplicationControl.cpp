@@ -52,9 +52,11 @@
 #include <demos/CubeWallDemo.h>
 #include <demos/ConstrainedDeformableDemo.h>
 #include <demos/InterpolationFEMCollisionDemo.h>
+#include <demos/InterpolatorCreationDemo.h>
 #include <ui/scene_graph/SGUIControl.h>
 #include <io/importers/OBJImporter.h>
 #include <modules/geometry_info/GeometryInfoModule.h>
+#include <modules/interpolator/InterpolatorModule.h>
 
 
 ApplicationControl::ApplicationControl()
@@ -231,6 +233,7 @@ void ApplicationControl::initiateApplication()
     mDemoLoaderModule->addDemo(std::make_shared<InterpolationMeshMeshDemo>(this));
     mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMDemo>(this));
     mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMCollisionDemo>(*this));
+    mDemoLoaderModule->addDemo(std::make_shared<InterpolatorCreationDemo>(this));
     mDemoLoaderModule->addDemo(std::make_shared<TexturingDemo>(this));
     mDemoLoaderModule->addDemo(std::make_shared<FallingObjectsDemo>(
                                    this, "Falling Objects (rigid)", true));
@@ -249,6 +252,7 @@ void ApplicationControl::createModules()
     mModules.push_back(mDemoLoaderModule);
     mModules.push_back(std::make_shared<SimulationModule>());
     mModules.push_back(std::make_shared<MeshConverterModule>());
+    mModules.push_back(std::make_shared<InterpolatorModule>());
     mModules.push_back(std::make_shared<GeometryInfoModule>());
 }
 

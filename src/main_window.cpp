@@ -37,11 +37,6 @@ GLWidget* MainWindow::getGlWidget()
     return ui->openGLWidget;
 }
 
-void MainWindow::insertNewModule(QWidget* moduleWidget, std::string name)
-{
-    ui->tabWidget->addTab(moduleWidget, QString::fromStdString(name));
-}
-
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     mAc->onExit();
@@ -89,9 +84,9 @@ QTreeWidget* MainWindow::getSGTreeWidget()
     return ui->sceneGraphTreeWidget;
 }
 
-QTabWidget* MainWindow::getModulesTabWidget()
+QWidget* MainWindow::getModulesParentWidget()
 {
-    return ui->tabWidget;
+    return ui->mModulesWidget;
 }
 
 void MainWindow::on_sceneGraphTreeWidget_customContextMenuRequested(

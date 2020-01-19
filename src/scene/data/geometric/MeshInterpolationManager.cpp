@@ -84,6 +84,25 @@ bool MeshInterpolationManager::removeInterpolator(
     return success;
 }
 
+bool MeshInterpolationManager::removeInterpolatorByTarget(
+        const std::shared_ptr<Polygon>& polyTarget)
+{
+    std::shared_ptr<MeshInterpolationData> data = getData(polyTarget);
+    if (data)
+    {
+        auto it = std::find(mData.begin(), mData.end(), data);
+        if (it == mData.end())
+        {
+            std::cout << "Should not be happening. Possible race condition.\n";
+            return false;
+        }
+        unload(data);
+        mData.erase(it);
+        return true;
+    }
+    return false;
+}
+
 void MeshInterpolationManager::clearInterpolators()
 {
     if (mRenderer != nullptr)
@@ -184,7 +203,8 @@ MeshInterpolationManager::createGeometricDataListener(
     return listener;
 }
 
-std::shared_ptr<MeshInterpolationManager::MeshInterpolationData> MeshInterpolationManager::getData(
+std::shared_ptr<MeshInterpolationManager::MeshInterpolationData>
+MeshInterpolationManager::getData(
         const std::shared_ptr<Polygon>& target)
 {
     for (const std::shared_ptr<MeshInterpolationData>& data : mData)

@@ -42,7 +42,7 @@ typename std::map<A, B>::iterator BidirectionalMap<A, B>::find(A a)
 }
 
 template<class A, class B>
-typename std::map<A, B>::iterator BidirectionalMap<A, B>::find(B b)
+typename std::map<B, A>::iterator BidirectionalMap<A, B>::find(B b)
 {
     return mBToAMap.find(b);
 }
@@ -54,7 +54,7 @@ typename std::map<A, B>::iterator BidirectionalMap<A, B>::end(A)
 }
 
 template<class A, class B>
-typename std::map<A, B>::iterator BidirectionalMap<A, B>::end(B)
+typename std::map<B, A>::iterator BidirectionalMap<A, B>::end(B)
 {
     return mBToAMap.end();
 }
@@ -83,6 +83,18 @@ bool BidirectionalMap<A, B>::remove(B b)
         return true;
     }
     return false;
+}
+
+template<class A, class B>
+const std::map<A, B>& BidirectionalMap<A, B>::getFirstMap() const
+{
+    return mAToBMap;
+}
+
+template<class A, class B>
+const std::map<B, A>& BidirectionalMap<A, B>::getSecondMap() const
+{
+    return mBToAMap;
 }
 
 #endif // BIDIRECTIONALMAP_CPP

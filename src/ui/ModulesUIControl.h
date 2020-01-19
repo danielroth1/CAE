@@ -6,6 +6,7 @@
 
 class Module;
 class QTabWidget;
+class QToolBox;
 class QWidget;
 
 // Manages the UI interface to modules
@@ -19,7 +20,7 @@ class QWidget;
 class ModulesUIControl
 {
 public:
-    ModulesUIControl(QTabWidget* tabWidget);
+    ModulesUIControl(QWidget* modulesWidget);
 
     bool addModule(Module* module);
     bool removeModule(Module* module);
@@ -44,7 +45,8 @@ private:
 
     int findTabIndex(std::string name);
 
-    QTabWidget* mTabWidget;
+//    QTabWidget* mTabWidget;
+    QToolBox* mToolBox;
     std::vector<std::string> mModuleNames;
 //    std::map<std::string, int> mModuleWidgetMap;
 };

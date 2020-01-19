@@ -16,6 +16,12 @@ class Polygon2DAccessor;
 class MeshInterpolator
 {
 public:
+
+    enum class Type
+    {
+        MESH_MESH, FEM
+    };
+
     MeshInterpolator(const std::shared_ptr<Polygon>& source,
                      const std::shared_ptr<Polygon>& target);
 
@@ -23,6 +29,8 @@ public:
     virtual void solve() = 0;
 
     virtual void update() = 0;
+
+    virtual Type getType() const = 0;
 
     // Returns the position of the source vertex that correspondons to the
     // target vertex with the given id.

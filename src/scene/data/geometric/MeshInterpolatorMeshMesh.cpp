@@ -257,7 +257,12 @@ void MeshInterpolatorMeshMesh::update()
 //            mTargetAccessor->setPosition(i, p);
 //        }
 //    }
-//    mTarget->update();
+    //    mTarget->update();
+}
+
+MeshInterpolator::Type MeshInterpolatorMeshMesh::getType() const
+{
+    return Type::MESH_MESH;
 }
 
 Vector3d MeshInterpolatorMeshMesh::getSourcePosition(size_t targetId) const

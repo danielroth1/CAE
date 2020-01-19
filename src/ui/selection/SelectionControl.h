@@ -78,11 +78,14 @@ public:
         //      selects the scene leaf data
         // At the end, updates all models.
         //\param sceneLeafData of the scene node
-        void selectSceneNode(SGNode* sceneLeafData);
+        void selectSceneNode(SGNode* node);
+
+        void selectSceneNodes(const std::vector<SGNode*>& nodes);
 
     //*********************************************
 
     // Getters
+        SelectionType getSelectionType() const;
         SelectionSceneData* getSelectionSceneData();
         SelectionVertices* getSelectionVertices();
         const std::set<std::shared_ptr<SceneData>>& getSelectedSceneData();

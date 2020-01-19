@@ -1,18 +1,21 @@
 #include "ModulesUIControl.h"
 
 #include <QTabWidget>
+#include <QToolBox>
+#include <iostream>
 
 #include <modules/Module.h>
 
-ModulesUIControl::ModulesUIControl(QTabWidget* tabWidget)
-    : mTabWidget(tabWidget)
+ModulesUIControl::ModulesUIControl(QWidget* modulesWidget)
 {
-
+//    mTabWidget = new QTabWidget(modulesWidget);
+    mToolBox = new QToolBox(modulesWidget);
 }
 
 bool ModulesUIControl::addModule(Module* module)
 {
-    module->initUI(mTabWidget);
+    module->initUI(mToolBox);
+//    module->initUI(mTabWidget);
     return addModule(module->getName(), module->getWidget());
 }
 
@@ -23,7 +26,8 @@ bool ModulesUIControl::removeModule(Module* module)
 
 QWidget* ModulesUIControl::getModulesWidget()
 {
-    return mTabWidget;
+//    return mTabWidget;
+    return mToolBox;
 }
 
 bool ModulesUIControl::addModule(std::string name, QWidget* widget)
@@ -31,8 +35,11 @@ bool ModulesUIControl::addModule(std::string name, QWidget* widget)
     if (findTabIndex(name) != -1)
         return false;
 
-    mTabWidget->insertTab(mTabWidget->count(), widget, QString::fromStdString(name));
-    mTabWidget->setCurrentIndex(0);
+//    mTabWidget->insertTab(mTabWidget->count(), widget, QString::fromStdString(name));
+//    mTabWidget->setCurrentIndex(0);
+
+    mToolBox->addItem(widget, QString::fromStdString(name));
+    mToolBox->setCurrentIndex(0);
     return true;
 
 //    // don't add module if there is already one with same name added
@@ -54,7 +61,8 @@ bool ModulesUIControl::removeModule(std::string name)
     if (index == -1)
         return false;
 
-    mTabWidget->removeTab(index);
+//    mTabWidget->removeTab(index);
+    mToolBox->removeItem(index);
     return true;
 
 //    // find entry in vector
@@ -73,10 +81,14 @@ bool ModulesUIControl::removeModule(std::string name)
 
 int ModulesUIControl::findTabIndex(std::string name)
 {
-    for (int i = 0; i < mTabWidget->count(); ++i)
+    for (int i = 0; i < mToolBox->count(); ++i)
     {
+//        if (mTabWidget->tabText(i).toStdString() == name)
+//        {
+//            return i;
+//        }
 
-        if (mTabWidget->tabText(i).toStdString() == name)
+        if (mToolBox->itemText(i).toStdString() == name)
         {
             return i;
         }

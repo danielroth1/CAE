@@ -56,7 +56,6 @@ public:
     virtual std::string getName() const;
     virtual Tree<T, L>* getTree();
 
-
     // Register the given tree to this node and the whole subgraph.
     // Each node removes itself as listener from the old tree and
     // registers itself to the given tree.

@@ -29,6 +29,7 @@ typedef TreeTraverser<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>
 typedef ChildrenNodeListener<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>    SGChildrenNodeListener;
 typedef LeafNodeListener<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>        SGLeafNodeListener;
 typedef NodeListener<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>            SGNodeListener;
+typedef Tree<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>                    SGTree;
 typedef TreeListener<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>            SGTreeListener;
 typedef TreeFactory<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>             SGTreeFactory;
 typedef TreeNodeFactory<std::shared_ptr<SceneData>, std::shared_ptr<SceneLeafData>>         SGTreeNodeFactory;
