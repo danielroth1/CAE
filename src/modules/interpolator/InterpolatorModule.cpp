@@ -147,6 +147,19 @@ void InterpolatorModule::removeInterpolator(SGNode* source, SGNode* target)
 
 }
 
+void InterpolatorModule::removeInterpolator(SGNode* node)
+{
+    for (auto it : mInterpolatorMap)
+    {
+        SGNode* source = std::get<0>(it.first);
+        SGNode* target = std::get<1>(it.first);
+        if (node == source || node == target)
+        {
+            removeInterpolator(source, target);
+        }
+    }
+}
+
 void InterpolatorModule::clearInterpolators()
 {
     auto interpolatorMapCopy = mInterpolatorMap;

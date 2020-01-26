@@ -30,6 +30,8 @@ public:
     // Updates the UI and removes the interpolator from the simulation.
     void removeInterpolator(SGNode* source, SGNode* target);
 
+    void removeInterpolator(SGNode* node);
+
     // Removes all mesh interpolators.
     // Updates the UI and removes the interpolators from the simulation.
     void clearInterpolators();

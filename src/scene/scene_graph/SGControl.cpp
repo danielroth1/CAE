@@ -648,7 +648,7 @@ void SGControl::removeNode(SGNode* node)
                 control.mAc->getSimulationControl()->removeSimulationObject(so);
             }
 
-            // remode render model
+            // remove render model
             std::shared_ptr<RenderModel> rm = leafNode->getData()->getRenderModel();
             if (rm)
             {
@@ -666,7 +666,7 @@ void SGControl::removeNode(SGNode* node)
             {
                 std::shared_ptr<Polygon> poly =
                         std::static_pointer_cast<Polygon>(gd);
-                control.mAc->getMeshInterpolationManager()->removeInterpolator(poly);
+                control.mAc->getInterpolatorModule()->removeInterpolator(leafNode);
             }
         }
 
