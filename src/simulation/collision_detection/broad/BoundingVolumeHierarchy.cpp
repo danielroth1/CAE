@@ -8,7 +8,7 @@
 BoundingVolumeHierarchy::BoundingVolumeHierarchy(
         SimulationObject* simulationObject,
         Polygon* polygon,
-        MeshInterpolatorFEM* interpolator,
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolator,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
         BoundingVolume::Type bvType,
         double collisionMargin)
@@ -134,7 +134,7 @@ bool BoundingVolumeHierarchy::collidesIterative(BoundingVolumeHierarchy* hierarc
 {
     mCollider->prepare(mPolygon, hierarchy->getPolygon(),
                        mSimulationObject, hierarchy->getSimulationObject(),
-                       mInterpolator, hierarchy->getInterpolator());
+                       mInterpolator.get(), hierarchy->getInterpolator());
 
     bool collides = false;
 
@@ -294,5 +294,5 @@ SimulationObject* BoundingVolumeHierarchy::getSimulationObject() const
 
 MeshInterpolatorFEM* BoundingVolumeHierarchy::getInterpolator() const
 {
-    return mInterpolator;
+    return mInterpolator.get();
 }

@@ -37,6 +37,14 @@ public:
                 SGChildrenNode* parent,
                 bool renderOnlyOuterFaces = true);
 
+        // If a geometry is represented by multiple geometry files like in the
+        // (.node, .face) or (.node, .ele) file format, then this method
+        // should be used.
+        SGNode* importFilesAsChild(
+                const std::vector<File>& files,
+                SGChildrenNode* parent,
+                bool renderOnlyOuterFaces = true);
+
         // Creates a sphere
         // \param name - name of the node
         // \param parent - parent node of the created node

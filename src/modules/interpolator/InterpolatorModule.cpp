@@ -134,8 +134,32 @@ void InterpolatorModule::removeInterpolator(SGNode* source, SGNode* target)
 
         mInterpolatorMap.erase(it);
 
+        if (source->isLeaf())
+        {
+            std::shared_ptr<SimulationObject> so =
+                    static_cast<SGLeafNode*>(source)->getData()->getSimulationObject();
+            if (so)
+            {
+                mAc->getSimulationControl()->removeCollisionObject(so);
+            }
+        }
     }
 
+}
+
+void InterpolatorModule::clearInterpolators()
+{
+    auto interpolatorMapCopy = mInterpolatorMap;
+    for (auto it : interpolatorMapCopy)
+    {
+        const std::pair<SGNode*, SGNode*>& p = it.first;
+        removeInterpolator(p.first, p.second);
+    }
+}
+
+void InterpolatorModule::setInterpolatorVisible(const std::shared_ptr<Polygon>& poly, bool visible)
+{
+    mAc->getMeshInterpolationManager()->setInterpolatorVisible(poly, visible);
 }
 
 void InterpolatorModule::init(ApplicationControl* ac)

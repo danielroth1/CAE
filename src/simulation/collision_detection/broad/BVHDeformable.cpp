@@ -13,7 +13,7 @@
 BVHDeformable::BVHDeformable(
         SimulationObject* so,
         Polygon* polygon,
-        MeshInterpolatorFEM* interpolator,
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolator,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
         BoundingVolume::Type bvType,
         double collisionMargin)

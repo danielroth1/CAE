@@ -13,7 +13,7 @@ class File
 public:
     File(std::string path);
 
-    bool exists();
+    bool exists() const;
 
     std::string getPath() const;
     std::string getRelativePath() const;
@@ -34,7 +34,7 @@ public:
     // was sucessfull.
     bool enterDirectiory(std::string dir);
 
-    std::ifstream read(bool& successful);
+    std::ifstream read(bool& successful) const;
 
     static const char SEPARATOR;
 

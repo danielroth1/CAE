@@ -4,6 +4,7 @@
 #include <data_structures/DataStructures.h>
 #include <io/ImageLoader.h>
 #include <io/importers/OBJImporter.h>
+#include <modules/interpolator/InterpolatorModule.h>
 #include <modules/mesh_converter/MeshCriteria.h>
 #include <rendering/Appearance.h>
 #include <rendering/Appearances.h>
@@ -213,7 +214,7 @@ void InterpolationMeshMeshDemo::load()
         for (SGLeafNode* target : targets)
         {
             addInterpolation(sourceNode, target);
-            mAc->getMeshInterpolationManager()->setInterpolatorVisible(
+            mAc->getInterpolatorModule()->setInterpolatorVisible(
                         std::dynamic_pointer_cast<Polygon>(
                             target->getData()->getGeometricData()), true);
         }
@@ -267,11 +268,8 @@ void InterpolationMeshMeshDemo::addInterpolation(
             SGLeafNode* sourceNode,
             SGLeafNode* targetNode)
 {
-    mAc->getMeshInterpolationManager()->addInterpolatorMeshMesh(
-                std::dynamic_pointer_cast<Polygon>(
-                    sourceNode->getData()->getGeometricData()),
-                std::dynamic_pointer_cast<Polygon>(
-                    targetNode->getData()->getGeometricData()));
+    mAc->getInterpolatorModule()->addInterpolator(
+                sourceNode, targetNode, MeshInterpolator::Type::MESH_MESH);
 }
 
 void InterpolationMeshMeshDemo::unload()

@@ -146,22 +146,9 @@ SGLeafNode* FallingObjectsDemo::importAndScale(
                     criteria,
                     true);
 
-        // add interpolation
-//        mAc->getMeshInterpolationManager()->addInterpolatorFEM(
-//                    std::dynamic_pointer_cast<Polygon3D>(
-//                        source->getData()->getGeometricData()),
-//                    std::dynamic_pointer_cast<Polygon>(
-//                        leaf->getData()->getGeometricData()));
-
-        mAc->getMeshInterpolationManager()->addInterpolatorMeshMesh(
-                    std::dynamic_pointer_cast<Polygon>(
-                        source->getData()->getGeometricData()),
-                    std::dynamic_pointer_cast<Polygon>(
-                        leaf->getData()->getGeometricData()));
-
         // Set wireframe and invisible
         source->getData()->getRenderModel()->setWireframeEnabled(true);
-        source->getData()->getRenderModel()->setVisible(false);
+//        source->getData()->getRenderModel()->setVisible(false);
 
         if (rigid)
         {

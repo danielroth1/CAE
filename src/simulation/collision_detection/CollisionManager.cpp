@@ -460,7 +460,7 @@ void CollisionManager::addSimulationObject(
     data.mBvh = std::make_shared<BVHDeformable>(
                 so.get(),
                 polygon.get(),
-                interpolator.get(),
+                interpolator,
                 collisionObjects,
                 BoundingVolume::Type::AABB,
                 getCollisionMargin());

@@ -24,6 +24,8 @@
 
 #include <simulation/fem/FEMObject.h>
 
+#include <modules/interpolator/InterpolatorModule.h>
+
 using namespace Eigen;
 
 InterpolationFEMCollisionDemo::InterpolationFEMCollisionDemo(ApplicationControl& ac)
@@ -80,6 +82,7 @@ void InterpolationFEMCollisionDemo::load()
                 Eigen::Scaling(1.0) *
                 Eigen::Translation3d(-mid);
         poly1->transform(scaling);
+        poly1->update();
 
         sourceNode->getData()->getRenderModel()->setWireframeEnabled(true);
 
@@ -140,6 +143,7 @@ void InterpolationFEMCollisionDemo::load()
                 Eigen::Scaling(1.0) *
                 Eigen::Translation3d(-mid);
         poly1->transform(scaling);
+        poly1->update();
 
         sourceNode->getData()->getRenderModel()->setWireframeEnabled(true);
 
@@ -166,7 +170,7 @@ void InterpolationFEMCollisionDemo::load()
         SGLeafNode* floor = sg->createBox(
                     "Floor",
                     sg->getSceneGraph()->getRoot(),
-                    Vector(0.0, -0.25, 0.0), 12, 0.5, 12, true);
+                    Vector(0.0, -0.25, 0.0), 50, 0.5, 50, true);
         floor->getData()->getRenderModel()->setAppearances(
                     std::make_shared<Appearances>(
                         Appearance::createAppearanceFromColor(
@@ -185,6 +189,7 @@ void InterpolationFEMCollisionDemo::load()
         level->getData()->getGeometricData()->transform(
                     Eigen::Affine3d(
                         Eigen::Translation3d(Eigen::Vector3d(-3.0, 1.5, 0.0))));
+        level->getData()->getGeometricData()->update();
         sg->createRigidBody(level->getData(), 1.0, true);
         sg->createCollidable(level->getData());
     }
@@ -199,6 +204,7 @@ void InterpolationFEMCollisionDemo::load()
         level->getData()->getGeometricData()->transform(
                     Eigen::Translation3d(Eigen::Vector3d(1.0, 1.0, 0.0)) *
                     Eigen::AngleAxisd(0.125 * M_PI, Eigen::Vector3d(0.0, 0.0, 1.0)));
+        level->getData()->getGeometricData()->update();
         sg->createRigidBody(level->getData(), 1.0, true);
         sg->createCollidable(level->getData());
     }
@@ -211,6 +217,7 @@ void InterpolationFEMCollisionDemo::load()
         level->getData()->getGeometricData()->transform(
                     Eigen::Translation3d(Eigen::Vector3d(-1.0, 3.0, 0.0)) *
                     Eigen::AngleAxisd(-0.125 * M_PI, Eigen::Vector3d(0.0, 0.0, 1.0)));
+        level->getData()->getGeometricData()->update();
         sg->createRigidBody(level->getData(), 1.0, true);
         sg->createCollidable(level->getData());
     }
@@ -223,6 +230,7 @@ void InterpolationFEMCollisionDemo::load()
         level->getData()->getGeometricData()->transform(
                     Eigen::Translation3d(Eigen::Vector3d(1.0, 5.0, 0.0)) *
                     Eigen::AngleAxisd(0.125 * M_PI, Eigen::Vector3d(0.0, 0.0, 1.0)));
+        level->getData()->getGeometricData()->update();
         sg->createRigidBody(level->getData(), 1.0, true);
         sg->createCollidable(level->getData());
     }
@@ -235,6 +243,7 @@ void InterpolationFEMCollisionDemo::load()
         level->getData()->getGeometricData()->transform(
                     Eigen::Translation3d(Eigen::Vector3d(-1.0, 7.0, 0.0)) *
                     Eigen::AngleAxisd(-0.125 * M_PI, Eigen::Vector3d(0.0, 0.0, 1.0)));
+        level->getData()->getGeometricData()->update();
         sg->createRigidBody(level->getData(), 1.0, true);
         sg->createCollidable(level->getData());
     }
@@ -244,11 +253,9 @@ std::shared_ptr<MeshInterpolatorFEM> InterpolationFEMCollisionDemo::addInterpola
             SGLeafNode* sourceNode,
             SGLeafNode* targetNode)
 {
-    return mAc.getMeshInterpolationManager()->addInterpolatorFEM(
-                std::dynamic_pointer_cast<Polygon3D>(
-                    sourceNode->getData()->getGeometricData()),
-                std::dynamic_pointer_cast<Polygon>(
-                    targetNode->getData()->getGeometricData()));
+    return std::static_pointer_cast<MeshInterpolatorFEM>(
+                mAc.getInterpolatorModule()->addInterpolator(
+                    sourceNode, targetNode, MeshInterpolator::Type::FEM));
 }
 
 void InterpolationFEMCollisionDemo::unload()

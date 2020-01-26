@@ -45,6 +45,7 @@
 #include "ui/qt/QGroupsListWidget.h"
 #include "simulation/forces/LinearForce.h"
 #include <iostream>
+#include <map>
 #include <math.h>
 #include <memory>
 #include <times/timing.h>
@@ -716,12 +717,89 @@ void UIControl::onLoadFileSGNodeActionTriggered(QTreeWidgetItemWrapper* item)
             // Start path dialog
             FileDialog fileDialog(ui.mMainWindow);
             std::vector<File> filePaths = fileDialog.getOpenFileNames(
-                        "Load File", "*.off *.obj *.tet");
+                        "Load File", "*.ele *.face *.node *.off *.obj *.tet");
+
+            // Group all files that have identical names but the three different
+            // extensions: node, tet, and ele. Pairs of (node, face) represent
+            // a Polygon2D and pairs of (node, ele) a Polygon3D.
+            struct NodeTetEle
+            {
+                File* node = nullptr;
+                File* face = nullptr;
+                File* ele = nullptr;
+            };
+
+            std::map<std::string, NodeTetEle> nodeMap;
+            for (File& f : filePaths)
+            {
+                std::string name = f.getName();
+                if (f.getExtension() == ".node")
+                {
+                    auto it = nodeMap.find(name);
+                    if (it != nodeMap.end())
+                    {
+                        it->second.node = &f;
+                    }
+                    else
+                    {
+                        NodeTetEle el;
+                        el.node = &f;
+                        nodeMap[name] = el;
+                    }
+                }
+                else if (f.getExtension() == ".face")
+                {
+                    auto it = nodeMap.find(name);
+                    if (it != nodeMap.end())
+                    {
+                        it->second.face = &f;
+                    }
+                    else
+                    {
+                        NodeTetEle el;
+                        el.face = &f;
+                        nodeMap[name] = el;
+                    }
+                }
+                else if (f.getExtension() == ".ele")
+                {
+                    auto it = nodeMap.find(name);
+                    if (it != nodeMap.end())
+                    {
+                        it->second.ele = &f;
+                    }
+                    else
+                    {
+                        NodeTetEle el;
+                        el.ele = &f;
+                        nodeMap[name] = el;
+                    }
+                }
+            }
+
+            for (auto it : nodeMap)
+            {
+                if (it.second.node && (it.second.face || it.second.ele))
+                {
+                    std::vector<File> files;
+                    files.push_back(*it.second.node);
+                    if (it.second.face)
+                        files.push_back(*it.second.face);
+                    if (it.second.ele)
+                        files.push_back(*it.second.ele);
+                    ui.mAc->getSGControl()->importFilesAsChild(files, childrenNode);
+                }
+            }
 
             // Create new leaf nodes that shares the name with the imported file
             for (File& f : filePaths)
             {
-                ui.mAc->getSGControl()->importFileAsChild(f, childrenNode);
+                if (f.getExtension() != ".node" &&
+                        f.getExtension() != ".face" &&
+                        f.getExtension() != ".ele")
+                {
+                    ui.mAc->getSGControl()->importFileAsChild(f, childrenNode);
+                }
             }
         }
 

@@ -24,7 +24,7 @@ class BoundingVolumeHierarchy : public Tree<BVChildrenData*, BVLeafData*>
 public:
     BoundingVolumeHierarchy(SimulationObject* so,
                             Polygon* mPolygon,
-                            MeshInterpolatorFEM* interpolator,
+                            const std::shared_ptr<MeshInterpolatorFEM>& interpolator,
                             const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
                             BoundingVolume::Type bvType,
                             double collisionMargin);
@@ -102,7 +102,7 @@ protected:
 
     Polygon* mPolygon;
     SimulationObject* mSimulationObject;
-    MeshInterpolatorFEM* mInterpolator;
+    std::shared_ptr<MeshInterpolatorFEM> mInterpolator;
 
     std::vector<std::shared_ptr<CollisionObject>> mCollisionObjects;
 

@@ -160,19 +160,5 @@ SGNode* TetImporter::importFile(File file, ApplicationControl* ac)
     // Step 2)
     std::shared_ptr<Polygon3D> poly3 =
             std::make_shared<Polygon3D>(vertices, topology);
-
-    std::shared_ptr<PolygonRenderModel> renderModel =
-            std::make_shared<PolygonRenderModel>(
-                ac->getRenderModelManager(), poly3);
-
-    renderModel->reset();
-
-    SGLeafNode* node = new SGLeafNode(file.getName());
-    std::shared_ptr<SceneLeafData> data = std::make_shared<SceneLeafData>(node);
-    node->setData(data);
-
-    data->setGeometricData(poly3);
-    data->setRenderModel(renderModel);
-
-    return node;
+    return ac->getSGControl()->createLeafNode(file.getName(), nullptr, poly3);
 }

@@ -4,6 +4,7 @@
 #include <data_structures/DataStructures.h>
 #include <io/ImageLoader.h>
 #include <io/importers/OBJImporter.h>
+#include <modules/interpolator/InterpolatorModule.h>
 #include <modules/mesh_converter/MeshCriteria.h>
 #include <rendering/Appearance.h>
 #include <rendering/Appearances.h>
@@ -12,7 +13,6 @@
 #include <rendering/TextureUtils.h>
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/GeometricDataListener.h>
-#include <scene/data/geometric/MeshInterpolationManager.h>
 #include <scene/data/geometric/MeshInterpolatorFEM.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon3D.h>
@@ -122,7 +122,7 @@ void InterpolationFEMDemo::load()
         for (SGLeafNode* target : targets)
         {
             addInterpolation(sourceNode, target);
-            mAc->getMeshInterpolationManager()->setInterpolatorVisible(
+            mAc->getInterpolatorModule()->setInterpolatorVisible(
                         std::dynamic_pointer_cast<Polygon>(
                             target->getData()->getGeometricData()), true);
         }
@@ -169,11 +169,8 @@ void InterpolationFEMDemo::addInterpolation(
             SGLeafNode* sourceNode,
             SGLeafNode* targetNode)
 {
-    mAc->getMeshInterpolationManager()->addInterpolatorFEM(
-                std::dynamic_pointer_cast<Polygon3D>(
-                    sourceNode->getData()->getGeometricData()),
-                std::dynamic_pointer_cast<Polygon>(
-                    targetNode->getData()->getGeometricData()));
+    mAc->getInterpolatorModule()->addInterpolator(
+                sourceNode, targetNode, MeshInterpolator::Type::FEM);
 }
 
 void InterpolationFEMDemo::unload()

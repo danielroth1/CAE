@@ -26,7 +26,16 @@ public:
             SGNode* target,
             const MeshInterpolator::Type& type);
 
+    // Removes the mesh interpolator that interpolates source to target.
+    // Updates the UI and removes the interpolator from the simulation.
     void removeInterpolator(SGNode* source, SGNode* target);
+
+    // Removes all mesh interpolators.
+    // Updates the UI and removes the interpolators from the simulation.
+    void clearInterpolators();
+
+    // Set the interpolator that references the given polygon as target visible.
+    void setInterpolatorVisible(const std::shared_ptr<Polygon>& poly, bool visible);
 
     // Module interface
 public:

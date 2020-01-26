@@ -16,7 +16,9 @@
 #include <simulation/fem/SimulationPoint.h>
 
 #include <io/importers/OBJImporter.h>
+#include <io/importers/TetGenImporter.h>
 #include <io/importers/TetImporter.h>
+#include <modules/interpolator/InterpolatorModule.h>
 #include <modules/mesh_converter/MeshCriteria.h>
 #include <scene/data/GeometricDataVisitor.h>
 #include <scene/data/simulation/FEMData.h>
@@ -46,12 +48,12 @@ void SGControl::initialize(ApplicationControl* ac)
 void SGControl::clearScene()
 {
 //    mAc->getSimulationControl()>cl
+    mAc->getInterpolatorModule()->clearInterpolators();
     std::vector<SGNode*> children = mSceneGraph->getRoot()->getChildren();
     for (SGNode* node : children)
     {
         removeNode(node);
     }
-    mAc->getMeshInterpolationManager()->clearInterpolators();
 //    mAc->getSimulationControl()->clearSimulationObjects();
 //    mSceneGraph->getRoot()->clear();
 }
@@ -89,6 +91,48 @@ SGNode* SGControl::importFileAsChild(
 
     std::cout << "Filetype " << extension << " not supported.\n";
 
+    return nullptr;
+}
+
+SGNode* SGControl::importFilesAsChild(
+        const std::vector<File>& files,
+        SGChildrenNode* parent,
+        bool renderOnlyOuterFaces)
+{
+    auto itNode = std::find_if(files.begin(), files.end(), [](const File& f)
+    {
+        return f.getExtension() == ".node";
+    });
+    auto itFace = std::find_if(files.begin(), files.end(), [](const File& f)
+    {
+        return f.getExtension() == ".face";
+    });
+    auto itEle = std::find_if(files.begin(), files.end(), [](const File& f)
+    {
+        return f.getExtension() == ".ele";
+    });
+
+    if (itNode != files.end() && itFace == files.end() && itEle == files.end())
+    {
+        std::cout << "Import failed, cause: Provided .node file but no .face nor .ele.";
+    }
+    else if (itNode == files.end() && itFace != files.end())
+    {
+        std::cout << "Import failed, cause: Provided .face file but no corresponding .node.";
+    }
+    else if (itNode == files.end() && itEle != files.end())
+    {
+        std::cout << "Import failed, cause: Provided .ele file but no corresponding .node.";
+    }
+
+    if ((itNode != files.end() && itFace != files.end()) || // (node, face) pair
+            (itNode != files.end() && itEle != files.end())) // (node, ele) pair
+    {
+        TetGenImporter importer;
+        SGNode* node = importer.importFiles(files, mAc);
+        parent->addChild(node);
+        return node;
+    }
     return nullptr;
 }
 
@@ -289,6 +333,7 @@ std::shared_ptr<FEMObject> SGControl::createFEMObject(
                 // Remove that first from the simulation.
                 sgc.mAc->getSimulationControl()->removeSimulationObject(so);
             }
+            polygon3D.changeRepresentationToWS();
             femObj = std::shared_ptr<FEMObject>(
                         SimulationObjectFactory::createFEMObject(
                             sgc.mAc->getSimulationControl()->getDomain(),
@@ -296,7 +341,6 @@ std::shared_ptr<FEMObject> SGControl::createFEMObject(
                             mass));
             sgc.mAc->getSimulationControl()->addSimulationObject(femObj);
 
-            polygon3D.changeRepresentationToWS();
 
             // TODO:
             // simplify simulation object handling
@@ -677,7 +721,8 @@ SGLeafNode* SGControl::createLeafNode(
 
     // Create leaf node and add to scene graph
     leafNode->setData(leafData);
-    parent->addChild(leafNode);
+    if (parent)
+        parent->addChild(leafNode);
 
     return leafNode;
 }

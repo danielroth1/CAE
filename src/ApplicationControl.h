@@ -8,6 +8,7 @@
 
 
 class DemoLoaderModule;
+class InterpolatorModule;
 class MeshInterpolationManager;
 class RenderModelManager;
 class SGUIControl;
@@ -52,8 +53,8 @@ public:
     SimulationControl* getSimulationControl();
     UIControl* getUIControl();
     RenderModelManager* getRenderModelManager();
-
-    std::shared_ptr<MeshInterpolationManager> getMeshInterpolationManager() const;
+    InterpolatorModule* getInterpolatorModule();
+    MeshInterpolationManager* getMeshInterpolationManager();
 
 private:
 
@@ -69,6 +70,7 @@ private:
     std::shared_ptr<UIControl> mUiControl;
     std::shared_ptr<RenderModelManager> mRenderModelManager;
     std::shared_ptr<MeshInterpolationManager> mMeshInterpolationManager;
+    std::shared_ptr<InterpolatorModule> mInterpolatorModule;
     std::vector<std::shared_ptr<Module>> mModules;
 
     std::shared_ptr<DemoLoaderModule> mDemoLoaderModule;

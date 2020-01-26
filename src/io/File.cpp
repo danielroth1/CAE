@@ -11,7 +11,7 @@ File::File(std::string path)
     update(path);
 }
 
-bool File::exists()
+bool File::exists() const
 {
     return boost::filesystem::exists(boost::filesystem::path(mPath));
 }
@@ -62,7 +62,7 @@ bool File::enterDirectiory(std::string dir)
     return exists();
 }
 
-std::ifstream File::read(bool& successful)
+std::ifstream File::read(bool& successful) const
 {
     std::ifstream in(getPath());
 

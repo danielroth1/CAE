@@ -252,7 +252,8 @@ void ApplicationControl::createModules()
     mModules.push_back(mDemoLoaderModule);
     mModules.push_back(std::make_shared<SimulationModule>());
     mModules.push_back(std::make_shared<MeshConverterModule>());
-    mModules.push_back(std::make_shared<InterpolatorModule>());
+    mInterpolatorModule = std::make_shared<InterpolatorModule>();
+    mModules.push_back(mInterpolatorModule);
     mModules.push_back(std::make_shared<GeometryInfoModule>());
 }
 
@@ -431,8 +432,12 @@ RenderModelManager* ApplicationControl::getRenderModelManager()
     return mRenderModelManager.get();
 }
 
-std::shared_ptr<MeshInterpolationManager>
-ApplicationControl::getMeshInterpolationManager() const
+InterpolatorModule* ApplicationControl::getInterpolatorModule()
 {
-    return mMeshInterpolationManager;
+    return mInterpolatorModule.get();
+}
+
+MeshInterpolationManager* ApplicationControl::getMeshInterpolationManager()
+{
+    return mMeshInterpolationManager.get();
 }

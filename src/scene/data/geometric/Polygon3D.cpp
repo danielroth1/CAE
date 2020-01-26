@@ -570,6 +570,7 @@ void Polygon3D::fixOuterTriangleIndexOrder(bool printInfo)
             revertFace(f);
             revertFace(outerFace2D.getVertexIds());
             revertFace(topology->getOuterFacesIndices3D()[outerFace2D.getID()]);
+            revertFace(topology->getOuterTopology().getFacesIndices()[outerFace2D.getID()]);
 
             ++fixedFacesCounter;
         }
