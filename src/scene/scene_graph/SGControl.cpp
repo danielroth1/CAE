@@ -625,7 +625,7 @@ SGTraverser SGControl::createSceneGraphTraverser()
 
 void SGControl::removeNode(SGNode* node)
 {
-    // create new node and add it to parent
+    // Correctly removes all leaf nodes of the sub graph.
     class RemoveChildrenNodeVisitor : public SGNodeVisitor
     {
     public:
@@ -677,7 +677,7 @@ void SGControl::removeNode(SGNode* node)
     SGTraverser traverser = SGTraverserFactory::createDefaultSGTraverser(node);
     traverser.traverse(visitor);
 
-    static_cast<SGChildrenNode*>(node)->getParent()->removeChild(node);
+    node->getParent()->removeChild(node);
 }
 
 SGLeafNode* SGControl::createLeafNode(
