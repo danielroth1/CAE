@@ -108,6 +108,8 @@ public slots:
         void onAddNewSGNodeActionTriggered(QTreeWidgetItemWrapper* item);
         void onRemoveSGNodeActionTriggered(QTreeWidgetItemWrapper* item);
         void onLoadFileSGNodeActionTriggered(QTreeWidgetItemWrapper* item);
+        void onExportFileSGNodeActionTriggered(QTreeWidgetItemWrapper* item);
+        void onExportFilesSGNodeActionTriggered(QTreeWidgetItemWrapper* item);
 
         // Called by SelectionControl
         // Updates SGQtWidgetManager
@@ -153,6 +155,9 @@ private:
 
     // vertex group id counter
     int mVgIdCounter;
+
+    // The last selected folder of a save or load file dialog.
+    std::string mCurrentFolderPath;
 
 };
 

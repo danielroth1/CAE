@@ -10,6 +10,7 @@ class UIControl;
 class QGroupsListWidget;
 class QTreeWidget;
 class QTreeWidgetItem;
+class SGQtWidgetManager;
 
 namespace Ui {
 class MainWindow;
@@ -22,6 +23,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(ApplicationControl* ac, QWidget *parent = nullptr);
     ~MainWindow();
+
+    void setSGQtWidgetManager(SGQtWidgetManager* sgQtWidgetManager);
 
     GLWidget* getGlWidget();
 
@@ -46,6 +49,8 @@ private slots:
     void addSGNodeSlot(QObject* parentNode);
     void removeSGNodeSlot(QObject* node);
     void loadFileSGNodeSlot(QObject* node);
+    void exportFileSGNodeSlot(QObject* node);
+    void exportFilesSGNodeSlot(QObject* node);
 
     void on_actionSimulate_triggered(bool checked);
 
@@ -65,6 +70,8 @@ private:
     Ui::MainWindow *ui;
 
     UIControl* mUiControl;
+
+    SGQtWidgetManager* mSGQtWidgetManager;
 
 
 };

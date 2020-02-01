@@ -9,6 +9,8 @@
 
 #include <QKeyEvent>
 
+#include <ui/scene_graph/SGQtWidgetManager.h>
+
 
 MainWindow::MainWindow(ApplicationControl* ac, QWidget* parent)
     : QMainWindow(parent)
@@ -30,6 +32,11 @@ MainWindow::MainWindow(ApplicationControl* ac, QWidget* parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::setSGQtWidgetManager(SGQtWidgetManager* sgQtWidgetManager)
+{
+    mSGQtWidgetManager = sgQtWidgetManager;
 }
 
 GLWidget* MainWindow::getGlWidget()
@@ -94,6 +101,7 @@ void MainWindow::on_sceneGraphTreeWidget_customContextMenuRequested(
 {
     QTreeWidget* tree = ui->sceneGraphTreeWidget;
     QTreeWidgetItem* item = tree->itemAt(pos);
+    SGNode* node = mSGQtWidgetManager->get(item);
 
     // renamd SGNode action
     QAction* renameSGNodeAction = new QAction("Rename", this);
@@ -131,12 +139,35 @@ void MainWindow::on_sceneGraphTreeWidget_customContextMenuRequested(
             this, SLOT(loadFileSGNodeSlot(QObject*)));
     signalMapper->setMapping(loadFileSGNodeAction, new QTreeWidgetItemWrapper(item));
 
+    // Exporting single files is only supported for leaf nodes
+    QAction* exportFileSGNodeAction = new QAction("Export File", this);
+    signalMapper = new QSignalMapper(this);
+    connect(exportFileSGNodeAction, SIGNAL(triggered()),
+            signalMapper, SLOT(map()));
+    connect(signalMapper, SIGNAL(mapped(QObject*)),
+            this, SLOT(exportFileSGNodeSlot(QObject*)));
+    signalMapper->setMapping(exportFileSGNodeAction, new QTreeWidgetItemWrapper(item));
+    if (!node->isLeaf())
+    {
+        exportFileSGNodeAction->setEnabled(false);
+    }
+
+    QAction* exportFilesSGNodeAction = new QAction("Export Files", this);
+    signalMapper = new QSignalMapper(this);
+    connect(exportFilesSGNodeAction, SIGNAL(triggered()),
+            signalMapper, SLOT(map()));
+    connect(signalMapper, SIGNAL(mapped(QObject*)),
+            this, SLOT(exportFilesSGNodeSlot(QObject*)));
+    signalMapper->setMapping(exportFilesSGNodeAction, new QTreeWidgetItemWrapper(item));
+
     // show custom context menu
     QMenu contextMenu;
     contextMenu.addAction(renameSGNodeAction);
     contextMenu.addAction(addSGNodeAction);
     contextMenu.addAction(removeSGNodeAction);
     contextMenu.addAction(loadFileSGNodeAction);
+    contextMenu.addAction(exportFileSGNodeAction);
+    contextMenu.addAction(exportFilesSGNodeAction);
 
     contextMenu.exec( tree->mapToGlobal(pos) );
 }
@@ -162,6 +193,18 @@ void MainWindow::removeSGNodeSlot(QObject* node)
 void MainWindow::loadFileSGNodeSlot(QObject* node)
 {
     mUiControl->onLoadFileSGNodeActionTriggered(
+                static_cast<QTreeWidgetItemWrapper*>(node));
+}
+
+void MainWindow::exportFileSGNodeSlot(QObject* node)
+{
+    mUiControl->onExportFileSGNodeActionTriggered(
+                static_cast<QTreeWidgetItemWrapper*>(node));
+}
+
+void MainWindow::exportFilesSGNodeSlot(QObject* node)
+{
+    mUiControl->onExportFilesSGNodeActionTriggered(
                 static_cast<QTreeWidgetItemWrapper*>(node));
 }
 

@@ -16,7 +16,11 @@ public:
     bool exists() const;
 
     std::string getPath() const;
+
+    // Returns the path to the directory that contains the file. Does not
+    // end with a separator.
     std::string getRelativePath() const;
+
     std::string getName() const;
 
     // If a file is selected, returns the extension of the file where

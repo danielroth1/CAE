@@ -59,6 +59,7 @@ UIControl::UIControl()
     mInteractionMode = InteractionMode::SELECT;
     mVgIdCounter = 0;
     mRenderControl = nullptr;
+    mCurrentFolderPath = QDir::homePath().toStdString();
 }
 
 UIControl::~UIControl()
@@ -86,6 +87,7 @@ void UIControl::initialize(ApplicationControl* applicationControl)
     mSelectionControl->changeSelectionType(SelectionControl::SelectionType::SELECT_VERTICES);
 
     mSGQtWidgetManager = new SGQtWidgetManager(mMainWindow->getSGTreeWidget());
+    mMainWindow->setSGQtWidgetManager(mSGQtWidgetManager);
     mModulesUIControl = std::make_unique<ModulesUIControl>(mMainWindow->getModulesParentWidget());
     mMainWindow->getModulesParentWidget()->layout()->addWidget(mModulesUIControl->getModulesWidget());
     handleNewSceneGraph();
@@ -715,9 +717,11 @@ void UIControl::onLoadFileSGNodeActionTriggered(QTreeWidgetItemWrapper* item)
         virtual void visit(SGChildrenNode* childrenNode)
         {
             // Start path dialog
-            FileDialog fileDialog(ui.mMainWindow);
+            FileDialog fileDialog(ui.mMainWindow, ui.mCurrentFolderPath);
             std::vector<File> filePaths = fileDialog.getOpenFileNames(
-                        "Load File", "*.ele *.face *.node *.off *.obj *.tet");
+                        "Load File", "*.ele *.face *.node *.obj *.off *.tet");
+            if (!filePaths.empty())
+                ui.mCurrentFolderPath = filePaths[0].getRelativePath();
 
             // Group all files that have identical names but the three different
             // extensions: node, tet, and ele. Pairs of (node, face) represent
@@ -812,6 +816,37 @@ void UIControl::onLoadFileSGNodeActionTriggered(QTreeWidgetItemWrapper* item)
     } fileAdder(*this);
 
     node->accept(fileAdder);
+}
+
+void UIControl::onExportFileSGNodeActionTriggered(QTreeWidgetItemWrapper* item)
+{
+    SGNode* node = mSGQtWidgetManager->get(item->getItem());
+
+    FileDialog fileDialog(mMainWindow, mCurrentFolderPath);
+    File file = fileDialog.getSaveFileName(
+                "Export File", "*.obj");
+
+    if (file.getPath() != "")
+    {
+        mCurrentFolderPath = file.getRelativePath();
+
+        mAc->getSGControl()->exportToSingleFile(file, node);
+    }
+}
+
+void UIControl::onExportFilesSGNodeActionTriggered(QTreeWidgetItemWrapper* item)
+{
+    SGNode* node = mSGQtWidgetManager->get(item->getItem());
+    FileDialog fileDialog(mMainWindow, mCurrentFolderPath);
+    File file = fileDialog.getDirectory("Chose Target Directory");
+
+    if (file.getPath() != "")
+    {
+        mCurrentFolderPath = file.getRelativePath();
+        // TODO: Add option to specify target type
+
+        mAc->getSGControl()->exportToMultipleFiles(file, ".obj", node);
+    }
 }
 
 void UIControl::onSGSelectionChanged(QList<QTreeWidgetItem*>& selectedItems)

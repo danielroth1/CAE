@@ -97,15 +97,16 @@ void File::update(std::string path)
 
     // relative path
     mRelativePath = "";
-    for (size_t i = 0; i < mPathParts.size(); ++i)
+    for (int i = 0; i < static_cast<int>(mPathParts.size()) - 1; ++i)
     {
         mRelativePath += mPathParts[i];
-        if (i < mPathParts.size() - 1)
+        if (i < static_cast<int>(mPathParts.size()) - 2)
             mRelativePath += SEPARATOR;
     }
 
     // name with extension
-    mNameWithExtension = mPathParts[mPathParts.size()-1];
+    if (!mPathParts.empty())
+        mNameWithExtension = mPathParts[mPathParts.size()-1];
 
     // extension
     mExtension = boost::filesystem::extension(mNameWithExtension);

@@ -15,6 +15,7 @@
 #include <simulation/fem/FEMObject.h>
 #include <simulation/fem/SimulationPoint.h>
 
+#include <io/exporters/OBJExporter.h>
 #include <io/importers/OBJImporter.h>
 #include <io/importers/TetGenImporter.h>
 #include <io/importers/TetImporter.h>
@@ -30,6 +31,7 @@
 #include <ui/selection/SelectionControl.h>
 #include <ui/selection/SelectionVertices.h>
 
+#include <map>
 #include <memory>
 
 SGControl::SGControl()
@@ -96,8 +98,7 @@ SGNode* SGControl::importFileAsChild(
 
 SGNode* SGControl::importFilesAsChild(
         const std::vector<File>& files,
-        SGChildrenNode* parent,
-        bool renderOnlyOuterFaces)
+        SGChildrenNode* parent)
 {
     auto itNode = std::find_if(files.begin(), files.end(), [](const File& f)
     {
@@ -134,6 +135,79 @@ SGNode* SGControl::importFilesAsChild(
         return node;
     }
     return nullptr;
+}
+
+void SGControl::exportToSingleFile(const File& file, SGNode* node)
+{
+    if (node->isLeaf())
+    {
+        std::shared_ptr<GeometricData> gd =
+                static_cast<SGLeafNode*>(node)->getData()->getGeometricData();
+
+        std::string path = file.getPath();
+        std::string extension = file.getExtension();
+        if (extension == ".obj")
+        {
+            OBJExporter exporter;
+            exporter.exportToFile(file, gd);
+        }
+    }
+    else
+    {
+        // combine all polygons to one and export this one or use an accessor
+        // that accesses the data of multiple polygons.
+    }
+}
+
+void SGControl::exportToMultipleFiles(
+        const File& folder, const std::string& format, SGNode* node)
+{
+    // Iterate over the whole subgraph and store each found file in the folder.
+    SGTraverser exporterTraverser(node);
+    class ExporterVisitor : public SGNodeVisitorImpl
+    {
+    public:
+        ExporterVisitor(const File& _folder, const std::string& _format)
+            : folder(_folder)
+            , format(_format)
+        {
+
+        }
+
+        virtual void visit(SGLeafNode* leafNode)
+        {
+            File file(folder.getPath() + File::SEPARATOR + leafNode->getName() + format);
+            auto it = filesMap.find(file.getPath());
+            if (it != filesMap.end())
+            {
+                it->second++;
+                std::string filePath =
+                        file.getRelativePath() + File::SEPARATOR +
+                        file.getName() + std::to_string(it->second) +
+                        file.getExtension();
+                files.push_back(filePath);
+            }
+            else
+            {
+                filesMap[file.getPath()] = 1;
+                files.push_back(file.getPath());
+            }
+            leafs.push_back(leafNode);
+        }
+
+        std::vector<SGLeafNode*> leafs;
+        std::vector<std::string> files;
+        std::map<std::string, int> filesMap;
+    private:
+        const File& folder;
+        const std::string& format;
+    } visitor(folder, format);
+    exporterTraverser.traverse(visitor);
+
+    for (size_t i = 0; i < visitor.files.size(); ++i)
+    {
+        exportToSingleFile(visitor.files[i], visitor.leafs[i]);
+    }
 }
 
 SGLeafNode* SGControl::createBox(

@@ -42,8 +42,27 @@ public:
         // should be used.
         SGNode* importFilesAsChild(
                 const std::vector<File>& files,
-                SGChildrenNode* parent,
-                bool renderOnlyOuterFaces = true);
+                SGChildrenNode* parent);
+
+        // Combines and exports each geometry of the given nodes subgraph. If
+        // node is a leaf, then the leafs geometry is exported.
+        // Supported formats are:
+        // -> .obj
+        // -> (.node, .ele) for Polygon2D or (.node, .face) for Polygon3D
+        //    (The exported file must be specified as .node, the corresponding
+        //     .ele or .face file will automatically be inserted in the same
+        //     folder).
+        void exportToSingleFile(const File& file, SGNode* node);
+
+        // Exports each geometry of the given nodes subgraph as single file in
+        // the given format.
+        // Supported formats are:
+        // -> .obj
+        // -> (.node, .face) for Polygon2D or (.node, .ele) for Polygon3D
+        // \param folder - the target folder in which the files should be stored.
+        void exportToMultipleFiles(const File& folder,
+                                   const std::string& format,
+                                   SGNode* node);
 
         // Creates a sphere
         // \param name - name of the node

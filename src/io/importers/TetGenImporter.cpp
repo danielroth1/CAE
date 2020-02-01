@@ -64,7 +64,7 @@ SGNode* TetGenImporter::importFiles(
     if (itNode != files.end() && itFace != files.end())
     {
         // (node, face)
-        return importNodeEle(*itNode, *itFace, ac);
+        return importNodeFace(*itNode, *itFace, ac);
     }
     else if (itNode != files.end() && itEle != files.end())
     {
