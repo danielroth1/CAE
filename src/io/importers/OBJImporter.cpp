@@ -214,6 +214,7 @@ SGNode* OBJImporter::importFile(File file, ApplicationControl* ac)
     // original face, vertex textures, material name
     std::vector<std::tuple<Face, Face, std::string>> faceTuples;
 
+    // v, vt, material name
     std::set<std::tuple<unsigned int, unsigned int, std::string>> vertexSet;
 
     std::string currentMaterial = "";
@@ -325,22 +326,28 @@ SGNode* OBJImporter::importFile(File file, ApplicationControl* ac)
 
                 // Last value are the vertex normals indices which should always be
                 // equal to the face vertex indices.
-                if (std::getline(ssVertexIndex, vertexIndex))
-                {
-                    if (vertexIndex != "" && std::stoi(vertexIndex)-1 != f[faceIndex])
-                        std::cout << "vertex id != normal id\n";
-
-                }
+                std::getline(ssVertexIndex, vertexIndex);
+//                if (std::getline(ssVertexIndex, vertexIndex))
+//                {
+//                    if (vertexIndex != "" && std::stoi(vertexIndex)-1 != f[faceIndex])
+//                        std::cout << "vertex id != normal id\n";
+//                }
 
                 if (i >= 2)
                 {
                     if (i >= 3)
                         f[1] = lastIndexPrevious;
 
-                    faceTuples.push_back(std::make_tuple(f, fVt, currentMaterial));
+                    // ignore vertex normals,
+                    // reason: if they are different, they cause duplicates in
+                    // the vertex set. Duplicates should only happen if a
+                    // vertex has different materials assigned.
+//                    faceTuples.push_back(std::make_tuple(f, fVt, currentMaterial));
+                    faceTuples.push_back(std::make_tuple(f, f, currentMaterial));
                     for (std::size_t j = 0; j < 3; ++j)
                     {
-                        vertexSet.insert(std::make_tuple(f[j], fVt[j], currentMaterial));
+                        vertexSet.insert(std::make_tuple(f[j], std::numeric_limits<unsigned int>::max(), currentMaterial));
+//                        vertexSet.insert(std::make_tuple(f[j], fVt[j], currentMaterial));
                     }
                     facesOriginal.push_back(f);
 
@@ -366,8 +373,14 @@ SGNode* OBJImporter::importFile(File file, ApplicationControl* ac)
     if (currentMaterial != "")
         nFacesPerMaterial.push_back(static_cast<unsigned int>(facesOriginal.size()));
 
-    if (vertexNormalsOriginal.empty())
+    if (vertexNormalsOriginal.empty() || vertexNormalsOriginal.size() != verticesOriginal.size())
     {
+        if (vertexNormalsOriginal.size() != verticesOriginal.size())
+        {
+            std::cout << "Recalculating normals because having different number of"
+                         " vertices and vertex normals is not supported.\n";
+        }
+
         ModelUtils::calculateNormals<double>(
                     verticesOriginal,
                     facesOriginal,
@@ -381,6 +394,7 @@ SGNode* OBJImporter::importFile(File file, ApplicationControl* ac)
     }
 
     // create vertices from vertexSet
+    // v, vt, material name
     std::vector<std::tuple<unsigned int, unsigned int, std::string>> vertexTuples;
     vertexTuples.resize(vertexSet.size());
     std::move(vertexSet.begin(), vertexSet.end(), vertexTuples.begin());
@@ -462,7 +476,6 @@ SGNode* OBJImporter::importFile(File file, ApplicationControl* ac)
     if (mtllib != "")
     {
         File directory = file;
-        directory.goUpDirectory();
         appearances = readMtllib(File(directory.getRelativePath() + File::SEPARATOR + mtllib));
     }
 
