@@ -104,17 +104,24 @@ std::array<float, 4> RenderMaterial::getAmbientDefault()
 
 std::array<float, 4> RenderMaterial::getSpecularDefault()
 {
-    return {0.8f, 0.8f, 0.8f, 1.0f};
+    return {0.4f, 0.4f, 0.4f, 1.0f};
 }
 
 std::array<float, 4> RenderMaterial::getDiffuseDefault()
 {
-    return {0.0f, 0.0f, 0.0f, 1.0f};
+    return {1.0f, 1.0f, 1.0f, 1.0f};
 }
 
 float RenderMaterial::getShininessDefault()
 {
-    return 0.0f;
+    return 96.0f;
+}
+
+std::shared_ptr<RenderMaterial> RenderMaterial::createDefaultMaterial()
+{
+    return std::make_shared<RenderMaterial>(
+                getAmbientDefault(), getDiffuseDefault(),
+                getSpecularDefault(), getShininessDefault());
 }
 
 std::shared_ptr<RenderMaterial> RenderMaterial::createFromColor(

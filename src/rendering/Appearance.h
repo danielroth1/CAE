@@ -26,6 +26,8 @@ public:
 
     void bindAppearance();
 
+    static std::shared_ptr<Appearance> createDefaultAppearance();
+
     static std::shared_ptr<Appearance> createAppearanceFromColor(
             const std::array<float, 4>& color);
 

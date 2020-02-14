@@ -97,9 +97,14 @@ Vector3f Renderer::getLightDirection() const
     return mLightRenderer->getLightDirection();
 }
 
-void Renderer::setLightDirection(const Vector3f& pos)
+void Renderer::setLightDirection(const Vector3f& dir)
 {
-    mProxy->setLightDirectionSlot(pos);
+    mProxy->setLightDirectionSlot(dir);
+}
+
+void Renderer::setLightPosition(const Vector3f& pos)
+{
+    mProxy->setLightPositionSlot(pos);
 }
 
 std::shared_ptr<RenderObjectFactory>& Renderer::getRenderObjectFactory()
@@ -181,7 +186,12 @@ void Renderer::removeRenderObjectSlot(std::shared_ptr<RenderObject> ro)
     }
 }
 
-void Renderer::setLightDirectionSlot(Eigen::Vector3f pos)
+void Renderer::setLightDirectionSlot(Eigen::Vector3f dir)
 {
-    mLightRenderer->setLightDirection(pos);
+    mLightRenderer->setLightDirection(dir);
+}
+
+void Renderer::setLightPositionSlot(Vector3f pos)
+{
+    mLightRenderer->setLightPosition(pos);
 }

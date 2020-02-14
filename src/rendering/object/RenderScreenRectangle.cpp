@@ -31,6 +31,7 @@ void RenderScreenRectangle::draw()
 
 void RenderScreenRectangle::drawImmediate()
 {
+    glDisable(GL_LIGHTING);
     setPolygonMode();
 
     int* VP = mViewFrustum.getViewPort();
@@ -38,7 +39,7 @@ void RenderScreenRectangle::drawImmediate()
     const double h = VP[3];
     //const double ar = w / h;
 
-    mRenderMaterial->glMaterial();
+    mRenderMaterial->glColorAmbient();
 
     // rander selection
     glPushMatrix();
@@ -62,6 +63,8 @@ void RenderScreenRectangle::drawImmediate()
         glPopMatrix();
         glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+
+    glEnable(GL_LIGHTING);
 }
 
 void RenderScreenRectangle::drawArray()

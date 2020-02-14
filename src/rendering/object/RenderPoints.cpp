@@ -25,9 +25,9 @@ void RenderPoints::draw()
 
 void RenderPoints::drawImmediate()
 {
+    glDisable(GL_LIGHTING);
     setPolygonMode();
-
-    mRenderMaterial->glMaterial();
+    mRenderMaterial->glColorAmbient();
 
     // render selected vertices
     glPushMatrix();
@@ -63,6 +63,8 @@ void RenderPoints::drawImmediate()
         }
     }
     glPopMatrix();
+
+    glEnable(GL_LIGHTING);
 }
 
 void RenderPoints::drawArray()

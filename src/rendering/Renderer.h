@@ -41,7 +41,9 @@ public:
     void removeRenderObject(std::shared_ptr<RenderObject> ro);
 
     Eigen::Vector3f getLightDirection() const;
-    void setLightDirection(const Eigen::Vector3f& pos);
+    void setLightDirection(const Eigen::Vector3f& dir);
+
+    void setLightPosition(const Eigen::Vector3f& pos);
 
     std::shared_ptr<RenderObjectFactory>& getRenderObjectFactory();
 
@@ -51,7 +53,8 @@ public:
 //public slots:
     void addRenderObjectSlot(std::shared_ptr<RenderObject> ro);
     void removeRenderObjectSlot(std::shared_ptr<RenderObject> ro);
-    void setLightDirectionSlot(Eigen::Vector3f pos);
+    void setLightDirectionSlot(Eigen::Vector3f dir);
+    void setLightPositionSlot(Eigen::Vector3f pos);
 
 private:
 
@@ -77,6 +80,9 @@ PROXY_CLASS(RendererProxy, Renderer, mR,
                            PL(std::shared_ptr<RenderObject> ro),
                            PL(ro))
             PROXY_FUNCTION(Renderer, mR, setLightDirectionSlot,
+                           PL(Eigen::Vector3f dir),
+                           PL(dir))
+            PROXY_FUNCTION(Renderer, mR, setLightPositionSlot,
                            PL(Eigen::Vector3f pos),
                            PL(pos))
             )

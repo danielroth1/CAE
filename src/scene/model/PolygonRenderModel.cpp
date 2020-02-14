@@ -267,7 +267,7 @@ void PolygonRenderModel::reset()
     if (!mRenderPolygonsData->getAppearances())
     {
         setAppearances(std::make_shared<Appearances>(
-                           Appearance::createAppearanceFromColor({1.0f, 1.0f, 1.0f, 1.0f})));
+                           Appearance::createDefaultAppearance()));
     }
 
     initializeBufferedData();
@@ -626,6 +626,7 @@ void PolygonRenderModel::updatePositions()
         auto normalsLock = mNormalsBufferedData->getData().lock();
         auto facesLock = mFacesBufferedData->getData().lock();
 
+        // TODO: optimize this
         ModelUtils::calculateFaceNormals<float>(
                     *positionsLock,
                     *facesLock,

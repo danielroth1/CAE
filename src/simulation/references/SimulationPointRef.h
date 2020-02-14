@@ -57,7 +57,7 @@ public:
 
     // Constructor for referencing a vertex of simulation object.
     // Use for rigid bodies.
-    SimulationPointRef(SimulationObject* simObn,
+    SimulationPointRef(SimulationObject* simObj,
                        Polygon3D* polygon,
                        const std::array<double, 4>& bary,
                        ID elementId);

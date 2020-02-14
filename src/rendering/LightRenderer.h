@@ -19,10 +19,15 @@ public:
 
     void setLightDirection(Eigen::Vector3f lightDirection);
 
+    void setLightPosition(const Eigen::Vector3f& lightPosition);
+
     Eigen::Vector3f getLightDirection();
 
 private:
     Eigen::Vector3f mLightDirection;
+    Eigen::Vector3f mLightPosition;
+
+    bool mLightPositionSet;
 };
 
 #endif // LIGHTRENDERER_H

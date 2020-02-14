@@ -52,6 +52,8 @@ public:
     static std::array<float, 4> getSpecularDefault();
     static float getShininessDefault();
 
+    static std::shared_ptr<RenderMaterial> createDefaultMaterial();
+
     // Creates a material with the specified color.
     // Sets the ambient and diffuse part to the given color and uses for
     // the others the default values.

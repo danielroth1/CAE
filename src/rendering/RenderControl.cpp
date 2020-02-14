@@ -22,16 +22,19 @@ void RenderControl::handlePreRenderingStep()
 {
     // head light
     // Just use the light direction and global parallel light.
-//    QVector3D pos = mGlWidget->getCameraPos();
+
     QVector3D dir = mGlWidget->getCameraDir();
+    mRenderer->setLightDirection(
+                Eigen::Vector3f(dir.x(), dir.y(), dir.z()));
 
 //    float distance = 1.0f;
 //    mRenderer->setLightPosition(
 //                Eigen::Vector3f(pos.x(), pos.y(), pos.z()) -
 //                distance * Eigen::Vector3f(dir.x(), dir.y(), dir.z()));
 
-    mRenderer->setLightDirection(
-                Eigen::Vector3f(dir.x(), dir.y(), dir.z()));
+
+//    QVector3D pos = mGlWidget->getCameraPos();
+//    mRenderer->setLightPosition(Eigen::Vector3f(pos.x(), pos.y(), pos.z()));
 
     mRenderer->handlePreRenderingStep();
 }

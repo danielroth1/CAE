@@ -40,6 +40,12 @@ void Appearance::bindAppearance()
         mTexture->bind();
 }
 
+std::shared_ptr<Appearance> Appearance::createDefaultAppearance()
+{
+    return std::make_shared<Appearance>(
+                RenderMaterial::createDefaultMaterial(), nullptr);
+}
+
 std::shared_ptr<Appearance> Appearance::createAppearanceFromColor(
         const std::array<float, 4>& color)
 {
