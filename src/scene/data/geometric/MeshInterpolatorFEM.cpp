@@ -48,8 +48,8 @@ Vector4d MeshInterpolatorFEM::calculateBary3(ID targetTriangleId,
 
 void MeshInterpolatorFEM::solve()
 {
-    mSource->update();
-    mTarget->update();
+    mSource->update(true, false, false);
+    mTarget->update(true, false, false);
 
     if (mSource->getPositionType() == BSWSVectors::Type::BODY_SPACE &&
         mTarget->getPositionType() == BSWSVectors::Type::WORLD_SPACE)
@@ -246,7 +246,7 @@ void MeshInterpolatorFEM::update()
     }
     }
 
-    mTarget->update();
+    mTarget->update(true, false, true);
 }
 
 MeshInterpolator::Type MeshInterpolatorFEM::getType() const

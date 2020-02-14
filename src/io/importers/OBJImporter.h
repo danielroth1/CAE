@@ -8,6 +8,11 @@ class Appearance;
 class ApplicationControl;
 class RenderMaterial;
 
+// An importer for files of the .obj file format.
+// .obj files store two dimensional Polygon meshes (meshes consisting of
+// vertices and faces).
+//
+// Ignores given vertex normals and simply recalculates them.
 class OBJImporter : public SceneImporter
 {
 public:

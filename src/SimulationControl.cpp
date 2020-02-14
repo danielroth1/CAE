@@ -670,7 +670,7 @@ void SimulationControl::step()
     mRigidSimulation->applyDamping();
     mFEMSimulation->applyDamping();
 
-    START_TIMING_SIMULATION("CollisionManager::publish()");
+    START_TIMING_SIMULATION("Simulation::publish()");
     mRigidSimulation->publish();
     mFEMSimulation->publish();
     STOP_TIMING_SIMULATION;
