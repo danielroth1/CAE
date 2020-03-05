@@ -35,6 +35,8 @@ public:
                      UIControl* uiControl,
                      RenderModelManager* renderModelManager);
 
+    ~CollisionControl();
+
     std::shared_ptr<CollisionManager> getCollisionManager();
 
     // Rendering methods

@@ -22,6 +22,11 @@ CollisionControl::CollisionControl(
     mColliderRenderModel->addToRenderer(uiControl->getRenderer());
 }
 
+CollisionControl::~CollisionControl()
+{
+    mCollisionManager->removeListener(this);
+}
+
 std::shared_ptr<CollisionManager> CollisionControl::getCollisionManager()
 {
     return mCollisionManager;
