@@ -54,7 +54,7 @@ SimulationControl::SimulationControl()
     mStepSize = 0.01;
     mNumFEMCorrectionIterations = 5;
     mMaxNumConstraintSolverIterations = 5;
-    mMaxConstraintError = 1e-5;
+    mMaxConstraintError = 1e-6;
     mPositionCorrectionFactor = 0.2;
 }
 
@@ -600,11 +600,17 @@ void SimulationControl::step()
     mImpulseConstraintSolver->initializeNonCollisionConstraints(mStepSize);
 //    mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{nonh};
 
+    START_TIMING_SIMULATION("Simulation::publish [before cd]");
     mRigidSimulation->integratePositions(mStepSize);
     mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
 
-    mRigidSimulation->publish(false);
-    mFEMSimulation->publish(false);
+//    mRigidSimulation->publish(false);
+
+    // TODO: listeners need to be notified to update colliding interpolated meshes!
+    // and to update the face normals.
+//    mFEMSimulation->publish(true);
+    mCollisionManager->updateGeometries();
+    STOP_TIMING_SIMULATION;
 
     START_TIMING_SIMULATION("CollisionManager::udpateAll()");
     mCollisionManager->updateAll();

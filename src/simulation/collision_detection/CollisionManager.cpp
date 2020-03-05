@@ -362,6 +362,14 @@ void CollisionManager::updateAll()
         listener->notifyUpdateAllCalled();
 }
 
+void CollisionManager::updateGeometries()
+{
+    for (const CollisionData& cd : mCollisionData)
+    {
+        cd.mBvh->updateGeometries();
+    }
+}
+
 std::shared_ptr<Collider> CollisionManager::getCollider()
 {
     return mCollider;

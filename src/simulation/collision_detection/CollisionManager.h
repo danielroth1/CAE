@@ -56,6 +56,10 @@ public:
 
     void updateAll();
 
+    // Publishes all collidable geometric data. Does not notify listeners.
+    // All collidable MeshInterpolators are published as well.
+    void updateGeometries();
+
     std::shared_ptr<Collider> getCollider();
 
     void setInvertNormalsIfNecessary(bool invertNormalsIfNecessary);

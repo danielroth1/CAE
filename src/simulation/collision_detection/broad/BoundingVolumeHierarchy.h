@@ -34,6 +34,11 @@ public:
     // Updates the bounding volume hierarchy.
     virtual void udpate() = 0;
 
+    // Updates the polygon and the mesh interpolator if its there. Does not
+    // notify the polygons listeners and only updates the positions and
+    // face normals because those are needed for collision detection.
+    void updateGeometries();
+
     // Prints the tree to the console.
     // For each node the number of leaf nodes are printed as well.
     // \return the number of children.

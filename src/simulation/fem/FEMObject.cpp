@@ -597,7 +597,7 @@ void FEMObject::updateGeometricData(bool notifyListeners)
     // This call is necessary to inform the other modules about
     // the change in position of the underlying Polygon3D that is
     // simulated here.
-    mPoly3->update(true, false, notifyListeners);
+    mPoly3->update(false, false, notifyListeners);
 }
 
 void FEMObject::initializeStiffnessMatrix()

@@ -2,6 +2,8 @@
 #include "BoundingVolume.h"
 
 #include <memory>
+#include <scene/data/geometric/MeshInterpolatorFEM.h>
+#include <scene/data/geometric/Polygon.h>
 #include <simulation/collision_detection/narrow/Collider.h>
 
 
@@ -21,6 +23,15 @@ BoundingVolumeHierarchy::BoundingVolumeHierarchy(
     , mBvType(bvType)
 {
     getRoot()->setData(nullptr);
+}
+
+void BoundingVolumeHierarchy::updateGeometries()
+{
+    mPolygon->update(true, false, false);
+    if (mInterpolator)
+    {
+        mInterpolator->update();
+    }
 }
 
 void BoundingVolumeHierarchy::print()
