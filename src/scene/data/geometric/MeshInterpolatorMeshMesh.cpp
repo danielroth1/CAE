@@ -265,7 +265,7 @@ MeshInterpolator::Type MeshInterpolatorMeshMesh::getType() const
     return Type::MESH_MESH;
 }
 
-Vector3d MeshInterpolatorMeshMesh::getSourcePosition(size_t targetId) const
+Vector3d MeshInterpolatorMeshMesh::getInterpolatedPosition(size_t targetId) const
 {
     const VertexInterpolation& vi = mInterpolations[targetId];
     Face& f = mSourceAccessor->getTopology2D().getFace(vi.mSourceFaceId).getVertexIds();

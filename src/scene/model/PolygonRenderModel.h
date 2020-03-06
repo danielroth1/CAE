@@ -11,6 +11,8 @@
 
 class Appearances;
 class GeometricDataListener;
+class MeshInterpolator;
+class MeshInterpolatorFEM;
 class Polygon;
 class PolygonIndexMapping;
 class RenderLines;
@@ -69,6 +71,12 @@ public:
 
     void setPolygonIndexMapping(
             const std::shared_ptr<PolygonIndexMapping>& polygonIndexMapping);
+
+    // Sets the mesh interpolator that has the rendered polygon as target.
+    // Is used to efficiently calculate the vertex normals. Should be set
+    // in the undeformed state.
+    void setMeshInterpolator(
+            const std::shared_ptr<MeshInterpolatorFEM>& interpolator);
 
     bool isTexturingEnabled() const;
 
@@ -148,6 +156,8 @@ private:
     // Rendering vertex normals
     std::shared_ptr<RenderLines> mRenderLinesNormals;
     std::shared_ptr<RenderPoints> mRenderPoints;
+
+    std::shared_ptr<MeshInterpolator> mNormalVertexInterpolator;
 
     BSWSVectors::Type mCurrentType;
 

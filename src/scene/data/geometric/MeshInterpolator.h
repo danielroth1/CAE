@@ -32,9 +32,8 @@ public:
 
     virtual Type getType() const = 0;
 
-    // Returns the position of the source vertex that correspondons to the
-    // target vertex with the given id.
-    virtual Eigen::Vector3d getSourcePosition(size_t targetId) const = 0;
+    // Returns the interpolated position of the target vertex with the given id.
+    virtual Eigen::Vector3d getInterpolatedPosition(size_t targetId) const = 0;
 
     std::shared_ptr<Polygon> getSource() const;
 

@@ -88,7 +88,7 @@ void MeshInterpolatorRenderModel::update()
         lines->resize(2 * targetAccessor->getSize());
         for (size_t i = 0; i < targetAccessor->getSize(); ++i)
         {
-            Eigen::Vector3f vSource = mInterpolator->getSourcePosition(i).cast<float>();
+            Eigen::Vector3f vSource = mInterpolator->getInterpolatedPosition(i).cast<float>();
             Eigen::Vector3f vTarget = targetAccessor->getPosition(i).cast<float>();
 
             (*lines)[i * 2] = vSource;
@@ -102,7 +102,7 @@ void MeshInterpolatorRenderModel::update()
         points->resize(2 * targetAccessor->getSize());
         for (size_t i = 0; i < targetAccessor->getSize(); ++i)
         {
-            Eigen::Vector3f vSource = mInterpolator->getSourcePosition(i).cast<float>();
+            Eigen::Vector3f vSource = mInterpolator->getInterpolatedPosition(i).cast<float>();
             Eigen::Vector3f vTarget = targetAccessor->getPosition(i).cast<float>();
 
             (*points)[i * 2] = vSource;

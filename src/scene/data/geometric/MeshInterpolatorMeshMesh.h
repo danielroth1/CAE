@@ -168,7 +168,7 @@ public:
 
     // Returns the position of the source vertex that correspondons to the
     // target vertex with the given id.
-    virtual Eigen::Vector3d getSourcePosition(size_t targetId) const override;
+    virtual Eigen::Vector3d getInterpolatedPosition(size_t targetId) const override;
 
     // Returns the id of the source vertex w.r.t. the target vertex with the
     // given id.

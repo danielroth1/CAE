@@ -8,6 +8,7 @@
 #include <scene/data/GeometricDataVisitor.h>
 #include <scene/data/geometric/GeometricDataListener.h>
 #include <scene/data/geometric/GeometricPoint.h>
+#include <scene/data/geometric/MeshInterpolatorFEM.h>
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon2DData.h>
@@ -43,6 +44,7 @@ PolygonRenderModel::PolygonRenderModel(
         bool renderVertexNormals,
         bool renderFaceNormals)
     : mRenderModelManager(renderModelManager)
+    , mRenderer(nullptr)
     , mPolygon(polygon)
     , mRenderOnlyOuterFaces(renderOnlyOuterFaces)
     , mRenderVertexNormals(renderVertexNormals)
@@ -117,6 +119,54 @@ void PolygonRenderModel::setPolygonIndexMapping(
     mPolygonIndexMapping = poylgonIndexMapping;
 }
 
+void PolygonRenderModel::setMeshInterpolator(
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolator)
+{
+    if (interpolator->getTarget() != mPolygon)
+    {
+        std::cout << "Cannot add interpolator for PolygonRenderModel because"
+                     "its polygon missmatches with the interpolators source.\n";
+        return;
+    }
+
+    Vectors positionsWS;
+    Vectors faceNormals;
+    Faces& faces = mPolygon->getTopology().getFacesIndices();
+
+    // calculate face normals
+    ModelUtils::calculateFaceNormals<double>(
+                mPolygon->getPositions(),
+                mPolygon->getTopology().getFacesIndices(),
+                faceNormals);
+
+    // calculate vertex normals from face normals
+    Vectors vertexNormals;
+    ModelUtils::calculateVertexFromFaceNormals<double>(
+                mPolygon->getPositions(),
+                mPolygon->getTopology().getFacesIndices(),
+                faceNormals,
+                mPolygon->getTopology(),
+                vertexNormals);
+
+    // calculate normalVerticesPositions
+    double distance = 1e-5;
+    Vectors normalVerticesPositions;
+    normalVerticesPositions.reserve(mPolygon->getSize());
+    for (size_t i = 0; i < mPolygon->getSize(); ++i)
+    {
+        Eigen::Vector3d v = mPolygon->getPosition(i) + distance * vertexNormals[i];
+        normalVerticesPositions.push_back(v);
+    }
+
+    // create Polygon and MeshInterpolatorFEM
+    std::shared_ptr<Polygon2D> poly =
+            std::make_shared<Polygon2D>(normalVerticesPositions, faces);
+    mNormalVertexInterpolator =
+            std::make_shared<MeshInterpolatorFEM>(
+                std::static_pointer_cast<Polygon3D>(interpolator->getSource()), poly);
+    mNormalVertexInterpolator->solve();
+}
+
 bool PolygonRenderModel::isTexturingEnabled() const
 {
     return mRenderPolygonsData->isTexturingEnabled();
@@ -150,8 +200,11 @@ void PolygonRenderModel::setRenderVertexNormals(bool renderVertexNormals)
 {
     mRenderVertexNormals = renderVertexNormals;
 
-    INVOKE_METHOD(PolygonRenderModel, shared_from_this(),
-                  revalidatePointLineRendering, mRenderer->getDomain()); // my synchronized implementation
+    if (mRenderer)
+    {
+        INVOKE_METHOD(PolygonRenderModel, shared_from_this(),
+                      revalidatePointLineRendering, mRenderer->getDomain()); // my synchronized implementation
+    }
 }
 
 bool PolygonRenderModel::isRenderFaceNormals() const
@@ -162,8 +215,11 @@ bool PolygonRenderModel::isRenderFaceNormals() const
 void PolygonRenderModel::setRenderFaceNormals(bool renderFaceNormals)
 {
     mRenderFaceNormals = renderFaceNormals;
-    INVOKE_METHOD(PolygonRenderModel, shared_from_this(),
-                  revalidatePointLineRendering, mRenderer->getDomain());
+    if (mRenderer)
+    {
+        INVOKE_METHOD(PolygonRenderModel, shared_from_this(),
+                      revalidatePointLineRendering, mRenderer->getDomain());
+    }
 }
 
 void PolygonRenderModel::reset()
@@ -538,7 +594,8 @@ void PolygonRenderModel::revalidatePointLineRendering()
             // yellow
             mRenderLinesNormals->setRenderMaterial(
                         RenderMaterial::createFromColor({1.0f, 1.0f, 0.0f, 1.0f}));
-            mRenderer->addRenderObject(mRenderLinesNormals);
+            if (mRenderer)
+                mRenderer->addRenderObject(mRenderLinesNormals);
         }
 
         if (!mRenderPoints)
@@ -547,7 +604,8 @@ void PolygonRenderModel::revalidatePointLineRendering()
             // orange
             mRenderPoints->setRenderMaterial(
                         RenderMaterial::createFromColor({1.0f, 1.0f, 0.5f, 1.0f}));
-            mRenderer->addRenderObject(mRenderPoints);
+            if (mRenderer)
+                mRenderer->addRenderObject(mRenderPoints);
         }
     }
     else if (!mRenderVertexNormals && !mRenderFaceNormals)
@@ -622,23 +680,39 @@ void PolygonRenderModel::updatePositions()
         STOP_TIMING_MODELLING;
 
         START_TIMING_MODELLING("PolygonRenderModel::updatePositions::normals");
-        // TODO: vim
-        auto normalsLock = mNormalsBufferedData->getData().lock();
-        auto facesLock = mFacesBufferedData->getData().lock();
 
-        // TODO: optimize this
-        ModelUtils::calculateFaceNormals<float>(
-                    *positionsLock,
-                    *facesLock,
-                    mFaceNormals);
+        if (mNormalVertexInterpolator)
+        {
+            // calculate vertex normals efficiently with mesh interpolator
+            for (size_t i = 0; i < positions.size(); ++i)
+            {
+                mFaceNormals[i] =
+                        (mNormalVertexInterpolator->getInterpolatedPosition(i) -
+                         positions[i]).normalized().cast<float>();
+            }
+        }
+        else
+        {
+            // TODO: vim
+            auto normalsLock = mNormalsBufferedData->getData().lock();
+            auto facesLock = mFacesBufferedData->getData().lock();
 
-        // calculate normals
-        ModelUtils::calculateVertexFromFaceNormals<float>(
-                    *positionsLock,
-                    *facesLock,
-                    mFaceNormals,
-                    mPolygon->getTopology(),
-                    *normalsLock);
+
+            // TODO: optimize this
+            ModelUtils::calculateFaceNormals<float>(
+                        *positionsLock,
+                        *facesLock,
+                        mFaceNormals);
+
+            // calculate normals
+            ModelUtils::calculateVertexFromFaceNormals<float>(
+                        *positionsLock,
+                        *facesLock,
+                        mFaceNormals,
+                        mPolygon->getTopology(),
+                        *normalsLock);
+        }
+
 
         STOP_TIMING_MODELLING;
 
