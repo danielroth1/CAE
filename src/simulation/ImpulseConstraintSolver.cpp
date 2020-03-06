@@ -273,9 +273,86 @@ void ImpulseConstraintSolver::applyImpulse(
         TopologyCell& cell =
                 femObj->getPolygon()->getTopology3D().getCells()[elementId];
 
+        double mass =
+                bary(0) * femObj->getMass(cell.getVertexIds()[0]) +
+                bary(1) * femObj->getMass(cell.getVertexIds()[1]) +
+                bary(2) * femObj->getMass(cell.getVertexIds()[2]) +
+                bary(3) * femObj->getMass(cell.getVertexIds()[3]);
+
         for (size_t i = 0; i < 4; ++i)
         {
-            femObj->applyImpulse(cell.getVertexIds()[i], bary[i] * impulse);
+            ID vertexId = cell.getVertexIds()[i];
+            double mass_i = femObj->getMass(vertexId);
+
+            // Paper reference:
+            // The finally used impulse can be derived from:
+            // "Accurate Collision Response on Polygonal Meshes" by Thalmann.
+            // This paper is a bit more abstract and describes general cases
+            // of how to deal with force/velocity/position changes on triangle
+            // meshes.
+            //
+            // It is possible to apply different kind of impulses here depending
+            // on how barycentric coordinates and masses should be weight.
+            // The final impulse should cause a correct valocity change
+            // in the contact point:
+            // \delta v = \sum^{3}_{i=0} a_i * \delta v_i
+            // The following impulses define \delta v_i differently.
+            //
+            // All impulses are mass independent to improve stability if there
+            // is a large mass difference between vertices of a tetrahedron.
+            // This is achieved by multiplying mass_i / mass with every
+            // impulse. To be more physically accurate, this can be removed.
+
+            // This impulse doesn't work in certain situations but is overall ok.
+            // Theoretically, the applied impulse is too weak because the
+            // final velocity change multiplies the barycentric coordinates
+            // twice, i.e.
+            //
+            // \delta v_i = a_i * \delta_v
+            //
+            // with the velocity change in the given point:
+            //
+            // \delta v = \sum^{3}_{i=0} a_i^2 * \delta v
+//            femObj->applyImpulse(cell.getVertexIds()[i], mass_i / mass * bary[i] * impulse);
+
+            // This formulation works but the impulses would then not depend
+            // on barycentric coordinates which would make tetrahedrons appear
+            // too stiff. The impulse causes a change in velcity for vertex i:
+            //
+            // \delta v_i = \delta_v
+            //
+            // The velocit change is:
+            //
+            // \delta v = \sum^{3}_{i=0} a_i * \delta_v
+//            femObj->applyImpulse(cell.getVertexIds()[i], mass_i / mass * impulse);
+
+            // The following impulse can be derived from equation (6) in the
+            // referenced paper (see top of comments) ignoring the mass
+            // contributions.
+            //
+            // This impulse seems a bit more sophisticated than the previous
+            // because it weighs by barycentric coordinates. This way, an
+            // impulse that is applied to a vertex or an edge, e.g. with
+            // barycentric coordinates (1, 0, 0, 0) or (0.4, 0.6, 0, 0)
+            // only causes a velocity change in those vertices. The previous
+            // impulse would cause the same velocity change, even in vertices
+            // that are unaffected. It also would treat the first and second
+            // vertex of the (0.4, 0.6, 0, 0) example the same.
+            //
+            // Mathematic formulation:
+            // The impulse causes the barycentric coordinates to be weight
+            // quadratic, i.e.
+            //
+            // \delta v_i = a_i / (a_0^2 + a_1^2 + a_2^2 + a_3^2) * \delta v
+            //
+            // The velocity change at the given point is then:
+            //
+            // \delta v = \sum^{3}_[i=0} a_i * \delta v_i
+            //          = \sum^{3}_[i=0} a_i^2 / (a_0^2 + a_1^2 + a_2^2 + a_3^2) * \delta v
+            //
+            // which is quadratic and fulfills the condition that the values
+            // before \delta v add up to 1.
+            femObj->applyImpulse(vertexId, mass_i / mass * bary[i] / bary.squaredNorm() * impulse);
         }
         break;
     }
