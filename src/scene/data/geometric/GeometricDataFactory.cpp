@@ -331,9 +331,13 @@ Polygon3D GeometricDataFactory::createPolygon3DFromPolygon2D(
     }
 
     return Polygon3D(verticesOut,
-                     TopologyFactory::createPolygon3DTopology(
-                         facesOut, outerFacesOut,
+                     TopologyFactory::createPolygon3DTopologyWithOuter(
+                         facesOut, /*outerFacesOut,*/
                          cellsOut, verticesOut.size()));
+//    return Polygon3D(verticesOut,
+//                     TopologyFactory::createPolygon3DTopology(
+//                         facesOut, outerFacesOut,
+//                         cellsOut, verticesOut.size()));
 }
 
 GeometricDataFactory::GeometricDataFactory()

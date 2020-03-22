@@ -10,6 +10,8 @@ class Polygon2DTopology : public PolygonTopology
 {
 public:
 
+    Polygon2DTopology();
+
     Polygon2DTopology(const Faces& faces, ID nVertices);
 
 };

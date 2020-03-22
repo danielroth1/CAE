@@ -5,6 +5,7 @@
 #include "Polygon.h"
 #include "Polygon2DAccessor.h"
 
+#include <map>
 #include <memory>
 
 class Polygon3DData;
@@ -52,6 +53,20 @@ public:
     // is created each time it is called so don't use it in timing critical
     // code.
     Vectors calcualtePositions2DFrom3D() const;
+
+    // Returns all cells with a thickness below the given threshold.
+    std::vector<ID> retrieveThinCells(double thicknessThreshold) const;
+
+    // Removes the given cells and updates the topology.
+    // Isolated faces, edges, and vertices are automatically removed as well.
+    void removeCells(const std::vector<ID>& cellIds);
+
+    // Removes faces from topology.
+    // Removes face normals.
+    void removeFaces(const std::vector<ID>& faceIds);
+
+    // Removes edges from topology.
+    void removeEdges(const std::vector<ID>& edgeIds);
 
     // Creates .ele, .node, and .face files according to the tetgen file format.
     void outputToFile(const std::string& filename);
@@ -167,6 +182,15 @@ protected:
                   BSWSVectors& faceNormals) override;
 
 private:
+
+    void initFromChangedTopology();
+
+    void changeMapping(const std::map<ID, ID>& mapping, Vectors& vectors);
+
+    std::vector<ID> retrieveRemovableIndices(const std::map<ID, ID>& mapping);
+
+    // Checks if the outer face normals point in the correct direction.
+    bool checkFaceNormalDirection();
 
     std::shared_ptr<Polygon3DData> mData;
 

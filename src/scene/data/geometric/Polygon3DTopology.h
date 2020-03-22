@@ -93,10 +93,11 @@ public:
             return mOuterFaceIds[index3];
         }
 
-private:
-
     // Adds the cell information to the topology.
+    // Initializes the outer topology.
     void init();
+
+private:
 
     // Calculates the IDs of all vertices that are part of the
     // outer hull, which are all vertices that are obtained by

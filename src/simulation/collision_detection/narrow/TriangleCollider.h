@@ -65,8 +65,8 @@ public:
 
     // Checks for a collision between the face and vertex. If there is one,
     // returns true and fills collision.
-    // \param revertedFeatures - true if the feature e1 belongs to poly2 and
-    //      e2 belongs to poly1
+    // \param revertedFeatures - true if the feature f belongs to poly2 and
+    //      v belongs to poly1
     bool collide(TopologyFace& f,
                  TopologyVertex& v,
                  bool revertedFeatures,

@@ -61,6 +61,52 @@ public:
         }
     }
 
+    // Removes all entries of the given vector at the given indices.
+    //\param vector - the vector from which elements are removed.
+    //\param removeIndices - indices of all elements that need to be removed.
+    template<class T, class U>
+    static void removeVectors(
+            std::vector<T>& vector, const std::vector<U>& removeIndices)
+    {
+        removeVectors(vector, removeIndices.begin(), removeIndices.end());
+    }
+
+    // Removes all given entries of the given vector. Removes by values and
+    // not by indices.
+    //\param vector - the vector from which elements are removed.
+    //\param begin, end - range of iterators that contains elements. Iterators
+    //      must reference same type as elements stored in T.
+    template<class T, class BidirIter>
+    static void removeElementsInVector(
+            std::vector<T>& vector, BidirIter begin, BidirIter end)
+    {
+        for (BidirIter it = begin; it != end; ++it)
+        {
+            removeVectorsValue(vector, *it);
+        }
+    }
+
+    // Removes all occurrences of value in the given vector.
+    template<class T>
+    static void removeElementInVector(
+            std::vector<T>& vector, const T& value)
+    {
+        bool removedAllOccurrences = false;
+
+        while (!removedAllOccurrences)
+        {
+            auto it = std::find(vector.begin(), vector.end(), value);
+            if (it != vector.end())
+            {
+                vector.erase(it);
+            }
+            else
+            {
+                removedAllOccurrences = true;
+            }
+        }
+    }
+
     // Removes all elements of arrays that contain at least one of the given
     // elements between begin and end, e.g.
     // arrays = [[0 1 2], [3 4 5], [6 7 8], [0 5 7]]

@@ -311,6 +311,7 @@ bool generateMeshFromCGALPolyhedron(
             }
         }
 
+        bool reverted = false;
         if (!found)
         {
             std::cout << "Did not find cell for outer triangle.\n";
@@ -327,18 +328,32 @@ bool generateMeshFromCGALPolyhedron(
                 unsigned int temp = facet[1];
                 facet[1] = facet[2];
                 facet[2] = temp;
+                reverted = true;
             }
         }
 
         // =====================================================================
 
-        // is this face part of all faces?
+        // Check if this face is part of all faces. If so, revert the
+        // corresponding global facet if the outer facet was also reverted.
+        // Polygon3D doesn't necessarily require this to be done because
+        // it does it on its own as well, see
+        // Polygon3D::synchronizeTriangleIndexOrder()).
         bool found2 = false;
         for (size_t j = 0; j < facets_out.size(); ++j)
         {
             if (sortedFace(facets_out[j]) == sortedFace(facet))
             {
                 found2 = true;
+                // revert the same face in facets_out as it was done in
+                // outer_facets_out
+                if (reverted)
+                {
+                    std::array<unsigned int, 3>& facet = facets_out[j];
+                    unsigned int temp = facet[1];
+                    facet[1] = facet[2];
+                    facet[2] = temp;
+                }
                 break;
             }
         }

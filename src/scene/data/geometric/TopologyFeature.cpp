@@ -20,3 +20,8 @@ const ID& TopologyFeature::getIDRef() const
 {
     return mId;
 }
+
+void TopologyFeature::setID(ID id)
+{
+    mId = id;
+}

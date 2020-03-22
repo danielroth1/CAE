@@ -6,6 +6,7 @@
 
 #include <data_structures/VectorOperations.h>
 
+
 Polygon3DTopology::Polygon3DTopology(
         const Faces& faces,
         const Faces& outerFaces, // you can not call this constructor with already 2d outer faces
@@ -15,8 +16,6 @@ Polygon3DTopology::Polygon3DTopology(
     , mOuterFacesIndices3D(outerFaces)
     , mOuterVertexIds(calculateOuterVertexIDs(mOuterFacesIndices3D))
     , mCellIds(cells)
-    , mOuterTopology(transformTo2DIndices(mOuterFacesIndices3D, mOuterVertexIds),
-                     mOuterVertexIds.size())
 {
     init();
 
@@ -72,7 +71,7 @@ void Polygon3DTopology::removeVertices(std::vector<ID>& vertexIds)
 
     size_t nVerticesAfter = mVertices.size() - vertexIds.size();
 
-    std::vector<ID> oldToNew = createOldToNewMapping(vertexIds);
+    std::vector<ID> oldToNew = createOldToNewMapping(vertexIds, mVertices.size());
 
     // 1.) remove all faces / cells that reference the to be removed vertices
     // from:
@@ -135,10 +134,6 @@ void Polygon3DTopology::removeVertices(std::vector<ID>& vertexIds)
 
     // 3.)
     mOuterVertexIds = calculateOuterVertexIDs(mOuterFacesIndices3D);
-
-    mOuterTopology = Polygon2DTopology(
-                transformTo2DIndices(mOuterFacesIndices3D, mOuterVertexIds),
-                mOuterVertexIds.size());
 
     PolygonTopology::init(mFacesIndices, nVerticesAfter);
     init();
@@ -254,6 +249,9 @@ Edges Polygon3DTopology::retrieveOuterEdges() const
 
 void Polygon3DTopology::init()
 {
+
+    PolygonTopology::init(mFacesIndices, mVertices.size());
+
     // Cells: add vertex ids
     mCells.clear();
     mCells.reserve(mCellIds.size());
@@ -381,6 +379,10 @@ void Polygon3DTopology::init()
         }
     }
 
+    mOuterTopology = Polygon2DTopology(
+                transformTo2DIndices(mOuterFacesIndices3D, mOuterVertexIds),
+                mOuterVertexIds.size());
+
     // mOuterEdgeIds
     {
         // edgeMap: edge -> id
@@ -413,7 +415,7 @@ void Polygon3DTopology::init()
 
         if (f3d.getCellIds().size() == 0)
         {
-            std::cout << "Waning: Outer face has zero cells.\n";
+            std::cout << "Warning: Outer face has zero cells.\n";
         }
         if (f3d.getCellIds().size() > 1)
         {

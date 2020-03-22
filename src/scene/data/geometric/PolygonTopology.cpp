@@ -6,6 +6,11 @@
 
 #include <data_structures/VectorOperations.h>
 
+PolygonTopology::PolygonTopology()
+{
+
+}
+
 PolygonTopology::PolygonTopology(const Faces& faces, ID nVertices)
 {
     init(faces, nVertices);
@@ -22,7 +27,7 @@ void PolygonTopology::removeVertices(std::vector<ID>& vertexIds)
         return;
 
     size_t nVerticesAfter = mVertices.size() - vertexIds.size();
-    std::vector<ID> oldToNew = createOldToNewMapping(vertexIds);
+    std::vector<ID> oldToNew = createOldToNewMapping(vertexIds, mVertices.size());
 
     // 1.) remove all faces / cells that reference the to be removed vertices
     // from:

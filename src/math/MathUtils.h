@@ -65,6 +65,35 @@ public:
             Eigen::Vector3d& inter2,
             Eigen::Vector2d& bary,
             bool& isInside);
+
+    // Returns the signed thickness of the tetrahedron (p0, p1, p2, p3).
+    // The value is positive if its on the side where when looking at the
+    // triangle (p0, p1, p2), the points are ordered clockwise
+    // and negative if they are ordered counter-clockwise.
+    template <class Type>
+    static double calculateSignedThickness(
+            const Eigen::Matrix<Type, 3, 1>& p0,
+            const Eigen::Matrix<Type, 3, 1>& p1,
+            const Eigen::Matrix<Type, 3, 1>& p2,
+            const Eigen::Matrix<Type, 3, 1>& p3)
+    {
+        return (p1 - p0).cross(p2 - p0).normalized().dot(p3 - p0);
+    }
+
+    // Returns the thickness of the tetrahedron (p0, p1, p2, p3).
+    template <class Type>
+    static double calculateThickness(
+            const Eigen::Matrix<Type, 3, 1>& p0,
+            const Eigen::Matrix<Type, 3, 1>& p1,
+            const Eigen::Matrix<Type, 3, 1>& p2,
+            const Eigen::Matrix<Type, 3, 1>& p3)
+    {
+        double t1 = std::abs(calculateSignedThickness(p0, p1, p2, p3));
+        double t2 = std::abs(calculateSignedThickness(p0, p1, p3, p2));
+        double t3 = std::abs(calculateSignedThickness(p0, p2, p3, p1));
+        double t4 = std::abs(calculateSignedThickness(p1, p2, p3, p0));
+        return std::min(t1, std::min(t2, std::min(t3, t4)));
+    }
 };
 
 #endif // MATHUTILS_H

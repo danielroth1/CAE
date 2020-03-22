@@ -17,6 +17,8 @@ public:
     ID getID() const;
     const ID& getIDRef() const;
 
+    void setID(ID id);
+
     virtual Type getType() const = 0;
 
 private:

@@ -30,6 +30,9 @@
 class PolygonTopology
 {
 public:
+    // Default constructor
+    PolygonTopology();
+
     PolygonTopology(const Faces& faces, ID nVertices);
     virtual ~PolygonTopology();
 
@@ -107,9 +110,9 @@ protected:
     std::vector<TopologyEdge> calculateEdges(const Faces& faces) const;
 
     // Creates a mapping that maps each vertex ids to its new id after all
-    // vertices specified in removedVertexIds would be removed. Replaces removed
-    // vertex indices by 0. if removedVertexIds is empty, an empty vector is
-    // retruned. Sorts removedVertexIds by ascending indices.
+    // vertices specified in removedIds would be removed. Replaces removed
+    // vertex indices by 0. if removedIds is empty, an empty vector is
+    // retruned. Sorts removedIds by ascending indices.
     //
     // Example:
     // original: 0 1 2 3 4 5 6 7 8 9
@@ -117,22 +120,22 @@ protected:
     // new:      0 1 2 3 4 5 6 7
     // oldToNew: 0 1 2 0 3 4 5 0 6 7
     template<class T>
-    std::vector<T> createOldToNewMapping(std::vector<T>& removedVertexIds)
+    std::vector<T> createOldToNewMapping(const std::vector<T>& removedIds,
+                                         size_t nVerticesBefore) const
     {
         std::vector<T> oldToNew;
-        if (removedVertexIds.empty())
+        std::vector<T> removeIdsCopy = removedIds;
+        if (removeIdsCopy.empty())
             return oldToNew;
 
-        std::sort(removedVertexIds.begin(), removedVertexIds.end());
-
-        size_t nVerticesBefore = mVertices.size();
+        std::sort(removeIdsCopy.begin(), removeIdsCopy.end());
 
         oldToNew.resize(nVerticesBefore);
 
         T removedIt = 0;
         for (T i = 0; i < nVerticesBefore; ++i)
         {
-            if (removedIt < removedVertexIds.size() && removedVertexIds[removedIt] == i)
+            if (removedIt < removeIdsCopy.size() && removeIdsCopy[removedIt] == i)
             {
                 ++removedIt;
                 oldToNew[i] = 0;
