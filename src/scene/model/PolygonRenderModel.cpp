@@ -644,33 +644,44 @@ void PolygonRenderModel::updatePositions()
             std::shared_ptr<VectorIndexMapping> vim =
                     mPolygonIndexMapping->getVectorIndexMapping();
 
-            for (size_t i = 0; i < vim->getExtendedSize(); ++i)
+            if (mRenderOnlyOuterFaces && mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
             {
-                size_t index = vim->getOriginalIndex(i);
-                if (mRenderOnlyOuterFaces && mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+#pragma omp parallel for
+                for (size_t i = 0; i < vim->getExtendedSize(); ++i)
                 {
+                    size_t index = vim->getOriginalIndex(i);
                     positionsLock->at(i) = positions[
                             static_cast<Polygon3D*>(
                                 mPolygon.get())->getOuterPositionIds()[index]].cast<float>();
                 }
-                else
+            }
+            else
+            {
+#pragma omp parallel for
+                for (size_t i = 0; i < vim->getExtendedSize(); ++i)
                 {
+                    size_t index = vim->getOriginalIndex(i);
                     positionsLock->at(i) = positions[index].cast<float>();
                 }
             }
         }
         else
         {
-            for (size_t i = 0; i < positionsLock->size(); ++i)
+            if (mRenderOnlyOuterFaces &&
+                mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
             {
-                if (mRenderOnlyOuterFaces &&
-                    mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+#pragma omp parallel for
+                for (size_t i = 0; i < positionsLock->size(); ++i)
                 {
                     positionsLock->at(i) = positions[
                             static_cast<Polygon3D*>(mPolygon.get())->
                             getOuterPositionIds()[i]].cast<float>();
                 }
-                else
+            }
+            else
+            {
+#pragma omp parallel for
+                for (size_t i = 0; i < positionsLock->size(); ++i)
                 {
                     positionsLock->at(i) = positions[i].cast<float>();
                 }
@@ -684,6 +695,7 @@ void PolygonRenderModel::updatePositions()
         if (mNormalVertexInterpolator)
         {
             // calculate vertex normals efficiently with mesh interpolator
+#pragma omp parallel for
             for (size_t i = 0; i < positions.size(); ++i)
             {
                 mFaceNormals[i] =

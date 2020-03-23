@@ -235,6 +235,7 @@ void MeshInterpolatorFEM::update()
     {
         // Update positions of target according to mapping that was calculated
         // in init().
+#pragma omp parallel for
         for (size_t i = 0; i < mTarget->getPositions().size(); ++i)
         {
             // Calculate interpolated vertex
