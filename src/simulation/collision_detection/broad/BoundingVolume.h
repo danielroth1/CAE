@@ -23,6 +23,8 @@ public:
 
     virtual bool intersects(BoundingVolume* bv) = 0;
 
+    virtual bool isInside(const Eigen::Vector3d& point) = 0;
+
     // Leaf node update method
     virtual void update(CollisionObject& collisionObject,
                         double collisionMargin) = 0;

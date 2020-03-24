@@ -3,6 +3,7 @@
 
 #include <data_structures/DataStructures.h>
 
+class BoundingVolume;
 class CollisionObjectVisitor;
 
 
@@ -31,6 +32,16 @@ public:
 
     virtual Eigen::Vector getPosition() = 0;
 
+    void setBoundingVolume(const std::shared_ptr<BoundingVolume>& boundingVolume)
+    {
+        mBoundingVolume = boundingVolume;
+    }
+
+    const std::shared_ptr<BoundingVolume>& getBoundingVolume() const
+    {
+        return mBoundingVolume;
+    }
+
     // Returns the id of the current collision detection run. It stores the
     // id of the run in which this collision object was last seen.
     // It is used to detect if this collision object was already seen within
@@ -48,6 +59,7 @@ public:
 
 private:
     ID mRunId;
+    std::shared_ptr<BoundingVolume> mBoundingVolume;
 };
 
 #endif // COLLISIONOBJECT_H

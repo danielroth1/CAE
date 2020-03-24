@@ -81,12 +81,15 @@ void BVHDeformable::udpate()
 
 void BVHDeformable::initializeWithKDTree()
 {
-    std::vector<std::shared_ptr<BoundingVolume>> leafSpheres;
+    std::vector<std::shared_ptr<BoundingVolume>> leafBoundingVolumes;
     for (const std::shared_ptr<CollisionObject>& co : mCollisionObjects)
     {
-        leafSpheres.push_back(
+        leafBoundingVolumes.push_back(
                     BoundingVolumeFactory::createBoundingVolume(
                         *co, *mPolygon, getBoundingVolumeType()));
+
+        // Set the just created bounding volume
+        co->setBoundingVolume(leafBoundingVolumes[leafBoundingVolumes.size() - 1]);
     }
 
     class SetRootVisitor : public BVHNodeVisitor
@@ -113,7 +116,9 @@ void BVHDeformable::initializeWithKDTree()
     } visitor(*this);
 
     std::shared_ptr<BoundingVolume> dummyPtr;
-    BVHNode* node = initializeWithKDTreeRec(leafSpheres, mCollisionObjects, dummyPtr);
+    BVHNode* node = initializeWithKDTreeRec(
+                leafBoundingVolumes, mCollisionObjects, dummyPtr);
+
     node->accept(visitor);
 
 //    print();

@@ -19,7 +19,7 @@ CollisionTriangle::~CollisionTriangle()
 
 }
 
-void CollisionTriangle::updateEdgeBoundingBoxes()
+void CollisionTriangle::updateEdgeBoundingBoxes(double collisionMargin)
 {
     Polygon2DTopology& topoSource = mAccessor->getTopology2D();
     TopologyFace& face1 = topoSource.getFace(mFaceId);
@@ -32,8 +32,8 @@ void CollisionTriangle::updateEdgeBoundingBoxes()
             Eigen::Vector& p11 = mAccessor->getPosition(e1.getVertexIds()[0]);
             Eigen::Vector& p12 = mAccessor->getPosition(e1.getVertexIds()[1]);
 
-            mEdgeBBs[i].min() = p11.cwiseMin(p12);
-            mEdgeBBs[i].max() = p11.cwiseMax(p12);
+            mEdgeBBs[i].min() = p11.cwiseMin(p12) - collisionMargin * Eigen::Vector::Ones();
+            mEdgeBBs[i].max() = p11.cwiseMax(p12) + collisionMargin * Eigen::Vector::Ones();
         }
     }
 }

@@ -30,6 +30,11 @@ public:
         return mBB.intersects(static_cast<BVAABB*>(bv)->getBoundingBox());
     }
 
+    virtual bool isInside(const Eigen::Vector3d& point) override final
+    {
+        return mBB.isInside(point);
+    }
+
     // Doesn't use the collision margin for Spheres (because its not used
     // for anythin else than triangle-triangle collision detection).
     virtual void update(CollisionObject& collisionObject,
@@ -53,10 +58,12 @@ public:
             CollisionTriangle* t = static_cast<CollisionTriangle*>(&collisionObject);
             const Face& f = t->getFace();
             const std::shared_ptr<Polygon2DAccessor>& acc = t->getAccessor();
-            mBB.mid() = 0.3333 * (
-                    acc->getPosition(f[0]) +
-                    acc->getPosition(f[1]) +
-                    acc->getPosition(f[2]));
+
+            // skipped here because its not needed in the current implementation
+//            mBB.mid() = 0.3333 * (
+//                    acc->getPosition(f[0]) +
+//                    acc->getPosition(f[1]) +
+//                    acc->getPosition(f[2]));
 
             mBB.min() = acc->getPosition(f[0]).cwiseMin(
                             acc->getPosition(f[1])).cwiseMin(
@@ -65,6 +72,7 @@ public:
             mBB.max() = acc->getPosition(f[0]).cwiseMax(
                             acc->getPosition(f[1])).cwiseMax(
                                 acc->getPosition(f[2])) + collisionMargin * Eigen::Vector::Ones();
+
             break;
         }
         }
@@ -78,9 +86,9 @@ public:
         mBB.max() = static_cast<BVAABB*>(bv1)->getBoundingBox().max().cwiseMax(
                     static_cast<BVAABB*>(bv2)->getBoundingBox().max());
 
-        mBB.size() = mBB.max() - mBB.min();
-
-        //    mBB.mid() = 0.5 * (mBB.min() + mBB.max());
+        // skipped here because its not needed in the current implementation
+//        mBB.size() = mBB.max() - mBB.min();
+//        mBB.mid() = 0.5 * (mBB.min() + mBB.max());
 
     }
 
@@ -92,7 +100,7 @@ public:
     // Returns the bounding boxes minimum position.
     virtual Eigen::Vector getPosition() const final
     {
-        //    return mBB.min();
+//        return mBB.min();
         return mBB.mid();
     }
 

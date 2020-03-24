@@ -13,6 +13,7 @@
 #include <scene/data/geometric/Polygon3DTopology.h>
 #include <scene/data/geometric/TopologyFeatureIterator.h>
 #include <simulation/SimulationObject.h>
+#include <simulation/collision_detection/broad/BoundingVolume.h>
 
 
 TriangleCollider::TriangleCollider(
@@ -78,13 +79,13 @@ void TriangleCollider::addTrianglePair(
     if (ct1.getRunId() != mRunId)
     {
         ct1.setRunId(mRunId);
-        ct1.updateEdgeBoundingBoxes();
+        ct1.updateEdgeBoundingBoxes(mMargin);
     }
 
     if (ct2.getRunId() != mRunId)
     {
         ct2.setRunId(mRunId);
-        ct2.updateEdgeBoundingBoxes();
+        ct2.updateEdgeBoundingBoxes(mMargin);
     }
 
     // Slower version
@@ -99,14 +100,20 @@ void TriangleCollider::addTrianglePair(
         if (face1.isVertexOwner(i))
         {
             unsigned int vId = face1.getVertexIds()[i];
-            mFeaturePairsVF.push_back(VFPair(&topoSource.getVertices()[vId], &face2));
+
+            // Vertex-Face AABB check
+            if (ct2.getBoundingVolume()->isInside(ct1.getAccessor()->getPosition(vId)))
+                mFeaturePairsVF.push_back(VFPair(&topoSource.getVertices()[vId], &face2));
         }
 
         // Face -> Vertex
         if (face2.isVertexOwner(i))
         {
             unsigned int vId = face2.getVertexIds()[i];
-            mFeaturePairsFV.push_back(FVPair(&face1, &topoTarget.getVertices()[vId]));
+
+            // Vertex-Face AABB check
+            if (ct1.getBoundingVolume()->isInside(ct2.getAccessor()->getPosition(vId)))
+                mFeaturePairsFV.push_back(FVPair(&face1, &topoTarget.getVertices()[vId]));
         }
 
         // Edge -> Edge
@@ -263,7 +270,11 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
     size_t numTotalPairs = mFeaturePairsVF.size() +
             mFeaturePairsFV.size() +
             mFeaturePairsEE.size();
-    bool parallel = numTotalPairs > 400;
+
+    if (numTotalPairs == 0)
+        return;
+
+    bool parallel = numTotalPairs > 8 * 40;
 
 //    if (numTotalPairs > 0)
 //        std::cout << "sizes = " << mFeaturePairsVF.size() << ", " << mFeaturePairsFV.size() << ", " << mFeaturePairsEE.size() << "\n";
@@ -314,14 +325,13 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
         size_t pairsPerThread = std::ceil(static_cast<double>(numTotalPairs) / nThreads);
         std::vector<std::vector<Collision>> threadsCollisions;
         threadsCollisions.resize(nThreads);
-        size_t maxPairs = mFeaturePairsVF.size() + mFeaturePairsFV.size() + mFeaturePairsEE.size();
 
 #pragma omp parallel for
         for (int tId = 0; tId < nThreads; ++tId)
         {
             std::vector<Collision>& threadCollisions = threadsCollisions[tId];
             size_t start = tId * pairsPerThread;
-            size_t end = std::min(maxPairs, (tId + 1) * pairsPerThread);
+            size_t end = std::min(numTotalPairs, (tId + 1) * pairsPerThread);
 
             for (size_t i = start; i < end; ++i)
             {

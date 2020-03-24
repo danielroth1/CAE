@@ -10,11 +10,22 @@ class BoundingBox
 public:
     BoundingBox();
 
+    // Checks if the bounding box is intersecting with the given bounding
+    // box. This is the case if any planes are intersecting or one bounding
+    // box is inside the other one.
     bool intersects(const BoundingBox& bb) const
     {
         return mMin(0) < bb.max()(0) && bb.min()(0) < mMax(0) &&
                 mMin(1) < bb.max()(1) && bb.min()(1) < mMax(1) &&
                 mMin(2) < bb.max()(2) && bb.min()(2) < mMax(2);
+    }
+
+    // Checks if the given point is inside the bounding box.
+    bool isInside(const Eigen::Vector3d& point)
+    {
+        return mMin(0) < point(0) && point(0) < mMax(0) &&
+                mMin(1) < point(1) && point(1) < mMax(1) &&
+                mMin(2) < point(2) && point(2) < mMax(2);
     }
 
     Vector& min()

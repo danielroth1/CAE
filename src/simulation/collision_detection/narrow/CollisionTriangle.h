@@ -71,7 +71,7 @@ public:
     // owned by this triangle. AABBs of non-owned edges are left empty.
     // Access the update AABBs with getEdgeBoundingBoxes(). Call this method
     // before performing the triangle-triangle collision detection.
-    void updateEdgeBoundingBoxes();
+    void updateEdgeBoundingBoxes(double collisionMargin);
 
     // CollisionObject interface
 public:
