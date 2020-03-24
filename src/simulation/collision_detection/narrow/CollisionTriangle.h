@@ -6,6 +6,8 @@
 #include <scene/data/geometric/MeshInterpolatorFEM.h>
 #include <scene/data/geometric/Polygon2DAccessor.h>
 
+#include <data_structures/BoundingBox.h>
+
 class SimulationObject;
 
 // TODO: A collision triangle shouldn't store a reference to the simulation object
@@ -60,6 +62,17 @@ public:
         return mAccessor->getPosition(mFace[2]);
     }
 
+    const std::array<BoundingBox, 3>& getEdgeBoundingBoxes() const
+    {
+        return mEdgeBBs;
+    }
+
+    // Updates the edge AABBs. There is one AABB for each edge that is
+    // owned by this triangle. AABBs of non-owned edges are left empty.
+    // Access the update AABBs with getEdgeBoundingBoxes(). Call this method
+    // before performing the triangle-triangle collision detection.
+    void updateEdgeBoundingBoxes();
+
     // CollisionObject interface
 public:
     virtual void update() override;
@@ -74,6 +87,8 @@ private:
     std::shared_ptr<Polygon2DAccessor> mAccessor;
 
     Face mFace;
+
+    std::array<BoundingBox, 3> mEdgeBBs;
 
     ID mFaceId;
 };

@@ -22,6 +22,7 @@ TriangleCollider::TriangleCollider(
 {
     mMargin = collisionMargin;
     mMarginSquared = collisionMargin * collisionMargin;
+    mRunId = 0;
 }
 
 TriangleCollider::~TriangleCollider()
@@ -71,6 +72,21 @@ void TriangleCollider::addTrianglePair(
 
     assert(ct1.getAccessor()->getPolygon() == mPoly1 && ct2.getAccessor()->getPolygon()== mPoly2);
 
+    // Update the edge AABBs for all not already visited faces. If a face
+    // wasn't visited, mark it as visited by setting its run id to the one
+    // of the current run.
+    if (ct1.getRunId() != mRunId)
+    {
+        ct1.setRunId(mRunId);
+        ct1.updateEdgeBoundingBoxes();
+    }
+
+    if (ct2.getRunId() != mRunId)
+    {
+        ct2.setRunId(mRunId);
+        ct2.updateEdgeBoundingBoxes();
+    }
+
     // Slower version
 //    addPair(topoSource, face1, topoTarget, face2);
 
@@ -100,10 +116,14 @@ void TriangleCollider::addTrianglePair(
             {
                 if (face2.isEdgeOwner(j))
                 {
-                    unsigned int eId1 = face1.getEdgeIds()[i];
-                    unsigned int eId2 = face2.getEdgeIds()[j];
-                    mFeaturePairsEE.push_back(EEPair(&topoSource.getEdges()[eId1],
-                                                     &topoTarget.getEdges()[eId2]));
+                    // Edge AABB check
+                    if (ct1.getEdgeBoundingBoxes()[i].intersects(ct2.getEdgeBoundingBoxes()[j]))
+                    {
+                        unsigned int eId1 = face1.getEdgeIds()[i];
+                        unsigned int eId2 = face2.getEdgeIds()[j];
+                        mFeaturePairsEE.push_back(EEPair(&topoSource.getEdges()[eId1],
+                                                         &topoTarget.getEdges()[eId2]));
+                    }
                 }
             }
         }
@@ -222,6 +242,10 @@ void TriangleCollider::prepare(
     mInterpolator2 = interpolator2;
 
     clear();
+
+    // Give this run a unique id. No other triangle will have this id.
+    // It is used to distinguish already visited from non-visited triangles.
+    ++mRunId;
 }
 
 void TriangleCollider::clear()
@@ -235,36 +259,114 @@ void TriangleCollider::clear()
 
 void TriangleCollider::collide(std::vector<Collision>& collisions)
 {
-    // Vertex-Face
-    for (const std::pair<TopologyVertex*, TopologyFace*>& pair : mFeaturePairsVF)
+
+    size_t numTotalPairs = mFeaturePairsVF.size() +
+            mFeaturePairsFV.size() +
+            mFeaturePairsEE.size();
+    bool parallel = numTotalPairs > 400;
+
+//    if (numTotalPairs > 0)
+//        std::cout << "sizes = " << mFeaturePairsVF.size() << ", " << mFeaturePairsFV.size() << ", " << mFeaturePairsEE.size() << "\n";
+//    if (parallel)
+//        std::cout << "numTotalPairs = " << numTotalPairs << "\n";
+
+    if (!parallel)
     {
-        Collision c;
-        bool collides = collide(*pair.second, *pair.first, true, c);
-        if (collides)
+        // Vertex-Face
+        for (size_t i = 0; i < mFeaturePairsVF.size(); ++i)
         {
-            collisions.push_back(c);
+            const std::pair<TopologyVertex*, TopologyFace*>& pair = mFeaturePairsVF[i];
+            Collision c;
+            bool collides = collide(*pair.second, *pair.first, true, c);
+            if (collides)
+            {
+                collisions.push_back(c);
+            }
+        }
+
+        // Face-Vertex
+        for (size_t i = 0; i < mFeaturePairsFV.size(); ++i)
+        {
+            const std::pair<TopologyFace*, TopologyVertex*>& pair = mFeaturePairsFV[i];
+            Collision c;
+            bool collides = collide(*pair.first, *pair.second, false, c);
+            if (collides)
+            {
+                collisions.push_back(c);
+            }
+        }
+
+        // Edge-Edge
+        for (size_t i = 0; i < mFeaturePairsEE.size(); ++i)
+        {
+            const std::pair<TopologyEdge*, TopologyEdge*>& pair = mFeaturePairsEE[i];
+            Collision c;
+            bool collides = collide(*pair.first, *pair.second, c);
+            if (collides)
+            {
+                collisions.push_back(c);
+            }
         }
     }
-
-    // Face-Vertex
-    for (const std::pair<TopologyFace*, TopologyVertex*>& pair : mFeaturePairsFV)
+    else
     {
-        Collision c;
-        bool collides = collide(*pair.first, *pair.second, false, c);
-        if (collides)
+        int nThreads = 8; //omp_get_num_threads() always returns 1.
+        size_t pairsPerThread = std::ceil(static_cast<double>(numTotalPairs) / nThreads);
+        std::vector<std::vector<Collision>> threadsCollisions;
+        threadsCollisions.resize(nThreads);
+        size_t maxPairs = mFeaturePairsVF.size() + mFeaturePairsFV.size() + mFeaturePairsEE.size();
+
+#pragma omp parallel for
+        for (int tId = 0; tId < nThreads; ++tId)
         {
-            collisions.push_back(c);
+            std::vector<Collision>& threadCollisions = threadsCollisions[tId];
+            size_t start = tId * pairsPerThread;
+            size_t end = std::min(maxPairs, (tId + 1) * pairsPerThread);
+
+            for (size_t i = start; i < end; ++i)
+            {
+                if (i < mFeaturePairsVF.size())
+                {
+                    const std::pair<TopologyVertex*, TopologyFace*>& pair = mFeaturePairsVF[i];
+                    Collision c;
+                    bool collides = collide(*pair.second, *pair.first, true, c);
+                    if (collides)
+                    {
+                        threadCollisions.push_back(c);
+                    }
+                }
+                else if (i < mFeaturePairsVF.size() + mFeaturePairsFV.size())
+                {
+                    size_t index = i - mFeaturePairsVF.size();
+                    const std::pair<TopologyFace*, TopologyVertex*>& pair = mFeaturePairsFV[index];
+                    Collision c;
+                    bool collides = collide(*pair.first, *pair.second, false, c);
+                    if (collides)
+                    {
+                        threadCollisions.push_back(c);
+                    }
+                }
+                else
+                {
+                    size_t index = i - mFeaturePairsVF.size() - mFeaturePairsFV.size();
+                    const std::pair<TopologyEdge*, TopologyEdge*>& pair = mFeaturePairsEE[index];
+                    Collision c;
+                    bool collides = collide(*pair.first, *pair.second, c);
+                    if (collides)
+                    {
+                        threadCollisions.push_back(c);
+                    }
+                }
+            }
         }
-    }
 
-    // Edge-Edge
-    for (const std::pair<TopologyEdge*, TopologyEdge*>& pair : mFeaturePairsEE)
-    {
-        Collision c;
-        bool collides = collide(*pair.first, *pair.second, c);
-        if (collides)
+        for (int i = 0; i < nThreads; ++i)
         {
-            collisions.push_back(c);
+            std::vector<Collision>& threadCollisions = threadsCollisions[i];
+            for (size_t j = 0; j < threadCollisions.size(); ++j)
+            {
+                collisions.push_back(threadCollisions[j]);
+            }
         }
     }
 }

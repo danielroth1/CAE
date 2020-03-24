@@ -183,6 +183,8 @@ private:
     Polygon* mPoly2;
     MeshInterpolatorFEM* mInterpolator1;
     MeshInterpolatorFEM* mInterpolator2;
+
+    ID mRunId;
 };
 
 #endif // TRIANGLECOLLIDER_H

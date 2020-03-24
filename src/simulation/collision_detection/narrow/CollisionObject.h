@@ -30,6 +30,24 @@ public:
     virtual Type getType() const = 0;
 
     virtual Eigen::Vector getPosition() = 0;
+
+    // Returns the id of the current collision detection run. It stores the
+    // id of the run in which this collision object was last seen.
+    // It is used to detect if this collision object was already seen within
+    // the current run. This information can be used to only update crucial
+    // information of in the collision participating triangles.
+    ID getRunId() const
+    {
+        return mRunId;
+    }
+
+    void setRunId(ID runId)
+    {
+        mRunId = runId;
+    }
+
+private:
+    ID mRunId;
 };
 
 #endif // COLLISIONOBJECT_H
