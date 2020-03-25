@@ -135,17 +135,20 @@ int BoundingVolumeHierarchy::calculateNumberOfNodes()
 }
 
 bool BoundingVolumeHierarchy::collides(BoundingVolumeHierarchy* hierarchy,
-                                       Collider& collider)
+                                       Collider& collider,
+                                       int runId)
 {
     mCollider = &collider;
-    return collidesIterative(hierarchy);
+    return collidesIterative(hierarchy, runId);
 }
 
-bool BoundingVolumeHierarchy::collidesIterative(BoundingVolumeHierarchy* hierarchy)
+bool BoundingVolumeHierarchy::collidesIterative(
+        BoundingVolumeHierarchy* hierarchy,
+        int runId)
 {
     mCollider->prepare(mPolygon, hierarchy->getPolygon(),
                        mSimulationObject, hierarchy->getSimulationObject(),
-                       mInterpolator.get(), hierarchy->getInterpolator());
+                       mInterpolator.get(), hierarchy->getInterpolator(), runId);
 
     bool collides = false;
 

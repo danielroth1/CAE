@@ -50,10 +50,12 @@ public:
     // bounding volumes of the given hierarchy.
     // If there are collisions, collider.collides(CollisionObject* co, CollisionObject* co)
     // is called.
-    virtual bool collides(BoundingVolumeHierarchy* hierarchy, Collider& collider);
+    virtual bool collides(BoundingVolumeHierarchy* hierarchy,
+                          Collider& collider,
+                          int runId);
 
     // Iterative check for collisions.
-    bool collidesIterative(BoundingVolumeHierarchy* hierarchy);
+    bool collidesIterative(BoundingVolumeHierarchy* hierarchy, int runId);
 
     // Recursive check for collisions.
     //

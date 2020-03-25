@@ -56,7 +56,8 @@ public:
     void prepare(
             Polygon* poly1, Polygon* poly2,
             SimulationObject* so1, SimulationObject* so2,
-            MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2);
+            MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
+            int runId);
 
     void clear();
 
@@ -184,7 +185,7 @@ private:
     MeshInterpolatorFEM* mInterpolator1;
     MeshInterpolatorFEM* mInterpolator2;
 
-    ID mRunId;
+    int mRunId;
 };
 
 #endif // TRIANGLECOLLIDER_H

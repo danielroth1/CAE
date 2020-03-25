@@ -32,7 +32,8 @@ public:
         void prepare(
                 Polygon* poly1, Polygon* poly2,
                 SimulationObject* so1, SimulationObject* so2,
-                MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2);
+                MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
+                int runId);
 
         // Performs the narrow phase collision detection for the feature pairs.
         // Call this method after calling all collider for close CollisionObjects

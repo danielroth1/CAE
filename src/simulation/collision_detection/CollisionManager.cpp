@@ -22,6 +22,7 @@ CollisionManager::CollisionManager(Domain* domain)
 {
     mCollider = std::make_unique<Collider>(5e-2);
     mForceUpdate = false;
+    mRunId = 0;
 }
 
 Domain* CollisionManager::getDomain()
@@ -305,6 +306,10 @@ bool CollisionManager::removeSimulationObject(const std::shared_ptr<SimulationOb
 
 bool CollisionManager::collideAll()
 {
+    // Give this run a unique id. No other triangle will have this id.
+    // It is used to distinguish already visited from non-visited triangles.
+    ++mRunId;
+
     mCollider->clear();
 
     bool collisionOccured = false;
@@ -314,7 +319,7 @@ bool CollisionManager::collideAll()
         {
             collisionOccured |=
                     mCollisionData[i].mBvh->collides(
-                        mCollisionData[j].mBvh.get(), *mCollider.get());
+                        mCollisionData[j].mBvh.get(), *mCollider.get(), mRunId);
         }
     }
 

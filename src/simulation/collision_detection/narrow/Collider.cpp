@@ -99,9 +99,11 @@ void Collider::clear()
 void Collider::prepare(
         Polygon* poly1, Polygon* poly2,
         SimulationObject* so1, SimulationObject* so2,
-        MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2)
+        MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
+        int runId)
 {
-    mTriangleCollider->prepare(poly1, poly2, so1, so2, interpolator1, interpolator2);
+    mTriangleCollider->prepare(
+                poly1, poly2, so1, so2, interpolator1, interpolator2, runId);
 }
 
 bool Collider::evaluate()

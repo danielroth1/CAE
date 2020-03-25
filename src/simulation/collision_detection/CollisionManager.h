@@ -111,6 +111,8 @@ private:
 
     // If true, the next hierarchy update is forced for all objects.
     bool mForceUpdate;
+
+    int mRunId;
 };
 
 PROXY_CLASS(CollisionManagerProxy, CollisionManager, mCm,

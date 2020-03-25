@@ -239,7 +239,8 @@ void TriangleCollider::addPair(
 void TriangleCollider::prepare(
         Polygon* poly1, Polygon* poly2,
         SimulationObject* so1, SimulationObject* so2,
-        MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2)
+        MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
+        int runId)
 {
     mPoly1 = poly1;
     mPoly2 = poly2;
@@ -248,11 +249,9 @@ void TriangleCollider::prepare(
     mInterpolator1 = interpolator1;
     mInterpolator2 = interpolator2;
 
-    clear();
+    mRunId = runId;
 
-    // Give this run a unique id. No other triangle will have this id.
-    // It is used to distinguish already visited from non-visited triangles.
-    ++mRunId;
+    clear();
 }
 
 void TriangleCollider::clear()

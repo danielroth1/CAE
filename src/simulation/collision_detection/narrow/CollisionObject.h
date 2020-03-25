@@ -47,18 +47,18 @@ public:
     // It is used to detect if this collision object was already seen within
     // the current run. This information can be used to only update crucial
     // information of in the collision participating triangles.
-    ID getRunId() const
+    int getRunId() const
     {
         return mRunId;
     }
 
-    void setRunId(ID runId)
+    void setRunId(int runId)
     {
         mRunId = runId;
     }
 
 private:
-    ID mRunId;
+    int mRunId;
     std::shared_ptr<BoundingVolume> mBoundingVolume;
 };
 
