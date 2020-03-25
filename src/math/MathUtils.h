@@ -45,6 +45,11 @@ public:
     // "inter" and baryzentric coordinates "bary". Returns false if the problem
     // has no solution because it was illconditioned (triangle is an edge
     // because two points are identical.)
+    //
+    // \param p0, p1, p2 - points of the triangle
+    // \param inter - projected point on the triangle
+    // \param bary - barycentric coordiantes of the point w.r.t. the triangles
+    //      inter = bary(0) * p0 + bary(1) * p1 + bary(2) * p2
     // \param isInside - is set true if the projection is on top of the triangle
     //      and clamping wasn't necessary
     static bool projectPointOnTriangle(
@@ -56,6 +61,19 @@ public:
             Eigen::Vector3d& bary,
             bool& isInside);
 
+    // Finds the two points between the edges (p0, p1) and (p2, p3) that
+    // connect both with the smallest distance. If isInside is false, inter1,
+    // inter2, and bary will be not set (breaks early).
+    //
+    // \param p0, p1 - points of the first edge
+    // \param p2, p3 - points of the second edge
+    // \param inter1 - found point on (p0, p1)
+    // \param inter2 - found point on (p1, p2)
+    // \param bary - barycentric coordiantes of each point w.r.t. the edge it lies on
+    //      inter1 = bary(0) * (p1 - p0)
+    //      inter2 = bary(1) * (p3 - p2)
+    // \param isInside - true, if the found point lies not on the boundaries, so
+    //      true if inter1 != p0 && inter1 != p1 && inter2 != p2 && inter2 != p3
     static bool projectEdgeOnEdge(
             const Eigen::Vector3d& p0,
             const Eigen::Vector3d& p1,

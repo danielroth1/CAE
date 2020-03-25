@@ -143,22 +143,26 @@ bool MathUtils::projectEdgeOnEdge(
     {
         w1 = 0;
         isInside = false;
+        return true;
     }
     else if (w1 > 1)
     {
         w1 = 1;
         isInside = false;
+        return true;
     }
 
     if (w2 < 0)
     {
         w2 = 0;
         isInside = false;
+        return true;
     }
     else if (w2 > 1)
     {
         w2 = 1;
         isInside = false;
+        return true;
     }
 
     bary[0] = w1;
