@@ -37,9 +37,9 @@ bool BVSphere::intersects(BoundingVolume* bv)
     return mIntersectVisitor.returnValue;
 }
 
-bool BVSphere::isInside(const Vector3d& point)
+bool BVSphere::isInside(const Vector3d& point, double margin)
 {
-    return (point - mPosition).norm() < mRadius;
+    return (point - mPosition).norm() < mRadius + margin;
 }
 
 void BVSphere::update(CollisionObject& collisionObject,

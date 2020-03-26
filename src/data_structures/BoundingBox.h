@@ -5,6 +5,7 @@
 
 using namespace Eigen;
 
+// Ths class represents an Axis Aligned Bounding Box (AABB)
 class BoundingBox
 {
 public:
@@ -26,6 +27,15 @@ public:
         return mMin(0) < point(0) && point(0) < mMax(0) &&
                 mMin(1) < point(1) && point(1) < mMax(1) &&
                 mMin(2) < point(2) && point(2) < mMax(2);
+    }
+
+    // Checks if the given point is inside the bounding box which is extended
+    // by the given margin.
+    bool isInside(const Eigen::Vector3d& point, double margin)
+    {
+        return mMin(0) - margin < point(0) && point(0) < mMax(0) + margin &&
+                mMin(1) - margin < point(1) && point(1) < mMax(1) + margin &&
+                mMin(2) - margin < point(2) && point(2) < mMax(2) + margin;
     }
 
     Vector& min()

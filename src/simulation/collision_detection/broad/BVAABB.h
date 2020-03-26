@@ -30,9 +30,9 @@ public:
         return mBB.intersects(static_cast<BVAABB*>(bv)->getBoundingBox());
     }
 
-    virtual bool isInside(const Eigen::Vector3d& point) override final
+    virtual bool isInside(const Eigen::Vector3d& point, double margin) override final
     {
-        return mBB.isInside(point);
+        return mBB.isInside(point, margin);
     }
 
     // Doesn't use the collision margin for Spheres (because its not used
@@ -86,8 +86,8 @@ public:
         mBB.max() = static_cast<BVAABB*>(bv1)->getBoundingBox().max().cwiseMax(
                     static_cast<BVAABB*>(bv2)->getBoundingBox().max());
 
+        mBB.size() = mBB.max() - mBB.min();
         // skipped here because its not needed in the current implementation
-//        mBB.size() = mBB.max() - mBB.min();
 //        mBB.mid() = 0.5 * (mBB.min() + mBB.max());
 
     }

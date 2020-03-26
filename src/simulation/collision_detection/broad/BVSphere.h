@@ -25,7 +25,7 @@ public:
 
     // Checks if the given point is inside the sphere. This is the case if the
     // distance of point to center is smaller than the radius.
-    virtual bool isInside(const Eigen::Vector3d& point) override;
+    virtual bool isInside(const Eigen::Vector3d& point, double offset) override;
 
     // \param collisionObject - must be of type CollisionSphere. CollisionTriangle
     //      is not supported.

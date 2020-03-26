@@ -23,7 +23,9 @@ public:
 
     virtual bool intersects(BoundingVolume* bv) = 0;
 
-    virtual bool isInside(const Eigen::Vector3d& point) = 0;
+    // Checks if the given point is inside the bounding volume.
+    // \param margin - boundng volume is extended by this margin
+    virtual bool isInside(const Eigen::Vector3d& point, double margin) = 0;
 
     // Leaf node update method
     virtual void update(CollisionObject& collisionObject,

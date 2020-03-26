@@ -79,13 +79,13 @@ void TriangleCollider::addTrianglePair(
     if (ct1.getRunId() != mRunId)
     {
         ct1.setRunId(mRunId);
-        ct1.updateEdgeBoundingBoxes(mMargin);
+        ct1.updateEdgeBoundingBoxes(0.5 * mMargin);
     }
 
     if (ct2.getRunId() != mRunId)
     {
         ct2.setRunId(mRunId);
-        ct2.updateEdgeBoundingBoxes(mMargin);
+        ct2.updateEdgeBoundingBoxes(0.5 * mMargin);
     }
 
     // Slower version
@@ -102,7 +102,12 @@ void TriangleCollider::addTrianglePair(
             unsigned int vId = face1.getVertexIds()[i];
 
             // Vertex-Face AABB check
-            if (ct2.getBoundingVolume()->isInside(ct1.getAccessor()->getPosition(vId)))
+            // It is necessary to add half the collision marign as offset because
+            // other bounding volumes only add half the margin themselfs. Since
+            // a vertex alone has no bounding volume, it's half margin must be
+            // added here.
+            if (ct2.getBoundingVolume()->isInside(ct1.getAccessor()->getPosition(vId),
+                                                  0.5 * mMargin))
                 mFeaturePairsVF.push_back(VFPair(&topoSource.getVertices()[vId], &face2));
         }
 
@@ -112,7 +117,8 @@ void TriangleCollider::addTrianglePair(
             unsigned int vId = face2.getVertexIds()[i];
 
             // Vertex-Face AABB check
-            if (ct1.getBoundingVolume()->isInside(ct2.getAccessor()->getPosition(vId)))
+            if (ct1.getBoundingVolume()->isInside(ct2.getAccessor()->getPosition(vId),
+                                                  0.5 * mMargin))
                 mFeaturePairsFV.push_back(FVPair(&face1, &topoTarget.getVertices()[vId]));
         }
 
@@ -249,9 +255,21 @@ void TriangleCollider::prepare(
     mInterpolator1 = interpolator1;
     mInterpolator2 = interpolator2;
 
+    if (runId != mRunId)
+    {
+        // prints #of collisions / #of positive AABB checks
+        std::cout << "fails = " << edgeFails << " / " << eeFeaturePairs
+                  << ", " << vertexFails << " / " << fvFeaturePairs << "\n";
+        edgeFails = 0;
+        vertexFails = 0;
+        eeFeaturePairs = 0;
+        fvFeaturePairs = 0;
+    }
     mRunId = runId;
 
     clear();
+
+//    std::cout << "feature pairs = " << eeFeaturePairs << ", " << fvFeaturePairs << "\n";
 }
 
 void TriangleCollider::clear()
@@ -269,6 +287,10 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
     size_t numTotalPairs = mFeaturePairsVF.size() +
             mFeaturePairsFV.size() +
             mFeaturePairsEE.size();
+
+    eeFeaturePairs += mFeaturePairsEE.size();
+    fvFeaturePairs += mFeaturePairsFV.size();
+    fvFeaturePairs += mFeaturePairsVF.size();
 
     if (numTotalPairs == 0)
         return;
@@ -292,6 +314,8 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
             {
                 collisions.push_back(c);
             }
+            else
+                ++vertexFails;
         }
 
         // Face-Vertex
@@ -304,6 +328,8 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
             {
                 collisions.push_back(c);
             }
+            else
+                ++vertexFails;
         }
 
         // Edge-Edge
@@ -316,6 +342,8 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
             {
                 collisions.push_back(c);
             }
+            else
+                ++edgeFails;
         }
     }
     else
@@ -386,6 +414,8 @@ bool TriangleCollider::collide(
         bool reverted,
         Collision& collision)
 {
+    // first object (so1, poly1, interpolator1) -> vertex
+    // second object (so2, poly2, interpolator2) -> face
     SimulationObject* so1;
     SimulationObject* so2;
     Polygon* poly1;
@@ -486,6 +516,7 @@ bool TriangleCollider::collide(
 
         fillBarycentricCoordinates(poly2, f, bary, interpolator2, elementId, collision.getBarycentricCoordiantesB());
         collision.setElementIdB(elementId);
+
         return true;
     }
 

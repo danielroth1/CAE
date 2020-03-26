@@ -41,7 +41,17 @@ public:
     void setInvertNormalsIfNecessary(bool invertNormals);
 
     void addTriangleSpherePair(CollisionTriangle& ct, CollisionSphere& cs);
+
+    // Add all possible colliding feature pairs of the given collision triangles
+    // to mFeaturePairsFV, mFeaturePairsVF, and mFeaturePairsEE. Performs
+    // AABB checks for each feature pair combination:
+    // For vertex - face: reuses the face AABB
+    // For edge - edge: calculate (if not already done) the AABB for each edge
+    //      and use those.
+    // Only create feature pairs of features that are owned by the collision
+    // triangle.
     void addTrianglePair(CollisionTriangle& ct1, CollisionTriangle& ct2);
+
     void addSphereSpherePair(CollisionSphere& cs1, CollisionSphere& cs2);
 
     // Slow way of adding a pair because it checks all possible feature combinations
@@ -186,6 +196,11 @@ private:
     MeshInterpolatorFEM* mInterpolator2;
 
     int mRunId;
+
+    int edgeFails;
+    int vertexFails;
+    int eeFeaturePairs;
+    int fvFeaturePairs;
 };
 
 #endif // TRIANGLECOLLIDER_H

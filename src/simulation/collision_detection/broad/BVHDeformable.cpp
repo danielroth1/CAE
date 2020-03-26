@@ -68,8 +68,11 @@ void BVHDeformable::udpate()
         {
             BVLeafData* data = static_cast<BVHLeafNode*>(node)->getData();
             data->getCollisionObject()->update();
+            // If both bounding volumes add up half the collision margin, they
+            // will hit each other when they are for the full collision margin
+            // away from each other.
             data->getBoundingVolume()->update(*data->getCollisionObject(),
-                                              mCollisionMargin);
+                                              0.5 * mCollisionMargin);
         }
         else
         {
