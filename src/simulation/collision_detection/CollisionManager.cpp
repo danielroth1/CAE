@@ -323,6 +323,13 @@ bool CollisionManager::collideAll()
         }
     }
 
+    mSimulationCollisions.resize(mCollider->getCollisions().size());
+    for (size_t i = 0; i < mCollider->getCollisions().size(); ++i)
+    {
+        Collision& c = mCollider->getCollisions()[i];
+        new (&mSimulationCollisions[i]) SimulationCollision(c);
+    }
+
     for (CollisionManagerListener* listener : mListeners)
         listener->notifyCollideAllCalled();
 
@@ -378,6 +385,11 @@ void CollisionManager::updateGeometries()
 std::shared_ptr<Collider> CollisionManager::getCollider()
 {
     return mCollider;
+}
+
+const std::vector<SimulationCollision>& CollisionManager::getCollisions() const
+{
+    return mSimulationCollisions;
 }
 
 bool CollisionManager::getInvertNormalsIfNecessary() const

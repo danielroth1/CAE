@@ -10,7 +10,7 @@
 #include <simulation/fem/FEMObject.h>
 
 CollisionConstraint::CollisionConstraint(
-        Collision& collision,
+        const Collision& collision,
         double restitution,
         double positionCorrectionFactor,
         double collisionMargin)
@@ -33,7 +33,7 @@ CollisionConstraint::~CollisionConstraint()
 
 }
 
-Collision& CollisionConstraint::getCollision()
+const Collision& CollisionConstraint::getCollision() const
 {
     return mCollision;
 }

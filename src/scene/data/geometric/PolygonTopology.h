@@ -18,8 +18,8 @@
 //  * m faces per vertex
 //
 // Representative-Triangles:
-// Sets for each face the feature owner ships, see
-// Curtis et al. "Fast Collision Detection for Deformable Models using Representative-Triangles"
+// Sets for each face the feature owner ships, see Curtis et al.
+// "Fast Collision Detection for Deformable Models using Representative-Triangles"
 //
 // The idea is that each vertex and each edge is owned by only one face.
 // Features that are shared by multiple faces are only assigned to one face.

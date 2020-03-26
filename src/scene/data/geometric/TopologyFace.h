@@ -6,6 +6,12 @@
 #include <data_structures/DataStructures.h>
 #include <bitset>
 
+// A face of a topology.
+//
+// Defines ownership (mFeatureOwnership) according to Curtis et al.,
+// "Fast Collision Detection for Deformable Models using Representative-Triangles"
+// See "Representative-Triangles" in the class documentation of PolygonTopology.
+//
 class TopologyFace : public TopologyFeature
 {
 public:
@@ -85,10 +91,6 @@ private:
 
     std::vector<ID> mAdjacentFaces;
 
-    // Defines ownership according to
-    // Curtis et al., "Fast Collision Detection for Deformable Models using Representative-Triangles"
-    // See "Representative-Triangles" in the class documentation of PolygonTopology.
-    //
     // First 6 bytes represent the fact if the face owns one of the adjacent features:
     // v1 v2 v3 e1 e2 e3 0 0 ...
     // v are the vertices and e the edges.

@@ -1,4 +1,5 @@
 #include "ImpulseConstraintSolver.h"
+#include "SimulationCollision.h"
 
 #include <simulation/collision_detection/narrow/Collision.h>
 #include <iostream>
@@ -33,7 +34,7 @@ void ImpulseConstraintSolver::initializeNonCollisionConstraints(double stepSize)
 }
 
 void ImpulseConstraintSolver::initializeCollisionConstraints(
-        std::vector<Collision>& collisions,
+        const std::vector<SimulationCollision>& collisions,
         double stepSize,
         double restitution,
         double positionCorrectionFactor,
@@ -46,7 +47,7 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
 
     for (size_t i = 0; i < collisions.size(); ++i)
     {
-        Collision& c = collisions[i];
+        const Collision& c = collisions[i].getCollision();
         mCollisionConstraints.push_back(
                     CollisionConstraint(c, restitution,
                                         positionCorrectionFactor,

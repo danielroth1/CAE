@@ -40,12 +40,12 @@ Collision::Collision(
 {
 }
 
-Vector Collision::calculatePositionPreviousA()
+Vector Collision::calculatePositionPreviousA() const
 {
     return calculatePositionPrevious(mSoA, mPointA, mBaryA, mElementIdA);
 }
 
-Vector Collision::calculatePositionPreviousB()
+Vector Collision::calculatePositionPreviousB() const
 {
     return calculatePositionPrevious(mSoB, mPointB, mBaryB, mElementIdB);
 }

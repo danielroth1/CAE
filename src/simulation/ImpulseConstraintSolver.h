@@ -9,7 +9,7 @@
 #include <simulation/rigid/RigidBody.h>
 #include <vector>
 
-class Collision;
+class SimulationCollision;
 class CollisionConstraint;
 class FEMObject;
 class SimulationObject;
@@ -28,7 +28,7 @@ public:
     void initializeNonCollisionConstraints(double stepSize);
 
     void initializeCollisionConstraints(
-            std::vector<Collision>& collisions,
+            const std::vector<SimulationCollision>& collisions,
             double stepSize,
             double restitution,
             double positionCorrectionFactor,

@@ -47,8 +47,8 @@ public:
         mNormal = -mNormal;
     }
 
-    Eigen::Vector calculatePositionPreviousA();
-    Eigen::Vector calculatePositionPreviousB();
+    Eigen::Vector calculatePositionPreviousA() const;
+    Eigen::Vector calculatePositionPreviousB() const;
 
     static Eigen::Vector calculatePositionPrevious(
             SimulationObject* so,
@@ -61,11 +61,11 @@ public:
         mNormal = normal;
     }
 
-    SimulationObject* getSimulationObjectA()
+    SimulationObject* getSimulationObjectA() const
     {
         return mSoA;
     }
-    SimulationObject* getSimulationObjectB()
+    SimulationObject* getSimulationObjectB() const
     {
         return mSoB;
     }
@@ -103,7 +103,17 @@ public:
         return mBaryA;
     }
 
+    const Eigen::Vector4d& getBarycentricCoordiantesA() const
+    {
+        return mBaryA;
+    }
+
     Eigen::Vector4d& getBarycentricCoordiantesB()
+    {
+        return mBaryB;
+    }
+
+    const Eigen::Vector4d& getBarycentricCoordiantesB() const
     {
         return mBaryB;
     }

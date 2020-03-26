@@ -609,6 +609,7 @@ void SimulationControl::step()
     // TODO: listeners need to be notified to update colliding interpolated meshes!
     // and to update the face normals.
 //    mFEMSimulation->publish(true);
+    // TODO: at the moment only updates face normals
     mCollisionManager->updateGeometries();
     STOP_TIMING_SIMULATION;
 
@@ -625,7 +626,7 @@ void SimulationControl::step()
     {
         // create collision constraints w.r.t. x + x^{FEM}
         mImpulseConstraintSolver->initializeCollisionConstraints(
-                    mCollisionManager->getCollider()->getCollisions(),
+                    mCollisionManager->getCollisions(),
                     mStepSize,
                     0.0, // Restitution (bounciness factor))
                     mPositionCorrectionFactor,

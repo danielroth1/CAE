@@ -29,14 +29,14 @@ class CollisionConstraint : public Constraint
 {
 public:
     CollisionConstraint(
-            Collision& collision,
+            const Collision& collision,
             double restitution,
             double positionCorrectionFactor,
             double collisionMargin);
 
     virtual ~CollisionConstraint() override;
 
-    Collision& getCollision();
+    const Collision& getCollision() const;
 
     const Eigen::Vector& getTargetUNormalRel() const;
 
@@ -50,7 +50,7 @@ public:
     virtual bool references(SimulationObject* so) override;
 
 private:
-    Collision& mCollision;
+    const Collision& mCollision;
 
     Eigen::Vector mTargetUNormalRel;
     Eigen::Vector mSumOfAllAppliedImpulses;

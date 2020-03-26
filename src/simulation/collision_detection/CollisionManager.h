@@ -5,6 +5,7 @@
 #include <memory>
 #include <proxy/ProxyDefs.h>
 #include <scene/data/geometric/TopologyFace.h>
+#include <simulation/SimulationCollision.h>
 #include <simulation/collision_detection/narrow/Collider.h>
 #include <vector>
 
@@ -61,6 +62,7 @@ public:
     void updateGeometries();
 
     std::shared_ptr<Collider> getCollider();
+    const std::vector<SimulationCollision>& getCollisions() const;
 
     void setInvertNormalsIfNecessary(bool invertNormalsIfNecessary);
     bool getInvertNormalsIfNecessary() const;
@@ -108,6 +110,8 @@ private:
     std::vector<CollisionData> mCollisionData;
 
     std::vector<CollisionManagerListener*> mListeners;
+
+    std::vector<SimulationCollision> mSimulationCollisions;
 
     // If true, the next hierarchy update is forced for all objects.
     bool mForceUpdate;
