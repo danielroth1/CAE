@@ -76,17 +76,21 @@ void TriangleCollider::addTrianglePair(
     // Update the edge AABBs for all not already visited faces. If a face
     // wasn't visited, mark it as visited by setting its run id to the one
     // of the current run.
+
+#ifndef USE_EDGE_BV_STRATEGY_NONE
+#ifndef USE_EDGE_BV_STRATEGY_ORIENTED_AABB
     if (ct1.getRunId() != mRunId)
     {
         ct1.setRunId(mRunId);
         ct1.updateEdgeBoundingBoxes(0.5 * mMargin);
     }
-
+#endif
     if (ct2.getRunId() != mRunId)
     {
         ct2.setRunId(mRunId);
         ct2.updateEdgeBoundingBoxes(0.5 * mMargin);
     }
+#endif
 
     // Slower version
 //    addPair(topoSource, face1, topoTarget, face2);
@@ -123,16 +127,27 @@ void TriangleCollider::addTrianglePair(
         }
 
         // Edge -> Edge
+        unsigned int eId1 = face1.getEdgeIds()[i];
+        const std::shared_ptr<Polygon2DAccessor>& accessor = ct1.getAccessor();
         if (face1.isEdgeOwner(i))
         {
+#ifdef USE_EDGE_BV_STRATEGY_ORIENTED_AABB
+            const Eigen::Vector3d& p1 = accessor->getPosition(
+                        topoSource.getEdge(eId1).getVertexIds()[0]);
+            const Eigen::Vector3d& p2 = accessor->getPosition(
+                        topoSource.getEdge(eId1).getVertexIds()[1]);
+#endif
             for (size_t j = 0; j < 3; ++j)
             {
                 if (face2.isEdgeOwner(j))
                 {
                     // Edge AABB check
+#if defined(USE_EDGE_BV_STRATEGY_AABB) or defined(USE_EDGE_BV_STRATEGY_OBB)
                     if (ct1.getEdgeBoundingBoxes()[i].intersects(ct2.getEdgeBoundingBoxes()[j]))
+#elif USE_EDGE_BV_STRATEGY_ORIENTED_AABB
+                    if (ct2.getEdgeBoundingBoxes()[j].intersects(p1, p2))
+#endif
                     {
-                        unsigned int eId1 = face1.getEdgeIds()[i];
                         unsigned int eId2 = face2.getEdgeIds()[j];
                         mFeaturePairsEE.push_back(EEPair(&topoSource.getEdges()[eId1],
                                                          &topoTarget.getEdges()[eId2]));
@@ -542,26 +557,15 @@ bool TriangleCollider::collide(
         return false;
     }
 
-    Eigen::Vector x11 =
+    const Eigen::Vector& x11 =
             poly1->getAccessor2D()->getPosition(e1.getVertexIds()[0]);
-    Eigen::Vector x12 =
+    const Eigen::Vector& x12 =
             poly1->getAccessor2D()->getPosition(e1.getVertexIds()[1]);
 
-    Eigen::Vector x21 =
+    const Eigen::Vector& x21 =
             poly2->getAccessor2D()->getPosition(e2.getVertexIds()[0]);
-    Eigen::Vector x22 =
+    const Eigen::Vector& x22 =
             poly2->getAccessor2D()->getPosition(e2.getVertexIds()[1]);
-
-    // Reduce the affected area so they don't overlap with vertex-triangle collisions.
-    // There are porbably faster ways of doing this.
-    Eigen::Vector x1dir = (x12 - x11).normalized();
-    Eigen::Vector x2dir = (x22 - x21).normalized();
-
-    x11 += mMargin * x1dir;
-    x12 -= mMargin * x1dir;
-
-    x21 += mMargin * x2dir;
-    x22 -= mMargin * x2dir;
 
     Eigen::Vector3d inter1; // projected point 1
     Eigen::Vector3d inter2; // projected point 2
@@ -587,25 +591,28 @@ bool TriangleCollider::collide(
         ID v1Index = 0;
         ID v2Index = 0;
 
-        if (poly1->getDimensionType() == Polygon::DimensionType::THREE_D)
-        {
-            Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly1->getTopology());
+        // TODO: probably not needed anymore because collisions are described
+        // by either a vector from center to collision point (rigids) or
+        // by barycentric coordinates (deformable)
+//        if (poly1->getDimensionType() == Polygon::DimensionType::THREE_D)
+//        {
+//            Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly1->getTopology());
 
-            if (bary(0) < 0.5)
-                v1Index = t3->getOuterEdges()[e1.getID()].getVertexIds()[0];
-            else
-                v1Index = t3->getOuterEdges()[e1.getID()].getVertexIds()[1];
+//            if (bary(0) < 0.5)
+//                v1Index = t3->getOuterEdges()[e1.getID()].getVertexIds()[0];
+//            else
+//                v1Index = t3->getOuterEdges()[e1.getID()].getVertexIds()[1];
 
-        }
+//        }
 
-        if (poly2->getDimensionType() == Polygon::DimensionType::THREE_D)
-        {
-            Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly2->getTopology());
-            if (bary(1) < 0.5)
-                v2Index = t3->getOuterEdges()[e2.getID()].getVertexIds()[0];
-            else
-                v2Index = t3->getOuterEdges()[e2.getID()].getVertexIds()[0];
-        }
+//        if (poly2->getDimensionType() == Polygon::DimensionType::THREE_D)
+//        {
+//            Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly2->getTopology());
+//            if (bary(1) < 0.5)
+//                v2Index = t3->getOuterEdges()[e2.getID()].getVertexIds()[0];
+//            else
+//                v2Index = t3->getOuterEdges()[e2.getID()].getVertexIds()[0];
+//        }
 
         new (&collision) Collision(
                     so1, so2,

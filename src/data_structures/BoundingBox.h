@@ -5,7 +5,14 @@
 
 using namespace Eigen;
 
-// Ths class represents an Axis Aligned Bounding Box (AABB)
+// This class represents an Axis Aligned Bounding Box (AABB).
+// A AABB is a box that is aligned by the x-, y-, and z-axis, so all its sides
+// are parallel to these axes.
+// AABBs offer a quick update routine and intersection tests.
+// Their problem is that they don't approximate objects as nicely as for example
+// OrientedBoundingBoxes (OBB).
+// Another issue compared to OBB is that they are based on vertex positions
+// alone so they always need to be updated if a vertex position changed.
 class BoundingBox
 {
 public:

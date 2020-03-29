@@ -7,6 +7,18 @@
 #include <scene/data/geometric/Polygon2DAccessor.h>
 
 #include <data_structures/BoundingBox.h>
+#include <data_structures/OrientedAABB.h>
+#include <data_structures/OrientedBoundingBox.h>
+
+// The edge bounding volume strategies: strategies how to avoid costly
+// edge-edge collision detections by using bounding volumes. Defines are used
+// here for max performance and to avoid storing unnecessary data in
+// CollisionTriangle.
+// Only comment in one of these.
+//#define USE_EDGE_BV_STRATEGY_NONE 1 // Don't use any bounding volumes.
+//#define USE_EDGE_BV_STRATEGY_AABB 1 // Use AABBs.
+#define USE_EDGE_BV_STRATEGY_OBB 1 // Use OBBs.
+//#define USE_EDGE_BV_STRATEGY_ORIENTED_AABB 1 // Use Oriented AABBs.
 
 class SimulationObject;
 
@@ -62,10 +74,18 @@ public:
         return mAccessor->getPosition(mFace[2]);
     }
 
+#ifndef USE_EDGE_BV_STRATEGY_NONE
+#ifdef USE_EDGE_BV_STRATEGY_AABB
     const std::array<BoundingBox, 3>& getEdgeBoundingBoxes() const
+#elif USE_EDGE_BV_STRATEGY_OBB
+    const std::array<OrientedBoundingBox, 3>& getEdgeBoundingBoxes() const
+#elif USE_EDGE_BV_STRATEGY_ORIENTED_AABB
+    const std::array<OrientedAABB, 3>& getEdgeBoundingBoxes() const
+#endif
     {
         return mEdgeBBs;
     }
+#endif
 
     // Updates the edge AABBs. There is one AABB for each edge that is
     // owned by this triangle. AABBs of non-owned edges are left empty.
@@ -88,7 +108,13 @@ private:
 
     Face mFace;
 
+#ifdef USE_EDGE_BV_STRATEGY_AABB
     std::array<BoundingBox, 3> mEdgeBBs;
+#elif USE_EDGE_BV_STRATEGY_OBB
+    std::array<OrientedBoundingBox, 3> mEdgeBBs;
+#elif USE_EDGE_BV_STRATEGY_ORIENTED_AABB
+    std::array<OrientedAABB, 3> mEdgeBBs;
+#endif
 
     ID mFaceId;
 };
