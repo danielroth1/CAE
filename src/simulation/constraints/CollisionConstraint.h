@@ -32,7 +32,8 @@ public:
             const Collision& collision,
             double restitution,
             double positionCorrectionFactor,
-            double collisionMargin);
+            double collisionMargin,
+            bool correctPositionError);
 
     virtual ~CollisionConstraint() override;
 
@@ -63,6 +64,7 @@ private:
     double mPositionCorrectionFactor;
     double mCollisionMargin;
     bool mSticking;
+    bool mCorrectPositionError;
 
     // Temporary variables used in methods
     Eigen::Vector3d mPoint1;

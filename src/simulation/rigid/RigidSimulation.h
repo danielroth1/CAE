@@ -31,8 +31,13 @@ public:
     // Call this before calling solve.
     void initializeStep();
 
-    // Calculates forces and updates the velocities according to physics.
+    // Calculates forces and updates the velocities according to physics and
+    // advances positions. This is just solveVelocity() followed by integratePositions().
     void solve(double stepSize);
+
+    // Calculates forces and updates the velocities according to physics. Does
+    // not advance positions.
+    void solveVelocity(double stepSize);
 
     // Time integrates the velocity to update the positions.
     // The previous position state can be reverted to by calling revert().

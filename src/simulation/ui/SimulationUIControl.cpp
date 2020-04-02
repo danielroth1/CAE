@@ -79,7 +79,7 @@ void SimulationUIControl::init(QWidget* parent)
                     mAc->getSimulationControl(),
                     MemberAccessorFactory::createDoubleComparator(),
                     mAc->getSimulationControl()->getDomain()),
-                0.0, 1.0, 1e-5, 7);
+                0.0, 1.0, 1e-5, 10);
 
     mWidget->getMembersWidget()->addInteger(
                 "Max. Constraint Iterations",

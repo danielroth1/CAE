@@ -53,7 +53,7 @@ public:
 
     bool removeSimulationObject(const std::shared_ptr<SimulationObject>& so);
 
-    bool collideAll();
+    bool collideAll(bool clearOldCollisions);
 
     void updateAll();
 

@@ -50,8 +50,12 @@ public:
     // Call this before calling solve.
     void initializeStep();
 
-    // Calculates forces and updates the velocities according to physics.
+    // Calculates forces, updates the velocities according to physics, and
+    // advances the positions.
     void solve(double stepSize, bool firstStep);
+
+    // Same as solve() but does not advance positions.
+    void solveVelocity(double stepSize, bool firstStep);
 
     void revertSolverStep();
 

@@ -304,13 +304,14 @@ bool CollisionManager::removeSimulationObject(const std::shared_ptr<SimulationOb
     return returnValue;
 }
 
-bool CollisionManager::collideAll()
+bool CollisionManager::collideAll(bool clearOldCollisions)
 {
     // Give this run a unique id. No other triangle will have this id.
     // It is used to distinguish already visited from non-visited triangles.
     ++mRunId;
 
-    mCollider->clear();
+    if (clearOldCollisions)
+        mCollider->clear();
 
     bool collisionOccured = false;
     for (size_t i = 0; i < mCollisionData.size(); ++i)

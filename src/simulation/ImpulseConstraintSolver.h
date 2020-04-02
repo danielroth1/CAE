@@ -32,7 +32,8 @@ public:
             double stepSize,
             double restitution,
             double positionCorrectionFactor,
-            double collisionMargin);
+            double collisionMargin,
+            bool positionCorrection);
 
     static Eigen::Vector calculateRelativeNormalSpeed(
             const Eigen::Vector& relativeSpeedA,

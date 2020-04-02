@@ -93,16 +93,23 @@ void RigidBody::solveExplicit(double timeStep)
         return;
 
     // 1.) integrate velocities:
+    solveVelocityExplicit(timeStep);
+
+    // 2.) integrate positions/rotations
+    integratePositions(timeStep);
+}
+
+void RigidBody::solveVelocityExplicit(double timeStep)
+{
+    if (mStatic)
+        return;
+
+    // 1.) integrate velocities:
     // v_{i+1} = v_i + h * M^{-1} f_i
     mV = mV + timeStep * mMassInv * mForceExt;
 
     // \omega_{i+1} = \omega_i + h * I^{-1} (\tau_{ext} - (\omega_i \times (I \omega_i)))
     mOmega = mOmega + timeStep * mInertiaInv * (mTorqueExt - (mOmega.cross(mInertia * mOmega)));
-
-    // 2.) integrate positions/rotations
-    integratePositions(timeStep);
-
-    update();
 }
 
 void RigidBody::integratePositions(double timeStep)

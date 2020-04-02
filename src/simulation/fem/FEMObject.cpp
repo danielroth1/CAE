@@ -280,6 +280,18 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
         return;
     START_TIMING_SIMULATION("FEMObject::solveFEM()");
 
+    solveVelocityFEM(timeStep, corotated, firstStep);
+
+    integratePositions(timeStep);
+
+    STOP_TIMING_SIMULATION; // FEMObject::solveFEM
+}
+
+void FEMObject::solveVelocityFEM(double timeStep, bool corotated, bool firstStep)
+{
+    if (mTruncation->getTruncatedVectorIds().size() == mPositions.size())
+        return;
+
     // map velocities to eigen struct
     unsigned int size = static_cast<unsigned int>(mVelocities.size());
 
@@ -305,7 +317,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 //        b = mM * (vPrev - v) + timeStep * (f - K * (timeStep * v + uPrev - u));
 //    }
 
-    START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver");
+    START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver");
 
     VectorXd sol;
     bool byRemoving = false;
@@ -313,18 +325,18 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
     {
         if (firstStep)
         {
-            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::calcAOriginal");
+            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::calcAOriginal");
             SparseMatrix<double> AOriginal = mM + timeStep * timeStep * K;
             SparseMatrix<double> A;
             STOP_TIMING_SIMULATION;
 
-            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::truncateByRemoving");
+            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::truncateByRemoving");
             mTruncation->truncateByRemoving(AOriginal, A);
             STOP_TIMING_SIMULATION;
 
             if (mAnalyzePatternNecessary)
             {
-                START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze");
+                START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::analyze");
                 mSolver.analyzePattern(A);
                 mAnalyzePatternNecessary = false;
                 STOP_TIMING_SIMULATION;
@@ -333,7 +345,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
             if (mSolver.info() != Eigen::Success)
                 std::cerr << "Solver: analyzePattern failed.\n";
 
-            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
+            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::factorize");
             mSolver.factorize(A);
             STOP_TIMING_SIMULATION;
         }
@@ -346,7 +358,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
         VectorXd bCopy = b;
         mTruncation->truncateByRemoving(bCopy, b);
 
-        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::solve");
+        START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::solve");
         sol = mSolver.solve(b);
         STOP_TIMING_SIMULATION;
 
@@ -356,7 +368,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
     {
         if (firstStep)
         {
-            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::calcAOriginal");
+            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::calcAOriginal");
             SparseMatrix<double> A = mM + timeStep * timeStep * K;
             STOP_TIMING_SIMULATION;
 
@@ -365,13 +377,13 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
                 mTruncation->analyzePattern(A);
             }
 
-            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::truncateBySettingZero");
+            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::truncateBySettingZero");
             mTruncation->truncateBySettingZeroFast(A, b);
             STOP_TIMING_SIMULATION;
 
             if (mAnalyzePatternNecessary)
             {
-                START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::analyze");
+                START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::analyze");
                 mSolver.analyzePattern(A);
                 mAnalyzePatternNecessary = false;
                 STOP_TIMING_SIMULATION;
@@ -380,7 +392,7 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
             if (mSolver.info() != Eigen::Success)
                 std::cerr << "Solver: analyzePattern failed.\n";
 
-            START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::factorize");
+            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::factorize");
             mSolver.factorize(A);
             STOP_TIMING_SIMULATION;
         }
@@ -392,22 +404,18 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 
         mTruncation->truncateBySettingZeroFast(b);
 
-        START_TIMING_SIMULATION("FEMObject::solveFEM()::linSolver::solve");
+        START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::solve");
         sol = mSolver.solve(b);
         STOP_TIMING_SIMULATION;
     }
 
-    STOP_TIMING_SIMULATION; // FEMObject::solveFEM()::linSolver
+    STOP_TIMING_SIMULATION; // FEMObject::solveVelocityFEM()::linSolver
 
     // update the velocities
     VectorXd::Map(mDeltaV[0].data(), size * 3) = sol;
 
     VectorXd::Map(mVelocities[0].data(), size * 3) +=
             VectorXd::Map(mDeltaV[0].data(), size * 3);
-
-    integratePositions(timeStep);
-
-    STOP_TIMING_SIMULATION; // FEMObject::solveFEM
 }
 
 void FEMObject::revertSolverStep()
@@ -597,7 +605,7 @@ void FEMObject::updateGeometricData(bool notifyListeners)
     // This call is necessary to inform the other modules about
     // the change in position of the underlying Polygon3D that is
     // simulated here.
-    mPoly3->update(false, false, notifyListeners);
+    mPoly3->update(true, false, notifyListeners);
 }
 
 void FEMObject::initializeStiffnessMatrix()

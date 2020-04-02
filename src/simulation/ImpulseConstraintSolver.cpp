@@ -38,7 +38,8 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
         double stepSize,
         double restitution,
         double positionCorrectionFactor,
-        double collisionMargin)
+        double collisionMargin,
+        bool positionCorrection)
 {
     START_TIMING_SIMULATION("ImpulseConstraintSolver::initializeCollisionConstraints")
     // calculate K, target u rels
@@ -51,7 +52,8 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
         mCollisionConstraints.push_back(
                     CollisionConstraint(c, restitution,
                                         positionCorrectionFactor,
-                                        collisionMargin));
+                                        collisionMargin,
+                                        positionCorrection));
     }
 
     for (size_t i = 0; i < mCollisionConstraints.size(); ++i)

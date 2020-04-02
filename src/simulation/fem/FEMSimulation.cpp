@@ -100,6 +100,14 @@ void FEMSimulation::solve(double stepSize, bool firstStep)
     }
 }
 
+void FEMSimulation::solveVelocity(double stepSize, bool firstStep)
+{
+    for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
+    {
+        fo->solveVelocityFEM(stepSize, true, firstStep);
+    }
+}
+
 void FEMSimulation::revertSolverStep()
 {
     for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)

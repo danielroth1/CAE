@@ -69,6 +69,14 @@ void RigidSimulation::solve(double stepSize)
     }
 }
 
+void RigidSimulation::solveVelocity(double stepSize)
+{
+    for (std::shared_ptr<RigidBody>& rb : mRigidBodies)
+    {
+        rb->solveVelocityExplicit(stepSize);
+    }
+}
+
 void RigidSimulation::integratePositions(double stepSize)
 {
     for (std::shared_ptr<RigidBody>& rb : mRigidBodies)

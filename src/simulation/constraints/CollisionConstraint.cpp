@@ -13,11 +13,13 @@ CollisionConstraint::CollisionConstraint(
         const Collision& collision,
         double restitution,
         double positionCorrectionFactor,
-        double collisionMargin)
+        double collisionMargin,
+        bool correctPositionError)
     : mCollision(collision)
     , mRestitution(restitution)
     , mPositionCorrectionFactor(positionCorrectionFactor)
     , mCollisionMargin(collisionMargin)
+    , mCorrectPositionError(correctPositionError)
 {
     mCFrictionStatic = std::sqrt(
                 (collision.getSimulationObjectA()->getFrictionStatic() *
@@ -68,17 +70,19 @@ void CollisionConstraint::initialize(double stepSize)
                 mCollision.getSimulationObjectB(), mPoint2,
                 mCollision.getBarycentricCoordiantesB(), mCollision.getElementIdB());
 
-    // Correction of the position error of the previous time step.
-    Eigen::Vector posPrevA = mCollision.calculatePositionPreviousA();
-    Eigen::Vector posPrevB = mCollision.calculatePositionPreviousB();
-
-    double posError = (posPrevA - posPrevB).dot(n);
-    posError = std::min(posError - mCollisionMargin, 0.0);
-    double positionCorrection = -mPositionCorrectionFactor * posError / stepSize;
-
     uRel = u1 - u2;
 
-    mTargetUNormalRel = (-mRestitution * uRel.dot(n) + positionCorrection) * n;
+    if (mCorrectPositionError)
+    {
+        double posError = (mCollision.getPointA() - mCollision.getPointB()).dot(n);
+        posError = std::min(posError - mCollisionMargin, 0.0);
+        double positionCorrection = -mPositionCorrectionFactor * posError / stepSize;
+        mTargetUNormalRel = (-mRestitution * uRel.dot(n) + positionCorrection) * n;
+    }
+    else
+    {
+        mTargetUNormalRel = (-mRestitution * uRel.dot(n)) * n;
+    }
 
     if (/*mCollision.isInside() && */mTargetUNormalRel.dot(n) < 0)
     {

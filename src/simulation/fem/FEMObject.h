@@ -110,7 +110,10 @@ public:
     //      from the last time when this methos was called with firstStep = true
     //      is reused. Typically, this kind of iterations are basically free since
     //      they are hundert times faster.
-    void solveFEM(double stepSize, bool corotated, bool firstStep = true);
+    void solveFEM(double timeStep, bool corotated, bool firstStep = true);
+
+    // Same as solveFEM but wihtout position update at the end.
+    void solveVelocityFEM(double timeStep, bool corotated, bool firstStep = true);
 
     // Performs:
     // v = v - \delta v_{i+1}

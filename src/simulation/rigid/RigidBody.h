@@ -39,6 +39,14 @@ public:
     // q_{i+1} = q_i + h * 0.5 * toQuat(\omega_{i+1}) \otimes q_i
     void solveExplicit(double timeStep);
 
+    // Explicit Euler time integration
+    // 1.) integrate velocities:
+    // v_{i+1} = v_i + h * M^{-1} f_i
+    // \omega_{i+1} = \omega_i + I^{-1} (\tau_{ext} - (\omega \times (J\omega)))
+    //
+    // No position update.
+    void solveVelocityExplicit(double timeStep);
+
     virtual void integratePositions(double timeStep) override;
 
     // The positions of the current time step can be reverted to
