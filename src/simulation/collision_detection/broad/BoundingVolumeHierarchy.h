@@ -7,9 +7,11 @@
 #include "BVLeafData.h"
 #include "BVHCore.h"
 
+#include <boost/functional/hash.hpp>
 #include <data_structures/OptimizedStack.h>
 #include <data_structures/tree/Tree.h>
 #include <memory>
+#include <unordered_set>
 
 
 class Collider;
@@ -22,6 +24,10 @@ class SimulationObject;
 class BoundingVolumeHierarchy : public Tree<BVChildrenData*, BVLeafData*>
 {
 public:
+
+    typedef std::tuple<SimulationObject*, ID, SimulationObject*, ID> CollisionTuple;
+    typedef std::unordered_set<CollisionTuple, boost::hash<CollisionTuple>> CollisionTupleSet;
+
     BoundingVolumeHierarchy(SimulationObject* so,
                             Polygon* mPolygon,
                             const std::shared_ptr<MeshInterpolatorFEM>& interpolator,
@@ -50,12 +56,17 @@ public:
     // bounding volumes of the given hierarchy.
     // If there are collisions, collider.collides(CollisionObject* co, CollisionObject* co)
     // is called.
-    virtual bool collides(BoundingVolumeHierarchy* hierarchy,
-                          Collider& collider,
-                          int runId);
+    virtual bool collides(
+            BoundingVolumeHierarchy* hierarchy,
+            Collider& collider,
+            int runId,
+            const CollisionTupleSet& ignoreFeatures);
 
     // Iterative check for collisions.
-    bool collidesIterative(BoundingVolumeHierarchy* hierarchy, int runId);
+    bool collidesIterative(
+            BoundingVolumeHierarchy* hierarchy,
+            int runId,
+            const CollisionTupleSet& ignoreFeatures);
 
     // Recursive check for collisions.
     //

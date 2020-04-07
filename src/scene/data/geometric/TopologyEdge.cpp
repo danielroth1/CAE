@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-TopologyEdge::TopologyEdge(ID id)
-    : TopologyFeature(id)
+TopologyEdge::TopologyEdge(ID id, ID geometryId)
+    : TopologyFeature(id, geometryId)
 {
     mFaces.reserve(2);
 }

@@ -5,7 +5,7 @@
 
 #include "Constraint.h"
 
-class Collision;
+#include <simulation/collision_detection/narrow/Collision.h>
 
 // Implements collision and friction based on
 // "Constraint-based collision and contact handling using impulses"
@@ -51,7 +51,7 @@ public:
     virtual bool references(SimulationObject* so) override;
 
 private:
-    const Collision& mCollision;
+    Collision mCollision;
 
     Eigen::Vector mTargetUNormalRel;
     Eigen::Vector mSumOfAllAppliedImpulses;

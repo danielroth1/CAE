@@ -15,7 +15,7 @@
 class TopologyFace : public TopologyFeature
 {
 public:
-    TopologyFace(ID id);
+    TopologyFace(ID id, ID geometryId);
 
     std::array<unsigned int, 3>& getVertexIds()
     {

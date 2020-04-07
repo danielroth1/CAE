@@ -1,8 +1,8 @@
 #include "TopologyVertex.h"
 
 
-TopologyVertex::TopologyVertex(ID id)
-    : TopologyFeature(id)
+TopologyVertex::TopologyVertex(ID id, ID geometryId)
+    : TopologyFeature(id, geometryId)
 {
 
 }

@@ -8,7 +8,7 @@
 class TopologyEdge : public TopologyFeature
 {
 public:
-    TopologyEdge(ID id);
+    TopologyEdge(ID id, ID geometryId);
 
     Edge& getVertexIds()
     {

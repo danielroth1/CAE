@@ -1,12 +1,16 @@
 #ifndef COLLISIONMANAGER_H
 #define COLLISIONMANAGER_H
 
-#include <map>
-#include <memory>
+#include <boost/functional/hash.hpp>
 #include <proxy/ProxyDefs.h>
 #include <scene/data/geometric/TopologyFace.h>
 #include <simulation/SimulationCollision.h>
 #include <simulation/collision_detection/narrow/Collider.h>
+
+#include <map>
+#include <memory>
+#include <tuple>
+#include <unordered_set>
 #include <vector>
 
 class BoundingVolumeHierarchy;
@@ -28,6 +32,10 @@ enum class BoundingVolumeType
 class CollisionManager : public std::enable_shared_from_this<CollisionManager>
 {
 public:
+
+    typedef std::tuple<SimulationObject*, ID, SimulationObject*, ID> CollisionTuple;
+    typedef std::unordered_set<CollisionTuple, boost::hash<CollisionTuple>> CollisionTupleSet;
+
     CollisionManager(Domain* domain);
 
     Domain* getDomain();
@@ -60,6 +68,14 @@ public:
     // Publishes all collidable geometric data. Does not notify listeners.
     // All collidable MeshInterpolators are published as well.
     void updateGeometries();
+
+    // Revalidates the currently stored collisions. Does so by performing a
+    // triangle collision detection on each of them and updating there values.
+    // Collisions that aren't valid anymore (collision distance bigger than
+    // threshold) are removed. Because this operation doesn't requires to
+    // iterate any bounding volume hierarchies and is restricted to the
+    // lasts step valid collisions, it is fairly cheap.
+    void revalidateCollisions();
 
     std::shared_ptr<Collider> getCollider();
     const std::vector<SimulationCollision>& getCollisions() const;
@@ -112,6 +128,11 @@ private:
     std::vector<CollisionManagerListener*> mListeners;
 
     std::vector<SimulationCollision> mSimulationCollisions;
+
+    // SimualtionObject*, FeauterId A, SimulationObject*, FeatureID B
+    // Stores the ids of feature pairs of collisions that are stored. Offers
+    // a fast look up if a collision is already stored and can be ignored.
+    CollisionTupleSet mAlreadySeenCollisions;
 
     // If true, the next hierarchy update is forced for all objects.
     bool mForceUpdate;

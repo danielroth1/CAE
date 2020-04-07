@@ -61,7 +61,9 @@ void TriangleCollider::addTriangleSpherePair(
 }
 
 void TriangleCollider::addTrianglePair(
-        CollisionTriangle& ct1, CollisionTriangle& ct2)
+        CollisionTriangle& ct1,
+        CollisionTriangle& ct2,
+        const CollisionTupleSet& ignoreFeatures)
 {
     // source
     Polygon2DTopology& topoSource = ct1.getAccessor()->getTopology2D();
@@ -112,7 +114,17 @@ void TriangleCollider::addTrianglePair(
             // added here.
             if (ct2.getBoundingVolume()->isInside(ct1.getAccessor()->getPosition(vId),
                                                   0.5 * mMargin))
-                mFeaturePairsVF.push_back(VFPair(&topoSource.getVertices()[vId], &face2));
+            {
+                if (ignoreFeatures.find(std::make_tuple(
+                                              mSo1, topoSource.getVertices()[vId].getGeometryID(),
+                                              mSo2, face2.getGeometryID())) == ignoreFeatures.end() &&
+                    ignoreFeatures.find(std::make_tuple(
+                                              mSo2, face2.getGeometryID(),
+                                              mSo1, topoSource.getVertices()[vId].getGeometryID())) == ignoreFeatures.end())
+                {
+                    mFeaturePairsVF.push_back(VFPair(&topoSource.getVertices()[vId], &face2));
+                }
+            }
         }
 
         // Face -> Vertex
@@ -123,12 +135,24 @@ void TriangleCollider::addTrianglePair(
             // Vertex-Face AABB check
             if (ct1.getBoundingVolume()->isInside(ct2.getAccessor()->getPosition(vId),
                                                   0.5 * mMargin))
-                mFeaturePairsFV.push_back(FVPair(&face1, &topoTarget.getVertices()[vId]));
+            {
+                if (ignoreFeatures.find(std::make_tuple(
+                                              mSo1, face1.getGeometryID(),
+                                              mSo2, topoTarget.getVertices()[vId].getGeometryID())) == ignoreFeatures.end() &&
+                    ignoreFeatures.find(std::make_tuple(
+                                              mSo2, topoTarget.getVertices()[vId].getGeometryID(),
+                                              mSo1, face1.getGeometryID())) == ignoreFeatures.end())
+                {
+                    mFeaturePairsFV.push_back(FVPair(&face1, &topoTarget.getVertices()[vId]));
+                }
+            }
         }
 
         // Edge -> Edge
         unsigned int eId1 = face1.getEdgeIds()[i];
+#ifdef USE_EDGE_BV_STRATEGY_ORIENTED_AABB
         const std::shared_ptr<Polygon2DAccessor>& accessor = ct1.getAccessor();
+#endif
         if (face1.isEdgeOwner(i))
         {
 #ifdef USE_EDGE_BV_STRATEGY_ORIENTED_AABB
@@ -149,8 +173,18 @@ void TriangleCollider::addTrianglePair(
 #endif
                     {
                         unsigned int eId2 = face2.getEdgeIds()[j];
-                        mFeaturePairsEE.push_back(EEPair(&topoSource.getEdges()[eId1],
-                                                         &topoTarget.getEdges()[eId2]));
+                        if (ignoreFeatures.find(
+                                    std::make_tuple(
+                                        mSo1, topoSource.getEdges()[eId1].getGeometryID(),
+                                        mSo2, topoTarget.getEdges()[eId2].getGeometryID())) == ignoreFeatures.end() &&
+                            ignoreFeatures.find(
+                                    std::make_tuple(
+                                        mSo2, topoTarget.getEdges()[eId2].getGeometryID(),
+                                        mSo1, topoSource.getEdges()[eId1].getGeometryID())) == ignoreFeatures.end())
+                        {
+                            mFeaturePairsEE.push_back(EEPair(&topoSource.getEdges()[eId1],
+                                                             &topoTarget.getEdges()[eId2]));
+                        }
                     }
                 }
             }
@@ -324,7 +358,7 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
         {
             const std::pair<TopologyVertex*, TopologyFace*>& pair = mFeaturePairsVF[i];
             Collision c;
-            bool collides = collide(*pair.second, *pair.first, true, c);
+            bool collides = collide(*pair.first, *pair.second, true, c);
             if (collides)
             {
                 collisions.push_back(c);
@@ -338,7 +372,7 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
         {
             const std::pair<TopologyFace*, TopologyVertex*>& pair = mFeaturePairsFV[i];
             Collision c;
-            bool collides = collide(*pair.first, *pair.second, false, c);
+            bool collides = collide(*pair.second, *pair.first, false, c);
             if (collides)
             {
                 collisions.push_back(c);
@@ -381,7 +415,7 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
                 {
                     const std::pair<TopologyVertex*, TopologyFace*>& pair = mFeaturePairsVF[i];
                     Collision c;
-                    bool collides = collide(*pair.second, *pair.first, true, c);
+                    bool collides = collide(*pair.first, *pair.second, true, c);
                     if (collides)
                     {
                         threadCollisions.push_back(c);
@@ -392,7 +426,7 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
                     size_t index = i - mFeaturePairsVF.size();
                     const std::pair<TopologyFace*, TopologyVertex*>& pair = mFeaturePairsFV[index];
                     Collision c;
-                    bool collides = collide(*pair.first, *pair.second, false, c);
+                    bool collides = collide(*pair.second, *pair.first, false, c);
                     if (collides)
                     {
                         threadCollisions.push_back(c);
@@ -424,37 +458,34 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
 }
 
 bool TriangleCollider::collide(
-        TopologyFace& f,
         TopologyVertex& v,
+        TopologyFace& f,
         bool reverted,
+        Collision& collision)
+{
+    if (reverted)
+        return collide(v, f, mSo1, mSo2, mInterpolator1, mInterpolator2, mPoly1, mPoly2, collision);
+    else
+        return collide(v, f, mSo2, mSo1, mInterpolator2, mInterpolator1, mPoly2, mPoly1, collision);
+}
+
+bool TriangleCollider::collide(
+        TopologyEdge& e1,
+        TopologyEdge& e2,
+        Collision& collision)
+{
+    return collide(e1, e2, mSo1, mSo2, mInterpolator1, mInterpolator2, mPoly1, mPoly2, collision);
+}
+
+bool TriangleCollider::collide(
+        TopologyVertex& v, TopologyFace& f,
+        SimulationObject* so1, SimulationObject* so2,
+        MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
+        Polygon* poly1, Polygon* poly2,
         Collision& collision)
 {
     // first object (so1, poly1, interpolator1) -> vertex
     // second object (so2, poly2, interpolator2) -> face
-    SimulationObject* so1;
-    SimulationObject* so2;
-    Polygon* poly1;
-    Polygon* poly2;
-    MeshInterpolatorFEM* interpolator1;
-    MeshInterpolatorFEM* interpolator2;
-    if (reverted)
-    {
-        so1 = mSo1;
-        so2 = mSo2;
-        poly1 = mPoly1;
-        poly2 = mPoly2;
-        interpolator1 = mInterpolator1;
-        interpolator2 = mInterpolator2;
-    }
-    else
-    {
-        so1 = mSo2;
-        so2 = mSo1;
-        poly1 = mPoly2;
-        poly2 = mPoly1;
-        interpolator1 = mInterpolator2;
-        interpolator2 = mInterpolator1;
-    }
 
     // Collisions between non-polygons aren't supported
     if (so1->getGeometricData()->getType() != GeometricData::Type::POLYGON ||
@@ -518,7 +549,8 @@ bool TriangleCollider::collide(
 //            v1Index = t3->getOuterVertexIds()[f.getVertexIds()[index]];
         }
 
-        new (&collision) Collision(so1, so2,
+        new (&collision) Collision(&v, &f, interpolator1, interpolator2,
+                                   so1, so2,
                                    pos, inter,
                                    dir, 0.0,
                                    v1Index,
@@ -539,17 +571,12 @@ bool TriangleCollider::collide(
 }
 
 bool TriangleCollider::collide(
-        TopologyEdge& e1,
-        TopologyEdge& e2,
+        TopologyEdge& e1, TopologyEdge& e2,
+        SimulationObject* so1, SimulationObject* so2,
+        MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
+        Polygon* poly1, Polygon* poly2,
         Collision& collision)
 {
-    SimulationObject* so1 = mSo1;
-    SimulationObject* so2 = mSo2;
-    MeshInterpolatorFEM* interpolator1 = mInterpolator1;
-    MeshInterpolatorFEM* interpolator2 = mInterpolator2;
-    Polygon* poly1 = mPoly1;
-    Polygon* poly2 = mPoly2;
-
     // Collisions between non-polygons aren't supported
     if (so1->getGeometricData()->getType() != GeometricData::Type::POLYGON ||
         so2->getGeometricData()->getType() != GeometricData::Type::POLYGON)
@@ -615,6 +642,7 @@ bool TriangleCollider::collide(
 //        }
 
         new (&collision) Collision(
+                    &e1, &e2, interpolator1, interpolator2,
                     so1, so2,
                     inter1, inter2, dir, 0.0, v1Index, v2Index, false);
 

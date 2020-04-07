@@ -257,7 +257,7 @@ void Polygon3DTopology::init()
     mCells.reserve(mCellIds.size());
     for (size_t cId = 0; cId < mCellIds.size(); ++cId)
     {
-        mCells.push_back(TopologyCell(cId));
+        mCells.push_back(TopologyCell(cId, mVertices.size() + mEdges.size() + mFaces.size() + cId));
         TopologyCell& c = mCells[cId];
         c.getVertexIds() = mCellIds[cId];
 

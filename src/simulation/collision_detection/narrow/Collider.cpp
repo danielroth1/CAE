@@ -29,7 +29,10 @@ Collider::Collider(double collisionMargin)
     setCollisionMargin(collisionMargin);
 }
 
-bool Collider::collides(CollisionObject& co1, CollisionObject& co2)
+bool Collider::collides(
+        CollisionObject& co1,
+        CollisionObject& co2,
+        const CollisionTupleSet& ignoreFeatures)
 {
 //    Collision c;
 //    bool isColliding = collides(co1, co2, c);
@@ -40,18 +43,21 @@ bool Collider::collides(CollisionObject& co1, CollisionObject& co2)
 //    }
 //    return false;
 
-    return collidesTrianglesImproved(co1, co2);
+    return collidesTrianglesImproved(co1, co2, ignoreFeatures);
 }
 
 bool Collider::collidesTrianglesImproved(
-        CollisionObject& co1, CollisionObject& co2)
+        CollisionObject& co1,
+        CollisionObject& co2,
+        const CollisionTupleSet& ignoreFeatures)
 {    
     if (co1.getType() == CollisionObject::Type::TRIANGLE &&
         co2.getType() == CollisionObject::Type::TRIANGLE)
     {
         mTriangleCollider->addTrianglePair(
                     static_cast<CollisionTriangle&>(co1),
-                    static_cast<CollisionTriangle&>(co2));
+                    static_cast<CollisionTriangle&>(co2),
+                    ignoreFeatures);
     }
     else if (co1.getType() == CollisionObject::Type::SPHERE &&
              co2.getType() == CollisionObject::Type::TRIANGLE)
@@ -155,6 +161,26 @@ bool Collider::collides(
 }
 
 bool Collider::collides(
+        TopologyVertex& v, TopologyFace& f,
+        SimulationObject* so1, SimulationObject* so2,
+        MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
+        Polygon* poly1, Polygon* poly2,
+        Collision& collision)
+{
+    mTriangleCollider->collide(v, f, so1, so2, interpolator1, interpolator2, poly1, poly2, collision);
+}
+
+bool Collider::collides(
+        TopologyEdge& e1, TopologyEdge& e2,
+        SimulationObject* so1, SimulationObject* so2,
+        MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
+        Polygon* poly1, Polygon* poly2,
+        Collision& collision)
+{
+    mTriangleCollider->collide(e1, e2, so1, so2, interpolator1, interpolator2, poly1, poly2, collision);
+}
+
+bool Collider::collides(
         CollisionObject& co,
         CollisionSphere& cs,
         Collision& collisionReturnValue)
@@ -253,7 +279,11 @@ bool Collider::collides(
     // has to know about it. To connect the collision to the simulation object.
     // Do this differently.
     // Collider could have a map from GeometricData to SimulationObject.
-    new (&collisionReturnValue) Collision(cs1.getPointRef().getSimulationObject().get(),
+    new (&collisionReturnValue) Collision(nullptr,
+                                          nullptr,
+                                          nullptr,
+                                          nullptr,
+                                          cs1.getPointRef().getSimulationObject().get(),
                                           cs2.getPointRef().getSimulationObject().get(),
                                           pointA, pointB, normal, depth,
                                           cs1.getVertexIndex(),

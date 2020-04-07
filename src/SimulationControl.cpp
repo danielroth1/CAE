@@ -568,25 +568,13 @@ void SimulationControl::step()
     }
 
     START_TIMING_SIMULATION("SimulationControl::step()");
-    // Solver step algorithm
-    // -> iterate for as long as all collisions are resolved
-    // Collision Resolution
-    // for each collision
-    //      calculate collision correction impulse that makes
-    //      the collision points reach their desired speed.
 
-    // Collision:
-    //      collision point a, b
-    //      desired velocity after collision
-    //      sum of impulses
+    // Solver step algorithm
 
     initializeStep();
 
     // Perform some kind of early collision detection before the predictor
     // step to obtain a better result.
-    // Also initiailize non collision constraints before it wtf.
-
-    // How to implement this?
 
     // collision search gives collisions
     // creating collision constraints from those
@@ -594,62 +582,18 @@ void SimulationControl::step()
     // contact search gives new contacts -> also onces that are identical to already found ones
     // create collision constraints from those and the previously found ones
 
-    // reuse old contacts, but first check if they are still valid
-    // next initializeCollisionContraints call will remove these constraints
-    // how to check validity?
-    // Calculate updated position of these points. Maybe use a SimulationPointRef in Collision after all?
-    // would be a lot better design and simplify the validity check to a few lines
-    // of code.
-//    if (!mCollisionManager->getCollider()->getCollisions().empty())
-//    {
-//        mImpulseConstraintSolver->initializeCollisionConstraints(
-//                    mCollisionManager->getCollider()->getCollisions(),
-//                    mStepSize,
-//                    0.0, // Restitution (bounciness factor))
-//                    mPositionCorrectionFactor,
-//                    mCollisionManager->getCollisionMargin()); // dynamic friction
-//    }
-
-    START_TIMING_SIMULATION("CollisionManager::udpateAll()");
-    mCollisionManager->updateAll();
-    STOP_TIMING_SIMULATION;
-
-    // collision detection on x + x^{FEM}
-    START_TIMING_SIMULATION("CollisionManager::collideAll()");
-    bool collisionsOccured = mCollisionManager->collideAll(true);
-    STOP_TIMING_SIMULATION;
-
-    // TODO: currently, for each of these old contacts two collision constraints
-    // are created and they should correct their current collision error, not
-    // the one from the previous time step.
-    // position error correction really only needs to be done w.r.t. these
-    // old contacts.
-
     mRigidSimulation->solveVelocity(mStepSize);
     mFEMSimulation->solveVelocity(mStepSize, true); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
 
-//    if (collisionsOccured)
-//    {
-//        mImpulseConstraintSolver->solveConstraints(
-//                    mMaxNumConstraintSolverIterations,
-//                    mMaxConstraintError); // x, v + v^{FEM} + v^{col}
-//    }
-
-    // Reverting the position before initializing the non-collision
-    // constraints, so that only the position error from the previous
-    // time step is corrected. Usually, the position error from this
-    // predictor step is large and can make the simulation unstable.
-    // Correcting the position error of the previous iteration is
-    // equivalent to the baumgarte stabilization and deviates from
-    // the approach of Benders "Constraint-based collision and contact handling
-    // using impulses".
-//    mRigidSimulation->revertPositions();
-//    mFEMSimulation->revertPositions(); // x, v + v^{FEM} + v^{rigid}
-
-    if (collisionsOccured)
+    // reuse old contacts, but first check if they are still valid
+    mCollisionManager->revalidateCollisions();
+    mImpulseConstraintSolver->clearCollisionConstraints(); // remove the old collision constraints first
+    size_t numPrevCollisions = mCollisionManager->getCollisions().size();
+    if (!mCollisionManager->getCollisions().empty()) // reuse contacts from previous time step
     {
         mImpulseConstraintSolver->initializeCollisionConstraints(
                     mCollisionManager->getCollisions(),
+                    0,
                     mStepSize,
                     0.0, // Restitution (bounciness factor))
                     mPositionCorrectionFactor,
@@ -658,25 +602,12 @@ void SimulationControl::step()
 
     // initialize constraints
     mImpulseConstraintSolver->initializeNonCollisionConstraints(mStepSize);
-//    mImpulseConstraintSolver->solveConstraints(30, 1e-5); // x, v + v^{nonh};
-
-//    START_TIMING_SIMULATION("Simulation::publish [before cd]");
-//    mRigidSimulation->integratePositions(mStepSize);
-//    mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
-
-//    mRigidSimulation->publish(false);
-
-    // TODO: listeners need to be notified to update colliding interpolated meshes!
-    // and to update the face normals.
-//    mFEMSimulation->publish(false);
-//    // TODO: at the moment only updates face normals
-////    mCollisionManager->updateGeometries();
-////    STOP_TIMING_SIMULATION;
 
     // calculation of predictor step + collision constraint creation
 
     // solve initial contacts (if there are any) and joints
-    if (collisionsOccured || !mImpulseConstraintSolver->getConstraints().empty())
+    if (!mCollisionManager->getCollisions().empty() ||
+            !mImpulseConstraintSolver->getConstraints().empty())
     {
         mImpulseConstraintSolver->solveConstraints(
                     mMaxNumConstraintSolverIterations, mMaxConstraintError);
@@ -691,7 +622,7 @@ void SimulationControl::step()
 
     // collision detection on x + x^{FEM}
     START_TIMING_SIMULATION("CollisionManager::collideAll()");
-    bool predictorCollisionsOccured = mCollisionManager->collideAll(false);
+    bool predictorCollisionsOccured = mCollisionManager->collideAll(true);
     STOP_TIMING_SIMULATION;
 
     mRigidSimulation->revertPositions();
@@ -699,29 +630,20 @@ void SimulationControl::step()
 
     if (predictorCollisionsOccured)
     {
+        // no need to reinitialize the previous collision constraints
+        // -> can save some time here.
         mImpulseConstraintSolver->initializeCollisionConstraints(
                     mCollisionManager->getCollisions(),
+                    numPrevCollisions,
                     mStepSize,
                     0.0, // Restitution (bounciness factor))
                     mPositionCorrectionFactor,
                     mCollisionManager->getCollisionMargin(), false);
     }
 
-    if (collisionsOccured || predictorCollisionsOccured ||
+    if (!mCollisionManager->getCollisions().empty() ||
             !mImpulseConstraintSolver->getConstraints().empty())
     {
-        // create collision constraints w.r.t. x + x^{FEM}
-//        mImpulseConstraintSolver->initializeCollisionConstraints(
-//                    mCollisionManager->getCollisions(),
-//                    mStepSize,
-//                    0.0, // Restitution (bounciness factor))
-//                    mPositionCorrectionFactor,
-//                    mCollisionManager->getCollisionMargin()); // dynamic friction
-
-        // Revert the illegal state
-//        mRigidSimulation->revertPositions();
-//        mFEMSimulation->revertPositions(); // x, v + v^{FEM}
-
         mImpulseConstraintSolver->solveConstraints(
                     mMaxNumConstraintSolverIterations,
                     mMaxConstraintError); // x, v + v^{FEM} + v^{col}
@@ -733,24 +655,11 @@ void SimulationControl::step()
                 mFEMSimulation->revertSolverStep(); // x, v + v^{col}
 
                 // solve on x, v + v^{col}
-//                START_TIMING_SIMULATION("CollisionManager::solve_FEM");
                 mFEMSimulation->solveVelocity(mStepSize, false); // x + x^{FEM}, v + v^{FEM}
-//                STOP_TIMING_SIMULATION;
 
-//                mImpulseConstraintSolver->initializeCollisionConstraints(
-//                            mCollisionManager->getCollider()->getCollisions(),
-//                            mStepSize,
-//                            0.0, // Restitution (bounciness factor))
-//                            0.0, // static friction
-//                            0.01); // dynamic friction
-
-//                mFEMSimulation->revertPositions(); // x, v + v^{FEM}
-
-//                START_TIMING_SIMULATION("CollisionManager::solve_constraints");
                 mImpulseConstraintSolver->solveConstraints(
                             mMaxNumConstraintSolverIterations,
                             mMaxConstraintError); // x, v + v^{FEM} + v^{col}
-//                STOP_TIMING_SIMULATION;
             }
         }
 
@@ -758,7 +667,6 @@ void SimulationControl::step()
     // x, v + v^{FEM} + v^{col}
     mRigidSimulation->integratePositions(mStepSize);
     mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{col}, v + v^{FEM} + v^{col}
-
 
     mRigidSimulation->applyDamping();
     mFEMSimulation->applyDamping();

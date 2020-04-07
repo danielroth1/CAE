@@ -9,7 +9,7 @@
 class TopologyCell : public TopologyFeature
 {
 public:
-    TopologyCell(ID id);
+    TopologyCell(ID id, ID geometryId);
 
     std::array<unsigned int, 4>& getVertexIds();
     const std::array<unsigned int, 4>& getVertexIds() const;

@@ -236,7 +236,7 @@ PolygonTopology::calculateEdges(const Faces& faces) const
     {
         for (ID i2 : entry.second)
         {
-            TopologyEdge e(edges.size());
+            TopologyEdge e(edges.size(), mVertices.size() + edges.size());
             e.getVertexIds()[0] = entry.first;
             e.getVertexIds()[1] = static_cast<unsigned int>(i2);
             edges.push_back(e);
@@ -258,7 +258,7 @@ void PolygonTopology::buildTopology(
     verticesOut.reserve(nVertices);
     for (ID i = 0; i < nVertices; ++i)
     {
-        verticesOut.push_back(TopologyVertex(verticesOut.size()));
+        verticesOut.push_back(TopologyVertex(verticesOut.size(), verticesOut.size()));
     }
 
     // create set of vertices
@@ -275,7 +275,7 @@ void PolygonTopology::buildTopology(
     edgesOut.reserve(edgesSet.size());
     for (const std::pair<ID, ID>& p : edgesSet)
     {
-        TopologyEdge te(edgesOut.size());
+        TopologyEdge te(edgesOut.size(), verticesOut.size() + edgesOut.size());
         // add edge start and end vertex
         te.getVertexIds()[0] = static_cast<unsigned int>(p.first);
         te.getVertexIds()[1] = static_cast<unsigned int>(p.second);
@@ -301,7 +301,7 @@ void PolygonTopology::buildTopology(
     for (ID i = 0; i < faces.size(); ++i)
     {
         const Face& f = faces[i];
-        TopologyFace tFace(facesOut.size());
+        TopologyFace tFace(facesOut.size(), verticesOut.size() + edgesOut.size() + facesOut.size());
         // add surrounding edges
         tFace.getEdgeIds()[0] = edgesMap[makeSmallerPair(f[0], f[1])];
         tFace.getEdgeIds()[1] = edgesMap[makeSmallerPair(f[0], f[2])];
@@ -338,6 +338,7 @@ void PolygonTopology::buildTopology(
 
 void PolygonTopology::setFaceOwnerships()
 {
+    // reset all bits before doing this?
     std::set<ID> vertexIds;
     std::set<ID> edgeIds;
     for (TopologyFace& f : mFaces)

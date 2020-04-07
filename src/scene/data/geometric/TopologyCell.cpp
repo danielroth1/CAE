@@ -1,7 +1,7 @@
 #include "TopologyCell.h"
 
-TopologyCell::TopologyCell(ID id)
-    : TopologyFeature(id)
+TopologyCell::TopologyCell(ID id, ID geometryId)
+    : TopologyFeature(id, geometryId)
 {
 
 }

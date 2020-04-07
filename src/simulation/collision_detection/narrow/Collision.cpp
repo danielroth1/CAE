@@ -19,6 +19,10 @@ Collision::Collision()
 }
 
 Collision::Collision(
+        TopologyFeature* topologyFeatureA,
+        TopologyFeature* topologyFeatureB,
+        MeshInterpolatorFEM* interpolatorA,
+        MeshInterpolatorFEM* interpolatorB,
         SimulationObject* soA,
         SimulationObject* soB,
         const Eigen::Vector& pointA,
@@ -28,7 +32,11 @@ Collision::Collision(
         ID vertexIndexA,
         ID vertexIndexB,
         bool isInside)
-    : mSoA(soA)
+    : mTopologyFeatureA(topologyFeatureA)
+    , mTopologyFeatureB(topologyFeatureB)
+    , mInterpolatorA(interpolatorA)
+    , mInterpolatorB(interpolatorB)
+    , mSoA(soA)
     , mSoB(soB)
     , mPointA(pointA)
     , mPointB(pointB)

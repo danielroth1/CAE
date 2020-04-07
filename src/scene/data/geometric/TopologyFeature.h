@@ -6,7 +6,7 @@
 class TopologyFeature
 {
 public:
-    TopologyFeature(ID id);
+    TopologyFeature(ID id, ID geometryId);
     virtual ~TopologyFeature();
 
     enum class Type
@@ -19,10 +19,21 @@ public:
 
     void setID(ID id);
 
+    ID getGeometryID() const
+    {
+        return mGeometryID;
+    }
+
+    void setGeometryID(ID geometryID)
+    {
+        mGeometryID = geometryID;
+    }
+
     virtual Type getType() const = 0;
 
 private:
-    ID mId;
+    ID mId; // Unique id within the feature type (e.g. for all vertices).
+    ID mGeometryID; // Unique id within the geometry. Uniquely identies any features between all other features.
 };
 
 #endif // TOPOLOGYFEATURE_H

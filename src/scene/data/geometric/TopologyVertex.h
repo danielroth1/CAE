@@ -8,7 +8,7 @@
 class TopologyVertex : public TopologyFeature
 {
 public:
-    TopologyVertex(ID id);
+    TopologyVertex(ID id, ID geometryId);
 
     std::vector<ID>& getEdgeIds();
     const std::vector<ID>& getEdgeIds() const;

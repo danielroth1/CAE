@@ -27,13 +27,28 @@ public:
     // Creates and adds collision constraints that resolve the given collisions.
     void initializeNonCollisionConstraints(double stepSize);
 
+    // Initialize all collision constraints from collisions starting at offset.
+    // One collision constraint per collision is created.
+    // \param collision - the collisions
+    // \param offset - all collisions from offset to collisions.size() are processed
+    // \param stepSize - the time step size
+    // \param restitution - bounciness factor
+    // \param positionCorrectionFactor - amount of collision error that is corrected
+    // \param collisionMargin - only collisions that happen within this distance
+    //      or smaller are considered.
+    // \param positionCorrection - if the current position error is fixed. If
+    //      false, positionCorrectionFactor is not used.
     void initializeCollisionConstraints(
             const std::vector<SimulationCollision>& collisions,
+            size_t offset,
             double stepSize,
             double restitution,
             double positionCorrectionFactor,
             double collisionMargin,
             bool positionCorrection);
+
+    // Removes all stored collision constraints.
+    void clearCollisionConstraints();
 
     static Eigen::Vector calculateRelativeNormalSpeed(
             const Eigen::Vector& relativeSpeedA,

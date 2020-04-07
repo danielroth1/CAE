@@ -4,6 +4,9 @@
 #include <data_structures/DataStructures.h>
 #include <simulation/references/SimulationPointRef.h>
 
+class MeshInterpolatorFEM;
+class TopologyFeature;
+
 // Stores for
 // -> Rigids:
 //  The collision point in the global coorindate system.
@@ -19,6 +22,10 @@ public:
     Collision();
 
     Collision(
+            TopologyFeature* topologyFeatureA,
+            TopologyFeature* topologyFeatureB,
+            MeshInterpolatorFEM* interpolatorA,
+            MeshInterpolatorFEM* interpolatorB,
             SimulationObject* soA,
             SimulationObject* soB,
             const Eigen::Vector& pointA,
@@ -61,38 +68,66 @@ public:
         mNormal = normal;
     }
 
+    TopologyFeature* getTopologyFeatureA() const
+    {
+        return mTopologyFeatureA;
+    }
+
+    TopologyFeature* getTopologyFeatureB() const
+    {
+        return mTopologyFeatureB;
+    }
+
+    MeshInterpolatorFEM* getInterpolatorA() const
+    {
+        return mInterpolatorA;
+    }
+
+    MeshInterpolatorFEM* getInterpolatorB() const
+    {
+        return mInterpolatorB;
+    }
+
     SimulationObject* getSimulationObjectA() const
     {
         return mSoA;
     }
+
     SimulationObject* getSimulationObjectB() const
     {
         return mSoB;
     }
+
     const Eigen::Vector& getPointA() const
     {
         return mPointA;
     }
+
     const Eigen::Vector& getPointB() const
     {
         return mPointB;
     }
+
     const Eigen::Vector& getNormal() const
     {
         return mNormal;
     }
+
     double getDepth() const
     {
         return mDepth;
     }
+
     ID getVertexIndexA() const
     {
         return mVertexIndexA;
     }
+
     ID getVertexIndexB() const
     {
         return mVertexIndexB;
     }
+
     bool isInside() const
     {
         return mIsInside;
@@ -142,6 +177,14 @@ public:
     // it would be able to caluclate the current distance/ current PointA and PointB (before the collision)
 
 private:
+
+    // These are needed to validate this contact (perform a collision detection
+    // and check if this contact is still valid / update its parameters).
+    TopologyFeature* mTopologyFeatureA;
+    TopologyFeature* mTopologyFeatureB;
+    MeshInterpolatorFEM* mInterpolatorA;
+    MeshInterpolatorFEM* mInterpolatorB;
+
     SimulationObject* mSoA;
     SimulationObject* mSoB;
     Eigen::Vector mPointA;

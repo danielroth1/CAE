@@ -134,17 +134,20 @@ int BoundingVolumeHierarchy::calculateNumberOfNodes()
     return visitor.count;
 }
 
-bool BoundingVolumeHierarchy::collides(BoundingVolumeHierarchy* hierarchy,
-                                       Collider& collider,
-                                       int runId)
+bool BoundingVolumeHierarchy::collides(
+        BoundingVolumeHierarchy* hierarchy,
+        Collider& collider,
+        int runId,
+        const std::unordered_set<CollisionTuple, boost::hash<CollisionTuple>>& filterCollisions)
 {
     mCollider = &collider;
-    return collidesIterative(hierarchy, runId);
+    return collidesIterative(hierarchy, runId, filterCollisions);
 }
 
 bool BoundingVolumeHierarchy::collidesIterative(
         BoundingVolumeHierarchy* hierarchy,
-        int runId)
+        int runId,
+        const std::unordered_set<CollisionTuple, boost::hash<CollisionTuple>>& filterCollisions)
 {
     mCollider->prepare(mPolygon, hierarchy->getPolygon(),
                        mSimulationObject, hierarchy->getSimulationObject(),
@@ -170,7 +173,8 @@ bool BoundingVolumeHierarchy::collidesIterative(
             {
                 collides |= mCollider->collides(
                             *static_cast<BVHLeafNode*>(el.node1)->getData()->getCollisionObject(),
-                            *static_cast<BVHLeafNode*>(el.node2)->getData()->getCollisionObject());
+                            *static_cast<BVHLeafNode*>(el.node2)->getData()->getCollisionObject(),
+                            filterCollisions);
             }
             else
             {
@@ -275,7 +279,7 @@ bool BoundingVolumeHierarchy::collides(BVHLeafNode* leafNode1, BVHLeafNode* leaf
     BVLeafData* data2 = leafNode2->getData();
     if (data1->getBoundingVolume()->intersects(data2->getBoundingVolumePtr()))
     {
-        mCollider->collides(*data1->getCollisionObject(), *data2->getCollisionObject());
+        mCollider->collides(*data1->getCollisionObject(), *data2->getCollisionObject(), CollisionTupleSet());
         return true;
     }
     return false;

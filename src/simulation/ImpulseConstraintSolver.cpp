@@ -35,6 +35,7 @@ void ImpulseConstraintSolver::initializeNonCollisionConstraints(double stepSize)
 
 void ImpulseConstraintSolver::initializeCollisionConstraints(
         const std::vector<SimulationCollision>& collisions,
+        size_t offset,
         double stepSize,
         double restitution,
         double positionCorrectionFactor,
@@ -43,10 +44,9 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
 {
     START_TIMING_SIMULATION("ImpulseConstraintSolver::initializeCollisionConstraints")
     // calculate K, target u rels
-    mCollisionConstraints.clear();
-    mCollisionConstraints.reserve(collisions.size());
+    mCollisionConstraints.reserve(collisions.size() + collisions.size());
 
-    for (size_t i = 0; i < collisions.size(); ++i)
+    for (size_t i = offset; i < collisions.size(); ++i)
     {
         const Collision& c = collisions[i].getCollision();
         mCollisionConstraints.push_back(
@@ -56,12 +56,17 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
                                         positionCorrection));
     }
 
-    for (size_t i = 0; i < mCollisionConstraints.size(); ++i)
+    for (size_t i = offset; i < mCollisionConstraints.size(); ++i)
     {
         mCollisionConstraints[i].initialize(stepSize);
     }
 
     STOP_TIMING_SIMULATION
+}
+
+void ImpulseConstraintSolver::clearCollisionConstraints()
+{
+    mCollisionConstraints.clear();
 }
 
 Matrix3d ImpulseConstraintSolver::calculateK(

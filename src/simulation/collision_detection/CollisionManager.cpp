@@ -320,14 +320,16 @@ bool CollisionManager::collideAll(bool clearOldCollisions)
         {
             collisionOccured |=
                     mCollisionData[i].mBvh->collides(
-                        mCollisionData[j].mBvh.get(), *mCollider.get(), mRunId);
+                        mCollisionData[j].mBvh.get(), *mCollider.get(), mRunId,
+                        mAlreadySeenCollisions);
         }
     }
 
-    mSimulationCollisions.resize(mCollider->getCollisions().size());
-    for (size_t i = 0; i < mCollider->getCollisions().size(); ++i)
+    size_t offset = mSimulationCollisions.size();
+    mSimulationCollisions.resize(offset + mCollider->getCollisions().size());
+    for (size_t i = offset; i < offset + mCollider->getCollisions().size(); ++i)
     {
-        Collision& c = mCollider->getCollisions()[i];
+        Collision& c = mCollider->getCollisions()[i - offset];
         new (&mSimulationCollisions[i]) SimulationCollision(c);
     }
 
@@ -380,6 +382,71 @@ void CollisionManager::updateGeometries()
     for (const CollisionData& cd : mCollisionData)
     {
         cd.mBvh->updateGeometries();
+    }
+}
+
+void CollisionManager::revalidateCollisions()
+{
+    std::vector<SimulationCollision> validCollisions;
+    SimulationCollision newSimulationCollision;
+    for (SimulationCollision& c : mSimulationCollisions)
+    {
+        const Collision& col = c.getCollision();
+        bool collides = false;
+
+        Polygon* polyA = col.getInterpolatorA() ?
+                    col.getInterpolatorA()->getTarget().get() :
+                    static_cast<Polygon*>(col.getSimulationObjectA()->getGeometricData());
+        Polygon* polyB = col.getInterpolatorB() ?
+                    col.getInterpolatorB()->getTarget().get() :
+                    static_cast<Polygon*>(col.getSimulationObjectB()->getGeometricData());
+
+        if (col.getTopologyFeatureA()->getType() == TopologyFeature::Type::VERTEX &&
+                col.getTopologyFeatureB()->getType() == TopologyFeature::Type::FACE)
+        {
+            // vertex-face
+            collides = mCollider->collides(
+                        *static_cast<TopologyVertex*>(col.getTopologyFeatureA()),
+                        *static_cast<TopologyFace*>(col.getTopologyFeatureB()),
+                        col.getSimulationObjectA(),
+                        col.getSimulationObjectB(),
+                        col.getInterpolatorA(),
+                        col.getInterpolatorB(),
+                        polyA,
+                        polyB,
+                        newSimulationCollision.getCollision());
+        }
+        else
+        {
+            // edge-edge
+            collides = mCollider->collides(
+                        *static_cast<TopologyEdge*>(col.getTopologyFeatureA()),
+                        *static_cast<TopologyEdge*>(col.getTopologyFeatureB()),
+                        col.getSimulationObjectA(),
+                        col.getSimulationObjectB(),
+                        col.getInterpolatorA(),
+                        col.getInterpolatorB(),
+                        polyA,
+                        polyB,
+                        newSimulationCollision.getCollision());
+        }
+        if (collides)
+        {
+            validCollisions.push_back(newSimulationCollision);
+        }
+    }
+    mSimulationCollisions = validCollisions;
+
+    // fill already seen collisions so they are filtered out in the upcoming collision
+    // detections.
+    mAlreadySeenCollisions.clear();
+    for (const SimulationCollision& simCol : mSimulationCollisions)
+    {
+        const Collision& c = simCol.getCollision();
+        mAlreadySeenCollisions.insert(std::make_tuple(
+                                          c.getSimulationObjectA(), c.getTopologyFeatureA()->getGeometryID(),
+                                          c.getSimulationObjectB(), c.getTopologyFeatureB()->getGeometryID()));
+
     }
 }
 

@@ -1,7 +1,8 @@
 #include "TopologyFeature.h"
 
-TopologyFeature::TopologyFeature(ID id)
+TopologyFeature::TopologyFeature(ID id, ID geometryId)
     : mId(id)
+    , mGeometryID(geometryId)
 {
 
 }

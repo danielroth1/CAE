@@ -22,6 +22,11 @@ public:
         return mCollision;
     }
 
+    Collision& getCollision()
+    {
+        return mCollision;
+    }
+
 private:
 
     std::shared_ptr<GeometricPointRef> generateGeometricPointRef(

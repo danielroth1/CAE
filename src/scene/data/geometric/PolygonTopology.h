@@ -47,10 +47,12 @@ public:
     {
         return mVertices[id];
     }
+
     TopologyEdge& getEdge(ID id)
     {
         return mEdges[id];
     }
+
     TopologyFace& getFace(ID id)
     {
         return mFaces[id];
@@ -60,30 +62,37 @@ public:
     {
         return mVertices;
     }
+
     const std::vector<TopologyVertex>& getVertices() const
     {
         return mVertices;
     }
+
     std::vector<TopologyEdge>& getEdges()
     {
         return mEdges;
     }
+
     const std::vector<TopologyEdge>& getEdges() const
     {
         return mEdges;
     }
+
     std::vector<TopologyFace>& getFaces()
     {
         return mFaces;
     }
+
     const std::vector<TopologyFace>& getFaces() const
     {
         return mFaces;
     }
+
     Faces& getFacesIndices()
     {
         return mFacesIndices;
     }
+
     const Faces& getFacesIndices() const
     {
         return mFacesIndices;

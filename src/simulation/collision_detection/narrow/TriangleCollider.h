@@ -34,6 +34,10 @@ class TopologyEdge;
 class TriangleCollider
 {
 public:
+
+    typedef std::tuple<SimulationObject*, ID, SimulationObject*, ID> CollisionTuple;
+    typedef std::unordered_set<CollisionTuple, boost::hash<CollisionTuple>> CollisionTupleSet;
+
     TriangleCollider(double collisionMargin, bool invertNormalsIfNecessary = true);
     virtual ~TriangleCollider();
 
@@ -50,7 +54,10 @@ public:
     //      and use those.
     // Only create feature pairs of features that are owned by the collision
     // triangle.
-    void addTrianglePair(CollisionTriangle& ct1, CollisionTriangle& ct2);
+    void addTrianglePair(
+            CollisionTriangle& ct1,
+            CollisionTriangle& ct2,
+            const CollisionTupleSet& ignoreFeatures);
 
     void addSphereSpherePair(CollisionSphere& cs1, CollisionSphere& cs2);
 
@@ -78,8 +85,8 @@ public:
     // returns true and fills collision.
     // \param revertedFeatures - true if the feature f belongs to poly2 and
     //      v belongs to poly1
-    bool collide(TopologyFace& f,
-                 TopologyVertex& v,
+    bool collide(TopologyVertex& v,
+                 TopologyFace& f,
                  bool revertedFeatures,
                  Collision& collision);
 
@@ -87,6 +94,32 @@ public:
     // returns true and fills collision.
     bool collide(TopologyEdge& e1,
                  TopologyEdge& e2,
+                 Collision& collision);
+
+    // Checks if the distance between the vertex and the face is within the
+    // collision margin and if so, creates a collision and stores it in
+    // the given collision parameter.
+    bool collide(TopologyVertex& v,
+                 TopologyFace& f,
+                 SimulationObject* so1,
+                 SimulationObject* so2,
+                 MeshInterpolatorFEM* interpolator1,
+                 MeshInterpolatorFEM* interpolator2,
+                 Polygon* poly1,
+                 Polygon* poly2,
+                 Collision& collision);
+
+    // Checks if the distance between the two edges is within the
+    // collision margin and if so, creates a collision and stores it in
+    // the given collision parameter.
+    bool collide(TopologyEdge& e1,
+                 TopologyEdge& e2,
+                 SimulationObject* so1,
+                 SimulationObject* so2,
+                 MeshInterpolatorFEM* interpolator1,
+                 MeshInterpolatorFEM* interpolator2,
+                 Polygon* poly1,
+                 Polygon* poly2,
                  Collision& collision);
 
 private:
