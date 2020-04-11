@@ -61,7 +61,13 @@ public:
 
     bool removeSimulationObject(const std::shared_ptr<SimulationObject>& so);
 
-    bool collideAll(bool clearOldCollisions);
+    // Checks for all pair of collidable simulation objects (those that were
+    // added with addSimulationObject) if they are colliding.
+    // Note: Doesn't use a bounding volume hierarchy to find close pairs
+    // of simulation object. To check the triangle-triangle collisions,
+    // a bounding volume is used again. This means that this method can
+    // be inefficient if there are many collidable objects in the scene.
+    bool collideAll();
 
     void updateAll();
 
@@ -94,6 +100,8 @@ public:
 
     void setCollisionMargin(double collisionMargin);
     double getCollisionMargin() const;
+
+    size_t getNumContacts() const;
 
     static bool createEdges;
 
@@ -138,6 +146,10 @@ private:
     bool mForceUpdate;
 
     int mRunId;
+
+    // A contact is a collision that persists over multiple time steps. All
+    // collisions that were valid for more than 1 step are considered contacts.
+    size_t mNumContacts;
 };
 
 PROXY_CLASS(CollisionManagerProxy, CollisionManager, mCm,

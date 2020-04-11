@@ -18,7 +18,7 @@ CollisionControl::CollisionControl(
     mCollisionManager = std::make_shared<CollisionManager>(domain);
     mCollisionManager->addListener(this);
 
-    mColliderRenderModel = std::make_shared<ColliderRenderModel>(mCollisionManager->getCollider());
+    mColliderRenderModel = std::make_shared<ColliderRenderModel>(mCollisionManager);
     mColliderRenderModel->addToRenderer(uiControl->getRenderer());
 }
 

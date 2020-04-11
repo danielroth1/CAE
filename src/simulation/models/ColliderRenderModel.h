@@ -7,14 +7,14 @@
 #include <memory>
 #include <vector>
 
-class Collider;
+class CollisionManager;
 class RenderLines;
 class RenderPoints;
 
 class ColliderRenderModel : public RenderModel
 {
 public:
-    ColliderRenderModel(std::shared_ptr<Collider> collider);
+    ColliderRenderModel(std::shared_ptr<CollisionManager> collisionManager);
 
     // RenderModel interface
 public:
@@ -27,11 +27,20 @@ public:
     virtual void setVisible(bool visible) override;
 
 private:
-    std::shared_ptr<Collider> mCollider;
 
-    std::shared_ptr<RenderLines> mRenderLines;
+    void updateRenderCollisions(
+            const std::shared_ptr<RenderLines>& renderLines,
+            const std::shared_ptr<RenderPoints>& renderPoints,
+            size_t startIndex,
+            size_t endIndex);
 
-    std::shared_ptr<RenderPoints> mRenderPoints;
+    std::shared_ptr<CollisionManager> mCollisionManager;
+
+    std::shared_ptr<RenderLines> mRenderLinesCollisions;
+    std::shared_ptr<RenderLines> mRenderLinesContacts;
+
+    std::shared_ptr<RenderPoints> mRenderPointsCollisions;
+    std::shared_ptr<RenderPoints> mRenderPointsContacts;
 
     float mLineLength;
 };

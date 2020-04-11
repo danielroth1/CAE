@@ -585,7 +585,8 @@ void SimulationControl::step()
     mRigidSimulation->solveVelocity(mStepSize);
     mFEMSimulation->solveVelocity(mStepSize, true); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
 
-    // reuse old contacts, but first check if they are still valid
+    // reuse old collisions, but first check if they are still valid
+    // all non-valid collisions are removed
     mCollisionManager->revalidateCollisions();
     mImpulseConstraintSolver->clearCollisionConstraints(); // remove the old collision constraints first
     size_t numPrevCollisions = mCollisionManager->getCollisions().size();
@@ -622,7 +623,7 @@ void SimulationControl::step()
 
     // collision detection on x + x^{FEM}
     START_TIMING_SIMULATION("CollisionManager::collideAll()");
-    bool predictorCollisionsOccured = mCollisionManager->collideAll(true);
+    bool predictorCollisionsOccured = mCollisionManager->collideAll();
     STOP_TIMING_SIMULATION;
 
     mRigidSimulation->revertPositions();

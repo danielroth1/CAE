@@ -301,17 +301,29 @@ bool CollisionManager::removeSimulationObject(const std::shared_ptr<SimulationOb
         returnValue = false;
     }
 
+    // all kept collisions constraints that reference the removed simulation
+    // object are removed.
+    std::vector<SimulationCollision> validCollisions;
+    for (const SimulationCollision& sc : mSimulationCollisions)
+    {
+        if (sc.getCollision().getSimulationObjectA() != so.get() &&
+                sc.getCollision().getSimulationObjectB() != so.get())
+        {
+            validCollisions.push_back(sc);
+        }
+    }
+    mSimulationCollisions = validCollisions;
+
     return returnValue;
 }
 
-bool CollisionManager::collideAll(bool clearOldCollisions)
+bool CollisionManager::collideAll()
 {
     // Give this run a unique id. No other triangle will have this id.
     // It is used to distinguish already visited from non-visited triangles.
     ++mRunId;
 
-    if (clearOldCollisions)
-        mCollider->clear();
+    mCollider->clear();
 
     bool collisionOccured = false;
     for (size_t i = 0; i < mCollisionData.size(); ++i)
@@ -325,11 +337,11 @@ bool CollisionManager::collideAll(bool clearOldCollisions)
         }
     }
 
-    size_t offset = mSimulationCollisions.size();
-    mSimulationCollisions.resize(offset + mCollider->getCollisions().size());
-    for (size_t i = offset; i < offset + mCollider->getCollisions().size(); ++i)
+    mNumContacts = mSimulationCollisions.size();
+    mSimulationCollisions.resize(mNumContacts + mCollider->getCollisions().size());
+    for (size_t i = mNumContacts; i < mNumContacts + mCollider->getCollisions().size(); ++i)
     {
-        Collision& c = mCollider->getCollisions()[i - offset];
+        Collision& c = mCollider->getCollisions()[i - mNumContacts];
         new (&mSimulationCollisions[i]) SimulationCollision(c);
     }
 
@@ -536,6 +548,11 @@ void CollisionManager::setCollisionMargin(double collisionMargin)
 double CollisionManager::getCollisionMargin() const
 {
     return mCollider->getCollisionMargin();
+}
+
+size_t CollisionManager::getNumContacts() const
+{
+    return mNumContacts;
 }
 
 void CollisionManager::addSimulationObject(
