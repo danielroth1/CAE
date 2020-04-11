@@ -24,8 +24,8 @@
 Collider::Collider(double collisionMargin)
     : mInvertNormalsIfNecessary(false)
 {
-    mTriangleCollider = std::make_shared<TriangleCollider>(
-                mCollisionMargin);
+    mTriangleCollider = std::make_shared<TriangleCollider>(mCollisionMargin);
+    mTriangleCollider->setInvertNormalsIfNecessary(mInvertNormalsIfNecessary);
     setCollisionMargin(collisionMargin);
 }
 
@@ -131,6 +131,7 @@ bool Collider::getInvertNormalsIfNecessary() const
 void Collider::setInvertNormalsIfNecessary(bool invertNormalsIfNecessary)
 {
     mInvertNormalsIfNecessary = invertNormalsIfNecessary;
+    mTriangleCollider->setInvertNormalsIfNecessary(invertNormalsIfNecessary);
 }
 
 void Collider::setCollisionMargin(double collisionMargin)
@@ -167,7 +168,7 @@ bool Collider::collides(
         Polygon* poly1, Polygon* poly2,
         Collision& collision)
 {
-    mTriangleCollider->collide(v, f, so1, so2, interpolator1, interpolator2, poly1, poly2, collision);
+    return mTriangleCollider->collide(v, f, so1, so2, interpolator1, interpolator2, poly1, poly2, collision);
 }
 
 bool Collider::collides(
@@ -177,7 +178,7 @@ bool Collider::collides(
         Polygon* poly1, Polygon* poly2,
         Collision& collision)
 {
-    mTriangleCollider->collide(e1, e2, so1, so2, interpolator1, interpolator2, poly1, poly2, collision);
+    return mTriangleCollider->collide(e1, e2, so1, so2, interpolator1, interpolator2, poly1, poly2, collision);
 }
 
 bool Collider::collides(

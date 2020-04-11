@@ -608,7 +608,7 @@ bool TriangleCollider::collide(
 
         if (mInvertNormalsIfNecessary)
         {
-            bool isInside =
+            isInside =
                     poly1->isInside(e1, inter2) ||
                     poly2->isInside(e2, inter1);
             if (isInside)
@@ -644,7 +644,7 @@ bool TriangleCollider::collide(
         new (&collision) Collision(
                     &e1, &e2, interpolator1, interpolator2,
                     so1, so2,
-                    inter1, inter2, dir, 0.0, v1Index, v2Index, false);
+                    inter1, inter2, dir, 0.0, v1Index, v2Index, isInside);
 
         ID elementId;
         fillBarycentricCoordinates(poly1, e1, bary(0), interpolator1, elementId, collision.getBarycentricCoordiantesA());
