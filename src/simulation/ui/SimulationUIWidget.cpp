@@ -8,6 +8,7 @@
 #include <simulation/constraints/Constraint.h>
 #include <simulation/constraints/ConstraintVisitor.h>
 
+#include <QButtonGroup>
 
 SimulationUIWidget::SimulationUIWidget(
         SimulationUIControl* uiControl,
