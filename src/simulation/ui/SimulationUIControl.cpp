@@ -123,7 +123,18 @@ void SimulationUIControl::init(QWidget* parent)
                     mAc->getSimulationControl(),
                     MemberAccessorFactory::createDoubleComparator(),
                     mAc->getSimulationControl()->getDomain()),
-                0.0, 10.0, 1e-2, 8);
+                0.0, 10.0, 1e-2, 5);
+
+    mWidget->getMembersWidget()->addDouble(
+                "Contact Margin",
+                MemberAccessorFactory::createGetterSetter<double, SimulationControl>(
+                    &SimulationControl::getContactMargin,
+                    &SimulationControl::setContactMargin,
+                    1e-3,
+                    mAc->getSimulationControl(),
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                0.0, 10.0, 1e-3, 5);
 
     mWidget->getMembersWidget()->addVectorDouble(
                 "Gravity",

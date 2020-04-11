@@ -36,8 +36,14 @@ public:
     // \param positionCorrectionFactor - amount of collision error that is corrected
     // \param collisionMargin - only collisions that happen within this distance
     //      or smaller are considered.
+    // \param contactMargin - collisions that have a distance within
+    //      [collisionMargin - contactMargin, collisionMargin] are treated as
+    //      contacts and are tried to be preserved. This value is used to
+    //      prevent jittering (objects slightly bouncing of each other).
+    //      This value should be chosen to be as small as possible.
     // \param positionCorrection - if the current position error is fixed. If
-    //      false, positionCorrectionFactor is not used.
+    //      false, positionCorrectionFactor, collisionMargin, and contactMargin
+    //      are not used.
     void initializeCollisionConstraints(
             const std::vector<SimulationCollision>& collisions,
             size_t offset,
@@ -45,6 +51,7 @@ public:
             double restitution,
             double positionCorrectionFactor,
             double collisionMargin,
+            double contactMargin,
             bool positionCorrection);
 
     // Removes all stored collision constraints.

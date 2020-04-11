@@ -14,11 +14,13 @@ CollisionConstraint::CollisionConstraint(
         double restitution,
         double positionCorrectionFactor,
         double collisionMargin,
+        double contactMargin,
         bool correctPositionError)
     : mCollision(collision)
     , mRestitution(restitution)
     , mPositionCorrectionFactor(positionCorrectionFactor)
     , mCollisionMargin(collisionMargin)
+    , mContactMargin(contactMargin)
     , mCorrectPositionError(correctPositionError)
 {
     mCFrictionStatic = std::sqrt(
@@ -75,7 +77,7 @@ void CollisionConstraint::initialize(double stepSize)
     if (mCorrectPositionError)
     {
         double posError = (mCollision.getPointA() - mCollision.getPointB()).dot(n);
-        posError = std::min(posError - mCollisionMargin, 0.0);
+        posError = std::min(posError - mCollisionMargin + mContactMargin, 0.0);
         double positionCorrection = -mPositionCorrectionFactor * posError / stepSize;
         mTargetUNormalRel = (-mRestitution * uRel.dot(n) + positionCorrection) * n;
     }

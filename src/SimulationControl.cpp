@@ -56,6 +56,7 @@ SimulationControl::SimulationControl()
     mMaxNumConstraintSolverIterations = 5;
     mMaxConstraintError = 1e-6;
     mPositionCorrectionFactor = 0.2;
+    mContactMargin = 5e-4;
 }
 
 SimulationControl::~SimulationControl()
@@ -293,11 +294,15 @@ double SimulationControl::getCollisionMargin() const
     return mCollisionManager->getCollisionMargin();
 }
 
-//void SimulationControl::repaint()
-//{
-//    if (mUiControl)
-//        mUiControl->repaint();
-//}
+void SimulationControl::setContactMargin(double contactMargin)
+{
+    mContactMargin = contactMargin;
+}
+
+double SimulationControl::getContactMargin() const
+{
+    return mContactMargin;
+}
 
 std::shared_ptr<FEMSimulation> SimulationControl::getFEMSimulation()
 {
@@ -598,7 +603,9 @@ void SimulationControl::step()
                     mStepSize,
                     0.0, // Restitution (bounciness factor))
                     mPositionCorrectionFactor,
-                    mCollisionManager->getCollisionMargin(), true);
+                    mCollisionManager->getCollisionMargin(),
+                    mContactMargin,
+                    true);
     }
 
     // initialize constraints
@@ -639,7 +646,9 @@ void SimulationControl::step()
                     mStepSize,
                     0.0, // Restitution (bounciness factor))
                     mPositionCorrectionFactor,
-                    mCollisionManager->getCollisionMargin(), false);
+                    mCollisionManager->getCollisionMargin(),
+                    mContactMargin,
+                    false);
     }
 
     if (!mCollisionManager->getCollisions().empty() ||

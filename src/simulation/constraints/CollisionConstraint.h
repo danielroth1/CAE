@@ -28,11 +28,41 @@
 class CollisionConstraint : public Constraint
 {
 public:
+
+    //
+    // ContactMargin:
+    // The idea is to lets constraints not correct the whole contact distance
+    // but substract a value contactMargin so they only correct:
+    // collisionMargin - contactMargin
+    // Now contacts remain valid because they keep within the distance of
+    // [collisionMargin, collisionMargin - contactMargin]
+    //
+    // \param restitution - [0 - 1] bounciness: objects are bouncing off by
+    //      this factor (velocity in normal direction is reflected). A
+    //      restitution of 0 prevents any bouncing. 1 means input velocity is
+    //      equal to output velocity making objects bounce infinetly. Values
+    //      smaller than 1 can be considered as damping and take energy out
+    //      of the system.
+    // \param positionCorrectionFactor - this constraint corrects the position
+    //      error times this factor (only if correctPositionError is true).
+    // \param collisionMargin - if the minimum distance between two objects
+    //      is smaller than this value, the constraint is valid. The constraint
+    //      tries to preserve this distance by applying a position correction.
+    // \param contactMargin - Margin at which no position correction is applied
+    //      anymore to ensure that the collision remains during the next
+    //      simulation step. Those collising are called "contacts".
+    //      The contact distance is collisionMargin - contactMargin. Typically
+    //      the contact margin should be a lot smaller than the collisionMargin.
+    //      If its too high, object that usually lie parallel on top of each
+    //      other can be not parallel anymore and slide off of each other.
+    // \param correctPositionError - if true, the position error is corrected.
+    //      If false, collisionMargin and contactMargin are not used.
     CollisionConstraint(
             const Collision& collision,
             double restitution,
             double positionCorrectionFactor,
             double collisionMargin,
+            double contactMargin,
             bool correctPositionError);
 
     virtual ~CollisionConstraint() override;
@@ -63,6 +93,10 @@ private:
     double mCFrictionStatic;
     double mPositionCorrectionFactor;
     double mCollisionMargin;
+    // Margin at which no position correction is applied anymore to ensure that
+    // the collision remains during the next simulation step. Those collising
+    // are called "contacts".
+    double mContactMargin;
     bool mSticking;
     bool mCorrectPositionError;
 

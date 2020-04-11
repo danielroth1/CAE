@@ -122,8 +122,8 @@ public:
     void setCollisionMargin(double collisionMargin);
     double getCollisionMargin() const;
 
-    // repaints the gl widget
-//    void repaint();
+    void setContactMargin(double contactMargin);
+    double getContactMargin() const;
 
     // Simulation access methods
         std::shared_ptr<FEMSimulation> getFEMSimulation();
@@ -252,6 +252,7 @@ private:
     int mNumFEMCorrectionIterations;
     double mMaxConstraintError;
     double mPositionCorrectionFactor;
+    double mContactMargin;
 
     bool mPaused;
 

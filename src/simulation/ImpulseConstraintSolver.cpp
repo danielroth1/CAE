@@ -40,6 +40,7 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
         double restitution,
         double positionCorrectionFactor,
         double collisionMargin,
+        double contactMargin,
         bool positionCorrection)
 {
     START_TIMING_SIMULATION("ImpulseConstraintSolver::initializeCollisionConstraints")
@@ -53,6 +54,7 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
                     CollisionConstraint(c, restitution,
                                         positionCorrectionFactor,
                                         collisionMargin,
+                                        contactMargin,
                                         positionCorrection));
     }
 
