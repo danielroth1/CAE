@@ -14,7 +14,10 @@ class RenderPoints;
 class ColliderRenderModel : public RenderModel
 {
 public:
-    ColliderRenderModel(std::shared_ptr<CollisionManager> collisionManager);
+    ColliderRenderModel(
+            const std::shared_ptr<CollisionManager>& collisionManager,
+            bool renderLines,
+            bool renderPoints);
 
     // RenderModel interface
 public:
@@ -43,6 +46,9 @@ private:
     std::shared_ptr<RenderPoints> mRenderPointsContacts;
 
     float mLineLength;
+
+    bool mRenderLines;
+    bool mRenderPoints;
 };
 
 #endif // COLLIDERRENDERMODEL_H

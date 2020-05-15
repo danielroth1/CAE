@@ -10,29 +10,41 @@
 #include <simulation/collision_detection/CollisionManager.h>
 
 
-ColliderRenderModel::ColliderRenderModel(std::shared_ptr<CollisionManager> collisionManager)
+ColliderRenderModel::ColliderRenderModel(
+        const std::shared_ptr<CollisionManager>& collisionManager,
+        bool renderLines,
+        bool renderPoints)
     : mCollisionManager(collisionManager)
+    , mRenderLines(renderLines)
+    , mRenderPoints(renderPoints)
 {
     mLineLength = 0.2f;
-    // grass-green color
-    mRenderLinesCollisions = std::make_shared<RenderLines>();
-    mRenderLinesCollisions->setRenderMaterial(
-                RenderMaterial::createFromColor({0.71f, 1.0f, 0.0f, 1.0}));
 
-    // red
-    mRenderPointsCollisions = std::make_shared<RenderPoints>();
-    mRenderPointsCollisions->setRenderMaterial(
-                RenderMaterial::createFromColor({1.0f, 0.0f, 0.0f, 1.0}));
+    if (renderLines)
+    {
+        // grass-green color
+        mRenderLinesCollisions = std::make_shared<RenderLines>();
+        mRenderLinesCollisions->setRenderMaterial(
+                    RenderMaterial::createFromColor({0.71f, 1.0f, 0.0f, 1.0}));
 
-    // light blue
-    mRenderLinesContacts = std::make_shared<RenderLines>();
-    mRenderLinesContacts->setRenderMaterial(
-                RenderMaterial::createFromColor({0.0f, 0.58f, 1.0f, 1.0}));
+        // light blue
+        mRenderLinesContacts = std::make_shared<RenderLines>();
+        mRenderLinesContacts->setRenderMaterial(
+                    RenderMaterial::createFromColor({0.0f, 0.58f, 1.0f, 1.0}));
+    }
 
-    // violet
-    mRenderPointsContacts = std::make_shared<RenderPoints>();
-    mRenderPointsContacts->setRenderMaterial(
-                RenderMaterial::createFromColor({0.7f, 0.0f, 1.0f, 1.0}));
+    if (renderPoints)
+    {
+        // red
+        mRenderPointsCollisions = std::make_shared<RenderPoints>();
+        mRenderPointsCollisions->setRenderMaterial(
+                    RenderMaterial::createFromColor({1.0f, 0.0f, 0.0f, 1.0}));
+
+        // violet
+        mRenderPointsContacts = std::make_shared<RenderPoints>();
+        mRenderPointsContacts->setRenderMaterial(
+                    RenderMaterial::createFromColor({0.7f, 0.0f, 1.0f, 1.0}));
+    }
 }
 
 void ColliderRenderModel::reset()
@@ -65,29 +77,48 @@ void ColliderRenderModel::accept(RenderModelVisitor& /*v*/)
 
 void ColliderRenderModel::addToRenderer(Renderer* renderer)
 {
-    renderer->addRenderObject(mRenderLinesCollisions);
-    renderer->addRenderObject(mRenderPointsCollisions);
+    if (mRenderLines)
+    {
+        renderer->addRenderObject(mRenderLinesCollisions);
+        renderer->addRenderObject(mRenderLinesContacts);
+    }
 
-    renderer->addRenderObject(mRenderLinesContacts);
-    renderer->addRenderObject(mRenderPointsContacts);
+    if (mRenderPoints)
+    {
+        renderer->addRenderObject(mRenderPointsCollisions);
+        renderer->addRenderObject(mRenderPointsContacts);
+    }
+
 }
 
 void ColliderRenderModel::removeFromRenderer(Renderer* renderer)
 {
-    renderer->removeRenderObject(mRenderLinesCollisions);
-    renderer->removeRenderObject(mRenderPointsCollisions);
+    if (mRenderLines)
+    {
+        renderer->removeRenderObject(mRenderLinesCollisions);
+        renderer->removeRenderObject(mRenderLinesContacts);
+    }
 
-    renderer->removeRenderObject(mRenderLinesContacts);
-    renderer->removeRenderObject(mRenderPointsContacts);
+    if (mRenderPoints)
+    {
+        renderer->removeRenderObject(mRenderPointsCollisions);
+        renderer->removeRenderObject(mRenderPointsContacts);
+    }
 }
 
 void ColliderRenderModel::setVisible(bool visible)
 {
-    mRenderLinesCollisions->setVisible(visible);
-    mRenderPointsCollisions->setVisible(visible);
+    if (mRenderLines)
+    {
+        mRenderLinesCollisions->setVisible(visible);
+        mRenderLinesContacts->setVisible(visible);
+    }
 
-    mRenderLinesContacts->setVisible(visible);
-    mRenderPointsContacts->setVisible(visible);
+    if (mRenderPoints)
+    {
+        mRenderPointsCollisions->setVisible(visible);
+        mRenderPointsContacts->setVisible(visible);
+    }
 
     RenderModel::setVisible(visible);
 }
@@ -102,6 +133,7 @@ void ColliderRenderModel::updateRenderCollisions(
     bool needsUpdate = false;
 
     // lines
+    if (mRenderLines)
     {
         auto lines = renderLines->getLines().lock();
         size_t sizeBefore = lines->size();
@@ -120,6 +152,7 @@ void ColliderRenderModel::updateRenderCollisions(
     }
 
     // points
+    if (mRenderPoints)
     {
         auto points = renderPoints->getPoints().lock();
 
@@ -140,7 +173,14 @@ void ColliderRenderModel::updateRenderCollisions(
     // only update of RenderLines required if the size of points changed.
     if (needsUpdate)
     {
-        renderLines->update();
-        renderPoints->update();
+        if (mRenderLines)
+        {
+            renderLines->update();
+        }
+
+        if (mRenderPoints)
+        {
+            renderPoints->update();
+        }
     }
 }
