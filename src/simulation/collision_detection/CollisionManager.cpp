@@ -20,7 +20,7 @@
 CollisionManager::CollisionManager(Domain* domain)
     : mDomain(domain)
 {
-    mCollider = std::make_unique<Collider>(5e-2);
+    mCollider = std::make_unique<Collider>(4e-2);
     mForceUpdate = false;
     mRunId = 0;
 }
