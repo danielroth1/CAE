@@ -57,6 +57,12 @@ void DemoLoaderModule::loadDemo(const std::shared_ptr<Demo>& demo)
         mCurrentlyLoadedDemo->unload();
 
     mCurrentlyLoadedDemo = demo;
+
+    bool paused = mAc->getSimulationControl()->isSimulationPaused();
+    mAc->getSimulationControl()->setSimulationPaused(true);
+
     mCurrentlyLoadedDemo->load();
     mAc->getUIControl()->revalidateTreeWidget();
+
+    mAc->getSimulationControl()->setSimulationPaused(paused);
 }
