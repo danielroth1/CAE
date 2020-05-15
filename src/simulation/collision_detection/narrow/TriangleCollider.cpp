@@ -509,7 +509,11 @@ bool TriangleCollider::collide(
                 pos,
                 inter, bary, isInside);
 
-    if (ok && (pos - inter).squaredNorm() < mMarginSquared)
+    // Ignore vertex-face collisions that don't project on the triangle.
+    // There are situations where needed collisions are not found but most
+    // of the times redundant collisions that are already found in the
+    // edge-edge case are avoided.
+    if (ok && isInside && (pos - inter).squaredNorm() < mMarginSquared)
     {
         // Determin collsion normal -> triangle normal...
         Eigen::Vector dir;
@@ -602,6 +606,9 @@ bool TriangleCollider::collide(
     bool ok = MathUtils::projectEdgeOnEdge(
                 x11, x12, x21, x22, inter1, inter2, bary, isInside);
 
+    // Ignore points that don't project on both edges. These contacts are
+    // usually already covered by the a vertex-face collision. In some
+    // situations they currently are not, though.
     if (ok && isInside && (inter1 - inter2).squaredNorm() < mMarginSquared)
     {
         Eigen::Vector dir = (inter1 - inter2).normalized();
