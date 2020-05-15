@@ -38,6 +38,28 @@ Eigen::Matrix3d MathUtils::rotate(
 
 }
 
+Eigen::Vector3d MathUtils::perp(const Eigen::Vector3d& v)
+{
+    static const double sqrt_inv3 = std::sqrt(double(1) / double(3));
+
+    Eigen::Vector3d u;
+    if (std::abs(v(0)) >= sqrt_inv3)
+    {
+        u(0) = v(1);
+        u(1) = -v(0);
+        u(2) = 0;
+    }
+    else
+    {
+        u(0) = 0;
+        u(1) = v(2);
+        u(2) = -v(1);
+    }
+
+    u.normalize();
+    return u;
+}
+
 bool MathUtils::projectPointOnTriangle(
         const Eigen::Vector3d& p0,
         const Eigen::Vector3d& p1,

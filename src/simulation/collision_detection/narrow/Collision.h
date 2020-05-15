@@ -36,6 +36,8 @@ public:
             ID vertexIndexB,
             bool isInside);
 
+    bool operator==(const Collision& col) const;
+
     void revert()
     {
         Eigen::Vector temp;

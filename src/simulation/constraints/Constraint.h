@@ -14,6 +14,8 @@ public:
 
     virtual void initialize(double stepSize) = 0;
 
+    virtual void applyWarmStarting();
+
     virtual bool solve(double maxConstraintError) = 0;
 
     virtual void accept(ConstraintVisitor& cv) = 0;

@@ -53,10 +53,12 @@ SimulationControl::SimulationControl()
 
     mStepSize = 0.01;
     mNumFEMCorrectionIterations = 5;
-    mMaxNumConstraintSolverIterations = 5;
+    mMaxNumConstraintSolverIterations = 10;
     mMaxConstraintError = 1e-6;
-    mPositionCorrectionFactor = 0.2;
-    mContactMargin = 5e-4;
+    mPositionCorrectionFactor = 0.05;
+    mContactMargin = 0.0015;
+
+    mWarmStarting = true;
 }
 
 SimulationControl::~SimulationControl()
@@ -302,6 +304,16 @@ void SimulationControl::setContactMargin(double contactMargin)
 double SimulationControl::getContactMargin() const
 {
     return mContactMargin;
+}
+
+void SimulationControl::setWarmStarting(bool warmStarting)
+{
+    mWarmStarting = warmStarting;
+}
+
+bool SimulationControl::isWarmStaring() const
+{
+    return mWarmStarting;
 }
 
 std::shared_ptr<FEMSimulation> SimulationControl::getFEMSimulation()
@@ -587,31 +599,34 @@ void SimulationControl::step()
     // contact search gives new contacts -> also onces that are identical to already found ones
     // create collision constraints from those and the previously found ones
 
-    mRigidSimulation->solveVelocity(mStepSize);
-    mFEMSimulation->solveVelocity(mStepSize, true); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
-
     // reuse old collisions, but first check if they are still valid
     // all non-valid collisions are removed
     mCollisionManager->revalidateCollisions();
-    mImpulseConstraintSolver->clearCollisionConstraints(); // remove the old collision constraints first
     size_t numPrevCollisions = mCollisionManager->getCollisions().size();
-    if (!mCollisionManager->getCollisions().empty()) // reuse contacts from previous time step
-    {
-        mImpulseConstraintSolver->initializeCollisionConstraints(
-                    mCollisionManager->getCollisions(),
-                    0,
-                    mStepSize,
-                    0.0, // Restitution (bounciness factor))
-                    mPositionCorrectionFactor,
-                    mCollisionManager->getCollisionMargin(),
-                    mContactMargin,
-                    true);
-    }
+
+    mImpulseConstraintSolver->revalidateCollisionConstraints(
+                mCollisionManager->getCollisions(),
+                mStepSize,
+                0.0, // Restitution (bounciness factor))
+                mPositionCorrectionFactor,
+                mCollisionManager->getCollisionMargin(),
+                mContactMargin,
+                true,
+                mWarmStarting);
+
+    mRigidSimulation->solveVelocity(mStepSize);
+    mFEMSimulation->solveVelocity(mStepSize, true); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
 
     // initialize constraints
     mImpulseConstraintSolver->initializeNonCollisionConstraints(mStepSize);
 
     // calculation of predictor step + collision constraint creation
+
+    // warm starting
+    if (mWarmStarting && !mCollisionManager->getCollisions().empty())
+    {
+        mImpulseConstraintSolver->applyWarmStarting();
+    }
 
     // solve initial contacts (if there are any) and joints
     if (!mCollisionManager->getCollisions().empty() ||

@@ -7,6 +7,11 @@ Constraint::Constraint()
 
 }
 
+void Constraint::applyWarmStarting()
+{
+
+}
+
 Constraint::~Constraint()
 {
 

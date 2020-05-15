@@ -25,6 +25,12 @@
 // currentUNormalRel = u_rel^current * n
 // delta_u_normal = impulseFactor * (targetUNormalRel - currentUNormalRel)
 //
+// Friction: Supports two types of frictions. Switch between them by setting
+//   the defines in the body of this class.
+//   For details on the methods, see documentation of
+//   - solveTwoTangentFrictionConstraint1
+//   - solveTwoTangentFrictionConstraint2
+//   - solveSingleTangentFrictionConstraint
 class CollisionConstraint : public Constraint
 {
 public:
@@ -63,31 +69,87 @@ public:
             double positionCorrectionFactor,
             double collisionMargin,
             double contactMargin,
-            bool correctPositionError);
+            bool correctPositionError,
+            bool applyWarmStarting);
 
     virtual ~CollisionConstraint() override;
 
+    void setCollision(const Collision& collision);
     const Collision& getCollision() const;
 
     const Eigen::Vector& getTargetUNormalRel() const;
 
-    const Eigen::Vector& getSumOfAllAppliedImpulses() const;
+    void setSumCollisionImpulses(const Eigen::Vector3d& sumOfAllAppliedImpulses);
+    const Eigen::Vector& getSumCollisionImpulses() const;
+
+    void setSumFrictionImpulses(const Eigen::Vector2d& sumFrictionImpulses);
+    const Eigen::Vector2d& getSumFrictionImpulses() const;
+
+    const Eigen::Vector3d& getTangent1() const
+    {
+        return mFrT1;
+    }
+
+    const Eigen::Vector3d& getTangent2() const
+    {
+        return mFrT2;
+    }
+
+    void setReuseCount(double reuseCount)
+    {
+        mReuseCount = reuseCount;
+    }
+
+    int getReuseCount() const
+    {
+        return mReuseCount;
+    }
 
     // Constraint interface
 public:
     virtual void initialize(double stepSize) override;
+    virtual void applyWarmStarting() override;
     virtual bool solve(double maxConstraintError) override;
     virtual void accept(ConstraintVisitor& cv) override;
     virtual bool references(SimulationObject* so) override;
 
 private:
+
+    // Solve the friction constraint by using two friction tangents. Using
+    // two tangents is a lot more robust than one because velocity changes
+    // within the friction plane can be considered instead of only within
+    // a single line.
+    // These constraint can be applied right after collision constraints in
+    // the same solving cycle (in contrast to single tangent constraints that
+    // should be applied only once alle collision constraints were).
+    void solveTwoTangentFrictionConstraint1();
+
+    // Slightly different formulation than solveTwoTangentFrictionConstraint2()
+    // which gives minor different results. Not sure which one is the correct
+    // version.
+    void solveTwoTangentFrictionConstraint2();
+
+    // Solve the friction constraint using a single friction tangent.
+    // There are some issues with this implementation:
+    // - it really only works if the friction constraints are applied
+    //   after all collision constraints were applied. This means that
+    //   friction constraints can violate other constraints at the end again.
+    // - this implementation doesn't work with warm starting
+    void solveSingleTangentFrictionConstraint();
+
     Collision mCollision;
 
     Eigen::Vector mTargetUNormalRel;
-    Eigen::Vector mSumOfAllAppliedImpulses;
-    Eigen::Matrix3d mK;
+    Eigen::Vector mSumCollisionImpulses;
     Eigen::Vector mSumFrictionImpulses;
-    double mImpulseFactor; // 1 / (n^T K_aa + K_bb n) * n
+    Eigen::Matrix3d mK;
+    double mImpulseFactor; // 1 / (n^T K_aa + K_bb n)
+
+    // friction
+    Eigen::Vector3d mFrictionTangent;
+
+    double mFrictionImpulseMass; // 1 / (t^T K_aa + K_bb t)
+
     double mRestitution;
     double mCFrictionDynamic;
     double mCFrictionStatic;
@@ -100,6 +162,16 @@ private:
     bool mSticking;
     bool mCorrectPositionError;
 
+    bool mApplyFriction;
+
+    Eigen::Vector3d mFrT1; // friction tangent 1
+    Eigen::Vector3d mFrT2; // friction tangent 2
+    Eigen::Matrix2d mFrInvMass; // friction mass
+    Eigen::Vector2d mFrSum;
+
+    double m_pf_total;
+    double m_pf_actual;
+
     // Temporary variables used in methods
     Eigen::Vector3d mPoint1;
     Eigen::Vector3d mPoint2;
@@ -109,9 +181,11 @@ private:
     Eigen::Vector uRelN;
     Eigen::Vector deltaUNormalRel;
     Eigen::Vector impulse;
-    Eigen::Vector frictionImpulse;
     Eigen::Vector uRelT;
-    Eigen::Vector frictionImpulseMax;
+
+    bool mWarmStarting;
+
+    int mReuseCount; // counts how often this constraint has been reused
 };
 
 #endif // COLLISIONCONSTRAINT_H

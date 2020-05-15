@@ -148,6 +148,16 @@ void SimulationUIControl::init(QWidget* parent)
                 -100.0, 100.0, 1.0);
 
     mWidget->getMembersWidget()->addBool(
+                "Warm Starting",
+                MemberAccessorFactory::createGetterSetter<bool, SimulationControl>(
+                    &SimulationControl::isWarmStaring,
+                    &SimulationControl::setWarmStarting,
+                    true,
+                    mAc->getSimulationControl(),
+                    MemberAccessorFactory::createBoolComparator(),
+                    mAc->getSimulationControl()->getDomain()));
+
+    mWidget->getMembersWidget()->addBool(
                 "Invert Normals if necessary",
                 MemberAccessorFactory::createGetterSetter<bool, SimulationControl>(
                     &SimulationControl::getInvertNormalsIfNecessary,

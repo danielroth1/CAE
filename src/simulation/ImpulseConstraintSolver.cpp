@@ -45,7 +45,7 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
 {
     START_TIMING_SIMULATION("ImpulseConstraintSolver::initializeCollisionConstraints")
     // calculate K, target u rels
-    mCollisionConstraints.reserve(collisions.size() + collisions.size());
+    mCollisionConstraints.reserve(mCollisionConstraints.size() + collisions.size());
 
     for (size_t i = offset; i < collisions.size(); ++i)
     {
@@ -55,7 +55,8 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
                                         positionCorrectionFactor,
                                         collisionMargin,
                                         contactMargin,
-                                        positionCorrection));
+                                        positionCorrection,
+                                        false));
     }
 
     for (size_t i = offset; i < mCollisionConstraints.size(); ++i)
@@ -66,9 +67,85 @@ void ImpulseConstraintSolver::initializeCollisionConstraints(
     STOP_TIMING_SIMULATION
 }
 
-void ImpulseConstraintSolver::clearCollisionConstraints()
+void ImpulseConstraintSolver::revalidateCollisionConstraints(
+        const std::vector<SimulationCollision>& reusedCollisions,
+        double stepSize,
+        double restitution,
+        double positionCorrectionFactor,
+        double collisionMargin,
+        double contactMargin,
+        bool correctPositionError,
+        bool applyWarmStarting)
 {
-    mCollisionConstraints.clear();
+    if (reusedCollisions.empty())
+    {
+        mCollisionConstraints.clear();
+    }
+    else
+    {
+        std::vector<CollisionConstraint> reusedConstraints;
+        reusedConstraints.reserve(reusedCollisions.size());
+
+        size_t colIndex = 0;
+        for (const CollisionConstraint& cc : mCollisionConstraints)
+        {
+            if (colIndex == reusedCollisions.size())
+                break;
+
+            if (cc.getCollision() == reusedCollisions[colIndex].getCollision())
+            {
+                int reuseCount = cc.getReuseCount() + 1;
+                // Uncomment to ignore the first warm starting impulse. The first
+                // impulse can be quiet wrong if the objects was just falling
+                // down. Often time this just makes the warm starting react too
+                // slow, preventing objects comming to a rest, so it is not used.
+//                applyWarmStarting = applyWarmStarting && reuseCount > 1;
+
+                reusedConstraints.push_back(
+                            CollisionConstraint(
+                                reusedCollisions[colIndex].getCollision(),
+                                restitution,
+                                positionCorrectionFactor,
+                                collisionMargin,
+                                contactMargin,
+                                correctPositionError,
+                                applyWarmStarting));
+
+                reusedConstraints.back().setReuseCount(reuseCount);
+                if (applyWarmStarting)
+                {
+                    reusedConstraints.back().setSumCollisionImpulses(cc.getSumCollisionImpulses());
+
+                    // If friction tangents are different, the corresponding
+                    // friction impulses from previous steps would point in
+                    // wrong direction. In pracise this doesn't seem to make
+                    // much of a difference, though.
+//                    if (reusedConstraints.back().getTangent1().isApprox(cc.getTangent1(), 1e-5) &&
+//                            reusedConstraints.back().getTangent2().isApprox(cc.getTangent2(), 1e-5))
+//                    {
+                    reusedConstraints.back().setSumFrictionImpulses(cc.getSumFrictionImpulses());
+//                    }
+                }
+
+                ++colIndex;
+            }
+        }
+
+        mCollisionConstraints = reusedConstraints;
+
+        for (size_t i = 0; i < mCollisionConstraints.size(); ++i)
+        {
+            mCollisionConstraints[i].initialize(stepSize);
+        }
+    }
+}
+
+void ImpulseConstraintSolver::applyWarmStarting()
+{
+    for (size_t i = 0; i < mCollisionConstraints.size(); ++i)
+    {
+        mCollisionConstraints[i].applyWarmStarting();
+    }
 }
 
 Matrix3d ImpulseConstraintSolver::calculateK(

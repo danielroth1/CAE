@@ -48,6 +48,14 @@ Collision::Collision(
 {
 }
 
+bool Collision::operator==(const Collision& col) const
+{
+    return mSoA == col.getSimulationObjectA() &&
+            mSoB == col.getSimulationObjectB() &&
+            mTopologyFeatureA->getGeometryID() == col.getTopologyFeatureA()->getGeometryID() &&
+            mTopologyFeatureB->getGeometryID() == col.getTopologyFeatureB()->getGeometryID();
+}
+
 Vector Collision::calculatePositionPreviousA() const
 {
     return calculatePositionPrevious(mSoA, mPointA, mBaryA, mElementIdA);

@@ -54,8 +54,22 @@ public:
             double contactMargin,
             bool positionCorrection);
 
-    // Removes all stored collision constraints.
-    void clearCollisionConstraints();
+    // Revalidates all stored collision constraints and checks which can be
+    // reused based on the given reused collisions.
+    void revalidateCollisionConstraints(
+            const std::vector<SimulationCollision>& reusedCollisions,
+            double stepSize,
+            double restitution,
+            double positionCorrectionFactor,
+            double collisionMargin,
+            double contactMargin,
+            bool correctPositionError,
+            bool applyWarmStarting);
+
+    // Applies warm starting for all collision constraints that were
+    // previously revalidated from old collision constraints in
+    // revalidateCollisionConstraints().
+    void applyWarmStarting();
 
     static Eigen::Vector calculateRelativeNormalSpeed(
             const Eigen::Vector& relativeSpeedA,
@@ -134,6 +148,10 @@ public:
 
     static Eigen::Matrix<double, 2, 3>
     calculateProjectionMatrix(const Eigen::Vector& axis);
+
+    // Impulses of all collision constraints from the previous step (before
+    // clearCollisionConstraints() was called).
+    std::vector<Eigen::Vector3d> mImpulsesPrevious;
 };
 
 #endif // ImpulseConstraintSolver_H

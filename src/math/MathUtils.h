@@ -41,6 +41,9 @@ public:
             const Eigen::Quaterniond& q,
             Eigen::Matrix3d& result);
 
+    // Calculates a vector that is perpendicular to the given one.
+    static Eigen::Vector3d perp(const Eigen::Vector3d& v);
+
     // Projects p on the triangle (p0, p1, p2) and returns the projected point
     // "inter" and baryzentric coordinates "bary". Returns false if the problem
     // has no solution because it was illconditioned (triangle is an edge
