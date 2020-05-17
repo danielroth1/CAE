@@ -166,9 +166,12 @@ bool Collider::collides(
         SimulationObject* so1, SimulationObject* so2,
         MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
         Polygon* poly1, Polygon* poly2,
+        bool revertedFeaturePair,
         Collision& collision)
 {
-    return mTriangleCollider->collide(v, f, so1, so2, interpolator1, interpolator2, poly1, poly2, collision);
+    return mTriangleCollider->collide(
+                v, f, so1, so2, interpolator1, interpolator2, poly1, poly2,
+                revertedFeaturePair, collision);
 }
 
 bool Collider::collides(
@@ -178,7 +181,8 @@ bool Collider::collides(
         Polygon* poly1, Polygon* poly2,
         Collision& collision)
 {
-    return mTriangleCollider->collide(e1, e2, so1, so2, interpolator1, interpolator2, poly1, poly2, collision);
+    return mTriangleCollider->collide(
+                e1, e2, so1, so2, interpolator1, interpolator2, poly1, poly2, collision);
 }
 
 bool Collider::collides(

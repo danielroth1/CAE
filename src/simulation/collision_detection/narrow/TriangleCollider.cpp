@@ -117,10 +117,7 @@ void TriangleCollider::addTrianglePair(
             {
                 if (ignoreFeatures.find(std::make_tuple(
                                               mSo1, topoSource.getVertices()[vId].getGeometryID(),
-                                              mSo2, face2.getGeometryID())) == ignoreFeatures.end() &&
-                    ignoreFeatures.find(std::make_tuple(
-                                              mSo2, face2.getGeometryID(),
-                                              mSo1, topoSource.getVertices()[vId].getGeometryID())) == ignoreFeatures.end())
+                                              mSo2, face2.getGeometryID())) == ignoreFeatures.end())
                 {
                     mFeaturePairsVF.push_back(VFPair(&topoSource.getVertices()[vId], &face2));
                 }
@@ -138,10 +135,7 @@ void TriangleCollider::addTrianglePair(
             {
                 if (ignoreFeatures.find(std::make_tuple(
                                               mSo1, face1.getGeometryID(),
-                                              mSo2, topoTarget.getVertices()[vId].getGeometryID())) == ignoreFeatures.end() &&
-                    ignoreFeatures.find(std::make_tuple(
-                                              mSo2, topoTarget.getVertices()[vId].getGeometryID(),
-                                              mSo1, face1.getGeometryID())) == ignoreFeatures.end())
+                                              mSo2, topoTarget.getVertices()[vId].getGeometryID())) == ignoreFeatures.end())
                 {
                     mFeaturePairsFV.push_back(FVPair(&face1, &topoTarget.getVertices()[vId]));
                 }
@@ -176,11 +170,7 @@ void TriangleCollider::addTrianglePair(
                         if (ignoreFeatures.find(
                                     std::make_tuple(
                                         mSo1, topoSource.getEdges()[eId1].getGeometryID(),
-                                        mSo2, topoTarget.getEdges()[eId2].getGeometryID())) == ignoreFeatures.end() &&
-                            ignoreFeatures.find(
-                                    std::make_tuple(
-                                        mSo2, topoTarget.getEdges()[eId2].getGeometryID(),
-                                        mSo1, topoSource.getEdges()[eId1].getGeometryID())) == ignoreFeatures.end())
+                                        mSo2, topoTarget.getEdges()[eId2].getGeometryID())) == ignoreFeatures.end())
                         {
                             mFeaturePairsEE.push_back(EEPair(&topoSource.getEdges()[eId1],
                                                              &topoTarget.getEdges()[eId2]));
@@ -358,7 +348,7 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
         {
             const std::pair<TopologyVertex*, TopologyFace*>& pair = mFeaturePairsVF[i];
             Collision c;
-            bool collides = collide(*pair.first, *pair.second, true, c);
+            bool collides = collide(*pair.first, *pair.second, false, c);
             if (collides)
             {
                 collisions.push_back(c);
@@ -372,7 +362,7 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
         {
             const std::pair<TopologyFace*, TopologyVertex*>& pair = mFeaturePairsFV[i];
             Collision c;
-            bool collides = collide(*pair.second, *pair.first, false, c);
+            bool collides = collide(*pair.second, *pair.first, true, c);
             if (collides)
             {
                 collisions.push_back(c);
@@ -463,10 +453,10 @@ bool TriangleCollider::collide(
         bool reverted,
         Collision& collision)
 {
-    if (reverted)
-        return collide(v, f, mSo1, mSo2, mInterpolator1, mInterpolator2, mPoly1, mPoly2, collision);
+    if (!reverted)
+        return collide(v, f, mSo1, mSo2, mInterpolator1, mInterpolator2, mPoly1, mPoly2, reverted, collision);
     else
-        return collide(v, f, mSo2, mSo1, mInterpolator2, mInterpolator1, mPoly2, mPoly1, collision);
+        return collide(v, f, mSo2, mSo1, mInterpolator2, mInterpolator1, mPoly2, mPoly1, reverted, collision);
 }
 
 bool TriangleCollider::collide(
@@ -482,6 +472,7 @@ bool TriangleCollider::collide(
         SimulationObject* so1, SimulationObject* so2,
         MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
         Polygon* poly1, Polygon* poly2,
+        bool revertedFeaturePair,
         Collision& collision)
 {
     // first object (so1, poly1, interpolator1) -> vertex
@@ -553,20 +544,41 @@ bool TriangleCollider::collide(
 //            v1Index = t3->getOuterVertexIds()[f.getVertexIds()[index]];
         }
 
-        new (&collision) Collision(&v, &f, interpolator1, interpolator2,
-                                   so1, so2,
-                                   pos, inter,
-                                   dir, 0.0,
-                                   v1Index,
-                                   v2Index,
-                                   false);
+        if (!revertedFeaturePair)
+        {
+            new (&collision) Collision(&v, &f, interpolator1, interpolator2,
+                                       so1, so2,
+                                       pos, inter,
+                                       dir, 0.0,
+                                       v1Index,
+                                       v2Index,
+                                       false);
 
-        ID elementId;
-        fillBarycentricCoordinates(poly1, v, interpolator1, elementId, collision.getBarycentricCoordiantesA());
-        collision.setElementIdA(elementId);
+            ID elementId;
+            fillBarycentricCoordinates(poly1, v, interpolator1, elementId, collision.getBarycentricCoordiantesA());
+            collision.setElementIdA(elementId);
 
-        fillBarycentricCoordinates(poly2, f, bary, interpolator2, elementId, collision.getBarycentricCoordiantesB());
-        collision.setElementIdB(elementId);
+            fillBarycentricCoordinates(poly2, f, bary, interpolator2, elementId, collision.getBarycentricCoordiantesB());
+            collision.setElementIdB(elementId);
+        }
+        else
+        {
+            // revert collision
+            new (&collision) Collision(&f, &v, interpolator2, interpolator1,
+                                       so2, so1,
+                                       inter, pos,
+                                       -dir, 0.0,
+                                       v2Index,
+                                       v1Index,
+                                       false);
+
+            ID elementId;
+            fillBarycentricCoordinates(poly1, v, interpolator1, elementId, collision.getBarycentricCoordiantesB());
+            collision.setElementIdB(elementId);
+
+            fillBarycentricCoordinates(poly2, f, bary, interpolator2, elementId, collision.getBarycentricCoordiantesA());
+            collision.setElementIdA(elementId);
+        }
 
         return true;
     }

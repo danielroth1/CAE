@@ -73,15 +73,17 @@ public:
         // Checks if the distance between the vertex and the face is within the
         // collision margin and if so, creates a collision and stores it in
         // the given collision parameter.
-        bool collides(TopologyVertex& v,
-                     TopologyFace& f,
-                     SimulationObject* so1,
-                     SimulationObject* so2,
-                     MeshInterpolatorFEM* interpolator1,
-                     MeshInterpolatorFEM* interpolator2,
-                     Polygon* poly1,
-                     Polygon* poly2,
-                     Collision& collision);
+        bool collides(
+                TopologyVertex& v,
+                TopologyFace& f,
+                SimulationObject* so1,
+                SimulationObject* so2,
+                MeshInterpolatorFEM* interpolator1,
+                MeshInterpolatorFEM* interpolator2,
+                Polygon* poly1,
+                Polygon* poly2,
+                bool revertedFeaturePair,
+                Collision& collision);
 
         // Checks if the distance between the two edges is within the
         // collision margin and if so, creates a collision and stores it in

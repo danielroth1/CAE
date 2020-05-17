@@ -426,6 +426,23 @@ void CollisionManager::revalidateCollisions()
                         col.getInterpolatorB(),
                         polyA,
                         polyB,
+                        false,
+                        newSimulationCollision.getCollision());
+        }
+        else if (col.getTopologyFeatureA()->getType() == TopologyFeature::Type::FACE &&
+                 col.getTopologyFeatureB()->getType() == TopologyFeature::Type::VERTEX)
+        {
+            // face-vertex
+            collides = mCollider->collides(
+                        *static_cast<TopologyVertex*>(col.getTopologyFeatureB()),
+                        *static_cast<TopologyFace*>(col.getTopologyFeatureA()),
+                        col.getSimulationObjectB(),
+                        col.getSimulationObjectA(),
+                        col.getInterpolatorB(),
+                        col.getInterpolatorA(),
+                        polyB,
+                        polyA,
+                        true,
                         newSimulationCollision.getCollision());
         }
         else

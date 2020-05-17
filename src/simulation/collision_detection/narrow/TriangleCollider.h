@@ -107,6 +107,7 @@ public:
                  MeshInterpolatorFEM* interpolator2,
                  Polygon* poly1,
                  Polygon* poly2,
+                 bool revertedFeaturePair,
                  Collision& collision);
 
     // Checks if the distance between the two edges is within the
