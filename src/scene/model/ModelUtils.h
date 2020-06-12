@@ -90,7 +90,7 @@ public:
         normals.resize(positions.size());
         for (size_t i = 0; i < positions.size(); ++i)
         {
-            normals[i] = Eigen::Matrix<Type, 3, 1>::Zero();
+            normals[i].setZero();
         }
 
         // calculate normals for each vertex
@@ -105,12 +105,8 @@ public:
 
         for (size_t i = 0; i < positions.size(); ++i)
         {
-            normals[i] /= topology.getVertices()[i].getFaceIds().size();
+            normals[i].normalize();
         }
-//        for (Eigen::Matrix<Type, 3, 1>& normal : normals)
-//        {
-//            normal.normalize();
-//        }
         return normals;
     }
 
