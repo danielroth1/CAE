@@ -420,7 +420,7 @@ void PolygonRenderModel::update()
         // All vertices need to be udpated when the center changed. The center
         // changes only once at the start. This is not the position.
         Vector currentCenter = mPolygon->getCenter();
-        if (!mCurrentlyRenderedCenter.isApprox(currentCenter, 1e-3))
+        if (!mCurrentlyRenderedCenter.isApprox(currentCenter, 1e-13))
         {
             mCurrentlyRenderedCenter = currentCenter;
             updatePositions();
@@ -429,7 +429,7 @@ void PolygonRenderModel::update()
         // only need to udpate the transformation matrix. No need
         // for moving every vertex to the GPU (which is equal to a
         // revalidation in this case).
-        if (!mCurrentlyRenderedTransform.isApprox(mPolygon->getTransform(), 1e-3))
+        if (!mCurrentlyRenderedTransform.isApprox(mPolygon->getTransform(), 1e-13))
         {
             updateTransform();
         }
@@ -636,7 +636,7 @@ void PolygonRenderModel::updatePositions()
                 mPolygon->getPositions(); // for 3d case, this are all 3d positions, but often only 2d positions are required
 
     {
-        START_TIMING_MODELLING("PolygonRenderModel::updatePositions::positions");
+//        START_TIMING_MODELLING("PolygonRenderModel::updatePositions::positions");
         auto positionsLock = mPositionsBufferedData->getData().lock();
 
         if (mPolygonIndexMapping)
@@ -644,7 +644,8 @@ void PolygonRenderModel::updatePositions()
             std::shared_ptr<VectorIndexMapping> vim =
                     mPolygonIndexMapping->getVectorIndexMapping();
 
-            if (mRenderOnlyOuterFaces && mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+            if (mRenderOnlyOuterFaces &&
+                    mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
             {
 #pragma omp parallel for
                 for (size_t i = 0; i < vim->getExtendedSize(); ++i)
@@ -668,19 +669,18 @@ void PolygonRenderModel::updatePositions()
         else
         {
             if (mRenderOnlyOuterFaces &&
-                mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+                    mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
             {
-#pragma omp parallel for
                 for (size_t i = 0; i < positionsLock->size(); ++i)
                 {
                     positionsLock->at(i) = positions[
-                            static_cast<Polygon3D*>(mPolygon.get())->
-                            getOuterPositionIds()[i]].cast<float>();
+                            static_cast<Polygon3D*>(
+                                mPolygon.get())->getOuterPositionIds()[i]].cast<float>();
                 }
             }
             else
             {
-#pragma omp parallel for
+#pragma omp parallel for if (positionsLock->size() > 100)
                 for (size_t i = 0; i < positionsLock->size(); ++i)
                 {
                     positionsLock->at(i) = positions[i].cast<float>();
@@ -688,9 +688,9 @@ void PolygonRenderModel::updatePositions()
             }
         }
 
-        STOP_TIMING_MODELLING;
+//        STOP_TIMING_MODELLING;
 
-        START_TIMING_MODELLING("PolygonRenderModel::updatePositions::normals");
+//        START_TIMING_MODELLING("PolygonRenderModel::updatePositions::normals");
 
         if (mNormalVertexInterpolator)
         {
@@ -726,7 +726,7 @@ void PolygonRenderModel::updatePositions()
         }
 
 
-        STOP_TIMING_MODELLING;
+//        STOP_TIMING_MODELLING;
 
 //        if (positionsLock->size() != positions.size() ||
 //            normalsLock->size() != positions.size() )
