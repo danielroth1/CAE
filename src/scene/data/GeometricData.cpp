@@ -34,7 +34,7 @@ void GeometricData::update(
     if (notifyListeners)
     {
         auto listeners = mListeners.lock();
-        for (std::shared_ptr<GeometricDataListener> listener : *listeners)
+        for (const std::shared_ptr<GeometricDataListener>& listener : *listeners)
             listener->notifyGeometricDataChanged();
     }
 }
