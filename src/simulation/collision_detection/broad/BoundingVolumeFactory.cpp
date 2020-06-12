@@ -127,6 +127,7 @@ std::shared_ptr<BVAABB> BoundingVolumeFactory::createBVAABB(
 {
     std::shared_ptr<BVAABB> bv = std::make_shared<BVAABB>();
     bv->update(co, 0);
+    bv->updatePosition();
 
     return bv;
 }
@@ -138,5 +139,7 @@ std::shared_ptr<BVAABB> BoundingVolumeFactory::createBVAABB(
 {
     std::shared_ptr<BVAABB> aabb = std::make_shared<BVAABB>();
     aabb->update(bv1, bv2);
+    aabb->updatePosition();
+
     return aabb;
 }

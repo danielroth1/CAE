@@ -149,6 +149,10 @@ bool BoundingVolumeHierarchy::collidesIterative(
         int runId,
         const std::unordered_set<CollisionTuple, boost::hash<CollisionTuple>>& filterCollisions)
 {
+    // The left node is always part of this hierarchy and the right node
+    // is always part of the given hierarchy.
+    // This is ensured by the "ordered" parameter.
+
     mCollider->prepare(mPolygon, hierarchy->getPolygon(),
                        mSimulationObject, hierarchy->getSimulationObject(),
                        mInterpolator.get(), hierarchy->getInterpolator(), runId);

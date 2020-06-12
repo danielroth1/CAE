@@ -92,6 +92,11 @@ public:
 
     }
 
+    virtual void updatePosition()
+    {
+        mBB.mid() = 0.5 * (mBB.max() + mBB.min());
+    }
+
     virtual Type getType() const final
     {
         return BoundingVolume::Type::AABB;

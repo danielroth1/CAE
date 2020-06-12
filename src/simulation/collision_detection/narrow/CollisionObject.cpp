@@ -2,7 +2,7 @@
 
 CollisionObject::CollisionObject()
 {
-
+    mRunId = 0;
 }
 
 CollisionObject::~CollisionObject()
