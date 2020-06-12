@@ -297,8 +297,8 @@ void TriangleCollider::prepare(
     if (runId != mRunId)
     {
         // prints #of collisions / #of positive AABB checks
-        std::cout << "fails = " << edgeFails << " / " << eeFeaturePairs
-                  << ", " << vertexFails << " / " << fvFeaturePairs << "\n";
+//        std::cout << "fails = " << edgeFails << " / " << eeFeaturePairs
+//                  << ", " << vertexFails << " / " << fvFeaturePairs << "\n";
         edgeFails = 0;
         vertexFails = 0;
         eeFeaturePairs = 0;
@@ -405,7 +405,7 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
                 {
                     const std::pair<TopologyVertex*, TopologyFace*>& pair = mFeaturePairsVF[i];
                     Collision c;
-                    bool collides = collide(*pair.first, *pair.second, true, c);
+                    bool collides = collide(*pair.first, *pair.second, false, c);
                     if (collides)
                     {
                         threadCollisions.push_back(c);
@@ -416,7 +416,7 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
                     size_t index = i - mFeaturePairsVF.size();
                     const std::pair<TopologyFace*, TopologyVertex*>& pair = mFeaturePairsFV[index];
                     Collision c;
-                    bool collides = collide(*pair.second, *pair.first, false, c);
+                    bool collides = collide(*pair.second, *pair.first, true, c);
                     if (collides)
                     {
                         threadCollisions.push_back(c);
@@ -475,6 +475,9 @@ bool TriangleCollider::collide(
         bool revertedFeaturePair,
         Collision& collision)
 {
+    // so1 / poly1 / interpolator1 contain v
+    // so2 / poly2 / interpolator2 contain f
+
     // first object (so1, poly1, interpolator1) -> vertex
     // second object (so2, poly2, interpolator2) -> face
 
@@ -489,7 +492,7 @@ bool TriangleCollider::collide(
 
     Eigen::Vector inter; // projected point
     Eigen::Vector bary; // baryzentric coordinates
-    bool isInside;
+    bool projectsOnTriangle;
 
     Eigen::Vector& p1 = poly2->getPosition(f.getVertexIds()[0]);
     Eigen::Vector& p2 = poly2->getPosition(f.getVertexIds()[1]);
@@ -498,17 +501,17 @@ bool TriangleCollider::collide(
     bool ok = MathUtils::projectPointOnTriangle(
                 p1, p2, p3,
                 pos,
-                inter, bary, isInside);
+                inter, bary, projectsOnTriangle);
 
     // Ignore vertex-face collisions that don't project on the triangle.
     // There are situations where needed collisions are not found but most
     // of the times redundant collisions that are already found in the
     // edge-edge case are avoided.
-    if (ok && isInside && (pos - inter).squaredNorm() < mMarginSquared)
+    if (ok /*&& projectsInTriangle */&& (pos - inter).squaredNorm() < mMarginSquared)
     {
         // Determin collsion normal -> triangle normal...
         Eigen::Vector dir;
-        if (isInside)
+        if (projectsOnTriangle)
         {
             dir = poly2->getAccessor2D()->getFaceNormals()[f.getID()];
         }
@@ -519,6 +522,17 @@ bool TriangleCollider::collide(
 //                {
 //                    dir = -dir;
 //                }
+        }
+
+        bool isInside =
+                poly1->isInside(v, inter) &&
+                poly2->isInside(f, pos);
+        // We don't want to invert face normals because they always point out
+        // of the object (thats why the !projectsOnTriangle is used).
+        if (mInvertNormalsIfNecessary)
+        {
+            if (isInside && !projectsOnTriangle)
+                dir = -dir;
         }
 
         ID v1Index = 0;
@@ -544,6 +558,9 @@ bool TriangleCollider::collide(
 //            v1Index = t3->getOuterVertexIds()[f.getVertexIds()[index]];
         }
 
+        // Collisions store elements in the order in which they are checked
+        // in the collision detection. The first polygon has always a lower
+        // global id than the second one.
         if (!revertedFeaturePair)
         {
             new (&collision) Collision(&v, &f, interpolator1, interpolator2,
@@ -552,7 +569,7 @@ bool TriangleCollider::collide(
                                        dir, 0.0,
                                        v1Index,
                                        v2Index,
-                                       false);
+                                       isInside);
 
             ID elementId;
             fillBarycentricCoordinates(poly1, v, interpolator1, elementId, collision.getBarycentricCoordiantesA());
@@ -570,7 +587,7 @@ bool TriangleCollider::collide(
                                        -dir, 0.0,
                                        v2Index,
                                        v1Index,
-                                       false);
+                                       isInside);
 
             ID elementId;
             fillBarycentricCoordinates(poly1, v, interpolator1, elementId, collision.getBarycentricCoordiantesB());
@@ -613,23 +630,23 @@ bool TriangleCollider::collide(
     Eigen::Vector3d inter1; // projected point 1
     Eigen::Vector3d inter2; // projected point 2
     Eigen::Vector2d bary; // baryzentric coordinates
-    bool isInside;
+    bool projectsOnEdges;
 
     bool ok = MathUtils::projectEdgeOnEdge(
-                x11, x12, x21, x22, inter1, inter2, bary, isInside);
+                x11, x12, x21, x22, inter1, inter2, bary, projectsOnEdges);
 
     // Ignore points that don't project on both edges. These contacts are
     // usually already covered by the a vertex-face collision. In some
     // situations they currently are not, though.
-    if (ok && isInside && (inter1 - inter2).squaredNorm() < mMarginSquared)
+    if (ok && projectsOnEdges && (inter1 - inter2).squaredNorm() < mMarginSquared)
     {
         Eigen::Vector dir = (inter1 - inter2).normalized();
 
+        bool isInside =
+                poly1->isInside(e1, inter2) &&
+                poly2->isInside(e2, inter1);
         if (mInvertNormalsIfNecessary)
         {
-            isInside =
-                    poly1->isInside(e1, inter2) ||
-                    poly2->isInside(e2, inter1);
             if (isInside)
                 dir = -dir;
         }
