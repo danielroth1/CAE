@@ -11,7 +11,7 @@ GeometryInfoUIControl::GeometryInfoUIControl(SelectionControl* sc)
 
 void GeometryInfoUIControl::init(QWidget* widget)
 {
-    mForm = new GeometryInfoUIForm(widget);
+    mForm = new GeometryInfoUIForm(mSc, widget);
     mSc->addListener(this);
 }
 

@@ -82,6 +82,14 @@ public:
 
         void selectSceneNodes(const std::vector<SGNode*>& nodes);
 
+        // Adds the given scene nodes to the scene node selection.
+        // Ignores the chosen selection type.
+        void setSceneNodeSelection(const std::vector<SGNode*>& nodes);
+
+        // Adds the given vertices to the vertex selection.
+        // Ignores the chosen selection type.
+        void setVertexSelection(VertexCollection& vc);
+
     //*********************************************
 
     // Getters
@@ -106,8 +114,20 @@ public:
 private:
 
     // General Methods
+        // Updates
+        // If mSelectionType == SELECT_SCENE_NODES: mSelectionSceneData
+        // If mSelectionType == SELECT_VERTICES: mSelectionVertices
+        // Notifies listeners.
         void updateSelection(
                 const std::set<std::shared_ptr<SceneData>>& sceneDatas,
+                const VertexCollection& vc);
+
+        // Updates the selection independent of the chosen selectionType.
+        void updateSelection(
+                const std::set<std::shared_ptr<SceneData>>& sceneDatas);
+
+        // Updates the selection independent of the chosen selectionType.
+        void updateSelection(
                 const VertexCollection& vc);
 
         // Fills either sceneDatas if mSelectionType == SELECT_SCENE_NODES or

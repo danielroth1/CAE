@@ -182,7 +182,6 @@ void SelectionControl::selectSceneNode(SGNode* node)
     traverser.traverse(visitor);
 
     updateSelection(visitor.sceneDatas, visitor.vc);
-
     updateModels();
 }
 
@@ -197,6 +196,26 @@ void SelectionControl::selectSceneNodes(const std::vector<SGNode*>& nodes)
             nodesSet.insert(static_cast<SGChildrenNode*>(node)->getData());
     }
     updateSelection(nodesSet, VertexCollection());
+    updateModels();
+}
+
+void SelectionControl::setSceneNodeSelection(const std::vector<SGNode*>& nodes)
+{
+    std::set<std::shared_ptr<SceneData>> nodesSet;
+    for (SGNode* node : nodes)
+    {
+        if (node->isLeaf())
+            nodesSet.insert(static_cast<SGLeafNode*>(node)->getData());
+        else
+            nodesSet.insert(static_cast<SGChildrenNode*>(node)->getData());
+    }
+    updateSelection(nodesSet);
+    updateModels();
+}
+
+void SelectionControl::setVertexSelection(VertexCollection& vc)
+{
+    updateSelection(vc);
     updateModels();
 }
 
@@ -281,6 +300,11 @@ void SelectionControl::finalizeSelection(ViewFrustum& viewFrustum)
     VertexCollection vc;
 
     // update selected vertices
+    // Iterate over the whole scene graph and
+    // -> If SelectionType == SELECT_VERTICES: finds out which vertices are
+    //    within the given viewFrustum. Stores them in the VertexCollection.
+    // -> If SelectionType == SELECT_SCENE_NODES: finds out which scene nodes
+    //    are within the given viewFrustum. Stores them in the sceneDatas.
     SGTraverser traverser = mAc->getSGControl()->createSceneGraphTraverser();
     class SelectionVisitor : public SGNodeVisitorImpl
     {
@@ -360,36 +384,34 @@ void SelectionControl::updateSelection(
     switch (mSelectionType)
     {
     case SELECT_SCENE_NODES:
-        mSelectionSceneData->updateSelection(sceneDatas);
+        updateSelection(sceneDatas);
         break;
     case SELECT_VERTICES:
-        mSelectionVertices->updateSelectedVertices(vc);
+        updateSelection(vc);
         break;
     case UNDEFINED:
         break;
     }
+}
 
-    switch(mSelectionType)
+void SelectionControl::updateSelection(const std::set<std::shared_ptr<SceneData> >& sceneDatas)
+{
+    mSelectionSceneData->updateSelection(sceneDatas);
+
+    for (auto it : mSelectionListeners)
     {
-    case SELECT_SCENE_NODES:
-    {
-        for (auto it : mSelectionListeners)
-        {
-            it->onSelectedSceneNodesChanged(mSelectionSceneData->getSceneData());
-        }
-        break;
+        it->onSelectedSceneNodesChanged(mSelectionSceneData->getSceneData());
     }
-    case SELECT_VERTICES:
+}
+
+void SelectionControl::updateSelection(const VertexCollection& vc)
+{
+    mSelectionVertices->updateSelectedVertices(vc);
+
+    for (auto it : mSelectionListeners)
     {
-        for (auto it : mSelectionListeners)
-        {
-            it->onSelectedVerticesChanged(
-                        mSelectionVertices->getDataVectorsMap());
-        }
-        break;
-    }
-    case UNDEFINED:
-        break;
+        it->onSelectedVerticesChanged(
+                    mSelectionVertices->getDataVectorsMap());
     }
 }
 
