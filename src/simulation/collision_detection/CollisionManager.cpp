@@ -337,13 +337,16 @@ bool CollisionManager::collideAll()
         }
     }
 
-    mNumContacts = mSimulationCollisions.size();
-    mSimulationCollisions.resize(mNumContacts + mCollider->getCollisions().size());
-    for (size_t i = mNumContacts; i < mNumContacts + mCollider->getCollisions().size(); ++i)
+    size_t numContactsBefore = mSimulationCollisions.size();
+    mSimulationCollisions.resize(numContactsBefore + mCollider->getCollisions().size());
+    for (size_t i = numContactsBefore; i < numContactsBefore + mCollider->getCollisions().size(); ++i)
     {
-        Collision& c = mCollider->getCollisions()[i - mNumContacts];
+        Collision& c = mCollider->getCollisions()[i - numContactsBefore];
         new (&mSimulationCollisions[i]) SimulationCollision(c);
     }
+//    filterCollisions(numContactsBefore, 1);
+
+    mNumContacts = mSimulationCollisions.size();
 
     for (CollisionManagerListener* listener : mListeners)
         listener->notifyCollideAllCalled();
@@ -465,6 +468,7 @@ void CollisionManager::revalidateCollisions()
         }
     }
     mSimulationCollisions = validCollisions;
+//    filterCollisions(0, 1);
 
     // fill already seen collisions so they are filtered out in the upcoming collision
     // detections.
@@ -629,4 +633,87 @@ std::map<unsigned int, double> CollisionManager::calculateMinimumDistances(
         }
     }
     return distancePairs;
+}
+
+void CollisionManager::filterCollisions(size_t offset, size_t numAllowed)
+{
+    size_t sizeBefore = mSimulationCollisions.size();
+    size_t numTarget = mSimulationCollisions.size() - offset;
+
+    std::vector<bool> filteredOut;
+    filteredOut.resize(numTarget, false);
+
+    for (size_t i = 0; i < numTarget; ++i)
+    {
+        SimulationCollision& sc = mSimulationCollisions[offset + i];
+
+        if (sc.getCollision().isInside())
+        {
+            filteredOut[i] = true;
+            sc.mTempValue = i;
+        }
+        else
+        {
+            filteredOut[i] = false;
+        }
+    }
+
+
+    // fill in buckets
+    typedef std::pair<SimulationObject*, SimulationObject*> SOPair;
+    std::map<SOPair, std::vector<SimulationCollision*>> soMap;
+    for (size_t i = 0; i < numTarget; ++i)
+    {
+        SimulationCollision& sc = mSimulationCollisions[offset + i];
+        Collision& c = sc.getCollision();
+        if (c.isInside())
+        {
+            SimulationObject* so1 = c.getSimulationObjectA();
+            SimulationObject* so2 = c.getSimulationObjectB();
+
+            SOPair pair = so1 < so2 ? SOPair(so1, so2) : SOPair(so2, so1);
+            auto it = soMap.find(pair);
+            if (it == soMap.end())
+            {
+                soMap[pair] = std::vector<SimulationCollision*>();
+
+            }
+            soMap[pair].push_back(&sc);
+        }
+    }
+
+    for (auto& it : soMap)
+    {
+        std::sort(it.second.begin(), it.second.end(),
+                  [](const SimulationCollision* sc1,
+                  const SimulationCollision* sc2)
+        {
+            return sc1->getCollision().getDepth() < sc2->getCollision().getDepth();
+        });
+        for (size_t i = 0; i < numAllowed && i < it.second.size(); ++i)
+        {
+            filteredOut[(it.second[i])->mTempValue] = false;
+        }
+    }
+
+    // assemble ignoring all the filtered out collisions
+    size_t added = 0;
+    for (size_t i = 0; i < numTarget; ++i)
+    {
+        if (!filteredOut[i])
+        {
+            mSimulationCollisions[offset + added] = mSimulationCollisions[offset + i];
+            ++added;
+        }
+    }
+
+    // Reduces the number of collisions that are ignores (offset) + the ones that
+    // remain from the filtering out process (added).
+    mSimulationCollisions.resize(offset + added);
+
+    size_t sizeAfter = mSimulationCollisions.size();
+    if (sizeBefore != sizeAfter)
+    {
+        std::cout << "Filtered out: " << sizeBefore - sizeAfter << " Collisions.\n";
+    }
 }

@@ -127,6 +127,26 @@ private:
             const std::vector<TopologyFace>& faces,
             const Vectors& positions);
 
+    // Disclaimer: This method doesn't really work as expected but the idea
+    // is probably right. Simply too many important inside collisions are removed.
+    // Maybe there will be sth. in the future that improves the filtering out process.
+    //
+    // This method removes all collisions that are inside an object
+    // (isInside == true) except for the closest numAllowed ones.
+    // It removes collisions from mSimulationCollisions[offset ... mSimulationCollisions.size()].
+    // The order of collisions remains the same.
+    //
+    // The idea is that in general isInside contacts can bring more harm than
+    // good since they can easily contradict each other. Preferably, we want
+    // constraints that try to reduce the intersection volume and this could
+    // be a simple way to achieve this.
+    //
+    // \param offset - first number of collisions that are ignored. Filtering is
+    //      only applied to collisions with indices starting from offset.
+    // \param numAllowed - number of isInside collisions that are allowed (not
+    //      counting the first offset ignored ones.
+    void filterCollisions(size_t offset, size_t numAllowed = 1);
+
     Domain* mDomain;
 
     std::shared_ptr<Collider> mCollider;
