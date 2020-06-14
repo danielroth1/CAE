@@ -409,7 +409,8 @@ void Polygon2D::setTransform(const Affine3d& transform)
 {
     Polygon::setTransform(transform);
 
-    mVertexNormals.setTransform(Affine3d(transform.rotation()));
-    mFaceNormals.setTransform(Affine3d(transform.rotation()));
+    Affine3d linear(transform.linear());
+    mVertexNormals.setTransform(linear);
+    mFaceNormals.setTransform(linear);
 }
 

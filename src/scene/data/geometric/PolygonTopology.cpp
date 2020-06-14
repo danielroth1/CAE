@@ -338,7 +338,15 @@ void PolygonTopology::buildTopology(
 
 void PolygonTopology::setFaceOwnerships()
 {
-    // reset all bits before doing this?
+    // Reset all to zero.
+    for (TopologyFace& f : mFaces)
+    {
+        for (size_t i = 0; i < 6; ++i)
+        {
+            f.setVertexOwner(i, false);
+        }
+    }
+
     std::set<ID> vertexIds;
     std::set<ID> edgeIds;
     for (TopologyFace& f : mFaces)

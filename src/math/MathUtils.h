@@ -87,6 +87,16 @@ public:
             Eigen::Vector2d& bary,
             bool& isInside);
 
+    // Projects the given point p on the tet (p0, p1, p2, p3)
+    // \bary - the barycentric coordinates of p w.r.t. the tet.
+    static bool projectPointOnTetrahedron(
+            const Eigen::Vector3d& p0,
+            const Eigen::Vector3d& p1,
+            const Eigen::Vector3d& p2,
+            const Eigen::Vector3d& p3,
+            const Eigen::Vector3d& p,
+            Eigen::Vector4d& bary);
+
     // Returns the signed thickness of the tetrahedron (p0, p1, p2, p3).
     // The value is positive if its on the side where when looking at the
     // triangle (p0, p1, p2), the points are ordered clockwise

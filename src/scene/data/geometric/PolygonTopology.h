@@ -103,6 +103,10 @@ public:
 
     std::string toString() const;
 
+    // Implements a greedy algorithm. Iterate each face and add assign all
+    // features as owner that are not already assigned.
+    void setFaceOwnerships();
+
 protected:
 
     // Intializes this topology from the given faces. Calling this method
@@ -172,10 +176,6 @@ private:
                 std::vector<TopologyVertex>& verticesOut,
                 std::vector<TopologyEdge>& edgesOut,
                 std::vector<TopologyFace>& facesOut) const;
-
-    // Implements a greedy algorithm. Iterate each face and add assign all
-    // features as owner that are not already assigned.
-    void setFaceOwnerships();
 
     TopologyEdge createEdge(ID f1, ID f2);
 

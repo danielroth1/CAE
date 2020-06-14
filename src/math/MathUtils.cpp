@@ -200,3 +200,28 @@ bool MathUtils::projectEdgeOnEdge(
 
     return true;
 }
+
+bool MathUtils::projectPointOnTetrahedron(
+        const Eigen::Vector3d& p0,
+        const Eigen::Vector3d& p1,
+        const Eigen::Vector3d& p2,
+        const Eigen::Vector3d& p3,
+        const Eigen::Vector3d& p,
+        Eigen::Vector4d& bary)
+{
+    Eigen::Vector3d r1 = p1 - p0;
+    Eigen::Vector3d r2 = p2 - p0;
+    Eigen::Vector3d r3 = p3 - p0;
+
+    Eigen::Vector3d r4 = p2 - p1;
+    Eigen::Vector3d r5 = p1 - p3;
+
+    double J = r1.cross(r2).dot(r3);
+
+    Eigen::Vector3d center = 0.25 * (p0 + p1 + p2 + p3);
+
+    bary[0] = 0.25 + (p - center).dot(r4.cross(r5) / J);
+    bary[1] = 0.25 + (p - center).dot(r2.cross(r3) / J);
+    bary[2] = 0.25 + (p - center).dot(r3.cross(r1) / J);
+    bary[3] = 0.25 + (p - center).dot(r1.cross(r2) / J);
+}

@@ -671,8 +671,9 @@ void Polygon3D::setTransform(const Affine3d& transform)
 {
     Polygon::setTransform(transform);
 
-    mOuterVertexNormals.setTransform(Affine3d(transform.rotation()));
-    mOuterFaceNormals.setTransform(Affine3d(transform.rotation()));
+    Affine3d linear(transform.linear());
+    mOuterVertexNormals.setTransform(linear);
+    mOuterFaceNormals.setTransform(linear);
 }
 
 void Polygon3D::fixOuterTriangleIndexOrder(bool printInfo)
@@ -835,6 +836,9 @@ void Polygon3D::fixOuterTriangleIndexOrder(bool printInfo)
             revertFace(outerFace2D.getVertexIds());
             revertFace(topology->getOuterTopology().getFacesIndices()[outerFace2D.getID()]);
 
+            topology->setFaceOwnerships();
+            topology->getOuterTopology().setFaceOwnerships();
+
             ++fixedFacesCounter;
         }
     }
@@ -864,6 +868,122 @@ void Polygon3D::synchronizeTriangleIndexOrder()
             face3D.getVertexIds()[i] = index3d;
             topology->getFacesIndices()[face3DId][i] = index3d;
             topology->getOuterFacesIndices3D()[outerFace2D.getID()][i] = index3d;
+        }
+    }
+}
+
+std::tuple<size_t, double, Vector4d> Polygon3D::findTetrahedron(
+        const Vector3d& p)
+{
+    // Find all cells that contain the vertex (can be multiple if the vertex
+    // lies between two cells within the margin wt).
+
+    std::tuple<size_t, double, Eigen::Vector4d> tuple;
+    Eigen::Vector4d& bary = std::get<2>(tuple);
+
+    for (size_t j = 0; j < getTopology3D().getCells().size(); ++j)
+    {
+        Cell& c = getTopology3D().getCellIds()[j];
+
+        MathUtils::projectPointOnTetrahedron(
+                    mPositionData.getPosition(c[0]),
+                mPositionData.getPosition(c[1]),
+                mPositionData.getPosition(c[2]),
+                mPositionData.getPosition(c[3]),
+                p,
+                bary);
+
+        if (0 < bary[0] && bary[0] < 1 &&
+            0 < bary[1] && bary[1] < 1 &&
+            0 < bary[2] && bary[2] < 1 &&
+            0 < bary[3] && bary[3] < 1)
+        {
+            std::get<0>(tuple) = j;
+            std::get<1>(tuple) = 0.0;
+            return tuple;
+        }
+    }
+
+    // The point lies outside. Search for the closests outside triangle.
+    // Then calculate the baryzentric coordinates for the corresponding
+    // tetrahedron and use those.
+    // Visual artifacts are limitted if the point is close enough to
+    // the tetrahedron.
+
+    // obtain index of closest triangle:
+    // triangle_index, distance
+    std::vector<std::tuple<size_t, double>> tuples;
+
+    std::vector<TopologyFace>& outerFaces =
+            getTopology3D().getOuterTopology().getFaces();
+    for (size_t j = 0; j < outerFaces.size(); ++j)
+    {
+        // If this outer triangle is not bound to a cell, ignore it.
+        Polygon3DTopology& pt = getTopology3D();
+        ID f3D = pt.to3DFaceIndex(j);
+        TopologyFace& f3d = pt.getFace(f3D);
+        if (f3d.getCellIds().empty())
+            continue;
+
+        std::array<Vector, 3> v; // vertices
+        v[0] = getPosition(f3d.getVertexIds()[0]);
+        v[1] = getPosition(f3d.getVertexIds()[1]);
+        v[2] = getPosition(f3d.getVertexIds()[2]);
+
+        Eigen::Vector3d inter;
+        bool isInside;
+        Eigen::Vector3d bary3;
+        MathUtils::projectPointOnTriangle(v[0], v[1], v[2], p, inter, bary3, isInside);
+
+        double distance = (inter - p).norm();
+        tuples.push_back(std::make_tuple(j, distance));
+    }
+
+    std::sort(tuples.begin(), tuples.end(),
+              [](const std::tuple<size_t, double>& t1,
+              const std::tuple<size_t, double>& t2)
+    {
+        return std::get<1>(t1) < std::get<1>(t2);
+    });
+
+    if (!tuples.empty())
+    {
+        size_t closestTriangleIndex = std::get<0>(tuples[0]);
+        double distance = std::get<1>(tuples[0]);
+
+        // We have a face of the outer face mesh. First, we need to
+        // convert it to the one of the corresponding inner mesh.
+        Polygon3DTopology& pt = getTopology3D();
+        ID f3D = pt.to3DFaceIndex(closestTriangleIndex);
+        TopologyFace& f = pt.getFace(f3D);
+
+        if (f.getCellIds().empty())
+        {
+            std::cerr << "Error: No adjacent cell found for outer face.\n";
+        }
+        else
+        {
+            if (f.getCellIds().size() > 1)
+            {
+                std::cout << "Warning: Outer face has multiple adjacent "
+                             "cells. One cell is chosen arbitrarily.\n";
+            }
+
+            ID cellId = f.getCellIds()[0];
+            Cell& c = getTopology3D().getCellIds()[cellId];
+
+            // Sets std::get<2>(tuple) [the barycentric coordinates]
+            MathUtils::projectPointOnTetrahedron(
+                        mPositionData.getPosition(c[0]),
+                    mPositionData.getPosition(c[1]),
+                    mPositionData.getPosition(c[2]),
+                    mPositionData.getPosition(c[3]),
+                    p,
+                    bary);
+
+            std::get<0>(tuple) = closestTriangleIndex;
+            std::get<1>(tuple) = distance;
+            return tuple;
         }
     }
 }

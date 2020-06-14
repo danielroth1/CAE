@@ -174,6 +174,15 @@ public:
     // and their global counter part is the same.
     void synchronizeTriangleIndexOrder();
 
+    // Finds the tetrahedron that either contains p or if there is none, is
+    // the closest to p.
+    // \return tuple
+    //      - tetId
+    //      - distance of p to tet (is 0 if p is insinde of the tet)
+    //      - Barycentric coordinates of p w.r.t. the tet
+    std::tuple<size_t, double, Eigen::Vector4d> findTetrahedron(
+            const Eigen::Vector3d& p);
+
 protected:
 
     bool isInside(ID faceId,
