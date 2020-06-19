@@ -572,11 +572,14 @@ bool TriangleCollider::collide(
                                        isInside);
 
             ID elementId;
-            fillBarycentricCoordinates(poly1, v, interpolator1, elementId, collision.getBarycentricCoordiantesA());
+            bool ok = fillBarycentricCoordinates(poly1, v, interpolator1, elementId, collision.getBarycentricCoordiantesA());
             collision.setElementIdA(elementId);
 
-            fillBarycentricCoordinates(poly2, f, bary, interpolator2, elementId, collision.getBarycentricCoordiantesB());
+            ok = ok && fillBarycentricCoordinates(poly2, f, bary, interpolator2, elementId, collision.getBarycentricCoordiantesB());
             collision.setElementIdB(elementId);
+
+//            if (!ok)
+//                return false;
         }
         else
         {
@@ -590,11 +593,14 @@ bool TriangleCollider::collide(
                                        isInside);
 
             ID elementId;
-            fillBarycentricCoordinates(poly1, v, interpolator1, elementId, collision.getBarycentricCoordiantesB());
+            bool ok = fillBarycentricCoordinates(poly1, v, interpolator1, elementId, collision.getBarycentricCoordiantesB());
             collision.setElementIdB(elementId);
 
-            fillBarycentricCoordinates(poly2, f, bary, interpolator2, elementId, collision.getBarycentricCoordiantesA());
+            ok = ok && fillBarycentricCoordinates(poly2, f, bary, interpolator2, elementId, collision.getBarycentricCoordiantesA());
             collision.setElementIdA(elementId);
+
+//            if (!ok)
+//                return false;
         }
 
         return true;
@@ -683,11 +689,14 @@ bool TriangleCollider::collide(
                     inter1, inter2, dir, 0.0, v1Index, v2Index, isInside);
 
         ID elementId;
-        fillBarycentricCoordinates(poly1, e1, bary(0), interpolator1, elementId, collision.getBarycentricCoordiantesA());
+        bool ok = fillBarycentricCoordinates(poly1, e1, bary(0), interpolator1, elementId, collision.getBarycentricCoordiantesA());
         collision.setElementIdA(elementId);
 
-        fillBarycentricCoordinates(poly2, e2, bary(1), interpolator2, elementId, collision.getBarycentricCoordiantesB());
+        ok = ok && fillBarycentricCoordinates(poly2, e2, bary(1), interpolator2, elementId, collision.getBarycentricCoordiantesB());
         collision.setElementIdB(elementId);
+
+//        if (!ok)
+//            return false;
 
         return true;
     }
@@ -858,7 +867,11 @@ bool TriangleCollider::fillBarycentricCoordinates(
         if (interpolator)
         {
             ID cellId;
-            baryOut = interpolator->calculateBary3(f.getID(), bary, cellId);
+            bool ok;
+            baryOut = interpolator->calculateBary3(f.getID(), bary, cellId, ok);
+//            if (!ok)
+//                return false;
+
             elementIdOut = cellId;
             return true;
         }
@@ -942,13 +955,18 @@ bool TriangleCollider::fillBarycentricCoordinates(
                     }
                 }
             }
-            baryOut = interpolator->calculateBary3(f.getID(), bary2, cellId);
+
+            bool ok;
+            baryOut = interpolator->calculateBary3(f.getID(), bary2, cellId, ok);
+//            if (!ok)
+//                return false;
+
             elementIdOut = cellId;
             return true;
         }
     }
 
-    return false;
+    return true;
 }
 
 bool TriangleCollider::fillBarycentricCoordinates(
@@ -1004,10 +1022,15 @@ bool TriangleCollider::fillBarycentricCoordinates(
                     break;
                 }
             }
-            baryOut = interpolator->calculateBary3(f.getID(), bary2, cellId);
+
+            bool ok;
+            baryOut = interpolator->calculateBary3(f.getID(), bary2, cellId, ok);
+//            if (!ok)
+//                return false;
+
             elementIdOut = cellId;
             return true;
         }
     }
-    return false;
+    return true;
 }

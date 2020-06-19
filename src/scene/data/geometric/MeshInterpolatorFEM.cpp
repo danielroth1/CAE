@@ -24,9 +24,17 @@ MeshInterpolatorFEM::~MeshInterpolatorFEM()
 
 Vector4d MeshInterpolatorFEM::calculateBary3(ID targetTriangleId,
                                              const Vector3d& bary2,
-                                             ID& cellIdOut)
+                                             ID& cellIdOut,
+                                             bool& ok)
 {
     TriangleInterpolation& ti = mTriangleInterpolations[targetTriangleId];
+
+    ok = true;
+    if (ti.elementFunctions.size() > 1)
+    {
+        ok = false;
+    }
+
     Eigen::Vector4d bary;
     for (size_t i = 0; i < ti.elementFunctions.size(); ++i)
     {
@@ -355,7 +363,7 @@ Vector3d MeshInterpolatorFEM::calculateBaryzentricCoordinates(
     v[1] = source->getPosition(f.getVertexIds()[1]);
     v[2] = source->getPosition(f.getVertexIds()[2]);
 
-    Eigen::Vector3d v13 = v[9] - v[2];
+    Eigen::Vector3d v13 = v[0] - v[2];
     Eigen::Vector3d v23 = v[1] - v[2];
     double temp = v13.dot(v23);
 

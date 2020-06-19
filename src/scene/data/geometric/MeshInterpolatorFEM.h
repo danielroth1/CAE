@@ -31,7 +31,8 @@ public:
     // the cell of the source mesh which contains the point.
     Eigen::Vector4d calculateBary3(ID targetTriangleId,
                                    const Eigen::Vector3d& bary2,
-                                   ID& cellIdOut);
+                                   ID& cellIdOut,
+                                   bool& ok);
 
     // MeshInterpolator interface
 public:
