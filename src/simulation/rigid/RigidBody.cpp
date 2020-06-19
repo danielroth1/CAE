@@ -243,9 +243,8 @@ void RigidBody::accept(SimulationObjectVisitor& visitor)
 void RigidBody::updateGeometricData(bool notifyListeners)
 {
     Eigen::Affine3d transform;
-    transform.setIdentity();
-    transform.translate(mX);
-    transform.rotate(mQ);
+    transform.linear() = mQ.toRotationMatrix();
+    transform.translation() = mX;
     mPolygon->setTransform(transform);
 //    mPolygon->updatePositions();
     mPolygon->update(true, false, notifyListeners);
