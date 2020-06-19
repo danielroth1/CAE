@@ -42,7 +42,7 @@ Polygon3D::Polygon3D(
     fixOuterTriangleIndexOrder();
     fixTopology();
 
-//    outputToFile("/home/daniel/objs/work/meshes/interior_panelling");
+    update(true, true, true);
 }
 
 Polygon3D::Polygon3D(
@@ -73,6 +73,8 @@ Polygon3D::Polygon3D(
 
     fixOuterTriangleIndexOrder();
     fixTopology();
+
+    update(true, true, true);
 }
 
 Polygon3D::Polygon3D(
@@ -94,8 +96,8 @@ Polygon3D::Polygon3D(
                     mPositionData.getPositions(),
                     topology->getOuterFacesIndices3D(),
                     faceNormals));
-
     mData = dataBS;
+
     Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
     mOuterVertexNormals.initializeFromBodySpace(&dataBS->getOuterVertexNormalsBS(),
                                                 Eigen::Affine3d(transform.linear()));
@@ -104,6 +106,8 @@ Polygon3D::Polygon3D(
 
     fixOuterTriangleIndexOrder();
     fixTopology();
+
+    update(true, true, true);
 }
 
 Polygon3D::Polygon3D(
@@ -127,6 +131,7 @@ Polygon3D::Polygon3D(
                     faceNormals));
 
     mData = dataBS;
+
     Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
     mOuterVertexNormals.initializeFromBodySpace(&dataBS->getOuterVertexNormalsBS(),
                                                 Eigen::Affine3d(transform.linear()));
@@ -135,6 +140,8 @@ Polygon3D::Polygon3D(
 
     fixOuterTriangleIndexOrder();
     fixTopology();
+
+    update(true, true, true);
 }
 
 Polygon3D::~Polygon3D()
