@@ -234,7 +234,7 @@ void SimulationUIControl::init(QWidget* parent)
                     nullptr,
                     MemberAccessorFactory::createDoubleComparator(),
                     mAc->getSimulationControl()->getDomain()),
-                0.0, 1e+5, 100.0, 3);
+                0.0, 1e+8, 100.0, 3);
 
     femWidget->addDouble(
                 "Poisson Ratio",
