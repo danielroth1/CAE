@@ -259,7 +259,7 @@ bool CollisionConstraint::solve(double maxConstraintError)
     // Note: This is not the best way of doing it. instead disable friction
     // between all contacts if there is at least one "isInside" contact.
 
-    bool appliedFriction = true;
+    bool appliedFriction = false;
 
     // bounce friction
     if (mApplyFriction)

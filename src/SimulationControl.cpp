@@ -54,7 +54,7 @@ SimulationControl::SimulationControl()
     mStepSize = 0.01;
     mNumFEMCorrectionIterations = 5;
     mMaxNumConstraintSolverIterations = 10;
-    mMaxConstraintError = 1e-6;
+    mMaxConstraintError = 1e-4;
     mPositionCorrectionFactor = 0.05;
     mContactMargin = 0.0015;
 
