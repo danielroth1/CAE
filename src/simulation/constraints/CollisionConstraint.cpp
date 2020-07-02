@@ -16,6 +16,11 @@
 //#define FRICTION_TWO_TANGENT_2
 //#define FRICTION_SINGLE_TANGENT
 
+CollisionConstraint::CollisionConstraint()
+{
+
+}
+
 CollisionConstraint::CollisionConstraint(
         const Collision& collision,
         double restitution,
@@ -24,6 +29,29 @@ CollisionConstraint::CollisionConstraint(
         double contactMargin,
         bool correctPositionError,
         bool applyWarmStarting)
+    : CollisionConstraint(
+          collision,
+          restitution,
+          positionCorrectionFactor,
+          collisionMargin,
+          contactMargin,
+          correctPositionError,
+          applyWarmStarting,
+          Eigen::Vector3d::Zero(),
+          Eigen::Vector2d::Zero())
+{
+}
+
+CollisionConstraint::CollisionConstraint(
+        const Collision& collision,
+        double restitution,
+        double positionCorrectionFactor,
+        double collisionMargin,
+        double contactMargin,
+        bool correctPositionError,
+        bool applyWarmStarting,
+        const Vector3d& warmStartingCollisionImpulses,
+        const Vector2d& warmStartingFrictionImpulses)
     : mCollision(collision)
     , mRestitution(restitution)
     , mPositionCorrectionFactor(positionCorrectionFactor)
@@ -40,12 +68,13 @@ CollisionConstraint::CollisionConstraint(
                 (collision.getSimulationObjectA()->getFrictionDynamic() *
                  collision.getSimulationObjectB()->getFrictionDynamic()));
 
-    mSumCollisionImpulses.setZero();
-    mFrSum.setZero();
+    mSumCollisionImpulses = warmStartingCollisionImpulses;
+    mFrSum = warmStartingFrictionImpulses;
     m_pf_total = 0;
     m_pf_actual = 0;
 
     mReuseCount = 0;
+
 }
 
 CollisionConstraint::~CollisionConstraint()
@@ -78,6 +107,11 @@ const Eigen::Vector& CollisionConstraint::getSumCollisionImpulses() const
     return mSumCollisionImpulses;
 }
 
+const Vector& CollisionConstraint::getSumCollisionImpulsesOld() const
+{
+    return mSumCollisionImpulsesOld;
+}
+
 void CollisionConstraint::setSumFrictionImpulses(const Vector2d& sumFrictionImpulses)
 {
 //    m_pf_total = sumFrictionImpulses.norm();
@@ -102,16 +136,16 @@ void CollisionConstraint::initialize(double stepSize)
 
     const Eigen::Vector& n = mCollision.getNormal();
 
-    u1 = ImpulseConstraintSolver::calculateSpeed(
+    Eigen::Vector3d u1 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectA(), mPoint1,
                 mCollision.getBarycentricCoordiantesA(), mCollision.getElementIdA());
-    u2 = ImpulseConstraintSolver::calculateSpeed(
+    Eigen::Vector3d u2 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectB(), mPoint2,
                 mCollision.getBarycentricCoordiantesB(), mCollision.getElementIdB());
 
-    uRel = u1 - u2;
+    Eigen::Vector3d uRel = u1 - u2;
 
-    if (mCorrectPositionError)
+    if (mCorrectPositionError /*&& !mCollision.isInside()*/)
     {
         double posError = (mCollision.getPointA() - mCollision.getPointB()).dot(n);
         posError = std::min(posError - mCollisionMargin + mContactMargin, 0.0);
@@ -144,8 +178,8 @@ void CollisionConstraint::initialize(double stepSize)
         mCFrictionDynamic > 1e-15))
     {
         uRel = u1 - u2;
-        uRelN = uRel.dot(mCollision.getNormal()) * mCollision.getNormal();
-        uRelT = uRel - uRelN;
+        Eigen::Vector3d uRelN = uRel.dot(mCollision.getNormal()) * mCollision.getNormal();
+        Eigen::Vector3d uRelT = uRel - uRelN;
 
         if (uRelT.norm() > 1e-8)
         {
@@ -212,18 +246,18 @@ bool CollisionConstraint::solve(double maxConstraintError)
 {
     const Eigen::Vector& n = mCollision.getNormal();
 
-    u1 = ImpulseConstraintSolver::calculateSpeed(
+    Eigen::Vector3d u1 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectA(), mPoint1,
                 mCollision.getBarycentricCoordiantesA(), mCollision.getElementIdA());
-    u2 = ImpulseConstraintSolver::calculateSpeed(
+    Eigen::Vector3d u2 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectB(), mPoint2,
                 mCollision.getBarycentricCoordiantesB(), mCollision.getElementIdB());
 
-    uRel = u1 - u2;
+    Eigen::Vector3d uRel = u1 - u2;
 
-    uRelN = uRel.dot(n) * n;
+    Eigen::Vector3d uRelN = uRel.dot(n) * n;
 
-    deltaUNormalRel = mTargetUNormalRel - uRelN;
+    Eigen::Vector3d deltaUNormalRel = mTargetUNormalRel - uRelN;
 
     bool appliedCollisionImpulse;
     if (deltaUNormalRel.squaredNorm() < maxConstraintError * maxConstraintError)
@@ -233,7 +267,7 @@ bool CollisionConstraint::solve(double maxConstraintError)
     else
     {
         appliedCollisionImpulse = true;
-        impulse = mImpulseFactor * deltaUNormalRel;
+        Eigen::Vector3d impulse = mImpulseFactor * deltaUNormalRel;
         if (mCollision.getNormal().dot(mSumCollisionImpulses + impulse) < 0)
         {
             impulse = -mSumCollisionImpulses;
@@ -266,15 +300,17 @@ bool CollisionConstraint::solve(double maxConstraintError)
     {
         if (appliedCollisionImpulse &&
                 !mCollision.isInside() &&
-                (mCFrictionStatic > 1e-15 ||
-                 mCFrictionDynamic > 1e-15))
+                mCFrictionDynamic > 1e-15)
         {
 #if defined(FRICTION_TWO_TANGENT_1)
             solveTwoTangentFrictionConstraint1();
 #elif defined(FRICTION_TWO_TANGENT_2)
             solveTwoTangentFrictionConstraint2();
 #elif defined(FRICTION_SINGLE_TANGENT)
-            solveSingleTangentFrictionConstraint();
+            if (mCFrictionStatic > 1e-15)
+            {
+                solveSingleTangentFrictionConstraint(impulse);
+            }
 #endif
         }
     }
@@ -298,14 +334,14 @@ void CollisionConstraint::solveTwoTangentFrictionConstraint1()
     const Eigen::Vector& n = mCollision.getNormal();
 
     // recalculate uRel after the collision impulse was applied
-    u1 = ImpulseConstraintSolver::calculateSpeed(
+    Eigen::Vector3d u1 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectA(), mPoint1,
                 mCollision.getBarycentricCoordiantesA(), mCollision.getElementIdA());
-    u2 = ImpulseConstraintSolver::calculateSpeed(
+    Eigen::Vector3d u2 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectB(), mPoint2,
                 mCollision.getBarycentricCoordiantesB(), mCollision.getElementIdB());
 
-    uRel = u1 - u2;
+    Eigen::Vector3d uRel = u1 - u2;
 
     Eigen::Vector2d uRelT;
     uRelT << uRel.dot(mFrT1),
@@ -345,14 +381,14 @@ void CollisionConstraint::solveTwoTangentFrictionConstraint2()
     const Eigen::Vector& n = mCollision.getNormal();
 
     // recalculate uRel after the collision impulse was applied
-    u1 = ImpulseConstraintSolver::calculateSpeed(
+    Eigen::Vector3d u1 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectA(), mPoint1,
                 mCollision.getBarycentricCoordiantesA(), mCollision.getElementIdA());
-    u2 = ImpulseConstraintSolver::calculateSpeed(
+    Eigen::Vector3d u2 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectB(), mPoint2,
                 mCollision.getBarycentricCoordiantesB(), mCollision.getElementIdB());
 
-    uRel = u1 - u2;
+    Eigen::Vector3d uRel = u1 - u2;
 
     Eigen::Vector2d uRelT;
     uRelT << uRel.dot(mFrT1),
@@ -383,26 +419,27 @@ void CollisionConstraint::solveTwoTangentFrictionConstraint2()
                 mCollision.getElementIdB());
 }
 
-void CollisionConstraint::solveSingleTangentFrictionConstraint()
+void CollisionConstraint::solveSingleTangentFrictionConstraint(
+        const Eigen::Vector3d& impulse)
 {
     const Eigen::Vector3d n = mCollision.getNormal();
 
     // recalculate uRel after the collision impulse was applied
-    u1 = ImpulseConstraintSolver::calculateSpeed(
+    Eigen::Vector3d u1 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectA(), mPoint1,
                 mCollision.getBarycentricCoordiantesA(), mCollision.getElementIdA());
-    u2 = ImpulseConstraintSolver::calculateSpeed(
+    Eigen::Vector3d u2 = ImpulseConstraintSolver::calculateSpeed(
                 mCollision.getSimulationObjectB(), mPoint2,
                 mCollision.getBarycentricCoordiantesB(), mCollision.getElementIdB());
 
-    uRel = u1 - u2;
+    Eigen::Vector3d uRel = u1 - u2;
 
 
 //        uRelT = uRel.dot(tangent) * tangent;
 //        uRelT = uRel.dot(mFrictionTangent) * mFrictionTangent;
 
-    uRelN = uRel.dot(n) * n;
-    uRelT = uRel - uRelN;
+    Eigen::Vector3d uRelN = uRel.dot(n) * n;
+    Eigen::Vector3d uRelT = uRel - uRelN;
     Eigen::Vector3d tangent = uRelT.normalized();
 
     mFrictionImpulseMass =

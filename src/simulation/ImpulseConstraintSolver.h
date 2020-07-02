@@ -55,7 +55,8 @@ public:
             bool positionCorrection);
 
     // Revalidates all stored collision constraints and checks which can be
-    // reused based on the given reused collisions.
+    // reused based on the given reused collisions. All valid collisions
+    // are stored by this class in mCollisionConstraints.
     void revalidateCollisionConstraints(
             const std::vector<SimulationCollision>& reusedCollisions,
             double stepSize,

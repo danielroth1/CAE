@@ -8,6 +8,7 @@
 #include <simulation/constraints/BallJoint.h>
 #include <simulation/constraints/CollisionConstraint.h>
 #include <scene/data/geometric/Polygon3DTopology.h>
+#include <scene/data/references/PolygonBaryRef.h>
 
 #include <times/timing.h>
 
@@ -83,12 +84,12 @@ void ImpulseConstraintSolver::revalidateCollisionConstraints(
     }
     else
     {
-        std::vector<CollisionConstraint> reusedConstraints;
-        reusedConstraints.reserve(reusedCollisions.size());
-
         size_t colIndex = 0;
-        for (const CollisionConstraint& cc : mCollisionConstraints)
+        size_t count = 0;
+        for (size_t i = 0; i < mCollisionConstraints.size(); ++i)
         {
+            const CollisionConstraint& cc = mCollisionConstraints[i];
+
             if (colIndex == reusedCollisions.size())
                 break;
 
@@ -99,39 +100,65 @@ void ImpulseConstraintSolver::revalidateCollisionConstraints(
                 // impulse can be quiet wrong if the objects was just falling
                 // down. Often time this just makes the warm starting react too
                 // slow, preventing objects comming to a rest, so it is not used.
-//                applyWarmStarting = applyWarmStarting && reuseCount > 1;
+//                applyWarmStarting = applyWarmStarting && reuseCount > 5;
 
-                reusedConstraints.push_back(
-                            CollisionConstraint(
+                // If friction tangents are different, the corresponding
+                // friction impulses from previous steps would point in
+                // wrong direction. In pracise this doesn't seem to make
+                // much of a difference, though.
+                bool applyFrictionWarmStarting = false;
+//                        reusedConstraints.back().getTangent1().isApprox(cc.getTangent1(), 1e-5) &&
+//                        reusedConstraints.back().getTangent2().isApprox(cc.getTangent2(), 1e-5);
+
+                if (applyWarmStarting)
+                {
+                    new (&mCollisionConstraints[count]) CollisionConstraint(
                                 reusedCollisions[colIndex].getCollision(),
                                 restitution,
                                 positionCorrectionFactor,
                                 collisionMargin,
                                 contactMargin,
                                 correctPositionError,
-                                applyWarmStarting));
-
-                reusedConstraints.back().setReuseCount(reuseCount);
-                if (applyWarmStarting)
-                {
-                    reusedConstraints.back().setSumCollisionImpulses(cc.getSumCollisionImpulses());
-
-                    // If friction tangents are different, the corresponding
-                    // friction impulses from previous steps would point in
-                    // wrong direction. In pracise this doesn't seem to make
-                    // much of a difference, though.
-//                    if (reusedConstraints.back().getTangent1().isApprox(cc.getTangent1(), 1e-5) &&
-//                            reusedConstraints.back().getTangent2().isApprox(cc.getTangent2(), 1e-5))
-//                    {
-                    reusedConstraints.back().setSumFrictionImpulses(cc.getSumFrictionImpulses());
-//                    }
+                                applyWarmStarting,
+                                cc.getSumCollisionImpulses(),
+                                cc.getSumFrictionImpulses());
                 }
+                else if (applyWarmStarting && applyFrictionWarmStarting)
+                {
+                    new (&mCollisionConstraints[count]) CollisionConstraint(
+                                reusedCollisions[colIndex].getCollision(),
+                                restitution,
+                                positionCorrectionFactor,
+                                collisionMargin,
+                                contactMargin,
+                                correctPositionError,
+                                applyWarmStarting,
+                                cc.getSumCollisionImpulses(),
+                                Eigen::Vector2d::Zero());
+                }
+                else
+                {
+                    // No warm starting
+                    new (&mCollisionConstraints[count]) CollisionConstraint(
+                                reusedCollisions[colIndex].getCollision(),
+                                restitution,
+                                positionCorrectionFactor,
+                                collisionMargin,
+                                contactMargin,
+                                correctPositionError,
+                                applyWarmStarting,
+                                Eigen::Vector3d::Zero(),
+                                Eigen::Vector2d::Zero());
+                }
+
+                ++count;
+                mCollisionConstraints[count].setReuseCount(reuseCount);
 
                 ++colIndex;
             }
         }
 
-        mCollisionConstraints = reusedConstraints;
+        mCollisionConstraints.resize(count);
 
         for (size_t i = 0; i < mCollisionConstraints.size(); ++i)
         {
@@ -212,11 +239,21 @@ Matrix3d ImpulseConstraintSolver::calculateK(SimulationPointRef& ref)
     case SimulationObject::Type::FEM_OBJECT:
     {
         FEMObject* femObj = static_cast<FEMObject*>(ref.getSimulationObject().get());
-        ID index = ref.getIndex();
-        if (index != ILLEGAL_INDEX)
+
+        if (ref.getGeometricType() == GeometricPointRef::Type::GEOMETRIC_VERTEX)
         {
-            return 1 / femObj->getMass(index) * Eigen::Matrix3d::Identity();
+            ID index = ref.getIndex();
+            if (index != ILLEGAL_INDEX)
+            {
+                return 1 / femObj->getMass(index) * Eigen::Matrix3d::Identity();
+            }
         }
+        else if (ref.getGeometricType() == GeometricPointRef::Type::POLYGON_BARY)
+        {
+            PolygonBaryRef* polyRef = static_cast<PolygonBaryRef*>(ref.getGeometricPointRef());
+            return 1 / femObj->calculateMass(polyRef->getElementId(), polyRef->getBary()) * Eigen::Matrix3d::Identity();
+        }
+
         break;
     }
     case SimulationObject::Type::RIGID_BODY:

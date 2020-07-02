@@ -35,6 +35,8 @@ class CollisionConstraint : public Constraint
 {
 public:
 
+    CollisionConstraint();
+
     //
     // ContactMargin:
     // The idea is to lets constraints not correct the whole contact distance
@@ -72,6 +74,17 @@ public:
             bool correctPositionError,
             bool applyWarmStarting);
 
+    CollisionConstraint(
+            const Collision& collision,
+            double restitution,
+            double positionCorrectionFactor,
+            double collisionMargin,
+            double contactMargin,
+            bool correctPositionError,
+            bool applyWarmStarting,
+            const Eigen::Vector3d& warmStartingCollisionImpulses,
+            const Eigen::Vector2d& warmStartingFrictionImpulses);
+
     virtual ~CollisionConstraint() override;
 
     void setCollision(const Collision& collision);
@@ -81,6 +94,8 @@ public:
 
     void setSumCollisionImpulses(const Eigen::Vector3d& sumOfAllAppliedImpulses);
     const Eigen::Vector& getSumCollisionImpulses() const;
+
+    const Eigen::Vector& getSumCollisionImpulsesOld() const;
 
     void setSumFrictionImpulses(const Eigen::Vector2d& sumFrictionImpulses);
     const Eigen::Vector2d& getSumFrictionImpulses() const;
@@ -135,12 +150,13 @@ private:
     //   after all collision constraints were applied. This means that
     //   friction constraints can violate other constraints at the end again.
     // - this implementation doesn't work with warm starting
-    void solveSingleTangentFrictionConstraint();
+    void solveSingleTangentFrictionConstraint(const Eigen::Vector3d& impulse);
 
     Collision mCollision;
 
     Eigen::Vector mTargetUNormalRel;
     Eigen::Vector mSumCollisionImpulses;
+    Eigen::Vector mSumCollisionImpulsesOld;
     Eigen::Vector mSumFrictionImpulses;
     Eigen::Matrix3d mK;
     double mImpulseFactor; // 1 / (n^T K_aa + K_bb n)
@@ -175,13 +191,6 @@ private:
     // Temporary variables used in methods
     Eigen::Vector3d mPoint1;
     Eigen::Vector3d mPoint2;
-    Eigen::Vector u1;
-    Eigen::Vector u2;
-    Eigen::Vector uRel;
-    Eigen::Vector uRelN;
-    Eigen::Vector deltaUNormalRel;
-    Eigen::Vector impulse;
-    Eigen::Vector uRelT;
 
     bool mWarmStarting;
 
