@@ -27,7 +27,10 @@ double RotationalMotor::getStrength() const
 
 bool RotationalMotor::references(SimulationObject* so)
 {
-    return mRb1.get() == so || mRb2.get() == so;
+    if (mRb2)
+        return mRb1.get() == so || mRb2.get() == so;
+    else
+        return mRb1.get() == so;
 }
 
 void RotationalMotor::applyForce()
@@ -39,5 +42,6 @@ void RotationalMotor::applyForce()
     // The magnitude is the strength.
     Eigen::Vector torque = mStrength * axisWS;
     mRb1->applyTorque(torque);
-    mRb2->applyTorque(-torque);
+    if (mRb2)
+        mRb2->applyTorque(-torque);
 }
