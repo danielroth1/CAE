@@ -35,7 +35,7 @@ GLWidget::~GLWidget()
 void GLWidget::setDefaults()
 {
     mMouseSensitivy = 1.0f;
-    mMovementSpeed = 10.0f;
+    mMovementSpeed = 25.0f;
     mMousePos = QPointF(0.0, 0.0);
     mAngle = QPointF(0.0, -15.0);
     mCameraPos = QVector3D(0.0, 1.5f, 5.5f);
@@ -119,7 +119,7 @@ void GLWidget::initializeGL()
     //initializeOpenGLFunctions();
 
     // black screen
-    glClearColor(0,0,0,0);
+    glClearColor(0,0,0.3,0);
     // enable depth buffer
     glEnable(GL_DEPTH_TEST);
     // set shading model
@@ -254,7 +254,7 @@ void GLWidget::paintGL()
         mMillisInThisSecond = mTime.elapsed();
         if (mMillisInThisSecond >= 1000)
         {
-            std::cout << "fps = " << mFramesInThisSecond << "\n";
+//            std::cout << "fps = " << mFramesInThisSecond << "\n";
 
             mTime.restart();
             mMillisInThisSecond = 0;
