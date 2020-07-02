@@ -295,6 +295,10 @@ Vector SimulationPointRef::getPoint(FEMObject& femObj)
         ID index = static_cast<GeometricVertexRef*>(mGeometricPointRef.get())->getIndex();
         return femObj.getPosition(index);
     }
+    else if (mGeometricPointRef->getType() == GeometricPointRef::Type::POLYGON_BARY)
+    {
+        return static_cast<PolygonBaryRef*>(mGeometricPointRef.get())->getPoint();
+    }
     return Eigen::Vector::Zero();
 }
 
