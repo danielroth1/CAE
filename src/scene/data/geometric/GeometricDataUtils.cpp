@@ -14,7 +14,7 @@ Vectors GeometricDataUtils::calculateNormals(
         normals[i] = Vector::Zero();
     }
 
-    // calculate normals for each vertex
+    // calculate normals for each face
     for (size_t i = 0; i < faces.size(); ++i)
     {
         const Face& t = faces[i];
@@ -42,16 +42,12 @@ void GeometricDataUtils::updateBoundingBox(
         Vectors& positions,
         BoundingBox& boundingBox)
 {
-    Vector3d& boundingBoxMin = boundingBox.min();
-    Vector3d& boundingBoxMax = boundingBox.max();
-    for (unsigned int i = 0; i < positions.size(); ++i)
+    boundingBox.min() = positions[0];
+    boundingBox.max() = positions[0];
+    for (unsigned int i = 1; i < positions.size(); ++i)
     {
-        boundingBoxMin[0] = std::min(positions[i][0], boundingBoxMin[0]);
-        boundingBoxMin[1] = std::min(positions[i][1], boundingBoxMin[1]);
-        boundingBoxMin[2] = std::min(positions[i][2], boundingBoxMin[2]);
-        boundingBoxMax[0] = std::max(positions[i][0], boundingBoxMax[0]);
-        boundingBoxMax[1] = std::max(positions[i][1], boundingBoxMax[1]);
-        boundingBoxMax[2] = std::max(positions[i][2], boundingBoxMax[2]);
+        boundingBox.min() = boundingBox.min().cwiseMin(positions[i]);
+        boundingBox.max() = boundingBox.max().cwiseMax(positions[i]);
     }
     boundingBox.mid() = 0.5 * boundingBox.min() + 0.5 * boundingBox.max();
     boundingBox.size() = boundingBox.max() - boundingBox.min();

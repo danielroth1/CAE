@@ -9,6 +9,7 @@
 class GeometricDataUtils
 {
 public:
+    // Calculates Vertex normals.
     static Vectors calculateNormals(
             const Vectors& positions,
             const Faces& faces);
