@@ -76,6 +76,7 @@ void BSWSVectors::update()
 
 void BSWSVectors::removeVector(ID index)
 {
+    // TODO: this only works in WS representation?
     VectorOperations::removeVector(mVectorsWS, index);
 }
 
@@ -163,6 +164,8 @@ void BSWSVectors::updateWorldSpace()
     if (!mInitialized)
         return;
 
+    size_t nVectors = mVectorsWS.size();
+#pragma omp parallel for if (nVectors > 10000)
     for (size_t i = 0; i < mVectorsWS.size(); ++i)
     {
         mVectorsWS[i] = mTransform * (*mVectorsBS)[i];
