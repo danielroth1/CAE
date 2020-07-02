@@ -160,6 +160,14 @@ public:
                 double collisionSphereRadiusFactor = 0.2);
         void removeCollisionObject(const std::shared_ptr<SimulationObject>& so);
 
+        void addCollisionGroup(
+                const std::shared_ptr<SimulationObject>& so, int groupId);
+
+        void setCollisionGroups(
+                const std::shared_ptr<SimulationObject>& so,
+                const std::vector<int>& collisionGroupIds);
+
+
     // Is called by SimulationThread once after the thread is started.
     void initializeSimulation();
 

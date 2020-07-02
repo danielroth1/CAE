@@ -317,6 +317,35 @@ bool CollisionManager::removeSimulationObject(const std::shared_ptr<SimulationOb
     return returnValue;
 }
 
+void CollisionManager::addCollisionGroupId(
+        const std::shared_ptr<SimulationObject>& so, int groupId)
+{
+    for (CollisionData& cd : mCollisionData)
+    {
+        if (cd.mSo == so)
+        {
+            cd.mCollisionGroups.push_back(groupId);
+            std::sort(cd.mCollisionGroups.begin(), cd.mCollisionGroups.end());
+            break;
+        }
+    }
+}
+
+void CollisionManager::setCollisionGroupIds(
+        const std::shared_ptr<SimulationObject>& so,
+        const std::vector<int>& groupIds)
+{
+    for (CollisionData& cd : mCollisionData)
+    {
+        if (cd.mSo == so)
+        {
+            cd.mCollisionGroups = groupIds;
+            std::sort(cd.mCollisionGroups.begin(), cd.mCollisionGroups.end());
+            break;
+        }
+    }
+}
+
 bool CollisionManager::collideAll()
 {
     // Give this run a unique id. No other triangle will have this id.
@@ -326,14 +355,20 @@ bool CollisionManager::collideAll()
     mCollider->clear();
 
     bool collisionOccured = false;
+
     for (size_t i = 0; i < mCollisionData.size(); ++i)
     {
         for (size_t j = i+1; j < mCollisionData.size(); ++j)
         {
-            collisionOccured |=
-                    mCollisionData[i].mBvh->collides(
-                        mCollisionData[j].mBvh.get(), *mCollider.get(), mRunId,
-                        mAlreadySeenCollisions);
+            if (!isSharingCollisionGroups(
+                        mCollisionData[i].mCollisionGroups,
+                        mCollisionData[j].mCollisionGroups))
+            {
+                collisionOccured |=
+                        mCollisionData[i].mBvh->collides(
+                            mCollisionData[j].mBvh.get(), *mCollider.get(), mRunId,
+                            mAlreadySeenCollisions);
+            }
         }
     }
 
@@ -357,8 +392,10 @@ bool CollisionManager::collideAll()
 void CollisionManager::updateAll()
 {
     int updateCounter = 0;
-    for (CollisionData& cd : mCollisionData)
+#pragma omp parallel for if (mCollisionData.size() > 8)
+    for (size_t i = 0; i < mCollisionData.size(); ++i)
     {
+        CollisionData& cd = mCollisionData[i];
         bool dirty = true;
 
         // Only update a collision hierarchy if position or orientation of
@@ -598,7 +635,7 @@ void CollisionManager::addSimulationObject(
 
     mCollisionData.push_back(data);
 
-    std::cout << "added " << collisionObjects.size() << " CollisionObjects.\n";
+    std::cout << "Added " << collisionObjects.size() << " CollisionObjects.\n";
 
     for (CollisionManagerListener* listener : mListeners)
         listener->notifySimulationObjectAdded(so);
@@ -716,4 +753,27 @@ void CollisionManager::filterCollisions(size_t offset, size_t numAllowed)
     {
         std::cout << "Filtered out: " << sizeBefore - sizeAfter << " Collisions.\n";
     }
+}
+
+bool CollisionManager::isSharingCollisionGroups(
+        const std::vector<int>& groupIdsA, const std::vector<int>& groupIdsB)
+{
+    size_t indexA = 0;
+    size_t indexB = 0;
+    while (indexA < groupIdsA.size() && indexB < groupIdsB.size())
+    {
+        if (groupIdsA[indexA] == groupIdsB[indexB])
+        {
+            return true;
+        }
+        else if (groupIdsA[indexA] < groupIdsB[indexB])
+        {
+            ++indexA;
+        }
+        else
+        {
+            ++indexB;
+        }
+    }
+    return false;
 }

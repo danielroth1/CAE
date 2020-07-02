@@ -84,7 +84,7 @@ void FEMSimulation::initializeStep()
         {
             fo->getExternalForce(i) = Eigen::Vector::Zero();
         }
-}
+    }
     for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
     {
         // profile this method call

@@ -61,6 +61,19 @@ public:
 
     bool removeSimulationObject(const std::shared_ptr<SimulationObject>& so);
 
+    // Adds a collision group id to the given simulation object. If this
+    // simulation object isn't collidable, nothing happens.
+    // All objects that share a collision group id can't collide with each other.
+    void addCollisionGroupId(
+            const std::shared_ptr<SimulationObject>& so, int groupId);
+
+    // Sets all collision group ids for the given simulation object. If this
+    // simulation object isn't collidable, nothing happens.
+    // All objects that share a collision group id can't collide with each other.
+    void setCollisionGroupIds(
+            const std::shared_ptr<SimulationObject>& so,
+            const std::vector<int>& groupIds);
+
     // Checks for all pair of collidable simulation objects (those that were
     // added with addSimulationObject) if they are colliding.
     // Note: Doesn't use a bounding volume hierarchy to find close pairs
@@ -115,6 +128,8 @@ private:
         std::shared_ptr<SimulationObject> mSo;
         std::shared_ptr<Polygon> mPolygon;
         std::shared_ptr<BoundingVolumeHierarchy> mBvh;
+
+        std::vector<int> mCollisionGroups;
     };
 
     void addSimulationObject(
@@ -146,6 +161,12 @@ private:
     // \param numAllowed - number of isInside collisions that are allowed (not
     //      counting the first offset ignored ones.
     void filterCollisions(size_t offset, size_t numAllowed = 1);
+
+    // Returns true if the two given vectors share a number. Assumes them
+    // to be sorted.
+    bool isSharingCollisionGroups(
+            const std::vector<int>& groupIdsA,
+            const std::vector<int>& groupIdsB);
 
     Domain* mDomain;
 
@@ -188,6 +209,14 @@ PROXY_CLASS(CollisionManagerProxy, CollisionManager, mCm,
                            PL(so, polygon, sphereDiameter))
             PROXY_FUNCTION(CollisionManager, mCm, removeSimulationObject,
                            PL(const std::shared_ptr<SimulationObject>& so), PL(so))
+            PROXY_FUNCTION(CollisionManager, mCm, addCollisionGroupId,
+                           PL(const std::shared_ptr<SimulationObject>& so,
+                              int groupId),
+                           PL(so, groupId))
+            PROXY_FUNCTION(CollisionManager, mCm, setCollisionGroupIds,
+                           PL(const std::shared_ptr<SimulationObject>& so,
+                              const std::vector<int>& groupIds),
+                           PL(so, groupIds))
             PROXY_FUNCTION(CollisionManager, mCm, setInvertNormalsIfNecessary,
                            PL(bool invertNormalsIfNecessary), PL(invertNormalsIfNecessary))
             )

@@ -548,6 +548,19 @@ void SimulationControl::removeCollisionObject(const std::shared_ptr<SimulationOb
     mCollisionManagerProxy->removeSimulationObject(so);
 }
 
+void SimulationControl::addCollisionGroup(
+        const std::shared_ptr<SimulationObject>& so, int groupId)
+{
+    mCollisionManagerProxy->addCollisionGroupId(so, groupId);
+}
+
+void SimulationControl::setCollisionGroups(
+        const std::shared_ptr<SimulationObject>& so,
+        const std::vector<int>& collisionGroupIds)
+{
+    mCollisionManagerProxy->setCollisionGroupIds(so, collisionGroupIds);
+}
+
 void SimulationControl::initializeSimulation()
 {
     mFEMSimulation->initialize();
@@ -638,6 +651,11 @@ void SimulationControl::step()
 
     mRigidSimulation->integratePositions(mStepSize);
     mFEMSimulation->integratePositions(mStepSize);
+
+//    mRigidSimulation->publish(false);
+    mFEMSimulation->publish(false);
+
+    mCollisionManager->updateGeometries();
 
     START_TIMING_SIMULATION("CollisionManager::udpateAll()");
     mCollisionManager->updateAll();

@@ -7,6 +7,9 @@ class BoundingVolume;
 class CollisionObjectVisitor;
 
 
+// A simple object that can be used in the collision detection, like
+// a triangle (CollisionTriangle)
+// or a sphere (CollisionSphere).
 class CollisionObject
 {
 public:
