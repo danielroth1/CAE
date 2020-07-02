@@ -218,10 +218,16 @@ bool MathUtils::projectPointOnTetrahedron(
 
     double J = r1.cross(r2).dot(r3);
 
+    // If the tetrahedron has zero volume.
+    if (J == 0)
+        return false;
+
     Eigen::Vector3d center = 0.25 * (p0 + p1 + p2 + p3);
 
     bary[0] = 0.25 + (p - center).dot(r4.cross(r5) / J);
     bary[1] = 0.25 + (p - center).dot(r2.cross(r3) / J);
     bary[2] = 0.25 + (p - center).dot(r3.cross(r1) / J);
     bary[3] = 0.25 + (p - center).dot(r1.cross(r2) / J);
+
+    return true;
 }
