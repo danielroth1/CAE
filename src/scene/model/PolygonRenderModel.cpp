@@ -647,7 +647,7 @@ void PolygonRenderModel::updatePositions()
             if (mRenderOnlyOuterFaces &&
                     mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
             {
-#pragma omp parallel for
+#pragma omp parallel for if (positionsLock->size() > 5000)
                 for (size_t i = 0; i < vim->getExtendedSize(); ++i)
                 {
                     size_t index = vim->getOriginalIndex(i);
@@ -658,7 +658,7 @@ void PolygonRenderModel::updatePositions()
             }
             else
             {
-#pragma omp parallel for
+#pragma omp parallel for if (positionsLock->size() > 5000)
                 for (size_t i = 0; i < vim->getExtendedSize(); ++i)
                 {
                     size_t index = vim->getOriginalIndex(i);
@@ -671,6 +671,7 @@ void PolygonRenderModel::updatePositions()
             if (mRenderOnlyOuterFaces &&
                     mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
             {
+#pragma omp parallel for if (positionsLock->size() > 5000)
                 for (size_t i = 0; i < positionsLock->size(); ++i)
                 {
                     positionsLock->at(i) = positions[
@@ -680,7 +681,7 @@ void PolygonRenderModel::updatePositions()
             }
             else
             {
-#pragma omp parallel for if (positionsLock->size() > 100)
+#pragma omp parallel for if (positionsLock->size() > 5000)
                 for (size_t i = 0; i < positionsLock->size(); ++i)
                 {
                     positionsLock->at(i) = positions[i].cast<float>();

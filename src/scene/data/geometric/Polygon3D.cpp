@@ -988,11 +988,12 @@ std::tuple<size_t, double, Vector4d> Polygon3D::findTetrahedron(
                     p,
                     bary);
 
-            std::get<0>(tuple) = closestTriangleIndex;
+            std::get<0>(tuple) = cellId;
             std::get<1>(tuple) = distance;
             return tuple;
         }
     }
+    return tuple;
 }
 
 bool Polygon3D::isInside(ID faceId, const Vector& point,

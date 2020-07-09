@@ -131,7 +131,8 @@ SGNode* SGControl::importFilesAsChild(
     {
         TetGenImporter importer;
         SGNode* node = importer.importFiles(files, mAc);
-        parent->addChild(node);
+        if (parent)
+            parent->addChild(node);
         return node;
     }
     return nullptr;

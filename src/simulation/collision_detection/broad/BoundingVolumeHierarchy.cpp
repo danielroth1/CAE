@@ -27,10 +27,15 @@ BoundingVolumeHierarchy::BoundingVolumeHierarchy(
 
 void BoundingVolumeHierarchy::updateGeometries()
 {
-    mPolygon->update(true, false, false);
     if (mInterpolator)
     {
+        mInterpolator->getSource()->update(true, false, false);
         mInterpolator->update();
+        mPolygon->update(true, false, false);
+    }
+    else
+    {
+        mPolygon->update(true, false, false);
     }
 }
 

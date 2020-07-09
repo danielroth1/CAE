@@ -35,7 +35,10 @@ Vector4d MeshInterpolatorFEM::calculateBary3(ID targetTriangleId,
         ok = false;
     }
 
+    double distMin = std::numeric_limits<double>::max();
     Eigen::Vector4d bary;
+    Eigen::Vector4d baryMin;
+    ID cellIdOutMin = 0;
     for (size_t i = 0; i < ti.elementFunctions.size(); ++i)
     {
         const std::array<Eigen::Vector4d, 3>& ef = ti.elementFunctions[i];
@@ -49,9 +52,32 @@ Vector4d MeshInterpolatorFEM::calculateBary3(ID targetTriangleId,
         {
             return bary;
         }
+
+        double dist =
+                std::abs(std::min(0.0, bary(0))) + (std::max(1.0, bary(0)) - 1) +
+                std::abs(std::min(0.0, bary(1))) + (std::max(1.0, bary(1)) - 1) +
+                std::abs(std::min(0.0, bary(2))) + (std::max(1.0, bary(2)) - 1) +
+                std::abs(std::min(0.0, bary(3))) + (std::max(1.0, bary(3)) - 1);
+        if (dist < distMin)
+        {
+            distMin = dist;
+            baryMin = bary;
+            cellIdOutMin = cellIdOut;
+        }
     }
-    std::cout << "Did not find legal barycentric coordinates: " << bary.transpose() << ".\n";
-    return bary;
+//    std::cout << "Did not find legal barycentric coordinates: " << baryMin.transpose() << ".\n";
+    cellIdOut = cellIdOutMin;
+
+//    std::cout << "  Alternatives: \n";
+//    for (size_t i = 0; i < ti.elementFunctions.size(); ++i)
+//    {
+//        const std::array<Eigen::Vector4d, 3>& ef = ti.elementFunctions[i];
+
+//        bary = bary2[0] * ef[0] + bary2[1] * ef[1] + bary2[2] * ef[2];
+//        std::cout << "  " << bary.transpose() << "\n";
+//    }
+
+    return baryMin;
 }
 
 void MeshInterpolatorFEM::solve()
@@ -243,19 +269,18 @@ void MeshInterpolatorFEM::update()
     {
         // Update positions of target according to mapping that was calculated
         // in init().
-#pragma omp parallel for
+#pragma omp parallel for if (mTarget->getPositions().size() > 5000)
         for (size_t i = 0; i < mTarget->getPositions().size(); ++i)
         {
             // Calculate interpolated vertex
-            Eigen::Vector interpolatedPosition = interpolate(mInterpolations[i]);
-            mTarget->setPosition(i, interpolatedPosition);
+            mTarget->setPosition(i, interpolate(mInterpolations[i]));
         }
 
         break;
     }
     }
 
-    mTarget->update(false, false, true);
+    mTarget->update(true, false, true);
 }
 
 MeshInterpolator::Type MeshInterpolatorFEM::getType() const

@@ -334,8 +334,10 @@ void TriangleCollider::collide(std::vector<Collision>& collisions)
     if (numTotalPairs == 0)
         return;
 
-    bool parallel = numTotalPairs > 8 * 40;
+    bool parallel = numTotalPairs > 8 * 100;
 
+//    if (numTotalPairs > 8 * 40)
+//        std::cout << "numTotalPairs = " << numTotalPairs << "\n";
 //    if (numTotalPairs > 0)
 //        std::cout << "sizes = " << mFeaturePairsVF.size() << ", " << mFeaturePairsFV.size() << ", " << mFeaturePairsEE.size() << "\n";
 //    if (parallel)
