@@ -13,7 +13,7 @@
 // Types:
 // - MEMBER_ACCESSOR: Accessor that is bound to an object. It can access any
 //      kind of variable.
-// - OWNER_MEMBER_ACCESSOR: Accesses
+// - OWNER_MEMBER_ACCESSOR:
 // One MemberAccessor can access multiple variables
 template <class T>
 class MemberAccessor : public virtual MemberAccessorInterface<T>

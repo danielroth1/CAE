@@ -67,7 +67,7 @@ public:
 
     // Creates a MemberAccessorGetterSetter. This member accessor allows the access
     // of the data via a getter and a setter. This accessor should be preferred
-    // to the direct member accessor because a direct member access via a
+    // over the direct member accessor because a direct member access via a
     // memory location is in general not a good design choice.
     //
     // \param comparator - equality comparator which is used to check if the

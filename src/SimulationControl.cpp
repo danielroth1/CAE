@@ -561,6 +561,21 @@ void SimulationControl::setCollisionGroups(
     mCollisionManagerProxy->setCollisionGroupIds(so, collisionGroupIds);
 }
 
+bool SimulationControl::isCollidable(
+        const std::shared_ptr<SimulationObject>& so)
+{
+    return mCollisionManager->isCollidable(so);
+}
+
+void SimulationControl::setCollidable(
+        const std::shared_ptr<SimulationObject>& so, bool collidable)
+{
+    if (collidable)
+        addCollisionObject(so, nullptr);
+    else
+        removeCollisionObject(so);
+}
+
 void SimulationControl::initializeSimulation()
 {
     mFEMSimulation->initialize();
@@ -601,7 +616,9 @@ void SimulationControl::step()
 
     // Solver step algorithm
 
+    START_TIMING_SIMULATION("SimulationControl::step::initializeStep");
     initializeStep();
+    STOP_TIMING_SIMULATION;
 
     // Perform some kind of early collision detection before the predictor
     // step to obtain a better result.
@@ -614,9 +631,12 @@ void SimulationControl::step()
 
     // reuse old collisions, but first check if they are still valid
     // all non-valid collisions are removed
+    START_TIMING_SIMULATION("SimulationControl::step::revalidateCollisions");
     mCollisionManager->revalidateCollisions();
     size_t numPrevCollisions = mCollisionManager->getCollisions().size();
+    STOP_TIMING_SIMULATION;
 
+    START_TIMING_SIMULATION("SimulationControl::step::revalidateCollisionConstraints");
     mImpulseConstraintSolver->revalidateCollisionConstraints(
                 mCollisionManager->getCollisions(),
                 mStepSize,
@@ -626,9 +646,12 @@ void SimulationControl::step()
                 mContactMargin,
                 true,
                 mWarmStarting);
+    STOP_TIMING_SIMULATION;
 
+    START_TIMING_SIMULATION("SimulationControl::step::solveVelocity");
     mRigidSimulation->solveVelocity(mStepSize);
     mFEMSimulation->solveVelocity(mStepSize, true); // x + x^{FEM} + x^{rigid}, v + v^{FEM} + v^{rigid}
+    STOP_TIMING_SIMULATION;
 
     // initialize constraints
     mImpulseConstraintSolver->initializeNonCollisionConstraints(mStepSize);
@@ -652,17 +675,18 @@ void SimulationControl::step()
     mRigidSimulation->integratePositions(mStepSize);
     mFEMSimulation->integratePositions(mStepSize);
 
+    START_TIMING_SIMULATION("SimulationControl::step::initialPublish");
 //    mRigidSimulation->publish(false);
     mFEMSimulation->publish(false);
-
     mCollisionManager->updateGeometries();
+    STOP_TIMING_SIMULATION;
 
-    START_TIMING_SIMULATION("CollisionManager::udpateAll()");
+    START_TIMING_SIMULATION("SimulationControl::step::udpateAll");
     mCollisionManager->updateAll();
     STOP_TIMING_SIMULATION;
 
     // collision detection on x + x^{FEM}
-    START_TIMING_SIMULATION("CollisionManager::collideAll()");
+    START_TIMING_SIMULATION("SimulationControl::step::collideAll");
     bool predictorCollisionsOccured = mCollisionManager->collideAll();
     STOP_TIMING_SIMULATION;
 
@@ -684,6 +708,7 @@ void SimulationControl::step()
                     false);
     }
 
+    START_TIMING_SIMULATION("SimulationControl::step::mixed_loop");
     if (!mCollisionManager->getCollisions().empty() ||
             !mImpulseConstraintSolver->getConstraints().empty())
     {
@@ -710,16 +735,19 @@ void SimulationControl::step()
     // x, v + v^{FEM} + v^{col}
     mRigidSimulation->integratePositions(mStepSize);
     mFEMSimulation->integratePositions(mStepSize); // x + x^{FEM} + x^{col}, v + v^{FEM} + v^{col}
+    STOP_TIMING_SIMULATION;
 
     mRigidSimulation->applyDamping();
     mFEMSimulation->applyDamping();
 
-    START_TIMING_SIMULATION("Simulation::publish()");
+    START_TIMING_SIMULATION("SimulationControl::step::publish");
     mRigidSimulation->publish();
     mFEMSimulation->publish();
     STOP_TIMING_SIMULATION;
 
+    START_TIMING_SIMULATION("SimulationControl::step::udpateSimulationObjects");
     mAc->updateSimulationObjects();
+    STOP_TIMING_SIMULATION;
 
     STOP_TIMING_SIMULATION;
 }

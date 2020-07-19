@@ -40,7 +40,8 @@ public:
 
     Domain* getDomain();
 
-    void addSimulationObjectTriangles(
+    // \return false if the simulation object is already colliding
+    bool addSimulationObjectTriangles(
             const std::shared_ptr<SimulationObject>& so,
             const std::shared_ptr<Polygon>& polygon,
             const std::shared_ptr<MeshInterpolatorFEM>& interpolator = nullptr);
@@ -50,11 +51,13 @@ public:
     // - the one used for collision handling = interpolation target
     // The simulation objects polygon must be the same as the source polygon
     // of the given interpolation.
-    void addSimulationObjectTriangles(
+    // \return false if the simulation object is already colliding
+    bool addSimulationObjectTriangles(
             const std::shared_ptr<SimulationObject>& so,
             const std::shared_ptr<MeshInterpolatorFEM>& interpolator);
 
-    void addSimulationObject(
+    // \return false if the simulation object is already colliding
+    bool addSimulationObject(
             std::shared_ptr<SimulationObject> so,
             std::shared_ptr<Polygon> polygon,
             double sphereDiameter = 0.1);
@@ -99,6 +102,9 @@ public:
     std::shared_ptr<Collider> getCollider();
     const std::vector<SimulationCollision>& getCollisions() const;
 
+    // Checks if the given simulation object was added as collision object before.
+    bool isCollidable(const std::shared_ptr<SimulationObject>& so);
+
     void setInvertNormalsIfNecessary(bool invertNormalsIfNecessary);
     bool getInvertNormalsIfNecessary() const;
 
@@ -132,7 +138,8 @@ private:
         std::vector<int> mCollisionGroups;
     };
 
-    void addSimulationObject(
+    // \return false if the simulation object is already colliding
+    bool addSimulationObject(
             const std::shared_ptr<SimulationObject>& so,
             const std::shared_ptr<Polygon>& polygon,
             const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,

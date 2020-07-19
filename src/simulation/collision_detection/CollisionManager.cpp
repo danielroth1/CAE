@@ -30,11 +30,14 @@ Domain* CollisionManager::getDomain()
     return mDomain;
 }
 
-void CollisionManager::addSimulationObjectTriangles(
+bool CollisionManager::addSimulationObjectTriangles(
         const std::shared_ptr<SimulationObject>& so,
         const std::shared_ptr<Polygon>& polygon,
         const std::shared_ptr<MeshInterpolatorFEM>& interpolator)
 {
+    if (isCollidable(so))
+        return false;
+
     std::shared_ptr<Polygon2DAccessor> accessor = polygon->createAccessor();
     const Polygon2DTopology& topology = accessor->getTopology2D();
     std::vector<std::shared_ptr<CollisionObject>> collisionObjects;
@@ -46,33 +49,24 @@ void CollisionManager::addSimulationObjectTriangles(
                     std::make_shared<CollisionTriangle>(accessor, f, i));
     }
 
-    addSimulationObject(so, polygon, collisionObjects, interpolator);
+    return addSimulationObject(so, polygon, collisionObjects, interpolator);
 }
 
-void CollisionManager::addSimulationObjectTriangles(
+bool CollisionManager::addSimulationObjectTriangles(
         const std::shared_ptr<SimulationObject>& so,
         const std::shared_ptr<MeshInterpolatorFEM>& interpolator)
 {
-    addSimulationObjectTriangles(so, interpolator->getTarget(), interpolator);
+    return addSimulationObjectTriangles(so, interpolator->getTarget(), interpolator);
 }
 
-void CollisionManager::addSimulationObject(
+bool CollisionManager::addSimulationObject(
         std::shared_ptr<SimulationObject> so,
         std::shared_ptr<Polygon> polygon,
         double sphereDiameter)
 {
     // check if SimulationObject was already added, if so do nothing
-    auto it = std::find_if(mCollisionData.begin(), mCollisionData.end(),
-                        [so](const CollisionData& cd)
-    {
-        return cd.mSo == so;
-    });
-
-    if (it != mCollisionData.end())
-    {
-        std::cout << "SimulationObject is already collidable.\n";
-        return;
-    }
+    if (isCollidable(so))
+        return false;
 
     // Create CollisionSpheres on vertices of Polygon2D or outer vertices of Polygon3D
     std::vector<std::shared_ptr<CollisionObject>> collisionObjects;
@@ -276,7 +270,7 @@ void CollisionManager::addSimulationObject(
     }
     }
 
-    addSimulationObject(so, polygon, collisionObjects, nullptr);
+    return addSimulationObject(so, polygon, collisionObjects, nullptr);
 }
 
 bool CollisionManager::removeSimulationObject(const std::shared_ptr<SimulationObject>& so)
@@ -392,6 +386,7 @@ bool CollisionManager::collideAll()
 void CollisionManager::updateAll()
 {
     int updateCounter = 0;
+
 #pragma omp parallel for if (mCollisionData.size() > 8)
     for (size_t i = 0; i < mCollisionData.size(); ++i)
     {
@@ -415,7 +410,6 @@ void CollisionManager::updateAll()
                 cd.mX = rb->getPosition();
             }
         }
-
         if (dirty)
         {
             cd.mBvh->udpate();
@@ -530,6 +524,17 @@ const std::vector<SimulationCollision>& CollisionManager::getCollisions() const
     return mSimulationCollisions;
 }
 
+bool CollisionManager::isCollidable(const std::shared_ptr<SimulationObject>& so)
+{
+    auto it = std::find_if(mCollisionData.begin(), mCollisionData.end(),
+                        [so](const CollisionData& cd)
+    {
+        return cd.mSo == so;
+    });
+
+    return it != mCollisionData.end();
+}
+
 bool CollisionManager::getInvertNormalsIfNecessary() const
 {
     return mCollider->getInvertNormalsIfNecessary();
@@ -613,12 +618,15 @@ size_t CollisionManager::getNumContacts() const
     return mNumContacts;
 }
 
-void CollisionManager::addSimulationObject(
+bool CollisionManager::addSimulationObject(
         const std::shared_ptr<SimulationObject>& so,
         const std::shared_ptr<Polygon>& polygon,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
         const std::shared_ptr<MeshInterpolatorFEM>& interpolator)
 {
+    if (isCollidable(so))
+        return false;
+
     // Create CollisionData
     CollisionData data;
 
@@ -639,6 +647,8 @@ void CollisionManager::addSimulationObject(
 
     for (CollisionManagerListener* listener : mListeners)
         listener->notifySimulationObjectAdded(so);
+
+    return true;
 }
 
 std::map<unsigned int, double> CollisionManager::calculateMinimumDistances(

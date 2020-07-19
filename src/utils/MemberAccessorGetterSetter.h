@@ -6,10 +6,6 @@
 
 #include <functional>
 
-
-// todo: implement this class
-
-
 // It is recommended to use \class MemberAccessorFactory to create the accessor.
 template <class T, class OwnerType>
 class MemberAccessorGetterSetter : public OwnerMemberAccessor<T>

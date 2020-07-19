@@ -201,6 +201,7 @@ void SimulationUIControl::init(QWidget* parent)
 
     QtMembersWidget* sceneNodeWidget = omw->registerMembersWidget("SceneData");
     // SimulationObjects
+    QtMembersWidget* simulationObjectWidget = omw->registerMembersWidget("SimulationObject");
     QtMembersWidget* femWidget = omw->registerMembersWidget("FEMObject");
     QtMembersWidget* rigidBodyWidget = omw->registerMembersWidget("RigidBody");
     // RenderModels
@@ -224,6 +225,28 @@ void SimulationUIControl::init(QWidget* parent)
                     &SceneData::isVerticesSelectable,
                     &SceneData::setVerticesSelectable,
                     true, nullptr, nullptr, nullptr));
+
+    std::function<bool(SimulationObject*)> isCollidableFunction =
+            [=](SimulationObject* so)
+    {
+        return mAc->getSimulationControl()->isCollidable(so->shared_from_this());
+    };
+
+    std::function<void(SimulationObject*, bool)> setCollidableFunction =
+            [=](SimulationObject* so, bool collidable)
+    {
+        mAc->getSimulationControl()->setCollidable(so->shared_from_this(), collidable);
+    };
+
+    simulationObjectWidget->addBool(
+                "Collidable",
+                MemberAccessorFactory::createGetterSetter<bool, SimulationObject>(
+                    isCollidableFunction,
+                    setCollidableFunction,
+                    true,
+                    nullptr,
+                    MemberAccessorFactory::createBoolComparator(),
+                    mAc->getSimulationControl()->getDomain()));
 
     femWidget->addDouble(
                 "Youngs Modulus",
@@ -579,16 +602,19 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
 {
     QtOwnersMembersWidget* omw = mWidget->getOwnersMembersWidget();
     QtMembersWidget* sceneDataWidget = omw->getMembersWidget("SceneData");
+    QtMembersWidget* simulationObjectWidget = omw->getMembersWidget("SimulationObject");
     QtMembersWidget* femWidget = omw->getMembersWidget("FEMObject");
     QtMembersWidget* rigidWidget = omw->getMembersWidget("RigidBody");
     QtMembersWidget* polyModelWidget = omw->getMembersWidget("PolygonRenderModel");
 
     sceneDataWidget->clearOwners();
+    simulationObjectWidget->clearOwners();
     femWidget->clearOwners();
     rigidWidget->clearOwners();
     polyModelWidget->clearOwners();
 
     omw->setMembersWidgetVisible("SceneData", false);
+    omw->setMembersWidgetVisible("SimulationObject", false);
     omw->setMembersWidgetVisible("FEMObject", false);
     omw->setMembersWidgetVisible("RigidBody", false);
     omw->setMembersWidgetVisible("PolygonRenderModel", false);
@@ -642,6 +668,9 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
             std::shared_ptr<SimulationObject> so = leafData->getSimulationObject();
             if (so)
             {
+                simulationObjectWidget->addOwner(so.get());
+                simulationObjectWidget->updateValues();
+                omw->setMembersWidgetVisible("SimulationObject", true);
                 switch (so->getType())
                 {
                 case SimulationObject::Type::FEM_OBJECT:

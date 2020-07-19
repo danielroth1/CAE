@@ -167,6 +167,9 @@ public:
                 const std::shared_ptr<SimulationObject>& so,
                 const std::vector<int>& collisionGroupIds);
 
+        bool isCollidable(const std::shared_ptr<SimulationObject>& so);
+        void setCollidable(const std::shared_ptr<SimulationObject>& so, bool collidable);
+
 
     // Is called by SimulationThread once after the thread is started.
     void initializeSimulation();
