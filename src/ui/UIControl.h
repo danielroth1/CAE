@@ -6,6 +6,7 @@
 #include <QPointF>
 #include <set>
 #include <ui/scene_graph/QTreeWidgetItemWrapper.h>
+#include <io/File.h>
 
 class ApplicationControl;
 class GLWidget;
@@ -82,6 +83,10 @@ public:
     void handleCreateGroupButtonPressed();
     void handleActForceButtonPressed();
     void handleRemoveGroupButtonPressed();
+
+    // Loads the given files. It's also possible to pass a .node and .ele
+    // file and it correctly generates a tet mesh from it.
+    void loadFiles(const std::vector<File>& files, SGChildrenNode* parent = nullptr);
 
     // Getter
     ViewFrustum* getViewFrustum();

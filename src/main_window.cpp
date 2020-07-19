@@ -8,6 +8,7 @@
 #include <ui/scene_graph/QTreeWidgetItemWrapper.h>
 
 #include <QKeyEvent>
+#include <QMimeData>
 
 #include <ui/scene_graph/SGQtWidgetManager.h>
 
@@ -27,6 +28,8 @@ MainWindow::MainWindow(ApplicationControl* ac, QWidget* parent)
     toolbarGroup->addAction(ui->actionSelect);
     toolbarGroup->addAction(ui->actionMove_Group);
     toolbarGroup->addAction(ui->actionActForce);
+
+    setAcceptDrops(true); // Enable drag and dropping of files to laod them.
 }
 
 MainWindow::~MainWindow()
@@ -58,6 +61,26 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 void MainWindow::keyReleaseEvent(QKeyEvent* event)
 {
     mUiControl->keyReleaseEvent(event);
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+    // see https://stackoverflow.com/questions/14895302/qt-drag-drop-add-support-for-dragging-files-to-the-applications-main-window
+    if (event->mimeData()->hasUrls())
+    {
+        event->acceptProposedAction();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent* event)
+{
+    std::vector<File> files;
+    for(const QUrl& url : event->mimeData()->urls())
+    {
+        std::string fileName = url.toLocalFile().toStdString();
+        files.push_back(fileName);
+    }
+    mUiControl->loadFiles(files, mAc->getSGControl()->getSceneGraph()->getRoot());
 }
 
 void MainWindow::setUIControl(UIControl *uiControl)

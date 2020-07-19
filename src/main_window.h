@@ -16,6 +16,10 @@ namespace Ui {
 class MainWindow;
 }
 
+// The main window of the application.
+//
+// Files can be loaded by directly dragging and dropping them in this window.
+// This is implemented in dragEnterEvent() and dropEvent().
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -39,6 +43,8 @@ protected:
     virtual void closeEvent(QCloseEvent* event);
     virtual void keyPressEvent(QKeyEvent* event);
     virtual void keyReleaseEvent(QKeyEvent* event);
+    virtual void dragEnterEvent(QDragEnterEvent* event);
+    virtual void dropEvent(QDropEvent* event);
 
 private slots:
     // none
