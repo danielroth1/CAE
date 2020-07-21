@@ -6,6 +6,7 @@
 #include <simulation/SimulationObjectVisitor.h>
 #include <simulation/constraints/Truncation.h>
 #include <simulation/fem/FEMObject.h>
+#include <times/timing.h>
 
 using namespace Eigen;
 
@@ -85,27 +86,36 @@ void FEMSimulation::initializeStep()
             fo->getExternalForce(i) = Eigen::Vector::Zero();
         }
     }
-    for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
+    START_TIMING_SIMULATION("SimulationControl::updateFEM()");
+#pragma omp parallel for
+    for (size_t i = 0; i < mFEMObjects.size(); ++i)
     {
-        // profile this method call
+        const std::shared_ptr<FEMObject>& fo = mFEMObjects[i];
         fo->updateFEM(true);
     }
+    STOP_TIMING_SIMULATION;
 }
 
 void FEMSimulation::solve(double stepSize, bool firstStep)
 {
-    for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
+#pragma omp parallel for
+    for (size_t i = 0; i < mFEMObjects.size(); ++i)
     {
+        const std::shared_ptr<FEMObject>& fo = mFEMObjects[i];
         fo->solveFEM(stepSize, true, firstStep);
     }
 }
 
 void FEMSimulation::solveVelocity(double stepSize, bool firstStep)
 {
-    for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
+    START_TIMING_SIMULATION("SimulationControl::solveVelocityFEM()");
+#pragma omp parallel for
+    for (size_t i = 0; i < mFEMObjects.size(); ++i)
     {
+        const std::shared_ptr<FEMObject>& fo = mFEMObjects[i];
         fo->solveVelocityFEM(stepSize, true, firstStep);
     }
+    STOP_TIMING_SIMULATION;
 }
 
 void FEMSimulation::revertSolverStep()
@@ -139,8 +149,11 @@ void FEMSimulation::applyDamping()
 
 void FEMSimulation::publish(bool notifyListeners)
 {
-    for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
+    // Parallelization doesn't seem to be worth it.
+//#pragma omp parallel for
+    for (size_t i = 0; i < mFEMObjects.size(); ++i)
     {
+        const std::shared_ptr<FEMObject>& fo = mFEMObjects[i];
         fo->updateGeometricData(notifyListeners);
     }
 }
@@ -158,8 +171,9 @@ void FEMSimulation::initialize()
 //    for (auto& so_ptr : mFEMObjects)
 //    {
 //        FEMObject* so = so_ptr.get();
-    for (const std::shared_ptr<FEMObject>& fo : mFEMObjects)
+    for (size_t i = 0; i < mFEMObjects.size(); ++i)
     {
+        const std::shared_ptr<FEMObject>& fo = mFEMObjects[i];
         fo->initializeFEM();
     }
 }
