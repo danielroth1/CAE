@@ -120,16 +120,30 @@ public:
                 double strength);
 
     // Simulation Methods
+        // Creates a FEMObject from the Polygon stored in the given leaf data.
+        // If there is already a simulation object, it is removed beforehand.
+        // In that case collision state and masses are reused.
         std::shared_ptr<FEMObject> createFEMObject(
                 const std::shared_ptr<SceneLeafData>& ld,
                 double mass = 1.0);
+
+        // Creates a RigidBody from the Polygon stored in the given leaf data.
+        // If there is already a simulation object, it is removed beforehand.
+        // In that case collision state and masses are reused.
         std::shared_ptr<RigidBody> createRigidBody(
                 const std::shared_ptr<SceneLeafData>& ld,
                 double mass,
                 bool iStatic = false);
+
+        // This method is deprecated.
+        // Creates a sphere based collision object.
         void createCollidable(
                 const std::shared_ptr<SceneLeafData>& ld,
                 double collisionSphereRadiusFactor = 0.1);
+
+        // Creates a collidable object for the given leaf data and adds it
+        // to the collision system. Requires a simulation object to be added
+        // beforehand, else it does nothing.
         void createCollidable(
                 const std::shared_ptr<SceneLeafData>& ld,
                 const std::shared_ptr<MeshInterpolatorFEM>& interpolation);

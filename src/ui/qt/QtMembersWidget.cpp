@@ -1,5 +1,6 @@
 #include "QtMemberWidgetBool.h"
 #include "QtMemberWidgetDouble.h"
+#include "QtMemberWidgetEnumComboBox.h"
 #include "QtMemberWidgetInteger.h"
 #include "QtMemberWidgetVectorDouble.h"
 #include "QtMembersWidget.h"
@@ -95,6 +96,22 @@ void QtMembersWidget::addVectorDouble(
             new QtMemberWidgetVectorDouble(memberAccessor, this, min, max,
                                            singleStep, precision);
 
+    mMemberWidgets.push_back(memberWidget);
+    mLayout->addWidget(memberWidget, row, 1);
+
+    memberWidget->update();
+}
+
+void QtMembersWidget::addEnumComboBox(
+        const std::string& name,
+        const std::shared_ptr<MemberAccessorInterface<int>>& memberAccessor,
+        const std::vector<std::string>& enumNames)
+{
+    int row = mLayout->rowCount();
+    mLayout->addWidget(new QLabel(QString::fromStdString(name)), row, 0);
+
+    QtMemberWidget<int>* memberWidget =
+            new QtMemberWidgetEnumComboBox(memberAccessor, this, enumNames);
     mMemberWidgets.push_back(memberWidget);
     mLayout->addWidget(memberWidget, row, 1);
 

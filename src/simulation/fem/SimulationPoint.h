@@ -30,6 +30,7 @@ public:
     virtual void revertPositions() override;
     virtual void transform(const Eigen::Affine3d& transform) override;
     virtual size_t getSize() override;
+    virtual double getMass() const override;
     virtual GeometricData* getGeometricData() override;
 
 private:

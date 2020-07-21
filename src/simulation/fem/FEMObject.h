@@ -156,6 +156,8 @@ public:
         return v;
     }
 
+    double calculateMass(size_t elementId, const std::array<double, 4>& bary);
+
     void applyForce(ID vertexIndex, const Eigen::Vector& force)
     {
         mForcesExt[vertexIndex] += force;
@@ -294,6 +296,10 @@ public:
     {
         return mPositions.size();
     }
+    virtual double getMass() const override final
+    {
+        return mMassTotal;
+    }
     virtual GeometricData* getGeometricData() override final
     {
         return mPoly3.get();
@@ -329,6 +335,7 @@ private:
     bool factorize(const Eigen::SparseMatrix<double>& A);
 
     ID mId;
+    double mMassTotal; // The total mass of this object.
 
     // Polygon3D
     // Is used to inform other modules about updates in the data.

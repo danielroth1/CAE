@@ -27,6 +27,8 @@ public:
         return mCollision;
     }
 
+    size_t mTempValue; // A temporay value that can be use in different algorithms.
+
 private:
 
     std::shared_ptr<GeometricPointRef> generateGeometricPointRef(

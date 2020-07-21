@@ -133,8 +133,6 @@ public:
         double getTranslationalDamping() const;
         double getRotationalDamping() const;
 
-        double getMass() const;
-
         bool isStatic() const;
 
     // SimulationObject interface
@@ -148,6 +146,7 @@ public:
     virtual void setPosition(Eigen::Vector v, ID id) override;
     virtual void addToPosition(Eigen::Vector v, ID id) override;
     virtual size_t getSize() override;
+    virtual double getMass() const override;
     virtual GeometricData* getGeometricData() override;
 
 private:
@@ -286,14 +285,14 @@ inline double RigidBody::getRotationalDamping() const
     return mRotationalDamping;
 }
 
-inline double RigidBody::getMass() const
-{
-    return mMass;
-}
-
 inline bool RigidBody::isStatic() const
 {
     return mStatic;
+}
+
+inline double RigidBody::getMass() const
+{
+    return mMass;
 }
 
 #endif // RIGIDBODY_H

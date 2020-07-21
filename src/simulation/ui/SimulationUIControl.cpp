@@ -33,6 +33,8 @@
 #include <simulation/fem/FEMObject.h>
 #include <simulation/fem/FEMSimulation.h>
 
+#include <memory>
+
 
 SimulationUIControl::SimulationUIControl(
         SimulationModule* module,
@@ -226,18 +228,66 @@ void SimulationUIControl::init(QWidget* parent)
                     &SceneData::setVerticesSelectable,
                     true, nullptr, nullptr, nullptr));
 
+    std::function<int(SceneData*)> getSimulationObjectType =
+            [=](SceneData* sd)
+    {
+        if (sd->isLeafData())
+        {
+            SceneLeafData* leafData = static_cast<SceneLeafData*>(sd);
+            SimulationObject* so = leafData->getSimulationObjectRaw();
+            if (so != nullptr)
+            {
+                return so->getType();
+            }
+        }
+        return SimulationObject::Type::NONE;
+    };
+    std::function<void(SceneData*, int)> setSimulationObjectType =
+            [=](SceneData* sd, int type)
+    {
+        if (sd->isLeafData())
+        {
+            std::shared_ptr<SceneLeafData> leafData =
+                    std::static_pointer_cast<SceneLeafData>(sd->shared_from_this());
+            if (type == SimulationObject::Type::FEM_OBJECT)
+            {
+                mAc->getSGControl()->createFEMObject(leafData);
+            }
+            else if (type == SimulationObject::Type::RIGID_BODY)
+            {
+                mAc->getSGControl()->createRigidBody(leafData, 1.0);
+            }
+            else
+            {
+                mAc->getSGControl()->removeSimulationObject(leafData);
+            }
+        }
+    };
+    std::vector<std::string> enumNames =
+    {
+        "FEMObject", "SimulationPoint", "RigidBody", "None"
+    };
+    sceneNodeWidget->addEnumComboBox(
+                "Simulation Object Type",
+                MemberAccessorFactory::createGetterSetter<int, SceneData>(
+                    getSimulationObjectType,
+                    setSimulationObjectType,
+                    static_cast<int>(SimulationObject::Type::NONE),
+                    nullptr,
+                    MemberAccessorFactory::createIntComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                enumNames);
+
     std::function<bool(SimulationObject*)> isCollidableFunction =
             [=](SimulationObject* so)
     {
         return mAc->getSimulationControl()->isCollidable(so->shared_from_this());
     };
-
     std::function<void(SimulationObject*, bool)> setCollidableFunction =
             [=](SimulationObject* so, bool collidable)
     {
         mAc->getSimulationControl()->setCollidable(so->shared_from_this(), collidable);
     };
-
     simulationObjectWidget->addBool(
                 "Collidable",
                 MemberAccessorFactory::createGetterSetter<bool, SimulationObject>(

@@ -33,6 +33,8 @@ FEMObject::FEMObject(
               static_cast<Eigen::Index>(mPositions.size()))
     , mAnalyzePatternNecessary(true)
 {
+    mMassTotal = mass;
+
     mInitialPositions.resize(mPositions.size());
     std::copy(mPositions.begin(), mPositions.end(), mInitialPositions.begin());
 
@@ -102,13 +104,10 @@ FEMObject::FEMObject(
         }
     }
 
-    // init vertex masses
     std::vector<int> nCellsPerVertex;
     nCellsPerVertex.resize(mPositions.size());
-    mMasses.resize(mPositions.size());
     for (size_t i = 0; i < mPositions.size(); ++i)
     {
-        mMasses[i] = 0.0;
         nCellsPerVertex[i] = 0;
     }
 
@@ -117,10 +116,49 @@ FEMObject::FEMObject(
         for (size_t i = 0; i < 4; ++i)
         {
             unsigned int index = fe.getCell().at(i);
-            mMasses[index] += fe.getM().at(i);
             nCellsPerVertex[index]++;
         }
     }
+
+    // Simplified mass where each vertex has the same mass of 1.
+//    {
+//        for (FiniteElement& fe : mFiniteElements)
+//        {
+//            std::array<double, 4> masses;
+//            for (size_t i = 0; i < 4; ++i)
+//            {
+//                size_t vId = fe.getCell()[i];
+//                masses[i] = 1.0 / nCellsPerVertex[vId];
+//            }
+//            fe.setM(masses);
+//        }
+//    }
+
+    // init vertex masses
+    mMasses.resize(mPositions.size());
+    for (size_t i = 0; i < mPositions.size(); ++i)
+    {
+        mMasses[i] = 0.0;
+    }
+
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        for (size_t i = 0; i < 4; ++i)
+        {
+            unsigned int index = fe.getCell().at(i);
+            mMasses[index] += fe.getM().at(i);
+        }
+    }
+
+    for (size_t i = 0; i < mMasses.size(); ++i)
+    {
+        mMasses[i] /= nCellsPerVertex[i];
+    }
+
+//    for (size_t i = 0; i < mPositions.size(); ++i)
+//    {
+//        std::cout << "mass " << i << "; " << mMasses[i] << "\n";
+//    }
 
     // set initial positions
     std::copy(mPositions.begin(), mPositions.end(), mInitialPositions.begin());
@@ -236,7 +274,7 @@ void FEMObject::updatePositions()
 
 void FEMObject::updateFEM(bool corotated)
 {
-    START_TIMING_SIMULATION("FEMObject::updateFEM()")
+//    START_TIMING_SIMULATION("FEMObject::updateFEM()")
 
     updateStiffnessMatrix(corotated);
     updateElasticForces();
@@ -250,7 +288,7 @@ void FEMObject::updateFEM(bool corotated)
     VectorXd::Map(mVelocitiesPrevious[0].data(), size * 3) =
             VectorXd::Map(mVelocities[0].data(), size * 3);
 
-    STOP_TIMING_SIMULATION;
+//    STOP_TIMING_SIMULATION;
 }
 
 void FEMObject::solveFEMExplicitly(double timeStep, bool corotated)
@@ -289,6 +327,8 @@ void FEMObject::solveFEM(double timeStep, bool corotated, bool firstStep)
 
 void FEMObject::solveVelocityFEM(double timeStep, bool corotated, bool firstStep)
 {
+//    START_TIMING_SIMULATION("FEMObject::solveVelocityFEM");
+
     if (mTruncation->getTruncatedVectorIds().size() == mPositions.size())
         return;
 
@@ -317,7 +357,7 @@ void FEMObject::solveVelocityFEM(double timeStep, bool corotated, bool firstStep
 //        b = mM * (vPrev - v) + timeStep * (f - K * (timeStep * v + uPrev - u));
 //    }
 
-    START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver");
+//    START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver");
 
     VectorXd sol;
     bool byRemoving = false;
@@ -325,29 +365,29 @@ void FEMObject::solveVelocityFEM(double timeStep, bool corotated, bool firstStep
     {
         if (firstStep)
         {
-            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::calcAOriginal");
+//            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::calcAOriginal");
             SparseMatrix<double> AOriginal = mM + timeStep * timeStep * K;
             SparseMatrix<double> A;
-            STOP_TIMING_SIMULATION;
+//            STOP_TIMING_SIMULATION;
 
-            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::truncateByRemoving");
+//            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::truncateByRemoving");
             mTruncation->truncateByRemoving(AOriginal, A);
-            STOP_TIMING_SIMULATION;
+//            STOP_TIMING_SIMULATION;
 
             if (mAnalyzePatternNecessary)
             {
-                START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::analyze");
+//                START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::analyze");
                 mSolver.analyzePattern(A);
                 mAnalyzePatternNecessary = false;
-                STOP_TIMING_SIMULATION;
+//                STOP_TIMING_SIMULATION;
             }
 
             if (mSolver.info() != Eigen::Success)
                 std::cerr << "Solver: analyzePattern failed.\n";
 
-            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::factorize");
+//            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::factorize");
             mSolver.factorize(A);
-            STOP_TIMING_SIMULATION;
+//            STOP_TIMING_SIMULATION;
         }
 
         if (mSolver.info() != Eigen::Success)
@@ -358,9 +398,9 @@ void FEMObject::solveVelocityFEM(double timeStep, bool corotated, bool firstStep
         VectorXd bCopy = b;
         mTruncation->truncateByRemoving(bCopy, b);
 
-        START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::solve");
+//        START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::solve");
         sol = mSolver.solve(b);
-        STOP_TIMING_SIMULATION;
+//        STOP_TIMING_SIMULATION;
 
         sol = mTruncation->createOriginal(sol);
     }
@@ -368,33 +408,33 @@ void FEMObject::solveVelocityFEM(double timeStep, bool corotated, bool firstStep
     {
         if (firstStep)
         {
-            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::calcAOriginal");
+//            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::calcAOriginal");
             SparseMatrix<double> A = mM + timeStep * timeStep * K;
-            STOP_TIMING_SIMULATION;
+//            STOP_TIMING_SIMULATION;
 
             if (mAnalyzePatternNecessary)
             {
                 mTruncation->analyzePattern(A);
             }
 
-            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::truncateBySettingZero");
+//            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::truncateBySettingZero");
             mTruncation->truncateBySettingZeroFast(A, b);
-            STOP_TIMING_SIMULATION;
+//            STOP_TIMING_SIMULATION;
 
             if (mAnalyzePatternNecessary)
             {
-                START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::analyze");
+//                START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::analyze");
                 mSolver.analyzePattern(A);
                 mAnalyzePatternNecessary = false;
-                STOP_TIMING_SIMULATION;
+//                STOP_TIMING_SIMULATION;
             }
 
             if (mSolver.info() != Eigen::Success)
                 std::cerr << "Solver: analyzePattern failed.\n";
 
-            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::factorize");
+//            START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::factorize");
             mSolver.factorize(A);
-            STOP_TIMING_SIMULATION;
+//            STOP_TIMING_SIMULATION;
         }
 
         if (mSolver.info() != Eigen::Success)
@@ -404,18 +444,20 @@ void FEMObject::solveVelocityFEM(double timeStep, bool corotated, bool firstStep
 
         mTruncation->truncateBySettingZeroFast(b);
 
-        START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::solve");
+//        START_TIMING_SIMULATION("FEMObject::solveVelocityFEM()::linSolver::solve");
         sol = mSolver.solve(b);
-        STOP_TIMING_SIMULATION;
+//        STOP_TIMING_SIMULATION;
     }
 
-    STOP_TIMING_SIMULATION; // FEMObject::solveVelocityFEM()::linSolver
+//    STOP_TIMING_SIMULATION; // FEMObject::solveVelocityFEM()::linSolver
 
     // update the velocities
     VectorXd::Map(mDeltaV[0].data(), size * 3) = sol;
 
     VectorXd::Map(mVelocities[0].data(), size * 3) +=
             VectorXd::Map(mDeltaV[0].data(), size * 3);
+
+//    STOP_TIMING_SIMULATION;
 }
 
 void FEMObject::revertSolverStep()
@@ -465,6 +507,15 @@ void FEMObject::transform(const Affine3d& transform)
     VectorXd::Map(mDisplacements[0].data(), size * 3) =
             VectorXd::Map(mPositions[0].data(), size * 3) -
             VectorXd::Map(mInitialPositions[0].data(), size * 3);
+}
+
+double FEMObject::calculateMass(size_t elementId, const std::array<double, 4>& bary)
+{
+    Cell& c = mPoly3->getTopology3D().getCellIds()[elementId];
+    return bary[0] * mMasses[c[0]] +
+            bary[1] * mMasses[c[1]] +
+            bary[2] * mMasses[c[2]] +
+            bary[3] * mMasses[c[3]];
 }
 
 void FEMObject::addTrunctionIds(const std::vector<ID>& vectorIDs)
@@ -662,50 +713,68 @@ void FEMObject::initializeStiffnessMatrix()
 
 void FEMObject::updateElasticForces()
 {
-    START_TIMING_SIMULATION("FEMObject::updateElasticForces:1")
+//    START_TIMING_SIMULATION("FEMObject::updateElasticForces:1")
     for (FiniteElement& fe : mFiniteElements)
         fe.updateCorotatedForces();
-    STOP_TIMING_SIMULATION;
-    START_TIMING_SIMULATION("FEMObject::updateElasticForces:2")
+//    STOP_TIMING_SIMULATION;
+//    START_TIMING_SIMULATION("FEMObject::updateElasticForces:2")
     assembleElasticForces();
-    STOP_TIMING_SIMULATION;
+//    STOP_TIMING_SIMULATION;
 }
 
 void FEMObject::updateStiffnessMatrix(bool corotated)
 {
-    START_TIMING_SIMULATION("FEMObject::updateStiffnessMatrix()");
-    for (FiniteElement& fe : mFiniteElements)
+//    START_TIMING_SIMULATION("FEMObject::updateStiffnessMatrix()");
+
+    size_t numFiniteElements = mFiniteElements.size();
+#pragma omp parallel for if (numFiniteElements > 100)
+    for (size_t i = 0; i < numFiniteElements; ++i)
     {
+        FiniteElement& fe = mFiniteElements[i];
         if (corotated)
-            fe.updateRotationFast(3, 1e-4);
+            fe.updateRotationFast(2, 1e-4);
+//        if (corotated)
+//            fe.updateRotation();
         fe.updateStiffnessMatrix(corotated);
     }
-    STOP_TIMING_SIMULATION;
+//    STOP_TIMING_SIMULATION;
 
-    START_TIMING_SIMULATION("FEMObject::assembleStiffnessMatrix()");
+//    START_TIMING_SIMULATION("FEMObject::assembleStiffnessMatrix()");
     assembleStiffnessMatrix(corotated);
-    STOP_TIMING_SIMULATION;
+//    STOP_TIMING_SIMULATION;
 }
 
 void FEMObject::updateMassMatrix()
 {
     mMassCoef.clear();
-    mMassCoef.reserve(mFiniteElements.size() * 12);
-    for (FiniteElement& fe : mFiniteElements)
-    {
-        for (unsigned int a = 0; a < 4; ++a)
-        {
-            unsigned int a_global = fe.getCell()[a];
-            double value = fe.getM()[a];
-            for (unsigned int i = 0; i < 3; ++i)
-            {
-                unsigned int r = a_global * 3 + i;
-                unsigned int c = a_global * 3 + i;
-                mMassCoef.push_back(Triplet<double>(r, c, value));
-            }
+//    mMassCoef.reserve(mFiniteElements.size() * 12);
+//    for (FiniteElement& fe : mFiniteElements)
+//    {
+//        for (unsigned int a = 0; a < 4; ++a)
+//        {
+//            unsigned int a_global = fe.getCell()[a];
+//            double value = fe.getM()[a];
+//            for (unsigned int i = 0; i < 3; ++i)
+//            {
+//                unsigned int r = a_global * 3 + i;
+//                unsigned int c = a_global * 3 + i;
+//                mMassCoef.push_back(Triplet<double>(r, c, value));
+//            }
 
+//        }
+//    }
+
+    mMassCoef.reserve(3 * mMasses.size());
+    for (size_t i = 0; i < mMasses.size(); ++i)
+    {
+        for (size_t a = 0; a < 3; ++a)
+        {
+            unsigned int r = i * 3 + a;
+            unsigned int c = i * 3 + a;
+            mMassCoef.push_back(Triplet<double>(r, c, mMasses[i]));
         }
     }
+
     // update sparse matrix
     //std::cout << mM << "\n";
     mM.setZero();

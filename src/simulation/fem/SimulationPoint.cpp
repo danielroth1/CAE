@@ -71,6 +71,11 @@ size_t SimulationPoint::getSize()
     return 1;
 }
 
+double SimulationPoint::getMass() const
+{
+    return 1.0;
+}
+
 GeometricData* SimulationPoint::getGeometricData()
 {
     return mPoint.get();

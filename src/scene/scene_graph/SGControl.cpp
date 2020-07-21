@@ -402,26 +402,31 @@ std::shared_ptr<FEMObject> SGControl::createFEMObject(
         virtual void visit(Polygon3D& polygon3D)
         {
             std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
+            bool colliding = sgc.mAc->getSimulationControl()->isCollidable(so);
+            double massFinal = mass;
             if (so)
             {
                 // There is already a simulation object.
                 // Remove that first from the simulation.
                 sgc.mAc->getSimulationControl()->removeSimulationObject(so);
+                // Take the mass from the removed object if possible.
+                massFinal = so->getMass();
             }
             polygon3D.changeRepresentationToWS();
             femObj = std::shared_ptr<FEMObject>(
                         SimulationObjectFactory::createFEMObject(
                             sgc.mAc->getSimulationControl()->getDomain(),
                             std::static_pointer_cast<Polygon3D>(polygon3D.shared_from_this()),
-                            mass));
+                            massFinal));
             sgc.mAc->getSimulationControl()->addSimulationObject(femObj);
+            if (colliding)
+            {
+                sgc.mAc->getSimulationControl()->addCollisionObject(femObj, nullptr);
+            }
 
-
-            // TODO:
-            // simplify simulation object handling
+            // TODO: simplify simulation object handling
             ld->setSimulationObject(femObj);
             ld->getRenderModelRaw()->revalidate();
-
         }
 
         virtual void visit(GeometricPoint& /*point*/)
@@ -460,27 +465,33 @@ std::shared_ptr<RigidBody> SGControl::createRigidBody(
             Vector center = poly.calculateCenterVertex();
             poly.changeRepresentationToBS(center);
 
-            rb = std::shared_ptr<RigidBody>(
-                        SimulationObjectFactory::createRigidBody(
-                            sgc.mAc->getSimulationControl()->getDomain(),
-                            std::static_pointer_cast<Polygon3D>(poly.shared_from_this()),
-                            mass));
-            rb->setStatic(isStatic);
-
             // remove the old simulation object
             std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
+            bool colliding = sgc.mAc->getSimulationControl()->isCollidable(so);
+            double massFinal = mass;
             if (so)
             {
                 // There is already a simulation object.
                 // Remove that first from the simulation.
                 sgc.mAc->getSimulationControl()->removeSimulationObject(so);
+                // Take the mass from the removed object if possible.
+                massFinal = so->getMass();
             }
+
+            rb = std::shared_ptr<RigidBody>(
+                        SimulationObjectFactory::createRigidBody(
+                            sgc.mAc->getSimulationControl()->getDomain(),
+                            std::static_pointer_cast<Polygon3D>(poly.shared_from_this()),
+                            massFinal));
+            rb->setStatic(isStatic);
 
             // add the new simulation object
             sgc.mAc->getSimulationControl()->addSimulationObject(rb);
 
-//            sgc.mAc->getSimulationControl
-            //TOD:  change render model
+            if (colliding)
+            {
+                sgc.mAc->getSimulationControl()->addCollisionObject(rb, nullptr);
+            }
 
             // TODO:
             // simplify simulation object handling

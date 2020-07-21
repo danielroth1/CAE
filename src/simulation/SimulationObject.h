@@ -57,7 +57,7 @@ public:
     // so->accept(visitor);
     enum Type
     {
-        FEM_OBJECT, SIMULATION_POINT, RIGID_BODY
+        FEM_OBJECT, SIMULATION_POINT, RIGID_BODY, NONE
     };
 
     virtual Type getType() const;
@@ -89,6 +89,8 @@ public:
 
     // number of positions
     virtual size_t getSize() = 0;
+
+    virtual double getMass() const = 0;
 
     virtual GeometricData* getGeometricData() = 0;
 

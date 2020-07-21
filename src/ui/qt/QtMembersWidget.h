@@ -63,6 +63,11 @@ public:
             double singleStep = 1.0,
             int precision = 3);
 
+    void addEnumComboBox(
+            const std::string& name,
+            const std::shared_ptr<MemberAccessorInterface<int>>& memberAccessor,
+            const std::vector<std::string>& enumNames);
+
     // Returns the owner of the first QtMemberWidget. If there is no
     // QtMemberWidget, returns nullptr.
 //    void* getOwner();
