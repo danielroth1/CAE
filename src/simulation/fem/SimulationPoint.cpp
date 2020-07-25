@@ -71,6 +71,11 @@ size_t SimulationPoint::getSize()
     return 1;
 }
 
+void SimulationPoint::setMass(double /*mass*/)
+{
+
+}
+
 double SimulationPoint::getMass() const
 {
     return 1.0;

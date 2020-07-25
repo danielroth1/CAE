@@ -108,14 +108,14 @@ void FEMSimulation::solve(double stepSize, bool firstStep)
 
 void FEMSimulation::solveVelocity(double stepSize, bool firstStep)
 {
-    START_TIMING_SIMULATION("SimulationControl::solveVelocityFEM()");
+//    START_TIMING_SIMULATION("SimulationControl::solveVelocityFEM()");
 #pragma omp parallel for
     for (size_t i = 0; i < mFEMObjects.size(); ++i)
     {
         const std::shared_ptr<FEMObject>& fo = mFEMObjects[i];
         fo->solveVelocityFEM(stepSize, true, firstStep);
     }
-    STOP_TIMING_SIMULATION;
+//    STOP_TIMING_SIMULATION;
 }
 
 void FEMSimulation::revertSolverStep()

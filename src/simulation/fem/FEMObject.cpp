@@ -33,8 +33,6 @@ FEMObject::FEMObject(
               static_cast<Eigen::Index>(mPositions.size()))
     , mAnalyzePatternNecessary(true)
 {
-    mMassTotal = mass;
-
     mInitialPositions.resize(mPositions.size());
     std::copy(mPositions.begin(), mPositions.end(), mInitialPositions.begin());
 
@@ -69,96 +67,16 @@ FEMObject::FEMObject(
     SimulationUtils::resizeVectorWithZeros(mDeltaV, nVertices);
 
     // Initialize other FEM values
-    mM = SparseMatrix<double>(nVertices*3, nVertices*3);
     mK.setZero();
     mKCorot.setZero();
-    mM.setZero();
 
     for (FiniteElement& fe : mFiniteElements)
     {
         fe.initialize();
     }
 
-    {
-        // To calculate the mass, find the corresponding density for the total
-        // volume of all finite elements.
-
-        // Calculate mass for each finite element from total_mass:
-        // First calculate density:
-        //     mass_total = (density * volume_total) / 4
-        // <=> density = 4 * mass_total / volume_total
-        // Then calculate mass for each element:
-        //     mass = (density * volume_fe) / 4
-        double volumeTotal = 0;
-        for (FiniteElement& fe : mFiniteElements)
-        {
-            volumeTotal += fe.getVolume();
-        }
-        double density = 4 * mass / volumeTotal;
-        std::cout << "density = " << density << "\n";
-        for (FiniteElement& fe : mFiniteElements)
-        {
-            double m = density * fe.getVolume() / 4;
-            std::array<double, 4> masses = {m, m, m, m};
-            fe.setM(masses);
-        }
-    }
-
-    std::vector<int> nCellsPerVertex;
-    nCellsPerVertex.resize(mPositions.size());
-    for (size_t i = 0; i < mPositions.size(); ++i)
-    {
-        nCellsPerVertex[i] = 0;
-    }
-
-    for (FiniteElement& fe : mFiniteElements)
-    {
-        for (size_t i = 0; i < 4; ++i)
-        {
-            unsigned int index = fe.getCell().at(i);
-            nCellsPerVertex[index]++;
-        }
-    }
-
-    // Simplified mass where each vertex has the same mass of 1.
-//    {
-//        for (FiniteElement& fe : mFiniteElements)
-//        {
-//            std::array<double, 4> masses;
-//            for (size_t i = 0; i < 4; ++i)
-//            {
-//                size_t vId = fe.getCell()[i];
-//                masses[i] = 1.0 / nCellsPerVertex[vId];
-//            }
-//            fe.setM(masses);
-//        }
-//    }
-
-    // init vertex masses
-    mMasses.resize(mPositions.size());
-    for (size_t i = 0; i < mPositions.size(); ++i)
-    {
-        mMasses[i] = 0.0;
-    }
-
-    for (FiniteElement& fe : mFiniteElements)
-    {
-        for (size_t i = 0; i < 4; ++i)
-        {
-            unsigned int index = fe.getCell().at(i);
-            mMasses[index] += fe.getM().at(i);
-        }
-    }
-
-    for (size_t i = 0; i < mMasses.size(); ++i)
-    {
-        mMasses[i] /= nCellsPerVertex[i];
-    }
-
-//    for (size_t i = 0; i < mPositions.size(); ++i)
-//    {
-//        std::cout << "mass " << i << "; " << mMasses[i] << "\n";
-//    }
+    mM = SparseMatrix<double>(nVertices * 3, nVertices * 3);
+    setMass(mass);
 
     // set initial positions
     std::copy(mPositions.begin(), mPositions.end(), mInitialPositions.begin());
@@ -251,7 +169,6 @@ void FEMObject::initializeFEM()
 
     updateFEM(false);
 //    updateStiffnessMatrix(false);
-    updateMassMatrix();
 }
 
 void FEMObject::updateDisplacements()
@@ -657,6 +574,94 @@ void FEMObject::updateGeometricData(bool notifyListeners)
     // the change in position of the underlying Polygon3D that is
     // simulated here.
     mPoly3->update(true, false, notifyListeners);
+}
+
+void FEMObject::setMass(double mass)
+{
+    mMassTotal = mass;
+
+    {
+        // To calculate the mass, find the corresponding density for the total
+        // volume of all finite elements.
+
+        // Calculate mass for each finite element from total_mass:
+        // First calculate density:
+        //     mass_total = (density * volume_total) / 4
+        // <=> density = 4 * mass_total / volume_total
+        // Then calculate mass for each element:
+        //     mass = (density * volume_fe) / 4
+        double volumeTotal = 0;
+        for (FiniteElement& fe : mFiniteElements)
+        {
+            volumeTotal += fe.getVolume();
+        }
+        double density = 4 * mass / volumeTotal;
+        std::cout << "density = " << density << "\n";
+        for (FiniteElement& fe : mFiniteElements)
+        {
+            double m = density * fe.getVolume() / 4;
+            std::array<double, 4> masses = {m, m, m, m};
+            fe.setM(masses);
+        }
+    }
+
+    std::vector<int> nCellsPerVertex;
+    nCellsPerVertex.resize(mPositions.size());
+    for (size_t i = 0; i < mPositions.size(); ++i)
+    {
+        nCellsPerVertex[i] = 0;
+    }
+
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        for (size_t i = 0; i < 4; ++i)
+        {
+            unsigned int index = fe.getCell().at(i);
+            nCellsPerVertex[index]++;
+        }
+    }
+
+    // Simplified mass where each vertex has the same mass of 1.
+//    {
+//        for (FiniteElement& fe : mFiniteElements)
+//        {
+//            std::array<double, 4> masses;
+//            for (size_t i = 0; i < 4; ++i)
+//            {
+//                size_t vId = fe.getCell()[i];
+//                masses[i] = 1.0 / nCellsPerVertex[vId];
+//            }
+//            fe.setM(masses);
+//        }
+//    }
+
+    // init vertex masses
+    mMasses.resize(mPositions.size());
+    for (size_t i = 0; i < mPositions.size(); ++i)
+    {
+        mMasses[i] = 0.0;
+    }
+
+    for (FiniteElement& fe : mFiniteElements)
+    {
+        for (size_t i = 0; i < 4; ++i)
+        {
+            unsigned int index = fe.getCell().at(i);
+            mMasses[index] += fe.getM().at(i);
+        }
+    }
+
+    for (size_t i = 0; i < mMasses.size(); ++i)
+    {
+        mMasses[i] /= nCellsPerVertex[i];
+    }
+
+//    for (size_t i = 0; i < mPositions.size(); ++i)
+//    {
+//        std::cout << "mass " << i << "; " << mMasses[i] << "\n";
+//    }
+
+    updateMassMatrix();
 }
 
 void FEMObject::initializeStiffnessMatrix()

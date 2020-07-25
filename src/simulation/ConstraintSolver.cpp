@@ -17,7 +17,7 @@ void ConstraintSolver::solveConstraints(
         int maxIterations,
         double maxConstraintError)
 {
-    START_TIMING_SIMULATION("ConstraintSolver::solveConstraints");
+//    START_TIMING_SIMULATION("ConstraintSolver::solveConstraints");
     size_t validConstraints = 0;
     size_t totalConstraints = mConstraints.size() + mCollisionConstraints.size();
 
@@ -66,10 +66,13 @@ void ConstraintSolver::solveConstraints(
             }
         }
         if (validConstraints == totalConstraints)
+        {
+//            std::cout << "break early at: " << iterCount << " iterations.\n";
             break;
+        }
     }
 
-    STOP_TIMING_SIMULATION;
+//    STOP_TIMING_SIMULATION;
 }
 
 void ConstraintSolver::addConstraint(const std::shared_ptr<Constraint>& constraint)

@@ -5,6 +5,8 @@
 
 #include <ui/selection/SelectionListener.h>
 
+#include <vector>
+
 class ApplicationControl;
 class Constraint;
 class GeometricData;
@@ -44,11 +46,6 @@ public:
     void onChangeCollisionRenderingLevel(int level);
     void onEnableCollisionRendering(bool enable);
 
-
-    SimulationModule* mModule;
-    ApplicationControl* mAc;
-    SimulationUIWidget* mWidget;
-
     // SimulationControlListener interface
 public:
     virtual void onSimulationObjectAdded(SimulationObject* so) override;
@@ -67,9 +64,26 @@ public:
 
 private:
 
-    // Go over all selected scene nodes and inform the QtMemberWidgets that
-    // update the ui elements over changed owners.
+    // Updates the UI member elements for the given scene data.
+    // Displays options to adapt the scene data depending on the scene datas
+    // type, e.g. if there are FEMObjects and RigidBodies among them, for
+    // both fields are displayed in the UI and changes only affect either of
+    // them.
     void onSelectedSceneNodesChanged(const std::vector<std::shared_ptr<SceneData>>& sds);
+
+    void updateMemberWidgets(
+            const std::vector<std::shared_ptr<SceneData>>& sceneDatas);
+
+//    void updateMemberWidgets(
+//            std::iterator<std::random_access_iterator_tag, std::shared_ptr<SceneData>> begin,
+//            std::iterator<std::random_access_iterator_tag, std::shared_ptr<SceneData>> end);
+
+    SimulationModule* mModule;
+    ApplicationControl* mAc;
+    SimulationUIWidget* mWidget;
+
+    // The scene datas that can be accessed with the member widgets in the UI.
+    std::vector<std::shared_ptr<SceneData>> mSceneDatasInUI;
 };
 
 #endif // SIMULATIONUICONTROL_H

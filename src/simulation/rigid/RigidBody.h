@@ -101,8 +101,6 @@ public:
     // Setters
         void setTranslationalDamping(double translationalDamping);
         void setRotationalDamping(double rotationalDamping);
-
-        void setMass(double mass);
         void setStatic(bool s);
 
     // Getters
@@ -146,7 +144,8 @@ public:
     virtual void setPosition(Eigen::Vector v, ID id) override;
     virtual void addToPosition(Eigen::Vector v, ID id) override;
     virtual size_t getSize() override;
-    virtual double getMass() const override;
+    virtual void setMass(double mass) override;
+    virtual double getMass() const override final;
     virtual GeometricData* getGeometricData() override;
 
 private:
@@ -204,11 +203,6 @@ inline void RigidBody::setTranslationalDamping(double translationalDamping)
 inline void RigidBody::setRotationalDamping(double rotationalDamping)
 {
     mRotationalDamping = rotationalDamping;
-}
-
-inline void RigidBody::setMass(double mass)
-{
-    mMass = mass;
 }
 
 inline void RigidBody::setStatic(bool s)
@@ -288,6 +282,11 @@ inline double RigidBody::getRotationalDamping() const
 inline bool RigidBody::isStatic() const
 {
     return mStatic;
+}
+
+inline void RigidBody::setMass(double mass)
+{
+    mMass = mass;
 }
 
 inline double RigidBody::getMass() const

@@ -261,6 +261,8 @@ void SimulationUIControl::init(QWidget* parent)
             {
                 mAc->getSGControl()->removeSimulationObject(leafData);
             }
+
+            updateMemberWidgets(mSceneDatasInUI);
         }
     };
     std::vector<std::string> enumNames =
@@ -297,6 +299,17 @@ void SimulationUIControl::init(QWidget* parent)
                     nullptr,
                     MemberAccessorFactory::createBoolComparator(),
                     mAc->getSimulationControl()->getDomain()));
+
+    simulationObjectWidget->addDouble(
+                "Mass",
+                MemberAccessorFactory::createGetterSetter<double, SimulationObject>(
+                    &SimulationObject::getMass,
+                    &SimulationObject::setMass,
+                    1e-3,
+                    nullptr,
+                    MemberAccessorFactory::createDoubleComparator(),
+                    mAc->getSimulationControl()->getDomain()),
+                1e-5, 1e+5, 0.1, 5);
 
     femWidget->addDouble(
                 "Youngs Modulus",
@@ -384,17 +397,6 @@ void SimulationUIControl::init(QWidget* parent)
                     nullptr,
                     nullptr,
                     mAc->getSimulationControl()->getDomain()));
-
-    rigidBodyWidget->addDouble(
-                "Mass",
-                MemberAccessorFactory::createGetterSetter<double, RigidBody>(
-                    &RigidBody::getMass,
-                    &RigidBody::setMass,
-                    1e-3,
-                    nullptr,
-                    MemberAccessorFactory::createDoubleComparator(),
-                    mAc->getSimulationControl()->getDomain()),
-                1e-5, 1e+5, 0.1, 5);
 
     rigidBodyWidget->addDouble(
                 "Friction Static",
@@ -639,6 +641,8 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
         sdsVec.push_back(sd);
     }
     onSelectedSceneNodesChanged(sdsVec);
+
+    updateMemberWidgets(sdsVec);
 }
 
 void SimulationUIControl::onSelectedVerticesChanged(
@@ -650,6 +654,17 @@ void SimulationUIControl::onSelectedVerticesChanged(
 void SimulationUIControl::onSelectedSceneNodesChanged(
         const std::vector<std::shared_ptr<SceneData> >& sds)
 {
+    updateMemberWidgets(sds);
+}
+
+void SimulationUIControl::updateMemberWidgets(
+        const std::vector<std::shared_ptr<SceneData>>& sceneDatas)
+{
+    mSceneDatasInUI = sceneDatas;
+
+    // Go over all selected scene nodes and inform the QtMemberWidgets that
+    // update the ui elements over changed owners.
+
     QtOwnersMembersWidget* omw = mWidget->getOwnersMembersWidget();
     QtMembersWidget* sceneDataWidget = omw->getMembersWidget("SceneData");
     QtMembersWidget* simulationObjectWidget = omw->getMembersWidget("SimulationObject");
@@ -669,8 +684,9 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
     omw->setMembersWidgetVisible("RigidBody", false);
     omw->setMembersWidgetVisible("PolygonRenderModel", false);
 
-    for (const std::shared_ptr<SceneData>& sd : sds)
+    for (auto it = sceneDatas.begin(); it != sceneDatas.end(); ++it)
     {
+        const std::shared_ptr<SceneData>& sd = *it;
         sceneDataWidget->addOwner(sd.get());
         sceneDataWidget->updateValues();
         omw->setMembersWidgetVisible("SceneData", true);
@@ -743,6 +759,10 @@ void SimulationUIControl::onSelectedSceneNodesChanged(
                     break;
                 }
                 case SimulationObject::Type::SIMULATION_POINT:
+                {
+                    break;
+                }
+                case SimulationObject::Type::NONE:
                 {
                     break;
                 }

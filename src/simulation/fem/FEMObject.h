@@ -284,22 +284,29 @@ public:
     {
         return mPositions[id];
     }
+
     virtual void setPosition(Eigen::Vector v, ID id) override final
     {
         mPositions[id] = v;
     }
+
     virtual void addToPosition(Eigen::Vector v, ID id) override final
     {
         mPositions[id] += v;
     }
+
     virtual size_t getSize() override final
     {
         return mPositions.size();
     }
+
+    virtual void setMass(double mass);
+
     virtual double getMass() const override final
     {
         return mMassTotal;
     }
+
     virtual GeometricData* getGeometricData() override final
     {
         return mPoly3.get();

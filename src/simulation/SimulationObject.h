@@ -90,6 +90,7 @@ public:
     // number of positions
     virtual size_t getSize() = 0;
 
+    virtual void setMass(double mass) = 0;
     virtual double getMass() const = 0;
 
     virtual GeometricData* getGeometricData() = 0;
