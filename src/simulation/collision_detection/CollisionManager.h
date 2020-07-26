@@ -64,6 +64,10 @@ public:
 
     bool removeSimulationObject(const std::shared_ptr<SimulationObject>& so);
 
+    // Removes the given polygon from the collision detection. It's either
+    // directly a simulation object or the target of an interpolator.
+    bool removePolygon(const std::shared_ptr<Polygon>& poly);
+
     // Adds a collision group id to the given simulation object. If this
     // simulation object isn't collidable, nothing happens.
     // All objects that share a collision group id can't collide with each other.
@@ -103,7 +107,17 @@ public:
     const std::vector<SimulationCollision>& getCollisions() const;
 
     // Checks if the given simulation object was added as collision object before.
+    // If it's is the source of an interpolation, then this method will also return
+    // true.
+    //
+    // For interpolators the isCollidable(const std::shared_ptr<Polygon>&)
+    // method can be used by passing the inteprolators target polygon.
     bool isCollidable(const std::shared_ptr<SimulationObject>& so);
+
+    // Checks if the given polygon is collidable which is the case if
+    // - it's part of a collidable simulation object
+    // - it's target of a interpolator whose source polygon is part of simulation object
+    bool isCollidable(const std::shared_ptr<Polygon>& poly);
 
     void setInvertNormalsIfNecessary(bool invertNormalsIfNecessary);
     bool getInvertNormalsIfNecessary() const;
@@ -131,8 +145,8 @@ private:
         Eigen::Vector3d mX;
         Eigen::Quaterniond mQ;
 
-        std::shared_ptr<SimulationObject> mSo;
-        std::shared_ptr<Polygon> mPolygon;
+        std::shared_ptr<SimulationObject> mSo; // Source SimulationObject
+        std::shared_ptr<Polygon> mPolygon; // Target Polygon
         std::shared_ptr<BoundingVolumeHierarchy> mBvh;
 
         std::vector<int> mCollisionGroups;

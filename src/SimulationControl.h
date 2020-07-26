@@ -154,11 +154,41 @@ public:
         void addConstraint(const std::shared_ptr<Constraint>& c);
         void removeConstraint(const std::shared_ptr<Constraint>& c);
 
+        // Makes the given SimulationObject collidable. Does nothing if it's
+        // already collidable.
+        // If interpolation != nullptr, the target polygon of the interpolator
+        // is used as the collision geometry. In that case the polygon of so
+        // must be the same as the source polygon of the interpolator.
         void addCollisionObject(
                 const std::shared_ptr<SimulationObject>& so,
                 const std::shared_ptr<MeshInterpolatorFEM>& interpolation,
                 double collisionSphereRadiusFactor = 0.2);
+
+        // Adds the target polygon of the given interpolator as collision
+        // geometry. The source polygon must be assigned to simulation object
+        // and added to the simulation,
+        // i.e. SimulationControl::addSimulationObject
+        // else the method does nothing.
+        void addCollisionObject(
+                const std::shared_ptr<MeshInterpolatorFEM>& interpolation);
+
+        // Makes the given polygon collidable.
+        // One of the following conditions must be true:
+        // - the polygon is part of a simulation object that was added to the
+        //   simulation, i.e. SimulationControl::addSimulationObject()
+        // - the polygon is the target of an FEMInterpolator and the source
+        //   polygon of that interpolator is part of a simulation object that
+        //   was added to the simulation.
+        bool addCollisionObject(const std::shared_ptr<Polygon>& poly);
+
+        // Makes the given simulation object non-collidable. If it's already
+        // nothing happens. Also works if the target polygon of an interpolator
+        // is collidable.
         void removeCollisionObject(const std::shared_ptr<SimulationObject>& so);
+
+        // Removes the given polygon from the collision detection. It's either
+        // directly a simulation object or the target of an interpolator.
+        void removeCollisionObject(const std::shared_ptr<Polygon>& poly);
 
         void addCollisionGroup(
                 const std::shared_ptr<SimulationObject>& so, int groupId);
@@ -167,8 +197,20 @@ public:
                 const std::shared_ptr<SimulationObject>& so,
                 const std::vector<int>& collisionGroupIds);
 
+        bool isCollidable(const std::shared_ptr<Polygon>& poly);
         bool isCollidable(const std::shared_ptr<SimulationObject>& so);
+
+        // Convenience method that either calls addCollisionObject() or
+        // removeCollisionObject().
         void setCollidable(const std::shared_ptr<SimulationObject>& so, bool collidable);
+
+        // Convenience method that either calls addCollisionObject() or
+        // removeCollisionObject().
+        void setCollidable(const std::shared_ptr<MeshInterpolatorFEM>& interpolator, bool collidable);
+
+        // Convenience method that either calls addCollisionObject() or
+        // removeCollisionObject().
+        void setCollidable(const std::shared_ptr<Polygon>& poly, bool collidable);
 
 
     // Is called by SimulationThread once after the thread is started.

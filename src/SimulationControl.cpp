@@ -26,6 +26,7 @@
 #include <simulation/rigid/RigidBody.h>
 #include <simulation/ImpulseConstraintSolver.h>
 #include <simulation/rigid/RigidSimulation.h>
+#include <scene/data/geometric/MeshInterpolationManager.h>
 #include <scene/data/geometric/MeshInterpolatorFEM.h>
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon3D.h>
@@ -543,9 +544,94 @@ void SimulationControl::addCollisionObject(
     so->accept(v);
 }
 
+void SimulationControl::addCollisionObject(
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolation)
+{
+    auto it = std::find_if(
+                mSimulationObjects.begin(), mSimulationObjects.end(),
+                [interpolation](const std::shared_ptr<SimulationObject>& so)
+    {
+        if (so->getType() == SimulationObject::Type::FEM_OBJECT)
+        {
+            return std::static_pointer_cast<FEMObject>(so)->getPolygon() == interpolation->getSource();
+        }
+        else if (so->getType() == SimulationObject::Type::RIGID_BODY)
+        {
+            return std::static_pointer_cast<RigidBody>(so)->getPolygon() == interpolation->getSource();
+        }
+        return false;
+    });
+    if (it != mSimulationObjects.end())
+    {
+        addCollisionObject(*it, interpolation);
+    }
+}
+
+bool SimulationControl::addCollisionObject(const std::shared_ptr<Polygon>& poly)
+{
+    // Check if the polygon is owned by a SimulationObject and if yes, set
+    // that as collidable.
+    auto it = std::find_if(
+                mSimulationObjects.begin(), mSimulationObjects.end(),
+                [poly](const std::shared_ptr<SimulationObject>& so)
+    {
+        if (so->getType() == SimulationObject::Type::FEM_OBJECT)
+        {
+            return std::static_pointer_cast<FEMObject>(so)->getPolygon() == poly;
+        }
+        else if (so->getType() == SimulationObject::Type::RIGID_BODY)
+        {
+            return std::static_pointer_cast<RigidBody>(so)->getPolygon() == poly;
+        }
+        return false;
+    });
+    if (it != mSimulationObjects.end())
+    {
+        addCollisionObject(*it, nullptr);
+        return true;
+    }
+    else
+    {
+        // Check if it's referenced by an interpolator and if yes, use that
+        // one.
+        std::shared_ptr<MeshInterpolator> interpolator =
+                mAc->getMeshInterpolationManager()->getInterpolator(poly);
+        if (interpolator &&
+                interpolator->getType() == MeshInterpolator::Type::FEM)
+        {
+
+            auto it = std::find_if(
+                        mSimulationObjects.begin(), mSimulationObjects.end(),
+                        [interpolator](const std::shared_ptr<SimulationObject>& so)
+            {
+                if (so->getType() == SimulationObject::Type::FEM_OBJECT)
+                {
+                    return std::static_pointer_cast<FEMObject>(so)->getPolygon() == interpolator->getSource();
+                }
+                else if (so->getType() == SimulationObject::Type::RIGID_BODY)
+                {
+                    return std::static_pointer_cast<RigidBody>(so)->getPolygon() == interpolator->getSource();
+                }
+                return false;
+            });
+            if (it != mSimulationObjects.end())
+            {
+                addCollisionObject(*it, std::static_pointer_cast<MeshInterpolatorFEM>(interpolator));
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void SimulationControl::removeCollisionObject(const std::shared_ptr<SimulationObject>& so)
 {
     mCollisionManagerProxy->removeSimulationObject(so);
+}
+
+void SimulationControl::removeCollisionObject(const std::shared_ptr<Polygon>& poly)
+{
+    mCollisionManager->removePolygon(poly);
 }
 
 void SimulationControl::addCollisionGroup(
@@ -561,10 +647,26 @@ void SimulationControl::setCollisionGroups(
     mCollisionManagerProxy->setCollisionGroupIds(so, collisionGroupIds);
 }
 
+bool SimulationControl::isCollidable(const std::shared_ptr<Polygon>& poly)
+{
+    if (poly != nullptr)
+    {
+        return mCollisionManager->isCollidable(poly);
+    }
+    return false;
+}
+
 bool SimulationControl::isCollidable(
         const std::shared_ptr<SimulationObject>& so)
 {
-    return mCollisionManager->isCollidable(so);
+    if (so != nullptr)
+    {
+        return mCollisionManager->isCollidable(
+                    std::dynamic_pointer_cast<Polygon>(
+                        dynamic_cast<Polygon*>(
+                            so->getGeometricData())->shared_from_this()));
+    }
+    return false;
 }
 
 void SimulationControl::setCollidable(
@@ -574,6 +676,23 @@ void SimulationControl::setCollidable(
         addCollisionObject(so, nullptr);
     else
         removeCollisionObject(so);
+}
+
+void SimulationControl::setCollidable(
+        const std::shared_ptr<MeshInterpolatorFEM>& interpolator, bool collidable)
+{
+    if (collidable)
+        addCollisionObject(interpolator);
+    else
+        removeCollisionObject(interpolator->getTarget());
+}
+
+void SimulationControl::setCollidable(const std::shared_ptr<Polygon>& poly, bool collidable)
+{
+    if (collidable)
+        addCollisionObject(poly);
+    else
+        removeCollisionObject(poly);
 }
 
 void SimulationControl::initializeSimulation()

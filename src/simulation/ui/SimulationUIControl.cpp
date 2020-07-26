@@ -228,6 +228,49 @@ void SimulationUIControl::init(QWidget* parent)
                     &SceneData::setVerticesSelectable,
                     true, nullptr, nullptr, nullptr));
 
+    // -> Move it to SGControl.
+    std::function<bool(SceneData*)> isCollidableFunction =
+            [=](SceneData* sd)
+    {
+        if (sd->isLeafData())
+        {
+            SceneLeafData* leafData = static_cast<SceneLeafData*>(sd);
+
+            if (leafData->getGeometricData() &&
+                    leafData->getGeometricData()->getType() == GeometricData::Type::POLYGON)
+            {
+                return mAc->getSimulationControl()->isCollidable(
+                            std::static_pointer_cast<Polygon>(leafData->getGeometricData()));
+            }
+        }
+        return false;
+    };
+    std::function<void(SceneData*, bool)> setCollidableFunction =
+            [=](SceneData* sd, bool collidable)
+    {
+        if (sd->isLeafData())
+        {
+            SceneLeafData* leafData = static_cast<SceneLeafData*>(sd);
+
+            if (leafData->getGeometricData() &&
+                    leafData->getGeometricData()->getType() == GeometricData::Type::POLYGON)
+            {
+                mAc->getSimulationControl()->setCollidable(
+                            std::static_pointer_cast<Polygon>(leafData->getGeometricData()), collidable);
+                updateMemberWidgets(mSceneDatasInUI);
+            }
+        }
+    };
+    sceneNodeWidget->addBool(
+                "Collidable",
+                MemberAccessorFactory::createGetterSetter<bool, SceneData>(
+                    isCollidableFunction,
+                    setCollidableFunction,
+                    true,
+                    nullptr,
+                    MemberAccessorFactory::createBoolComparator(),
+                    mAc->getSimulationControl()->getDomain()));
+
     std::function<int(SceneData*)> getSimulationObjectType =
             [=](SceneData* sd)
     {
@@ -279,26 +322,6 @@ void SimulationUIControl::init(QWidget* parent)
                     MemberAccessorFactory::createIntComparator(),
                     mAc->getSimulationControl()->getDomain()),
                 enumNames);
-
-    std::function<bool(SimulationObject*)> isCollidableFunction =
-            [=](SimulationObject* so)
-    {
-        return mAc->getSimulationControl()->isCollidable(so->shared_from_this());
-    };
-    std::function<void(SimulationObject*, bool)> setCollidableFunction =
-            [=](SimulationObject* so, bool collidable)
-    {
-        mAc->getSimulationControl()->setCollidable(so->shared_from_this(), collidable);
-    };
-    simulationObjectWidget->addBool(
-                "Collidable",
-                MemberAccessorFactory::createGetterSetter<bool, SimulationObject>(
-                    isCollidableFunction,
-                    setCollidableFunction,
-                    true,
-                    nullptr,
-                    MemberAccessorFactory::createBoolComparator(),
-                    mAc->getSimulationControl()->getDomain()));
 
     simulationObjectWidget->addDouble(
                 "Mass",

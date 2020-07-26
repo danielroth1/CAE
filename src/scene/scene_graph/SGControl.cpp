@@ -6,6 +6,7 @@
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/GeometricPoint.h>
 #include <scene/data/geometric/MeshInterpolationManager.h>
+#include <scene/data/geometric/MeshInterpolatorFEM.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon3D.h>
 
@@ -421,7 +422,7 @@ std::shared_ptr<FEMObject> SGControl::createFEMObject(
             sgc.mAc->getSimulationControl()->addSimulationObject(femObj);
             if (colliding)
             {
-                sgc.mAc->getSimulationControl()->addCollisionObject(femObj, nullptr);
+                sgc.mAc->getSimulationControl()->setCollidable(femObj, true);
             }
 
             // TODO: simplify simulation object handling
@@ -490,7 +491,7 @@ std::shared_ptr<RigidBody> SGControl::createRigidBody(
 
             if (colliding)
             {
-                sgc.mAc->getSimulationControl()->addCollisionObject(rb, nullptr);
+                sgc.mAc->getSimulationControl()->setCollidable(rb, true);
             }
 
             // TODO:
@@ -548,7 +549,7 @@ void SGControl::createCollidable(
     std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
     if (so)
     {
-        mAc->getSimulationControl()->addCollisionObject(so, interpolation);
+        mAc->getSimulationControl()->setCollidable(interpolation->getTarget(), true);
     }
     else
     {

@@ -275,40 +275,40 @@ bool CollisionManager::addSimulationObject(
 
 bool CollisionManager::removeSimulationObject(const std::shared_ptr<SimulationObject>& so)
 {
+    return removePolygon(std::dynamic_pointer_cast<Polygon>(so->getGeometricData()->shared_from_this()));
+}
+
+bool CollisionManager::removePolygon(const std::shared_ptr<Polygon>& poly)
+{
     auto it = std::find_if(mCollisionData.begin(), mCollisionData.end(),
-                        [so](const CollisionData& cd)
+                        [poly](const CollisionData& cd)
     {
-        return cd.mSo == so;
+        return cd.mPolygon == poly;
     });
 
-    bool returnValue;
     if (it != mCollisionData.end())
     {
         mCollisionData.erase(it);
-        returnValue = true;
+
+        // all kept collisions constraints that reference the removed simulation
+        // object are removed.
+        std::vector<SimulationCollision> validCollisions;
+        for (const SimulationCollision& sc : mSimulationCollisions)
+        {
+            if (sc.getCollision().getSimulationObjectA() != it->mSo.get() &&
+                    sc.getCollision().getSimulationObjectB() != it->mSo.get())
+            {
+                validCollisions.push_back(sc);
+            }
+        }
+        mSimulationCollisions = validCollisions;
 
         for (CollisionManagerListener* listener : mListeners)
-            listener->notifySimulationObjectRemoved(so);
-    }
-    else
-    {
-        returnValue = false;
-    }
+            listener->notifySimulationObjectRemoved(it->mSo);
 
-    // all kept collisions constraints that reference the removed simulation
-    // object are removed.
-    std::vector<SimulationCollision> validCollisions;
-    for (const SimulationCollision& sc : mSimulationCollisions)
-    {
-        if (sc.getCollision().getSimulationObjectA() != so.get() &&
-                sc.getCollision().getSimulationObjectB() != so.get())
-        {
-            validCollisions.push_back(sc);
-        }
+        return true;
     }
-    mSimulationCollisions = validCollisions;
-
-    return returnValue;
+    return false;
 }
 
 void CollisionManager::addCollisionGroupId(
@@ -530,6 +530,17 @@ bool CollisionManager::isCollidable(const std::shared_ptr<SimulationObject>& so)
                         [so](const CollisionData& cd)
     {
         return cd.mSo == so;
+    });
+
+    return it != mCollisionData.end();
+}
+
+bool CollisionManager::isCollidable(const std::shared_ptr<Polygon>& poly)
+{
+    auto it = std::find_if(mCollisionData.begin(), mCollisionData.end(),
+                        [poly](const CollisionData& cd)
+    {
+        return cd.mPolygon == poly;
     });
 
     return it != mCollisionData.end();
