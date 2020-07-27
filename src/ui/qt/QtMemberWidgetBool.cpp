@@ -27,7 +27,14 @@ QtMemberWidgetBool::~QtMemberWidgetBool()
 
 void QtMemberWidgetBool::checkBoxStateChanged(int state)
 {
-    mMemberAccessor->setData(state == Qt::CheckState::Checked);
+    mMemberAccessor->setData(state == Qt::CheckState::Checked ||
+                             state == Qt::CheckState::PartiallyChecked);
+
+    // Disbale check box tristate when selecting check box.
+    // PartiallyChecked only makes sense to display that the property is true
+    // for some objects and false for others.
+    if (state != Qt::CheckState::PartiallyChecked)
+        mCheckBox->setTristate(false);
 }
 
 void QtMemberWidgetBool::updateSlot()
@@ -45,6 +52,7 @@ void QtMemberWidgetBool::updateSlot()
         mCheckBox->setCheckState(
                     mMemberAccessor->getData() ? Qt::CheckState::Checked :
                                                  Qt::CheckState::Unchecked);
+        mCheckBox->setTristate(false);
     }
     mCheckBox->blockSignals(false);
 }
