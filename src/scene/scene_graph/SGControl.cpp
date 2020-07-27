@@ -712,6 +712,13 @@ SGTraverser SGControl::createSceneGraphTraverser()
 
 void SGControl::removeNode(SGNode* node)
 {
+    // Only true for the root node which can't be removed.
+    if (node->getParent() == nullptr)
+    {
+        std::cout << "Can not remove root node.\n";
+        return;
+    }
+
     // Correctly removes all leaf nodes of the sub graph.
     class RemoveChildrenNodeVisitor : public SGNodeVisitor
     {
