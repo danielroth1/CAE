@@ -13,6 +13,11 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
+# Download all external libraries (cgal and eigen). Checks if they are already
+# there so this call only takes time the first time it's called. Currently
+# only works with header only libraries.
+system(./download_external_libs.sh)
+
 TARGET = CAE
 TEMPLATE = app
 
