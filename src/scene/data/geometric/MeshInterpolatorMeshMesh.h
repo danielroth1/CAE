@@ -2,7 +2,11 @@
 #define MESHINTERPOLATORMESHMESH_H
 
 #include "MeshInterpolator.h"
-#include <Eigen/Core>
+
+// Makes the code compatible to older eigen version 3.2.10
+namespace Eigen {
+typedef EIGEN_DEFAULT_DENSE_INDEX_TYPE Index;
+}
 
 class Polygon2DAccessor;
 class TopologyFace;

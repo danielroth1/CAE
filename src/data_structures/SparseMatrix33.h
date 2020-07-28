@@ -4,6 +4,11 @@
 #include <map>
 #include <Eigen/Sparse>
 
+// Makes the code compatible to older eigen version 3.2.10
+namespace Eigen {
+typedef EIGEN_DEFAULT_DENSE_INDEX_TYPE Index;
+}
+
 // Represents a stiffness matrix that is composed of 3x3 sub matrices.
 // Offers efficient methods to access these sub matrices with three block
 // operations for each submatrix that accesses the three rows of the matrix.
@@ -102,6 +107,7 @@
 class SparseMatrix33
 {
 public:
+
     // The actual size of the matrix will be (3 * rows, 3 * columns).
     //\param rows - number of rows of 3d matrices
     //\param column - number of columns of 3d matrices
