@@ -1,9 +1,7 @@
 
-# before using this file, rename it to "CAE.pro" and replace the <path-to-...> with the corresponding lib paths.
 
-CGAL_INCLUDE_PATH = <path-to-cgal>/include
-EIGEN_INCLUDE_PATH = /usr/include/eigen3
-
+CGAL_INCLUDE_PATH = extern/cgal/include
+EIGEN_INCLUDE_PATH = extern/eigen
 
 #-------------------------------------------------
 #
@@ -52,12 +50,22 @@ CONFIG += debug
 } else {
 
 message("release")
+#QMAKE_CXXFLAGS += -O0
+#QMAKE_CXXFLAGS += -O1
+#QMAKE_CXXFLAGS += -O2
 QMAKE_CXXFLAGS += -O3
+#QMAKE_CXXFLAGS += -Ofast
+#QMAKE_CXXFLAGS += -O3
+#QMAKE_CXXFLAGS += -march=native
 QMAKE_CXXFLAGS += -DNDEBUG
+
+CONFIG += force_debug_info
+
 }
 
-SOURCES = $$files(*.cpp, true)
-HEADERS = $$files(*.h, true)
+SOURCES = $$files(src/*.cpp, true)
+HEADERS = $$files(src/*.h, true) \
+    src/data_structures/OrientedAABB.h
 
 FORMS += \
     src/mainwindow.ui \
@@ -86,5 +94,14 @@ LIBS += -fopenmp
 
 LIBS += -lglut -lGLU -lGLEW -lboost_system
 
-
 SUBDIRS += CAE.pro
+
+# Automatically downloads all assets that aren't there yet. This call only
+# takes some time the first time it's called. The check if a file is already
+# there is very cheap. It's executed each time qmake is run.
+system(cd $$OUT_PWD && $$PWD/download_assets.sh)
+
+
+#assets.path += $${OUT_PWD}/assets
+#assets.files += assets/*
+#INSTALLS += assets
