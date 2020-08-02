@@ -97,19 +97,26 @@ void CarDemo::load()
                 Eigen::AngleAxisd(0.5 * 3.14, Eigen::Vector3d(0.0, 1.0, 0.0));
 
         double cubeMass = 0.2;
-        for (int r = 0; r < 6; ++r)
+        for (int r = 0; r < 8; ++r)
         {
-            for (int c = 0; c < 3; ++c)
+            for (int c = 0; c < 9; ++c)
             {
-                for (int z = 0; z < 2; ++z)
+                for (int z = 0; z < 1; ++z)
                 {
-                    if (z == 1)
+                    if (false && r % 2 == 1)
                     {
                         MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0, true, 0.0);
 
+                        std::shared_ptr<Polygon3D> poly3 =
+                                std::make_shared<Polygon3D>(
+                                    GeometricDataFactory::create3DBox(0.5, 0.5, 0.5));
+//                        SGLeafNode* node1 = mAc.getSGControl()->createLeafNode(
+//                                    "Box", mAc.getSGControl()->getSceneGraph()->getRoot(),
+//                                    poly3, Vector(-2 + 0.6 * c, -0.5 + 0.6 * r, -1 + 0.6 * z), true);
+
                         SGLeafNode* node1 = mAc.getSGControl()->createBox(
                                     "Box", mAc.getSGControl()->getSceneGraph()->getRoot(),
-                                    Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, -1 + 0.6 * z),
+                                    Vector(-2 + 0.6 * c, -0.5 + 0.6 * r, -1 + 0.6 * z),
                                     0.5, 0.5, 0.5, true);
                         mAc.getSGControl()->create3DGeometryFrom2D(node1, criteria);
                         mAc.getSGControl()->createFEMObject(node1->getData(), cubeMass);
@@ -122,14 +129,14 @@ void CarDemo::load()
                         std::shared_ptr<FEMObject> femObj =
                                 std::dynamic_pointer_cast<FEMObject>(
                                     node1->getData()->getSimulationObject());
-                        femObj->setYoungsModulus(5e+4);
+                        femObj->setYoungsModulus(30000);
 
                     }
                     else
                     {
                         SGLeafNode* node1 = mAc.getSGControl()->createBox(
                                     "Box", mAc.getSGControl()->getSceneGraph()->getRoot(),
-                                    Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, -1 + 0.6 * z),
+                                    Vector(-2 + 0.6 * c, -0.5 + 0.6 * r, -1 + 0.6 * z),
                                     0.5, 0.5, 0.5, true);
                         mAc.getSGControl()->createRigidBody(node1->getData(), cubeMass, false);
 
@@ -137,6 +144,15 @@ void CarDemo::load()
                         node1->getData()->getSimulationObject()->updateGeometricData();
 
                         mAc.getSGControl()->createCollidable(node1->getData());
+
+//                        if (c == 1)
+//                        {
+//                            mAc.getSGControl()->createLinearForce(
+//                                        "Linear Force",
+//                                        mAc.getSGControl()->getSceneGraph()->getRoot(),
+//                                        SimulationPointRef(node1->getData()->getSimulationObject().get(), 0),
+//                                        node1->getData()->getSimulationObject()->getPosition(0) + Eigen::Vector3d(1, -3, 0), 10.0);
+//                        }
                     }
                 }
 
@@ -281,7 +297,7 @@ void CarDemo::createTire(
     // Rotational motor
     std::shared_ptr<RotationalMotor> motorForce =
             std::make_shared<RotationalMotor>(
-                rigid, hull, Vector(1.0, 0.0, 0.0), 10.0);
+                rigid, hull, Vector(1.0, 0.0, 0.0), 8.0);
     mAc.getSimulationControl()->addForce(motorForce);
 
 //    std::shared_ptr<BallJoint> ballJoint =

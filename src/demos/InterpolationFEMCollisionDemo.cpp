@@ -36,13 +36,14 @@ InterpolationFEMCollisionDemo::InterpolationFEMCollisionDemo(ApplicationControl&
 
 std::string InterpolationFEMCollisionDemo::getName()
 {
-    return "Interpolation FEM (Collision)";
+    return "Interpolation FEM (Falling Spheres)";
 }
 
 void InterpolationFEMCollisionDemo::load()
 {
     SGControl* sg = mAc.getSGControl();
 
+    MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0, true, 0.0);
     // Deforming sphere 1
     {
         double boxDim = 0.8;
@@ -56,17 +57,21 @@ void InterpolationFEMCollisionDemo::load()
                     sg->getSceneGraph()->getRoot(),
                     std::make_shared<Polygon2D>(
                         GeometricDataFactory::create2DSphere(sphereDim, 4)),
-                    spherePos, true);
+                    Eigen::Vector3d::Zero(), true);
 
         targetNode->getData()->getRenderModel()->setWireframeEnabled(true);
+        targetNode->getData()->getGeometricData()->transform(Eigen::Affine3d(Eigen::Translation3d(spherePos)));
 
         // load the source box
         // use a 3d box
         SGLeafNode* sourceNode = sg->createLeafNode(
                     "Box", sg->getSceneGraph()->getRoot(),
                     std::make_shared<Polygon3D>(
-                        GeometricDataFactory::create3DBox(boxDim, boxDim, boxDim)),
-                    spherePos, true);
+//                        GeometricDataFactory::create3DBox(boxDim, boxDim, boxDim)),
+                        GeometricDataFactory::create3DBox(boxDim, boxDim, boxDim, criteria)),
+                    Eigen::Vector3d::Zero(), true);
+//        sourceNode->getData()->getGeometricData()->transform(Eigen::Affine3d(Eigen::AngleAxisd(45.0 * M_PI / 180.0, Eigen::Vector3d(0.0, 0.0, 1.0))));
+        sourceNode->getData()->getGeometricData()->transform(Eigen::Affine3d(Eigen::Translation3d(spherePos)));
 
         // scale down a bit
         std::shared_ptr<Polygon> poly1 =
@@ -77,12 +82,12 @@ void InterpolationFEMCollisionDemo::load()
             mid += poly1->getPositions()[i];
         mid /= poly1->getPositions().size();
 
-        Eigen::Affine3d scaling =
-                Eigen::Translation3d(mid) *
-                Eigen::Scaling(1.0) *
-                Eigen::Translation3d(-mid);
-        poly1->transform(scaling);
-        poly1->update();
+//        Eigen::Affine3d scaling =
+//                Eigen::Translation3d(mid) *
+//                Eigen::Scaling(1.0) *
+//                Eigen::Translation3d(-mid);
+//        poly1->transform(scaling);
+//        poly1->update();
 
         sourceNode->getData()->getRenderModel()->setWireframeEnabled(true);
 
@@ -95,20 +100,22 @@ void InterpolationFEMCollisionDemo::load()
         // add source as FEM object
         sg->createFEMObject(sourceNode->getData());
         ElasticMaterial material;
-        material.setFromYoungsPoisson(500, 0.45);
+        material.setFromYoungsPoisson(100, 0.45);
         material.setPlasticYield(0.5);
         material.setPlasticCreep(10);
         material.setPlasticMaxStrain(10);
         static_cast<FEMObject*>(sourceNode->getData()->getSimulationObjectRaw())->setElasticMaterial(material);
         sg->createCollidable(sourceNode->getData(), interpolator);
+//        static_cast<FEMObject*>(sourceNode->getData()->getSimulationObjectRaw())->setFrictionDynamic(0.0);
 
     }
 
     // Deforming sphere 2
+    for (int i = 0; i < 2; ++i)
     {
         double boxDim = 0.8;
 
-        Eigen::Vector3d spherePos = Eigen::Vector(-1.0, 13.0, 0.0);
+        Eigen::Vector3d spherePos = Eigen::Vector(-1.0, 13.0 + i * 0.85, 0.0);
 
         // add target sphere
         double sphereDim = 0.4;
@@ -126,7 +133,8 @@ void InterpolationFEMCollisionDemo::load()
         SGLeafNode* sourceNode = sg->createLeafNode(
                     "Box", sg->getSceneGraph()->getRoot(),
                     std::make_shared<Polygon3D>(
-                        GeometricDataFactory::create3DBox(boxDim, boxDim, boxDim)),
+//                        GeometricDataFactory::create3DBox(boxDim, boxDim, boxDim)),
+                        GeometricDataFactory::create3DBox(boxDim, boxDim, boxDim, criteria)),
                     spherePos, true);
 
         // scale down a bit
@@ -138,12 +146,12 @@ void InterpolationFEMCollisionDemo::load()
             mid += poly1->getPositions()[i];
         mid /= poly1->getPositions().size();
 
-        Eigen::Affine3d scaling =
-                Eigen::Translation3d(mid) *
-                Eigen::Scaling(1.0) *
-                Eigen::Translation3d(-mid);
-        poly1->transform(scaling);
-        poly1->update();
+//        Eigen::Affine3d scaling =
+//                Eigen::Translation3d(mid) *
+//                Eigen::Scaling(1.0) *
+//                Eigen::Translation3d(-mid);
+//        poly1->transform(scaling);
+//        poly1->update();
 
         sourceNode->getData()->getRenderModel()->setWireframeEnabled(true);
 
@@ -156,7 +164,7 @@ void InterpolationFEMCollisionDemo::load()
         // add source as FEM object
         sg->createFEMObject(sourceNode->getData());
         ElasticMaterial material;
-        material.setFromYoungsPoisson(500, 0.45);
+        material.setFromYoungsPoisson(100, 0.45);
         material.setPlasticYield(0.5);
         material.setPlasticCreep(10);
         material.setPlasticMaxStrain(10);

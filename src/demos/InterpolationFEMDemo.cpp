@@ -18,30 +18,58 @@
 #include <scene/data/geometric/Polygon3D.h>
 #include <scene/model/MeshInterpolatorRenderModel.h>
 #include <scene/model/PolygonRenderModel.h>
+#include <simulation/fem/FEMObject.h>
 #include <ui/UIControl.h>
 
 using namespace Eigen;
 
-InterpolationFEMDemo::InterpolationFEMDemo(ApplicationControl* ac)
+InterpolationFEMDemo::InterpolationFEMDemo(
+        ApplicationControl* ac,
+        bool simpleMeshes,
+        MeshInterpolator::Type interpolatorType)
     : mAc(ac)
+    , mInterpolatorType(interpolatorType)
+    , mSimpleMeshes(simpleMeshes)
 {
 
 }
 
 std::string InterpolationFEMDemo::getName()
 {
-    return "Interpolation FEM";
+    std::string name;
+    if (mInterpolatorType == MeshInterpolator::Type::FEM)
+        name = "Interpolation FEM";
+    else
+        name = "Interpolation MeshMesh";
+
+    if (mSimpleMeshes)
+        name += " (Cube)";
+    else
+        name += " (Astronaut)";
+
+    return name;
 }
 
 void InterpolationFEMDemo::load()
 {
     mAc->getSimulationControl()->setGravity(Vector::Zero());
-    mAc->getSimulationControl()->setNumFEMCorrectionIterations(0);
+//    mAc->getSimulationControl()->setNumFEMCorrectionIterations(0);
 
-    bool useImportSource = false; // either use liberty statue or box as source
-    bool addImportTarget = false; // loads liberty statue as target
-    bool addSphere = true; // adds sphere as target
+    bool useImportSource = true; // either use nasa suit or box as source
+    bool addImportTarget = true; // loads nasa suit as target
+    bool addSphere = false; // adds sphere as target
     bool interpolate = true;
+
+    if (mSimpleMeshes)
+    {
+        useImportSource = false;
+        addImportTarget = false;
+        addSphere = true;
+    }
+
+    Eigen::Affine3d complexMeshTransform =
+            Eigen::Translation3d(-1, 0, 8) *
+            Eigen::AngleAxisd(180.0 * M_PI / 180.0, Eigen::Vector3d(0.0, 1.0, 0.0));
 
     // some boxes:
     double boxDim = 0.8;
@@ -54,9 +82,12 @@ void InterpolationFEMDemo::load()
         SGLeafNode* node2;
         OBJImporter importer;
         node2 = static_cast<SGLeafNode*>(importer.importFile(
-                    File("/home/daniel/objs/LibertyStatue/LibertStatue.obj"),
+                    File("assets/nasa/advanced_crew_escape_suit.obj"),
                     mAc));
         mAc->getSGControl()->getSceneGraph()->getRoot()->addChild(node2);
+        node2->getData()->setVerticesSelectable(false);
+
+        node2->getData()->getGeometricData()->transform(complexMeshTransform);
 
         targets.push_back(node2);
 
@@ -104,16 +135,24 @@ void InterpolationFEMDemo::load()
     }
     else
     {
-        // import liberty statue and apply mesh converter.
+        // import nasa suit and apply mesh converter.
         // Scale down the resulting model
         OBJImporter importer;
         sourceNode = static_cast<SGLeafNode*>(importer.importFile(
-                    File("/home/daniel/objs/LibertyStatue/LibertStatue.obj"),
+                    File("assets/nasa/advanced_crew_escape_suit_convex.obj"),
                     mAc));
         mAc->getSGControl()->getSceneGraph()->getRoot()->addChild(sourceNode);
         MeshCriteria criteria(0.0, 0.0, 0.0, 0.1, 20, false);
         mAc->getSGControl()->create3DGeometryFrom2D(sourceNode, criteria, true);
+        sourceNode->getData()->getGeometricData()->transform(complexMeshTransform);
     }
+
+    SGLeafNode* node = static_cast<SGLeafNode*>(mAc->getSGControl()->importFileAsChild(
+                File("assets/fractal_terrain.obj"),
+                mAc->getSGControl()->getSceneGraph()->getRoot()));
+    node->getData()->setVerticesSelectable(false);
+    mAc->getSGControl()->createRigidBody(node->getData(), 1, true);
+    mAc->getSGControl()->createCollidable(node->getData());
 
     sourceNode->getData()->getRenderModel()->setWireframeEnabled(true);
 
@@ -121,56 +160,18 @@ void InterpolationFEMDemo::load()
     {
         for (SGLeafNode* target : targets)
         {
-            addInterpolation(sourceNode, target);
+            mAc->getInterpolatorModule()->addInterpolator(
+                        sourceNode, target, mInterpolatorType);
             mAc->getInterpolatorModule()->setInterpolatorVisible(
                         std::dynamic_pointer_cast<Polygon>(
                             target->getData()->getGeometricData()), true);
         }
     }
 
-    mAc->getSGControl()->createFEMObject(sourceNode->getData());
-
-    std::shared_ptr<PolygonRenderModel> renderModel =
-            std::static_pointer_cast<PolygonRenderModel>(
-                sourceNode->getData()->getRenderModel());
-
-    // load some example image and set it as texture to render model
-//    std::shared_ptr<Texture> texture =
-//            std::make_shared<Texture>(
-//                ImageLoader::instance()->loadBMP(
-//                    "/home/daniel/objs/LibertyStatue/Liberty-PortaBronzo-1.bmp"));
-
-//    std::shared_ptr<Appearances> appearances =
-//            std::make_shared<Appearances>(
-//                std::make_shared<Appearance>(texture));
-
-//    renderModel->setAppearances(appearances);
-
-//    std::shared_ptr<Polygon> poly =
-//            std::dynamic_pointer_cast<Polygon>(
-//                sourceNode->getData()->getGeometricData());
-
-//    std::vector<Eigen::Vector2f> textureCoordinates =
-//            TextureUtils::createSpericalTextureCoordinates<float, double>(
-//                poly->getPositions());
-
-//    std::cout << "texture coordinates:\n";
-//    for (size_t i = 0; i < textureCoordinates.size(); ++i)
-//    {
-//        std::cout << textureCoordinates[i].transpose() << " -> " <<
-//                     poly->getPosition(i).transpose() << "\n";
-//    }
-
-//    renderModel->setTextureCoordinates(textureCoordinates);
-//    renderModel->setTexturingEnabled(true);
-}
-
-void InterpolationFEMDemo::addInterpolation(
-            SGLeafNode* sourceNode,
-            SGLeafNode* targetNode)
-{
-    mAc->getInterpolatorModule()->addInterpolator(
-                sourceNode, targetNode, MeshInterpolator::Type::FEM);
+    std::shared_ptr<FEMObject> femObj =
+            mAc->getSGControl()->createFEMObject(sourceNode->getData());
+    mAc->getSGControl()->createCollidable(sourceNode->getData());
+    femObj->setYoungsModulus(500);
 }
 
 void InterpolationFEMDemo::unload()

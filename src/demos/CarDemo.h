@@ -12,9 +12,10 @@ class SGControl;
 class SimulationPointRef;
 
 // A simple car with four tires that are connected to a rigid by
-// a line joint that holds the tire on the line that goes downwards from
-// the rigid and a spring damper that holds it in place perpendicular to
-// the line.
+// a line joints. They hold the tire on the line that goes downwards from
+// the rigid. A spring damper holds it in place perpendicular to that line.
+//
+// The car drives in a wall of rigid boxes.
 //
 class CarDemo : public Demo
 {

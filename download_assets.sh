@@ -129,6 +129,9 @@ download_if_not_exists "FEMFX/car-wheel3-tets"
 #download_if_not_exists "FEMFX/materialblock.1"
 #download_if_not_exists "FEMFX/tractor_tire_tets.1"
 
+download_if_not_exists "nasa/advanced_crew_escape_suit"
+download_if_not_exists "nasa/advanced_crew_escape_suit_convex"
+
 download_if_not_exists "primitives/cube_12k"
 download_if_not_exists "primitives/cube_big_50k"
 download_if_not_exists "primitives/cylinder_triagulated"

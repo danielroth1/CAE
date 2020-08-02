@@ -52,7 +52,7 @@ void TexturingDemo::load()
     std::shared_ptr<Texture> texture =
             std::make_shared<Texture>(
                 ImageLoader::instance()->loadBMP(
-                    "/home/daniel/objs/LibertyStatue/Liberty-PortaBronzo-1.bmp"));
+                    "assets/textures/stonetiles_002_diff.bmp"));
 
     std::shared_ptr<Appearances> appearances =
             std::make_shared<Appearances>(

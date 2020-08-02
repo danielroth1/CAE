@@ -42,10 +42,9 @@
 #include <demos/DoublePendulumDemo.h>
 #include <demos/RotationalJointsDemo.h>
 #include <demos/LineJointDemo.h>
-#include <demos/MobileDemo.h>
 #include <demos/PlaneJointDemo.h>
 #include <demos/CarDemo.h>
-#include <demos/InterpolationMeshMeshDemo.h>
+#include <demos/CarDemo2.h>
 #include <demos/TexturingDemo.h>
 #include <demos/InterpolationFEMDemo.h>
 #include <demos/FallingObjectsDemo.h>
@@ -53,6 +52,8 @@
 #include <demos/ConstrainedDeformableDemo.h>
 #include <demos/InterpolationFEMCollisionDemo.h>
 #include <demos/InterpolatorCreationDemo.h>
+#include <demos/PlasticityDemo.h>
+#include <demos/CarCrashDemo.h>
 #include <ui/scene_graph/SGUIControl.h>
 #include <io/importers/OBJImporter.h>
 #include <modules/geometry_info/GeometryInfoModule.h>
@@ -214,8 +215,7 @@ void ApplicationControl::initiateApplication()
 
         ApplicationControl& ac;
     };
-    std::shared_ptr<Demo> example1Demo = std::make_shared<Example1Demo>(*this);
-    mDemoLoaderModule->addDemo(example1Demo);
+    mDemoLoaderModule->addDemo(std::make_shared<Example1Demo>(*this));
     mDemoLoaderModule->addDemo(std::make_shared<CubeWallDemo>(this, true));
     mDemoLoaderModule->addDemo(std::make_shared<CubeWallDemo>(this, false));
     mDemoLoaderModule->addDemo(std::make_shared<DoublePendulumDemo>(*this));
@@ -224,23 +224,23 @@ void ApplicationControl::initiateApplication()
     mDemoLoaderModule->addDemo(std::make_shared<PlaneJointDemo>(*this));
     mDemoLoaderModule->addDemo(std::make_shared<RotationalJointsDemo>(*this));
 
-    std::shared_ptr<MobileDemo> mobileDemo = std::make_shared<MobileDemo>(*this);
-    mDemoLoaderModule->addDemo(mobileDemo);
+    mDemoLoaderModule->addDemo(std::make_shared<CarDemo>(*this));
+    mDemoLoaderModule->addDemo(std::make_shared<CarCrashDemo>(this));
+    mDemoLoaderModule->addDemo(std::make_shared<CarDemo2>(*this));
 
-    std::shared_ptr<CarDemo> carDemo = std::make_shared<CarDemo>(*this);
-    mDemoLoaderModule->addDemo(carDemo);
-
-    mDemoLoaderModule->addDemo(std::make_shared<InterpolationMeshMeshDemo>(this));
-    mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMDemo>(this));
+    mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMDemo>(this, true, MeshInterpolator::Type::MESH_MESH));
+    mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMDemo>(this, false, MeshInterpolator::Type::MESH_MESH));
+    mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMDemo>(this, true, MeshInterpolator::Type::FEM));
+    mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMDemo>(this, false, MeshInterpolator::Type::FEM));
     mDemoLoaderModule->addDemo(std::make_shared<InterpolationFEMCollisionDemo>(*this));
     mDemoLoaderModule->addDemo(std::make_shared<InterpolatorCreationDemo>(this));
     mDemoLoaderModule->addDemo(std::make_shared<TexturingDemo>(this));
-    mDemoLoaderModule->addDemo(std::make_shared<FallingObjectsDemo>(
-                                   this, "Falling Objects (rigid)", true));
-    mDemoLoaderModule->addDemo(std::make_shared<FallingObjectsDemo>(
-                                   this, "Falling Objects (deformable)", false));
+    mDemoLoaderModule->addDemo(std::make_shared<FallingObjectsDemo>(this, "Falling Objects (Rigid)", true));
+    mDemoLoaderModule->addDemo(std::make_shared<FallingObjectsDemo>(this, "Falling Objects (Deformable)", false));
 
     mDemoLoaderModule->addDemo(std::make_shared<ConstrainedDeformableDemo>(this));
+
+    mDemoLoaderModule->addDemo(std::make_shared<PlasticityDemo>(this));
 
     mDemoLoaderModule->loadDemo(emptyDemo);
 

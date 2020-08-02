@@ -10,6 +10,13 @@
 
 #include <simulation/fem/FEMObject.h>
 
+#include <simulation/rigid/RigidBody.h>
+
+#include <scene/data/geometric/GeometricDataFactory.h>
+
+#include <scene/model/PolygonRenderModel.h>
+#include <scene/model/RenderModel.h>
+
 using namespace Eigen;
 
 CubeWallDemo::CubeWallDemo(ApplicationControl* ac,
@@ -53,37 +60,64 @@ void CubeWallDemo::load()
     else
     {
         // some boxes:
-        for (int r = 0; r < 6; ++r)
+        for (int r = 0; r < 5; ++r)
         {
-            for (int c = 0; c < 3; ++c)
+            for (int c = 0; c < 5; ++c)
             {
-                for (int z = 0; z < 3; ++z)
+                for (int z = 0; z < 1; ++z)
                 {
-
                     if (!mRigid)
                     {
-                        MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0, true, 0.0);
+                        MeshCriteria criteria(0.0, 0.0, 0.0, 0.0, 0.0, true, 60.0);
 
                         SGLeafNode* node1 = mAc->getSGControl()->createBox(
                                     "Box", mAc->getSGControl()->getSceneGraph()->getRoot(),
-                                    Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, -1 + 0.6 * z),
+                                    Eigen::Vector::Zero(),
                                     0.5, 0.5, 0.5, true);
-                        mAc->getSGControl()->create3DGeometryFrom2D(node1, criteria);
-                        mAc->getSGControl()->createFEMObject(node1->getData());
-                        mAc->getSGControl()->createCollidable(node1->getData());
 
+                        Eigen::Affine3d transform;
+                        transform =
+                                Eigen::Translation3d(Vector(-1 + 0.55 * c, -0.5 + 0.7 * r, -1 + 0.55 * z)); // *
+//                                Eigen::AngleAxisd(0.25 * r * 3.14, Vector(0.0, 0.0, 1.0));
+                        node1->getData()->getGeometricData()->transform(transform);
+                        mAc->getSGControl()->create3DGeometryFrom2D(node1, criteria);
+
+                        mAc->getSGControl()->createFEMObject(node1->getData());
                         std::shared_ptr<FEMObject> femObj =
                                 std::dynamic_pointer_cast<FEMObject>(
                                     node1->getData()->getSimulationObject());
-                        femObj->setYoungsModulus(5e+4);
+                        femObj->setYoungsModulus(5e+2);
+                        femObj->setFrictionDynamic(0.1);
+
+                        mAc->getSGControl()->createCollidable(node1->getData());
                     }
                     else
                     {
                         SGLeafNode* node1 = mAc->getSGControl()->createBox(
                                     "Box", mAc->getSGControl()->getSceneGraph()->getRoot(),
-                                    Vector(-1 + 0.6 * c, -0.5 + 0.7 * r, -1 + 0.6 * z),
+                                    Vector::Zero(),
                                     0.5, 0.5, 0.5, true);
-                        mAc->getSGControl()->createRigidBody(node1->getData(), 1.0, false);
+
+                        Eigen::Affine3d transform;
+                        if (r == 0)
+                        {
+                            transform =
+                                    Eigen::Translation3d(Vector(-1 + 0.55 * c, -0.5 + 0.7 * r, -1 + 0.55 * z));
+//                                    Eigen::AngleAxisd(0.25 * 3.14, Vector(0.0, 0.0, 1.0));
+                        }
+                        else
+                        {
+                            transform =
+                                    Eigen::Translation3d(Vector(-1 + 0.55 * c, -0.5 + 0.7 * r, -1 + 0.55 * z));
+//                                    Eigen::AngleAxisd(0.25 * 3.14, Vector(1.0, 0.0, 0.0));
+                        }
+                        node1->getData()->getGeometricData()->transform(transform);
+                        node1->getData()->getGeometricData()->update(true, true);
+
+                        std::shared_ptr<RigidBody> rb = mAc->getSGControl()->createRigidBody(node1->getData(), 1.0, false);
+                        rb->setRotationalDamping(0.0);
+                        rb->setTranslationalDamping(0.0);
+//                        rb->setFrictionDynamic(0);
                         mAc->getSGControl()->createCollidable(node1->getData());
                     }
                 }

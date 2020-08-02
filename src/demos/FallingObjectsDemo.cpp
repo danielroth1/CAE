@@ -23,6 +23,8 @@
 #include <scene/data/geometric/Polygon.h>
 #include <scene/data/geometric/Polygon3D.h>
 
+#include <modules/interpolator/InterpolatorModule.h>
+
 using namespace Eigen;
 
 FallingObjectsDemo::FallingObjectsDemo(ApplicationControl* ac,
@@ -47,7 +49,7 @@ void FallingObjectsDemo::load()
     // Floor
     SGLeafNode* nodeFloor = mAc->getSGControl()->createBox(
                 "Floor", mAc->getSGControl()->getSceneGraph()->getRoot(),
-                Vector(0.0, -1.5, 0.0), 12, 0.5, 12, true);
+                Vector(0.0, -1.5, 0.0), 30, 0.5, 30, true);
 
     mAc->getSGControl()->createRigidBody(nodeFloor->getData(), 1.0, true);
     mAc->getSGControl()->createCollidable(nodeFloor->getData());
@@ -55,7 +57,7 @@ void FallingObjectsDemo::load()
     double targetWidth = 0.42;
 
 //    SGNode* node = mAc->getSGControl()->importFileAsChild(
-//                File("/home/daniel/objs/LibertyStatue/LibertStatue.obj"),
+//                File("assets/LibertStatue.obj"),
 //                mAc->getSGControl()->getSceneGraph()->getRoot(),
 //                false);
 
@@ -69,35 +71,32 @@ void FallingObjectsDemo::load()
 //    }
 
 //    importAndScale(mAc->getSGControl()->getSceneGraph()->getRoot(),
-//                   "/home/daniel/objs/SurfaceMeshes/Armadillo1k.off",
+//                   "/home/daniel/objs/animals/Armadillo1k.off",
 //                   {0.0, 0.0, 1.0, 1.0}, // blue
 //                   targetWidth,
 //                   Eigen::Affine3d(Eigen::Translation3d(0.0, 4.0, 0.0)),
 //                   mRigid);
 
     importAndScale(mAc->getSGControl()->getSceneGraph()->getRoot(),
-                   "/home/daniel/objs/SurfaceMeshes/Armadillo40k.off",
+                   "assets/animals/Armadillo40k.off",
                    {1.0, 0.0, 0.0, 1.0}, // red
                    targetWidth,
                    Eigen::Affine3d(Eigen::Translation3d(0.0, 1.0, 0.0)),
                    mRigid);
 
     importAndScale(mAc->getSGControl()->getSceneGraph()->getRoot(),
-                   "/home/daniel/objs/SurfaceMeshes/Bunny35k.off",
+                   "assets/animals/Bunny35k.off",
                    {1.0, 1.0, 0.0, 1.0}, // yellow
                    targetWidth,
                    Eigen::Affine3d(Eigen::Translation3d(0.0, 2.0, 0.0)),
                    mRigid);
 
     importAndScale(mAc->getSGControl()->getSceneGraph()->getRoot(),
-                   "/home/daniel/objs/SurfaceMeshes/Frog19k.off",
+                   "assets/animals/Frog19k.off",
                    {0.0, 0.0, 1.0, 1.0}, // blue
                    targetWidth,
                    Eigen::Affine3d(Eigen::Translation3d(0.0, 4.0, 0.0)),
                    mRigid);
-
-    if (!mRigid)
-        mAc->getSimulationControl()->setNumFEMCorrectionIterations(5);
 
     mAc->getSimulationControl()->setSimulationPaused(false);
 }
@@ -148,7 +147,7 @@ SGLeafNode* FallingObjectsDemo::importAndScale(
 
         // Set wireframe and invisible
         source->getData()->getRenderModel()->setWireframeEnabled(true);
-//        source->getData()->getRenderModel()->setVisible(false);
+        source->getData()->getRenderModel()->setVisible(false);
 
         if (rigid)
         {
@@ -161,11 +160,15 @@ SGLeafNode* FallingObjectsDemo::importAndScale(
             std::shared_ptr<FEMObject> femObj =
                     std::dynamic_pointer_cast<FEMObject>(
                         source->getData()->getSimulationObject());
-            femObj->setYoungsModulus(3e+4);
+            femObj->setYoungsModulus(5e+2);
         }
 
         // Make collidable
         mAc->getSGControl()->createCollidable(source->getData(), 0.01);
+
+        // Interpolator
+        mAc->getInterpolatorModule()->addInterpolator(
+                    source, leaf, MeshInterpolator::Type::FEM);
 
         return leaf;
     }
