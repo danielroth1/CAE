@@ -17,9 +17,10 @@ CAE (Computer Aided Engineering) is a tool for the simulation of rigid and defor
 - Qt member widgets
 - Multithreading concepts (Monitors and Domains)
 
-## Installation
-I am using qmake because of its better integration with QtCreator. If you want to use it as well, see "Building with qmake and QtCreator" (a few sections below).
-Despite that I make use of QMake, building with CMake is also perfectly fine.
+## Build Instructions
+Currently, only Linux is supported.
+
+To build with CMake, see "Building with CMake" below. I am using qmake because of its better integration with QtCreator. If you want to use it as well, see "Building with qmake and QtCreator".
 
 ### Required libraries
 * Boost
@@ -30,18 +31,43 @@ Despite that I make use of QMake, building with CMake is also perfectly fine.
 * GLUT
 * Qt5
 
+Install packages on Linux using apt:
+```
+sudo apt-get install build-essential qt5-default libglew-dev freeglut3-dev libboost-all-dev libmpfr-dev libgmp3-dev
+```
+Eigen and CGAL don't need to be installed. Instead, they are automatically downloaded when running qmake oder cmake. It's possible to do this independently of the distribution because both are header-only.
+
 ### Building with CMake:
 
-Install/ build the reqiured libraries. Execute cmake-gui and fill in the missing paths.
-For Qt5_DIR use e.g. <path-to-QT>/5.9.1/gcc_64/lib/cmake/Qt5
-For CGAL_DIR the path to the CGAL directory is sufficient.
+Install/ build the required libraries. If qt was manually installed, set Qt5_DIR to <path-to-QT>/5.9.1/gcc_64/lib/cmake/Qt5
+Then run:
+```
+mkdir CAE && cd CAE
+git clone git@github.com:danielroth1/CAE.git
+mkdir build-CAE-Release && cd build-CAE-Release
+cmake -DCMAKE_BUILD_TYPE=Release ../CAE
+make -j 8
+```
+or call cmake with -DCMAKE_BUILD_TYPE=Debug to build in Debug mode.
 
 ### Building with qmake and QtCreator:
 
-edit the _CAE.pro file and replace <path-to-cgal> with the path to your CGAL directory.
-Change the EIGEN_INCLUDE_PATH variable with the path to your eigen include directory.
-Finally, rename "_CAE.pro" to "CAE.pro".
-Start QtCreator, open new project, and select the CAE.pro.
+With QtCreator:
+```
+mkdir CAE && cd CAE
+git clone git@github.com:danielroth1/CAE.git
+```
+open project in QtCreator and select the CAE.pro
+
+Without QtCreator:
+```
+mkdir CAE && cd CAE
+git clone git@github.com:danielroth1/CAE.git
+mkdir build-CAE-Release && cd build-CAE-Release
+qmake ../CAE/CAE.pro CONFIG+=release
+make -j 8
+```
+or call cmake with CONFIG+=debug to build in Debug mode.
 
 ## Documentation
 The following paragraphs describe the implemented approaches a bit more in detail. If a feature is based on a research paper, a citation with a number is added in brackets. The corresponding sources are in the _Bibliography_ the bottom of this document.

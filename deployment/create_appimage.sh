@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Creates an AppImage using linuxdeployqt, see https://github.com/probonopd/linuxdeployqt.
+# Requires the program to be build.
 # \param 1 - path to the folder that contains the executable "CAE" and the assets/ folder. This is usually your release or profile build directory.
 
 # Example call: ./create_appimage.sh ../../build-CAE-Desktop_Qt_5_9_5_GCC_64bit-Profile

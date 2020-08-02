@@ -13,10 +13,17 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
-# Download all external libraries (cgal and eigen). Checks if they are already
-# there so this call only takes time the first time it's called. Currently
-# only works with header only libraries.
- system(bash scripts/linux/download_external_libs.sh)
+# Download all external libraries (cgal and eigen) and puts them in
+# <CAE-source-dir>/extern/*. Checks if they are already there so this call only
+# takes time the first time it's called. Currently only works with header only
+# libraries.
+system(bash scripts/linux/download_external_libs.sh)
+
+# Automatically downloads all assets that aren't there yet and puts them in
+# <build-dir>/assets/*. This call only takes some time the first time it's
+# called. The check if a file is already there is very cheap. It's executed
+# each time qmake is run.
+system(cd $$OUT_PWD && bash $$PWD/scripts/linux/download_assets.sh)
 
 TARGET = CAE
 TEMPLATE = app
@@ -100,12 +107,6 @@ LIBS += -fopenmp
 LIBS += -lglut -lGLU -lGLEW -lboost_system
 
 SUBDIRS += CAE.pro
-
-# Automatically downloads all assets that aren't there yet. This call only
-# takes some time the first time it's called. The check if a file is already
-# there is very cheap. It's executed each time qmake is run.
-system(cd $$OUT_PWD && bash $$PWD/scripts/linux/download_assets.sh)
-
 
 #assets.path += $${OUT_PWD}/assets
 #assets.files += assets/*

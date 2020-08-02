@@ -1,23 +1,27 @@
 
 add_definitions( -DBOOST_PARAMETER_MAX_ARITY=12 )
 
-
 # find required packages
 #find_package(GLEW REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL CONFIG)
-find_package(Eigen3 REQUIRED)
 find_package(GLUT REQUIRED)
+
+set(EIGEN3_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../extern/eigen)
+if (NOT EXISTS ${EIGEN3_INCLUDE_DIR})
+    message("Error: Missing Eigen directory: ${EIGEN3_INCLUDE_DIR}. Try executing manually: bash scripts/linux/download_external_libs.sh")
+endif()
+
+#find_package(Eigen3 REQUIRED)
 
 #CGAL BEGIN------------------------------
 # CGAL and its components
-find_package( CGAL QUIET COMPONENTS  )
+# For CGAL custom cmake files are provided in the downloaded files. CMake only finds them if the search path is set manually.
+find_package( CGAL QUIET COMPONENTS PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../extern/cgal)
 
 if ( NOT CGAL_FOUND )
-
   message(STATUS "This project requires the CGAL library, and will not be compiled.")
   return()  
-
 endif()
 
 # include helper file

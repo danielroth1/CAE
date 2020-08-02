@@ -29,9 +29,8 @@ download_header_only()
 	    echo "Downloading complete."
         unzip $zip_file &> /dev/null
         rm -r $zip_file
-        mkdir -p ../$extern_folder/cgal
         mv $include_folder ../extern/$target_folder
-	echo "Successfully downloaded and installed $target_folder."
+        echo "Successfully downloaded and installed $target_folder."
         cd ..
     fi
 }
