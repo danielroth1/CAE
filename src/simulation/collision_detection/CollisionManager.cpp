@@ -275,37 +275,38 @@ bool CollisionManager::addSimulationObject(
 
 bool CollisionManager::removeSimulationObject(const std::shared_ptr<SimulationObject>& so)
 {
-    return removePolygon(std::dynamic_pointer_cast<Polygon>(so->getGeometricData()->shared_from_this()));
+    removeGeometricDataFromSimulationCollisions(so->getGeometricData());
+
+    auto it = std::find_if(mCollisionData.begin(), mCollisionData.end(),
+                        [so](const CollisionData& cd)
+    {
+        return cd.mSo == so;
+    });
+    if (it != mCollisionData.end())
+    {
+        mCollisionData.erase(it);
+        for (CollisionManagerListener* listener : mListeners)
+            listener->notifySimulationObjectRemoved(it->mSo);
+        return true;
+    }
+
+    return false;
 }
 
 bool CollisionManager::removePolygon(const std::shared_ptr<Polygon>& poly)
 {
+    removeGeometricDataFromSimulationCollisions(poly.get());
+
     auto it = std::find_if(mCollisionData.begin(), mCollisionData.end(),
                         [poly](const CollisionData& cd)
     {
         return cd.mPolygon == poly;
     });
-
     if (it != mCollisionData.end())
     {
         mCollisionData.erase(it);
-
-        // all kept collisions constraints that reference the removed simulation
-        // object are removed.
-        std::vector<SimulationCollision> validCollisions;
-        for (const SimulationCollision& sc : mSimulationCollisions)
-        {
-            if (sc.getCollision().getSimulationObjectA() != it->mSo.get() &&
-                    sc.getCollision().getSimulationObjectB() != it->mSo.get())
-            {
-                validCollisions.push_back(sc);
-            }
-        }
-        mSimulationCollisions = validCollisions;
-
         for (CollisionManagerListener* listener : mListeners)
             listener->notifySimulationObjectRemoved(it->mSo);
-
         return true;
     }
     return false;
@@ -374,8 +375,6 @@ bool CollisionManager::collideAll()
         new (&mSimulationCollisions[i]) SimulationCollision(c);
     }
 //    filterCollisions(numContactsBefore, 1);
-
-    mNumContacts = mSimulationCollisions.size();
 
     for (CollisionManagerListener* listener : mListeners)
         listener->notifyCollideAllCalled();
@@ -500,6 +499,8 @@ void CollisionManager::revalidateCollisions()
     }
     mSimulationCollisions = validCollisions;
 //    filterCollisions(0, 1);
+
+    mNumContacts = mSimulationCollisions.size();
 
     // fill already seen collisions so they are filtered out in the upcoming collision
     // detections.
@@ -660,6 +661,25 @@ bool CollisionManager::addSimulationObject(
         listener->notifySimulationObjectAdded(so);
 
     return true;
+}
+
+bool CollisionManager::removeGeometricDataFromSimulationCollisions(GeometricData* geo)
+{
+    // All collisions constraints that reference the removed simulation
+    // object are removed.
+    std::vector<SimulationCollision> validCollisions;
+    for (const SimulationCollision& sc : mSimulationCollisions)
+    {
+        if (sc.getCollision().getSimulationObjectA()->getGeometricData() != geo &&
+                sc.getCollision().getSimulationObjectB()->getGeometricData() != geo)
+        {
+            validCollisions.push_back(sc);
+        }
+    }
+    bool found = mSimulationCollisions.size() != validCollisions.size();
+    mSimulationCollisions = validCollisions;
+
+    return found;
 }
 
 std::map<unsigned int, double> CollisionManager::calculateMinimumDistances(

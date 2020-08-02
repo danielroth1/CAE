@@ -159,6 +159,10 @@ private:
             const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
             const std::shared_ptr<MeshInterpolatorFEM>& interpolator);
 
+    // Removes all SimulationCollisions from mSimulationCollisions that
+    // reference the given geometry.
+    bool removeGeometricDataFromSimulationCollisions(GeometricData* geo);
+
     std::map<unsigned int, double> calculateMinimumDistances(
             const std::vector<TopologyFace>& faces,
             const Vectors& positions);
