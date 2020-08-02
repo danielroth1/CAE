@@ -53,7 +53,6 @@ std::string InterpolationFEMDemo::getName()
 
 void InterpolationFEMDemo::load()
 {
-    mAc->getSimulationControl()->setGravity(Vector::Zero());
 //    mAc->getSimulationControl()->setNumFEMCorrectionIterations(0);
 
     bool useImportSource = true; // either use nasa suit or box as source
@@ -106,6 +105,8 @@ void InterpolationFEMDemo::load()
         node->getData()->getRenderModel()->setWireframeEnabled(true);
 
         targets.push_back(node);
+
+        mAc->getSimulationControl()->setGravity(Vector::Zero());
     }
 
     // load the source
