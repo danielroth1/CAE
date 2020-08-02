@@ -16,7 +16,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 # Download all external libraries (cgal and eigen). Checks if they are already
 # there so this call only takes time the first time it's called. Currently
 # only works with header only libraries.
-system(./download_external_libs.sh)
+ system(bash scripts/linux/download_external_libs.sh)
 
 TARGET = CAE
 TEMPLATE = app
@@ -104,7 +104,7 @@ SUBDIRS += CAE.pro
 # Automatically downloads all assets that aren't there yet. This call only
 # takes some time the first time it's called. The check if a file is already
 # there is very cheap. It's executed each time qmake is run.
-system(cd $$OUT_PWD && $$PWD/download_assets.sh)
+system(cd $$OUT_PWD && bash $$PWD/scripts/linux/download_assets.sh)
 
 
 #assets.path += $${OUT_PWD}/assets

@@ -1,18 +1,14 @@
 #!/bin/bash
 
+# Downloads a header only library as zip file and extracts the relevant include folder in the extern/ folder.
+# \param 1 - target folder name: /extern/<name>, e.g. "cgal"
+# \param 2 - include folder in downloaded library, e.g. "CGAL-5.0.2/include"
+# \param 3 - zip file name, e.g. "CGAL-5.0.2-library.zip"
+# \param 4 - link to .zip file, e.g. "https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-5.0.2/CGAL-5.0.2-library.zip"
+
 extern_folder="extern"
 
 debug_output=false
-
-# create a tmp folder that doesn't exist yet. Simply appends _
-tmp_folder="_tmp"
-while [ -d $tmp_folder ]; do
-    tmp_folder="_$tmp_folder"
-done
-
-if [ ! -d $extern_folder ]; then
-    mkdir $extern_folder
-fi
 
 download_header_only()
 {
@@ -28,9 +24,9 @@ download_header_only()
     else
         mkdir -p $tmp_folder
         cd $tmp_folder
-	echo "$target_folder not found, downloading..."
+	    echo "$target_folder not found, downloading..."
         wget $download_link
-	echo "Downloading complete."
+	    echo "Downloading complete."
         unzip $zip_file &> /dev/null
         rm -r $zip_file
         mkdir -p ../$extern_folder/cgal
@@ -40,9 +36,15 @@ download_header_only()
     fi
 }
 
-download_header_only "cgal" "CGAL-5.0.2/include" "CGAL-5.0.2-library.zip" "https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-5.0.2/CGAL-5.0.2-library.zip"
+# create a tmp folder that doesn't exist yet. Simply appends _
+tmp_folder="_tmp"
+while [ -d $tmp_folder ]; do
+    tmp_folder="_$tmp_folder"
+done
 
-download_header_only "eigen" "eigen-3.2.10" "eigen-3.2.10.zip" "https://gitlab.com/libeigen/eigen/-/archive/3.2.10/eigen-3.2.10.zip"
+mkdir -p $extern_folder
+
+download_header_only $1 $2 $3 $4
 
 if [ -d $tmp_folder ]; then 
     rm -r $tmp_folder

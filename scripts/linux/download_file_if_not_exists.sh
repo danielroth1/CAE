@@ -1,6 +1,6 @@
 #!/bin/bash
 
-acceptable_file_types=(".obj" ".mtl" ".off" ".node" ".ele" ".tet" ".bmp")
+acceptable_file_types=(".obj" ".mtl" ".off" ".node" ".ele" ".tet" ".bmp" ".png")
 folder="assets"
 server="https://meshes.mailbase.info"
 
@@ -10,7 +10,7 @@ debug_output=false
 # downloads the corresponding zip file from the specified server, upacks it, and removes the .zip again.
 # params:
 # file_path - FEMFX/car-body-tets
-download_if_not_exists()
+download_file_if_not_exists()
 {
     file_path=$1
 
@@ -104,7 +104,7 @@ download_if_not_exists()
     cd ..
 }
 
-# create a tmp folder that doesn't exist yet. Simply appends _.
+# Create there is already a _tmp folder, remove all files in it.
 tmp_folder="_tmp"
 while [ -d $tmp_folder ]; do
     tmp_folder="_$tmp_folder"
@@ -114,36 +114,10 @@ if [ $debug_output == true ]; then
     echo "tmp_folder = $tmp_folder"
 fi
 
-#download_if_not_exists "Shelby"
-
-download_if_not_exists "FEMFX/car-body-tets"
-download_if_not_exists "FEMFX/car-body-tets-convex"
-download_if_not_exists "FEMFX/car-hood-tets"
-#download_if_not_exists "FEMFX/car-seatback-l-tets"
-#download_if_not_exists "FEMFX/car-seatback-r-tets"
-download_if_not_exists "FEMFX/car-wheel0-tets"
-download_if_not_exists "FEMFX/car-wheel1-tets"
-download_if_not_exists "FEMFX/car-wheel2-tets"
-download_if_not_exists "FEMFX/car-wheel3-tets"
-#download_if_not_exists "FEMFX/duck.1"
-#download_if_not_exists "FEMFX/materialblock.1"
-#download_if_not_exists "FEMFX/tractor_tire_tets.1"
-
-download_if_not_exists "nasa/advanced_crew_escape_suit"
-download_if_not_exists "nasa/advanced_crew_escape_suit_convex"
-
-download_if_not_exists "primitives/cube_12k"
-download_if_not_exists "primitives/cube_big_50k"
-download_if_not_exists "primitives/cylinder_triagulated"
-download_if_not_exists "primitives/floor_big_50k"
-download_if_not_exists "primitives/floor_big_120k"
-download_if_not_exists "fractal_terrain"
-
-download_if_not_exists "animals/Armadillo40k"
-download_if_not_exists "animals/Bunny35k"
-download_if_not_exists "animals/Frog19k"
-
-download_if_not_exists "textures/stonetiles_002_diff"
+for var in "$@"
+do
+    download_file_if_not_exists $var
+done
 
 if [ -d $tmp_folder ]; then 
     rm -r $tmp_folder
