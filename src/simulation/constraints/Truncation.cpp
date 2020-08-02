@@ -61,6 +61,9 @@ void Truncation::truncateByRemoving(
         Eigen::SparseMatrix<double>& ATrunc,
         Eigen::VectorXd& bTrunc)
 {
+    if (mTruncatedIds.empty())
+        return;
+
     truncateByRemoving(A, ATrunc);
     truncateByRemoving(b, bTrunc);
 }
@@ -69,6 +72,9 @@ void Truncation::truncateByRemoving(
         const Eigen::SparseMatrix<double>& A,
         Eigen::SparseMatrix<double>& ATrunc)
 {
+    if (mTruncatedIds.empty())
+        return;
+
     ID size = static_cast<ID>(A.rows());
     ID sizeTrunc = size - 3 * static_cast<ID>(mTruncatedIds.size());
 
@@ -128,6 +134,9 @@ void Truncation::truncateByRemoving(
         const VectorXd& b,
         VectorXd& bTrunc)
 {
+    if (mTruncatedIds.empty())
+        return;
+
     ID size = static_cast<ID>(b.rows());
     ID sizeTrunc = size - 3 * static_cast<ID>(mTruncatedIds.size());
 
@@ -154,6 +163,9 @@ void Truncation::truncateByRemoving(
 
 void Truncation::analyzePattern(Eigen::SparseMatrix<double>& A)
 {
+    if (mTruncatedIds.empty())
+        return;
+
     A.makeCompressed();
     // Not the most efficient implementation but since it is only called once
     // in the initialization it shouldn't matter.
@@ -200,6 +212,9 @@ void Truncation::truncateBySettingZero(
         Eigen::SparseMatrix<double>& ATrunc,
         VectorXd& bTrunc)
 {
+    if (mTruncatedIds.empty())
+        return;
+
     ID size = static_cast<ID>(A.rows());
     ID sizeTrunc = size - 3 * static_cast<ID>(mTruncatedIds.size());
 
@@ -273,6 +288,9 @@ void Truncation::truncateBySettingZeroFast(
         Eigen::SparseMatrix<double>& A,
         VectorXd& b)
 {
+    if (mTruncatedIds.empty())
+        return;
+
     A.makeCompressed();
     for (const Eigen::Index& index : mSetOneIndices)
     {
@@ -287,6 +305,9 @@ void Truncation::truncateBySettingZeroFast(
 
 void Truncation::truncateBySettingZeroFast(VectorXd& b)
 {
+    if (mTruncatedIds.empty())
+        return;
+
     for (ID id : mTruncatedIds)
     {
         for (Eigen::Index r = 0; r < 3; ++r)
