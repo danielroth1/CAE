@@ -1,6 +1,7 @@
 #include "TexturingDemo.h"
 
 #include <ApplicationControl.h>
+#include <QCoreApplication>
 #include <data_structures/DataStructures.h>
 #include <io/ImageLoader.h>
 #include <rendering/Appearance.h>
@@ -27,7 +28,7 @@ std::string TexturingDemo::getName()
 void TexturingDemo::load()
 {
     mAc->getSimulationControl()->setGravity(Vector::Zero());
-    mAc->getSimulationControl()->setNumFEMCorrectionIterations(0);
+//    mAc->getSimulationControl()->setNumFEMCorrectionIterations(0);
 
     double boxDim = 3.0;
 
@@ -52,7 +53,7 @@ void TexturingDemo::load()
     std::shared_ptr<Texture> texture =
             std::make_shared<Texture>(
                 ImageLoader::instance()->loadBMP(
-                    "assets/textures/stonetiles_002_diff.bmp"));
+                    QCoreApplication::applicationDirPath().toStdString() + "/assets/textures/stonetiles_002_diff.bmp"));
 
     std::shared_ptr<Appearances> appearances =
             std::make_shared<Appearances>(

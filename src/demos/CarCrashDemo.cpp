@@ -1,6 +1,7 @@
 #include "CarCrashDemo.h"
 
 #include <ApplicationControl.h>
+#include <QCoreApplication>
 
 #include <simulation/rigid/RigidBody.h>
 
@@ -42,9 +43,9 @@ void CarCrashDemo::load()
 {
     SGControl* sg = mAc->getSGControl();
 
-    mAc->getSimulationControl()->setStepSize(0.015);
-    mAc->getSimulationControl()->setNumFEMCorrectionIterations(3);
-    mAc->getSimulationControl()->setMaxNumConstraintSolverIterations(5);
+//    mAc->getSimulationControl()->setStepSize(0.015);
+//    mAc->getSimulationControl()->setNumFEMCorrectionIterations(3);
+//    mAc->getSimulationControl()->setMaxNumConstraintSolverIterations(5);
 
 
     // Floor
@@ -150,7 +151,6 @@ void CarCrashDemo::load()
         // Car
         SGChildrenNode* carNode = sg->createChildrenNode(sg->getSceneGraph()->getRoot(), "Car");
 
-
         // chasis
         std::shared_ptr<FEMObject> chasisSo;
         std::shared_ptr<Polygon3D> chasisPoly;
@@ -165,8 +165,8 @@ void CarCrashDemo::load()
                 // Chasis poly -> original .node and .ele files
 
                 std::vector<File> tetFiles = {
-                    File("/home/daniel/models/FEMFX/car-body-tets.node"),
-                    File("/home/daniel/models/FEMFX/car-body-tets.ele")
+                    File(QCoreApplication::applicationDirPath().toStdString() + "/assets/FEMFX/car-body-tets.node"),
+                    File(QCoreApplication::applicationDirPath().toStdString() + "/assets/FEMFX/car-body-tets.ele")
                 };
                 mesh3d = static_cast<SGLeafNode*>(
                             sg->importFilesAsChild(tetFiles, carNode));
@@ -183,7 +183,7 @@ void CarCrashDemo::load()
                 // 2d mesh for collision detection
                 SGLeafNode* mesh2d = static_cast<SGLeafNode*>(
                             sg->importFileAsChild(
-                                File("assets/FEMFX/car-body-tets-convex.obj"),
+                                File(QCoreApplication::applicationDirPath().toStdString() + "/assets/FEMFX/car-body-tets-convex.obj"),
                                 carNode, false));
                 std::shared_ptr<Polygon2D> poly2 =
                         std::static_pointer_cast<Polygon2D>(
@@ -197,7 +197,7 @@ void CarCrashDemo::load()
                 // mesh for visualization
                 SGLeafNode* meshVis = static_cast<SGLeafNode*>(
                             sg->importFileAsChild(
-                                File("assets/FEMFX/car-body-tets.obj"),
+                                File(QCoreApplication::applicationDirPath().toStdString() + "/assets/FEMFX/car-body-tets.obj"),
                                 carNode, false));
                 std::shared_ptr<Polygon2D> polyVis =
                         std::static_pointer_cast<Polygon2D>(
@@ -258,10 +258,10 @@ void CarCrashDemo::load()
         // tires
         std::array<std::string, 4> tireMeshes =
         {
-            "/home/daniel/models/FEMFX/car-wheel0-tets",
-            "/home/daniel/models/FEMFX/car-wheel1-tets",
-            "/home/daniel/models/FEMFX/car-wheel2-tets",
-            "/home/daniel/models/FEMFX/car-wheel3-tets"
+            QCoreApplication::applicationDirPath().toStdString() + "/assets/FEMFX/car-wheel0-tets",
+            QCoreApplication::applicationDirPath().toStdString() + "/assets/FEMFX/car-wheel1-tets",
+            QCoreApplication::applicationDirPath().toStdString() + "/assets/FEMFX/car-wheel2-tets",
+            QCoreApplication::applicationDirPath().toStdString() + "/assets/FEMFX/car-wheel3-tets"
         };
         std::array<SGLeafNode*, 4> tires;
 
@@ -283,7 +283,7 @@ void CarCrashDemo::load()
 
             SGLeafNode* wheelNode = static_cast<SGLeafNode*>(
                         sg->importFileAsChild(
-                            File("assets/primitives/cylinder_triagulated.obj"),
+                            File(QCoreApplication::applicationDirPath().toStdString() + "/assets/primitives/cylinder_triagulated.obj"),
                             carNode));
             wheelNode->getData()->getRenderModel()->setAppearances(
                         std::make_shared<Appearances>(

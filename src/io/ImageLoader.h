@@ -15,7 +15,7 @@ public:
 
     ImageLoader();
 
-    std::shared_ptr<Image> loadBMP(const char* filename);
+    std::shared_ptr<Image> loadBMP(const std::string& filename);
 
 private:
 

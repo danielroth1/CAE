@@ -189,7 +189,7 @@ void ApplicationControl::initiateApplication()
         virtual void load()
         {
             ac.getSimulationControl()->setGravity(Vector::Zero());
-            ac.getSimulationControl()->setNumFEMCorrectionIterations(0);
+//            ac.getSimulationControl()->setNumFEMCorrectionIterations(0);
 
             double boxDim = 3.0;
 

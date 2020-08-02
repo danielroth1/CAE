@@ -8,6 +8,12 @@
 // File class that provides basic functionality to access files
 // and move in directories. Could be faster but file system access
 // is usually not time critical.
+//
+// To reference files relative to the install location, use
+// QCoreApplication::applicationDirPath().toStdString(), e.g.
+// QCoreApplication::applicationDirPath().toStdString() + "/assets/FEMFX/car-body-tets.node"
+// This way the path is correct for both within QtCreator or your IDE and
+// the generated AppImage file.
 class File
 {
 public:

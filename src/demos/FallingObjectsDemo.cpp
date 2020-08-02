@@ -6,6 +6,7 @@
 #include <modules/mesh_converter/MeshCriteria.h>
 
 #include <ApplicationControl.h>
+#include <QCoreApplication>
 #include <SimulationControl.h>
 
 #include <simulation/fem/FEMObject.h>
@@ -57,7 +58,7 @@ void FallingObjectsDemo::load()
     double targetWidth = 0.42;
 
 //    SGNode* node = mAc->getSGControl()->importFileAsChild(
-//                File("assets/LibertStatue.obj"),
+//                File(QCoreApplication::applicationDirPath().toStdString() + "/assets/LibertStatue.obj"),
 //                mAc->getSGControl()->getSceneGraph()->getRoot(),
 //                false);
 
@@ -78,21 +79,21 @@ void FallingObjectsDemo::load()
 //                   mRigid);
 
     importAndScale(mAc->getSGControl()->getSceneGraph()->getRoot(),
-                   "assets/animals/Armadillo40k.off",
+                   QCoreApplication::applicationDirPath().toStdString() + "/assets/animals/Armadillo40k.off",
                    {1.0, 0.0, 0.0, 1.0}, // red
                    targetWidth,
                    Eigen::Affine3d(Eigen::Translation3d(0.0, 1.0, 0.0)),
                    mRigid);
 
     importAndScale(mAc->getSGControl()->getSceneGraph()->getRoot(),
-                   "assets/animals/Bunny35k.off",
+                   QCoreApplication::applicationDirPath().toStdString() + "/assets/animals/Bunny35k.off",
                    {1.0, 1.0, 0.0, 1.0}, // yellow
                    targetWidth,
                    Eigen::Affine3d(Eigen::Translation3d(0.0, 2.0, 0.0)),
                    mRigid);
 
     importAndScale(mAc->getSGControl()->getSceneGraph()->getRoot(),
-                   "assets/animals/Frog19k.off",
+                   QCoreApplication::applicationDirPath().toStdString() + "/assets/animals/Frog19k.off",
                    {0.0, 0.0, 1.0, 1.0}, // blue
                    targetWidth,
                    Eigen::Affine3d(Eigen::Translation3d(0.0, 4.0, 0.0)),

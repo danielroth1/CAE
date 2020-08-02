@@ -1,6 +1,7 @@
 #include "InterpolationFEMDemo.h"
 
 #include "ApplicationControl.h"
+#include <QCoreApplication>
 #include <data_structures/DataStructures.h>
 #include <io/ImageLoader.h>
 #include <io/importers/OBJImporter.h>
@@ -82,7 +83,7 @@ void InterpolationFEMDemo::load()
         SGLeafNode* node2;
         OBJImporter importer;
         node2 = static_cast<SGLeafNode*>(importer.importFile(
-                    File("assets/nasa/advanced_crew_escape_suit.obj"),
+                    File(QCoreApplication::applicationDirPath().toStdString() + "/assets/nasa/advanced_crew_escape_suit.obj"),
                     mAc));
         mAc->getSGControl()->getSceneGraph()->getRoot()->addChild(node2);
         node2->getData()->setVerticesSelectable(false);
@@ -139,7 +140,7 @@ void InterpolationFEMDemo::load()
         // Scale down the resulting model
         OBJImporter importer;
         sourceNode = static_cast<SGLeafNode*>(importer.importFile(
-                    File("assets/nasa/advanced_crew_escape_suit_convex.obj"),
+                    File(QCoreApplication::applicationDirPath().toStdString() + "/assets/nasa/advanced_crew_escape_suit_convex.obj"),
                     mAc));
         mAc->getSGControl()->getSceneGraph()->getRoot()->addChild(sourceNode);
         MeshCriteria criteria(0.0, 0.0, 0.0, 0.1, 20, false);
@@ -148,7 +149,7 @@ void InterpolationFEMDemo::load()
     }
 
     SGLeafNode* node = static_cast<SGLeafNode*>(mAc->getSGControl()->importFileAsChild(
-                File("assets/fractal_terrain.obj"),
+                File(QCoreApplication::applicationDirPath().toStdString() + "/assets/fractal_terrain.obj"),
                 mAc->getSGControl()->getSceneGraph()->getRoot()));
     node->getData()->setVerticesSelectable(false);
     mAc->getSGControl()->createRigidBody(node->getData(), 1, true);

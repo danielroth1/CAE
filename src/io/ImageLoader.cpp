@@ -10,7 +10,7 @@ ImageLoader::ImageLoader()
 
 }
 
-std::shared_ptr<Image> ImageLoader::loadBMP(const char* filename)
+std::shared_ptr<Image> ImageLoader::loadBMP(const std::string& filename)
 {
     std::ifstream input;
     input.open(filename, std::ifstream::binary);
