@@ -48,13 +48,13 @@ void Renderer::draw()
         {
             // refresh buffers needs to be called for world space polygons
             // whichs data changed
-            START_TIMING_RENDERING("RenderObject::refreshBuffers()")
+//            START_TIMING_RENDERING("RenderObject::refreshBuffers()")
             ro->refreshBuffers();
-            STOP_TIMING_RENDERING
+//            STOP_TIMING_RENDERING
 
-            START_TIMING_RENDERING("RenderObject::draw()")
+//            START_TIMING_RENDERING("RenderObject::draw()")
             ro->draw();
-            STOP_TIMING_RENDERING
+//            STOP_TIMING_RENDERING
         }
     }
 

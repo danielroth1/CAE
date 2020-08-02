@@ -308,7 +308,7 @@ void RenderPolygons::drawArray()
 
 void RenderPolygons::drawVBO()
 {
-    START_TIMING_RENDERING("RenderPolygons::drawVBO2");
+//    START_TIMING_RENDERING("RenderPolygons::drawVBO2");
     if (!mVBOsupported || !mConstantData->isInitialized())
         return;
 
@@ -415,7 +415,7 @@ void RenderPolygons::drawVBO()
 
     glDisable(GL_NORMALIZE);
 
-    STOP_TIMING_RENDERING;
+//    STOP_TIMING_RENDERING;
 }
 
 void RenderPolygons::update()
@@ -474,7 +474,7 @@ void RenderPolygons::initialize()
 void RenderPolygons::drawTriangles(
         const std::shared_ptr<RenderPolygonsData>& data, int nTriangles)
 {
-    START_TIMING_RENDERING("RenderPolygons::drawTriangles")
+//    START_TIMING_RENDERING("RenderPolygons::drawTriangles")
     data->setPolygonMode();
 
     std::shared_ptr<Appearances> appearances = data->getAppearances();
@@ -540,5 +540,5 @@ void RenderPolygons::drawTriangles(
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         }
     }
-    STOP_TIMING_RENDERING;
+//    STOP_TIMING_RENDERING;
 }
