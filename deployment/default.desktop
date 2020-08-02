@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=CAE
+Exec=AppRun %F
+Icon=logo
+Comment=A Tool for the simulation of rigid and deformable object.
+Terminal=true
+Categories=Office;
+X-AppImage-Version=
