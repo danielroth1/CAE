@@ -409,7 +409,7 @@ std::shared_ptr<FEMObject> SGControl::createFEMObject(
             {
                 // There is already a simulation object.
                 // Remove that first from the simulation.
-                sgc.mAc->getSimulationControl()->removeSimulationObject(so);
+                sgc.mAc->getSimulationControl()->getProxy()->removeSimulationObject(so);
                 // Take the mass from the removed object if possible.
                 massFinal = so->getMass();
             }
@@ -474,7 +474,7 @@ std::shared_ptr<RigidBody> SGControl::createRigidBody(
             {
                 // There is already a simulation object.
                 // Remove that first from the simulation.
-                sgc.mAc->getSimulationControl()->removeSimulationObject(so);
+                sgc.mAc->getSimulationControl()->getProxy()->removeSimulationObject(so);
                 // Take the mass from the removed object if possible.
                 massFinal = so->getMass();
             }
@@ -562,7 +562,7 @@ void SGControl::removeSimulationObject(const std::shared_ptr<SceneLeafData>& ld)
     std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
     if (so)
     {
-        mAc->getSimulationControl()->removeSimulationObject(so);
+        mAc->getSimulationControl()->getProxy()->removeSimulationObject(so);
         ld->setSimulationObject(nullptr);
     }
     else
@@ -739,7 +739,7 @@ void SGControl::removeNode(SGNode* node)
             std::shared_ptr<SimulationObject> so = leafNode->getData()->getSimulationObject();
             if (so)
             {
-                control.mAc->getSimulationControl()->removeSimulationObject(so);
+                control.mAc->getSimulationControl()->getProxy()->removeSimulationObject(so);
             }
 
             // remove render model

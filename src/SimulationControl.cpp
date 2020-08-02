@@ -68,6 +68,11 @@ SimulationControl::~SimulationControl()
     delete mDomain;
 }
 
+std::shared_ptr<SimulationControlProxy> SimulationControl::getProxy() const
+{
+    return mProxy;
+}
+
 void SimulationControl::setApplicationControl(ApplicationControl* ac)
 {
     mAc = ac;
@@ -376,10 +381,6 @@ void SimulationControl::removeSimulationObject(const std::shared_ptr<SimulationO
     {
         return;
     }
-    else
-    {
-        mSimulationObjects.erase(it);
-    }
 
     // Remove all linear forces that reference the simulation object
     std::vector<std::shared_ptr<Force>> forcesToBeRemoved =
@@ -432,6 +433,8 @@ void SimulationControl::removeSimulationObject(const std::shared_ptr<SimulationO
     so->accept(visitor);
 
     mCollisionManagerProxy->removeSimulationObject(so);
+
+    mSimulationObjects.erase(it);
 }
 
 void SimulationControl::clearSimulationObjects()

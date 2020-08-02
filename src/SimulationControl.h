@@ -60,6 +60,8 @@ public:
 
     virtual ~SimulationControl();
 
+    std::shared_ptr<SimulationControlProxy> getProxy() const;
+
     void setApplicationControl(ApplicationControl* ac);
 
     void connectSignals(GLWidget& glWidget);
@@ -340,6 +342,9 @@ PROXY_CLASS(SimulationControlProxy, SimulationControl, mSc,
             PROXY_FUNCTION(SimulationControl, mSc, step,
                            PL(),
                            PL())
+            PROXY_FUNCTION(SimulationControl, mSc, removeSimulationObject,
+                           PL(const std::shared_ptr<SimulationObject>& so),
+                           PL(so))
             PROXY_FUNCTION(SimulationControl, mSc, addForceSlot,
                            PL(const std::shared_ptr<Force>& force),
                            PL(force))
