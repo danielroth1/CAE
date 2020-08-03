@@ -23,33 +23,37 @@ Currently, only Linux is supported.
 To build with CMake, see "Building with CMake" below. I am using qmake because of its better integration with QtCreator. If you want to use it as well, see "Building with qmake".
 
 ### Required libraries
-* Boost
-* CGAL
-* Eigen3
+* Boost (>= 1.57)
+* CGAL (>= 5.0)
+* Eigen3 (>= 3.2.10)
 * GLEW
 * GLU/OpenGL
 * GLUT
-* Qt5
+* Qt5 (>= 5.4)
+
+* CMake (>= 3.0)
+* GCC (>= 5.0)
 
 Install packages on Linux using apt:
 ```
-sudo apt-get install build-essential qt5-default libglew-dev freeglut3-dev libboost-all-dev libmpfr-dev libgmp3-dev unzip
+sudo apt-get install unzip git cmake
+sudo apt-get install build-essential qt5-default libglew-dev freeglut3-dev libboost-all-dev libmpfr-dev libgmp3-dev libxmu-dev libxi-dev
 ```
-Eigen and CGAL don't need to be installed. Instead, they are automatically downloaded when running qmake oder cmake. It's possible to do this independently of the distribution because both are header-only.
+Eigen and CGAL don't need to be installed because they are header-only. Instead, they are automatically downloaded when running qmake oder cmake.
 
-### Building with CMake:
-Install/ build the required libraries. If qt was manually installed, set Qt5_DIR to <path-to-QT>/5.9.1/gcc_64/lib/cmake/Qt5
+### Building with CMake
+Install/ build the required libraries. If qt was manually installed, set Qt5_DIR to <path-to-QT>/<version>/gcc_64/lib/cmake/Qt5
 Then run:
 ```
 mkdir CAE && cd CAE
-git clone git@github.com:danielroth1/CAE.git
+git clone https://github.com/danielroth1/CAE.git
 mkdir build-CAE-Release && cd build-CAE-Release
 cmake -DCMAKE_BUILD_TYPE=Release ../CAE
 make -j 8
 ```
-or call cmake with -DCMAKE_BUILD_TYPE=Debug to build in Debug mode.
+To build in Debug mode: replace "Release" with "Debug"
 
-### Building with qmake:
+### Building with qmake
 With QtCreator:
 ```
 mkdir CAE && cd CAE
@@ -60,26 +64,85 @@ open project in QtCreator and select the CAE.pro
 Without QtCreator:
 ```
 mkdir CAE && cd CAE
-git clone git@github.com:danielroth1/CAE.git
+git clone https://github.com/danielroth1/CAE.git
 mkdir build-CAE-Release && cd build-CAE-Release
 qmake ../CAE/CAE.pro CONFIG+=release
 make -j 8
 ```
-or call cmake with CONFIG+=debug to build in Debug mode.
+To build in Debug mode: replace "release" with "debug"
 
 ### Deployment
-It's possible to create an AppImage which can be executed from every other linux based distro. To do so, first, install the required qt lib:
+It's possible to create an AppImage which can be executed on other linux based distros that don't have any of the above libraries installed (uses [linuxdeployqt](https://github.com/probonopd/linuxdeployqt)). To do so, first, install the required qt lib:
 ```
 sudo apt-get install qttools5-dev-tools
 ```
-and then execute
+and then execute from the CAE directory:
 ```
 cd deployment
 bash create_appimage.sh ../../build-CAE-Release
 ```
-This generates an AppImage file in the folder deployment/appimage/CAE-<unique-id>-x86_64.AppImage
-It is recommened to execute the deployment on the oldest Ubuntu LTS version (https://wiki.ubuntu.com/Releases) to ensure compatibility for older Ubuntu versions.
-As of this writing, the oldest version is ubuntu-14.04.6 which is supported until April 2022.
+This generates an AppImage file:\
+deployment/appimage/CAE-<commit-SHA1-ID>-x86_64.AppImage
+
+#### Building and Deploying with Ubuntu-14.04.6
+It is recommened to execute the deployment on the oldest supported Ubuntu LTS version to ensure compatibility for older Linux distros (see [A not on binary compatibility](https://github.com/probonopd/linuxdeployqt#a-note-on-binary-compatibility) ).
+As of this writing, the oldest LTS version is Ubuntu-14.04.6 which is supported until April 2022 (https://wiki.ubuntu.com/Releases).
+Many of the libraries from the official package sources of Ubuntu-14.04.6 are too old.
+It follows step by step instructions on what needs to be done to install newer packages and successfully build CAE on Ubuntu-14.04.6.
+
+Install g++5 and set as standard:
+```
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update
+sudo apt-get install gcc-5 g++-5
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5
+```
+
+Install newer cmake 3.2:
+```
+sudo apt-get install software-properties-common
+sudo add-apt-repository ppa:george-edison55/cmake-3.x
+sudo apt-get update
+```
+
+Build and install boost 1.57.0: (./b2 can take a couple of minutes)
+```
+cd ~
+sudo apt-get autoremove package libboost-all-dev
+sudo apt-get install build-essential g++ python-dev autotools-dev libicu-dev build-essential libbz2-dev 
+wget http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.tar.bz2
+tar xjf ./boost_1_57_0.tar.bz2 && cd boost_1_57_0
+./bootstrap.sh --prefix=/usr/
+sudo ./b2 -j 8
+sudo ./b2 install
+```
+
+Install Qt 5.4.2:
+```
+sudo add-apt-repository ppa:beineri/opt-qt542-trusty
+sudo apt-get update
+sudo apt install qt54-meta-full
+mkdir -p ~/.config/qtchooser/
+printf "/opt/qt54/bin\n/opt/qt54/lib" > ~/.config/qtchooser/default.conf
+```
+
+Build CAE:
+```
+cd ~
+mkdir CAE && cd CAE
+git clone https://github.com/danielroth1/CAE.git
+mkdir build-CAE-Release && cd build-CAE-Release
+cmake -DCMAKE_BUILD_TYPE=Release -DQt5_DIR=/opt/qt54/lib/cmake/Qt5 -DQt5Widgets_DIR=/opt/qt54/lib/cmake/Qt5Widgets -DQt5OpenGL_DIR=/opt/qt54/lib/cmake/Qt5OpenGL -DQt5Core_DIR=/opt/qt54/lib/cmake/Qt5Gui -DQt5Core_DIR=/opt/qt54/lib/cmake/Qt5Core ../CAE
+make -j 8
+```
+
+Create the AppImage:
+```
+cd deployment
+bash create_appimage.sh ../../build-CAE-Release
+```
+The resulting AppImage will run on most of the linux distros out there out of the box. 
+
 
 ## Documentation
 The following paragraphs describe the implemented approaches a bit more in detail. If a feature is based on a research paper, a citation with a number is added in brackets. The corresponding sources are in the _Bibliography_ the bottom of this document.
