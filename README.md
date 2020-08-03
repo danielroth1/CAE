@@ -41,7 +41,7 @@ sudo apt-get install build-essential qt5-default libglew-dev freeglut3-dev libbo
 Eigen and CGAL don't need to be installed because they are header-only. Instead, they are automatically downloaded when running qmake oder cmake.
 
 ### Building with CMake
-Install/ build the required libraries. If qt was manually installed, set Qt5_DIR to <path-to-QT>/<version>/gcc_64/lib/cmake/Qt5
+Install/ build the required libraries. If qt was manually installed, set Qt5_DIR to \<path-to-QT\>/\<version\>/gcc_64/lib/cmake/Qt5
 Then run:
 ```
 mkdir CAE && cd CAE
@@ -81,7 +81,7 @@ cd deployment
 bash create_appimage.sh ../../build-CAE-Release
 ```
 This generates an AppImage file:\
-deployment/appimage/CAE-<commit-SHA1-ID>-x86_64.AppImage
+deployment/appimage/CAE-\<commit-SHA1-ID\>-x86_64.AppImage
 
 #### Building and Deploying with Ubuntu-14.04.6
 It is recommened to execute the deployment on the oldest supported Ubuntu LTS version to ensure compatibility for older Linux distros (see [A not on binary compatibility](https://github.com/probonopd/linuxdeployqt#a-note-on-binary-compatibility) ).
@@ -190,7 +190,7 @@ A **templated tree data structure** is used to define the scene graph and boundi
 
 **Thread safety** is important in a multi threaded environment like a CAD/CAE tool. Usually simulation, renderer, and application all run in their own thread. Special measurements must be applied to avoid race conditions:
 - **Monitors**: A Monitor makes the access to any type of data structure threadsafe by using a mutex. If used correctly, common issues that can occur with mutices like deadlocks are avoided. CAE uses Monitors for example in the renderer.
-- **Domains**: Often it is necessary to execute methods asynchrously in a designated thread at a point when it is actually safe to execute them (e.g. when changing simulation parameters, the current simulation step should be finished first). CAE achieves this by using Domains. A Domain executes a loop in a thread and at the start of each iteration all operations that are stored in the domains operation queue are executed. A opeartion queue is a data structure that stores method calls and their parameters. By adding a method call to a operation queue of a domain, it will be executed at a later point in the domains thread. Instead of manually creating operations and having to handle function pointers, a macro is used that hides most of the complexity. The only thing that needs to be done is redeclaring every method that should be callabe asynchronously in the same header using the macro. The asynchronouse method is then called by using the classes proxy object <class_name>Proxy. For an example to see how this is done see the bottom of SimulationControl.h.
+- **Domains**: Often it is necessary to execute methods asynchrously in a designated thread at a point when it is actually safe to execute them (e.g. when changing simulation parameters, the current simulation step should be finished first). CAE achieves this by using Domains. A Domain executes a loop in a thread and at the start of each iteration all operations that are stored in the domains operation queue are executed. A opeartion queue is a data structure that stores method calls and their parameters. By adding a method call to a operation queue of a domain, it will be executed at a later point in the domains thread. Instead of manually creating operations and having to handle function pointers, a macro is used that hides most of the complexity. The only thing that needs to be done is redeclaring every method that should be callabe asynchronously in the same header using the macro. The asynchronouse method is then called by using the classes proxy object \<class_name\>Proxy. For an example to see how this is done see the bottom of SimulationControl.h.
 
 
 ### Bibliography
