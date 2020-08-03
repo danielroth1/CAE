@@ -22,17 +22,16 @@ Currently, only Linux is supported.
 
 To build with CMake, see "Building with CMake" below. I am using qmake because of its better integration with QtCreator. If you want to use it as well, see "Building with qmake".
 
-### Required libraries
-* Boost (>= 1.57)
-* CGAL (>= 5.0)
-* Eigen3 (>= 3.2.10)
-* GLEW
-* GLU/OpenGL
-* GLUT
-* Qt5 (>= 5.4)
-
-* CMake (>= 3.0)
-* GCC (>= 5.0)
+### Required Libraries
+- Boost (>= 1.57)
+- CGAL (>= 5.0)
+- CMake (>= 3.0)
+- Eigen3 (>= 3.2.10)
+- GCC (>= 5.0)
+- GLEW
+- GLU/OpenGL
+- GLUT
+- Qt5 (>= 5.4)
 
 Install packages on Linux using apt:
 ```
