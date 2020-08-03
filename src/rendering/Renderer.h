@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 // Includes
+#include <Eigen/Core>
 #include <memory>
 #include <proxy/ProxyDefs.h>
 #include <vector>
