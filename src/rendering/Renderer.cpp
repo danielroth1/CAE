@@ -18,8 +18,6 @@ using namespace Eigen;
 Renderer::Renderer(Domain* domain)
     : mDomain(domain)
 {
-    qRegisterMetaType<std::shared_ptr<RenderObject>>();
-
     mFactory = std::make_shared<RenderObjectFactory>(domain);
 //    QObject::connect(this, SIGNAL(addRenderOjectSignal(std::shared_ptr<RenderObject>)),
 //            this, SLOT(addRenderOjectSlot(std::shared_ptr<RenderObject>)));

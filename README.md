@@ -20,7 +20,7 @@ CAE (Computer Aided Engineering) is a tool for the simulation of rigid and defor
 ## Build Instructions
 Currently, only Linux is supported.
 
-To build with CMake, see "Building with CMake" below. I am using qmake because of its better integration with QtCreator. If you want to use it as well, see "Building with qmake and QtCreator".
+To build with CMake, see "Building with CMake" below. I am using qmake because of its better integration with QtCreator. If you want to use it as well, see "Building with qmake".
 
 ### Required libraries
 * Boost
@@ -33,12 +33,11 @@ To build with CMake, see "Building with CMake" below. I am using qmake because o
 
 Install packages on Linux using apt:
 ```
-sudo apt-get install build-essential qt5-default libglew-dev freeglut3-dev libboost-all-dev libmpfr-dev libgmp3-dev
+sudo apt-get install build-essential qt5-default libglew-dev freeglut3-dev libboost-all-dev libmpfr-dev libgmp3-dev unzip
 ```
 Eigen and CGAL don't need to be installed. Instead, they are automatically downloaded when running qmake oder cmake. It's possible to do this independently of the distribution because both are header-only.
 
 ### Building with CMake:
-
 Install/ build the required libraries. If qt was manually installed, set Qt5_DIR to <path-to-QT>/5.9.1/gcc_64/lib/cmake/Qt5
 Then run:
 ```
@@ -50,8 +49,7 @@ make -j 8
 ```
 or call cmake with -DCMAKE_BUILD_TYPE=Debug to build in Debug mode.
 
-### Building with qmake and QtCreator:
-
+### Building with qmake:
 With QtCreator:
 ```
 mkdir CAE && cd CAE
@@ -68,6 +66,20 @@ qmake ../CAE/CAE.pro CONFIG+=release
 make -j 8
 ```
 or call cmake with CONFIG+=debug to build in Debug mode.
+
+### Deployment
+It's possible to create an AppImage which can be executed from every other linux based distro. To do so, first, install the required qt lib:
+```
+sudo apt-get install qttools5-dev-tools
+```
+and then execute
+```
+cd deployment
+bash create_appimage.sh ../../build-CAE-Release
+```
+This generates an AppImage file in the folder deployment/appimage/CAE-<unique-id>-x86_64.AppImage
+It is recommened to execute the deployment on the oldest Ubuntu LTS version (https://wiki.ubuntu.com/Releases) to ensure compatibility for older Ubuntu versions.
+As of this writing, the oldest version is ubuntu-14.04.6 which is supported until April 2022.
 
 ## Documentation
 The following paragraphs describe the implemented approaches a bit more in detail. If a feature is based on a research paper, a citation with a number is added in brackets. The corresponding sources are in the _Bibliography_ the bottom of this document.

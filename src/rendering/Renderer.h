@@ -2,7 +2,6 @@
 #define RENDERER_H
 
 // Includes
-#include <QObject>
 #include <memory>
 #include <proxy/ProxyDefs.h>
 #include <vector>
@@ -14,11 +13,8 @@ class RendererProxy;
 class RenderObject;
 class RenderObjectFactory;
 
-Q_DECLARE_METATYPE(std::shared_ptr<RenderObject>)
-
-class Renderer : public QObject, public std::enable_shared_from_this<Renderer>
+class Renderer : public std::enable_shared_from_this<Renderer>
 {
-    Q_OBJECT
 
 public:
     Renderer(Domain* domain);
@@ -50,7 +46,6 @@ public:
     // Prints info about currently number of rendered triangles/ vertices
     void printInfo();
 
-//public slots:
     void addRenderObjectSlot(std::shared_ptr<RenderObject> ro);
     void removeRenderObjectSlot(std::shared_ptr<RenderObject> ro);
     void setLightDirectionSlot(Eigen::Vector3f dir);
