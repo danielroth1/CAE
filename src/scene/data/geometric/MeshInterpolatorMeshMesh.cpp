@@ -218,7 +218,7 @@ void MeshInterpolatorMeshMesh::update()
                         + vi.mWeights[1] * mSourceAccessor->getVertexNormals()[f[1]]
                         + vi.mWeights[2] * mSourceAccessor->getVertexNormals()[f[2]];
 
-//                n_q.normalize();
+                n_q.normalize();
 
                 mTargetAccessor->setPosition(i, q + vi.mDistance * n_q);
             }
@@ -573,7 +573,7 @@ void MeshInterpolatorMeshMesh::solve(
             Eigen::Vector target = interpolate(chosen);
             double error = (target - p).norm();
 
-            if (error > wt)
+            if (error > 1e-12)
             {
                 errors.push_back(error);
                 if (printErrors)

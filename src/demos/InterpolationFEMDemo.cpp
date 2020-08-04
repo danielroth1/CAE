@@ -164,6 +164,8 @@ void InterpolationFEMDemo::load()
         {
             mAc->getInterpolatorModule()->addInterpolator(
                         sourceNode, target, mInterpolatorType);
+
+            // Only set visible for simple mesh.
             mAc->getInterpolatorModule()->setInterpolatorVisible(
                         std::dynamic_pointer_cast<Polygon>(
                             target->getData()->getGeometricData()), true);

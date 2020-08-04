@@ -140,3 +140,10 @@ void MeshInterpolatorRenderModel::removeFromRenderer(Renderer* renderer)
     if (mRenderPoints)
         renderer->removeRenderObject(mRenderPoints);
 }
+
+void MeshInterpolatorRenderModel::setVisible(bool visible)
+{
+    RenderModel::setVisible(visible);
+    mRenderLines->setVisible(visible);
+    mRenderPoints->setVisible(visible);
+}

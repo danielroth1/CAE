@@ -160,7 +160,7 @@ MeshInterpolationManager::createRenderModel(
 {
     std::shared_ptr<MeshInterpolatorRenderModel> rm =
             std::make_shared<MeshInterpolatorRenderModel>(
-                interpolator, false, false);
+                interpolator, false, true);
 
     rm->addToRenderer(mRenderer);
     rm->setAddedToRenderer(true);
