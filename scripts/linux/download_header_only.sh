@@ -18,7 +18,7 @@ download_header_only()
     download_link=$4 # "https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-5.0.2/CGAL-5.0.2-library.zip"
 
     if [ -d $extern_folder/$target_folder ]; then
-        if [ $debug_output == true ]; then # This message is really annoying.
+        if ( $debug_output == true ); then # This message is really annoying.
             echo "$target_folder already exists. Skipping..."
         fi
     else
