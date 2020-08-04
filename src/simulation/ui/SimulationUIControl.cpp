@@ -16,6 +16,7 @@
 #include <scene/scene_graph/SceneData.h>
 #include <scene/data/GeometricData.h>
 #include <scene/data/GeometricDataVisitor.h>
+#include <scene/data/geometric/MeshInterpolationManager.h>
 #include <scene/data/geometric/Polygon3D.h>
 #include <simulation/SimulationObjectFactory.h>
 #include <simulation/rigid/RigidBody.h>
@@ -196,6 +197,16 @@ void SimulationUIControl::init(QWidget* parent)
                     &SimulationControl::setCollisionNormalsVisible,
                     true,
                     mAc->getSimulationControl(),
+                    MemberAccessorFactory::createBoolComparator(),
+                    mAc->getSimulationControl()->getDomain()));
+
+    mWidget->getMembersWidget()->addBool(
+                "Visualize Interpolators",
+                MemberAccessorFactory::createGetterSetter<bool, MeshInterpolationManager>(
+                    &MeshInterpolationManager::isInterpolatorsVisible,
+                    &MeshInterpolationManager::setInterpolatorsVisible,
+                    false,
+                    mAc->getMeshInterpolationManager(),
                     MemberAccessorFactory::createBoolComparator(),
                     mAc->getSimulationControl()->getDomain()));
 

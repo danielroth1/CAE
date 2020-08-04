@@ -123,6 +123,27 @@ void MeshInterpolationManager::setInterpolatorVisible(const std::shared_ptr<Poly
         rm->setVisible(visible);
 }
 
+void MeshInterpolationManager::setInterpolatorsVisible(bool visible)
+{
+    for (const std::shared_ptr<MeshInterpolationData>& data : mData)
+    {
+        data->mRenderModel->setVisible(visible);
+    }
+}
+
+bool MeshInterpolationManager::isInterpolatorsVisible() const
+{
+    if (mData.empty())
+        return false;
+
+    for (const std::shared_ptr<MeshInterpolationData>& data : mData)
+    {
+        if (!data->mRenderModel->isVisible())
+            return false;
+    }
+    return true;
+}
+
 std::shared_ptr<MeshInterpolatorRenderModel> MeshInterpolationManager::getRenderModel(
         const std::shared_ptr<Polygon>& target)
 {

@@ -23,7 +23,6 @@
 #include <scene/scene_graph/SGCore.h>
 #include <scene/scene_graph/SGNodeVisitorFactory.h>
 #include <scene/scene_graph/SGTraverserFactory.h>
-#include <scene/model/MeshInterpolatorRenderModel.h>
 #include <scene/model/ModelFactory.h>
 #include <scene/model/PolygonRenderModel.h>
 #include <scene/model/RenderModel.h>

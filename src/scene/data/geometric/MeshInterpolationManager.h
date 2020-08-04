@@ -49,6 +49,11 @@ public:
     void setInterpolatorVisible(const std::shared_ptr<Polygon>& target,
                                  bool visible);
 
+    // Sets all interpolators visible.
+    void setInterpolatorsVisible(bool visible);
+    // Returns false if there is no interpolator or if one is not visible.
+    bool isInterpolatorsVisible() const;
+
     // Returns the render model of the interpolator that has the given target.
     // If there is no such interpolator, nullptr is returned.
     std::shared_ptr<MeshInterpolatorRenderModel> getRenderModel(
