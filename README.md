@@ -1,8 +1,13 @@
 # CAE
 
-CAE (Computer Aided Engineering) is a tool for the simulation of rigid and deforming bodies. Both types can collide with each other in a co-simulation environment. The process from importing a mesh until simulating them only takes a few mouse clicks. For deformables where a complex mesh discretization is needed, a powerfull but easy to use mesh conversion tool is provided. The simulation of deformables is to a certain degree realistic thanks to the use of the Corotated Finite Element Method. Visual pleasing deformations are achieved with mesh interpolators that connect low resolution simulation meshes to high resolution visual ones.
+CAE (Computer Aided Engineering) is a tool for the simulation of collidable rigid and deformable bodies.
+By separating collision and deformation geometries, a highly performant but yet realistic simulation of deformable bodies is possible.
+The process from importing a mesh to simulating them only takes a few mouse clicks.
+For deformables where a complex mesh discretization is needed, a powerfull but easy to use mesh conversion tool is provided.
+The simulation of deformables is to a certain degree realistic thanks to the use of the Corotated Finite Element Method.
+Visual pleasing deformations are achieved with mesh interpolators that connect low resolution simulation meshes to high resolution visual ones.
 
-<img src="https://user-images.githubusercontent.com/34305776/65804564-9e56d680-e182-11e9-81bb-20033a331269.png" width="1000"/>
+<img src="https://user-images.githubusercontent.com/34305776/89671867-04a09f80-d8e4-11ea-878d-de071784d1a1.png" width="1000"/>
 
 ## Features
 - Rigid bodies
@@ -140,16 +145,24 @@ Create the AppImage:
 cd deployment
 bash create_appimage.sh ../../build-CAE-Release
 ```
-The resulting AppImage will run on most of the linux distros out there out of the box. 
+The resulting AppImage will run on most of the linux distros out there out of the box.
 
+## Controls
+| Action                      | key               |
+|-----------------------------|-------------------|
+| camera rotation             | mouse left click  |
+| camera translation          | w, a, s, d        |
+| select, move, apply force   | mouse right click |
 
 ## Documentation
-The following paragraphs describe the implemented approaches a bit more in detail. If a feature is based on a research paper, a citation with a number is added in brackets. The corresponding sources are in the _Bibliography_ the bottom of this document.
+The following paragraphs describe the implemented approaches a bit more in detail. Paper references are under _Bibliography_ at the bottom of this document.
 
 ### Rigids
-Rigid bodies can be simulated extremely efficiently because each rigid is internally only described by a single position (center of mass) and a rotation. An impulse based approach is used to handle **collisions** [1] and realise variouse type of **joints** to connect rigids [2]. The following is a model car with four rotating tires that are connected with springs to the car hull. Line-joints fixate each tire along its y-axis while double-axis-rotational-joints make sure that the tires only rotate forwards.
+Rigid bodies can be simulated extremely efficiently because each rigid is internally only described by a single position (center of mass) and a rotation.
+The impulse based approach by Bender et al. is implemented to handle **collisions** [1] and variouse type of **joints** [2].
+The following shows a box with four rotating tires that are connected with springs. Line-joints fixate each tire along its y-axis while double-axis-rotational-joints make sure that the tires only rotate forwards.
 
-<img src="https://user-images.githubusercontent.com/34305776/65803805-09eb7480-e180-11e9-81f4-947177406881.jpg" width="500"/>
+<img src="https://user-images.githubusercontent.com/34305776/89443293-616b5100-d750-11ea-93ae-b31cd564ffcb.png" width="500"/>
 
 ### Deformables
 Deformables are simulated with the so called **Corotational Finite Element Method** [3]. Implicit time integration is used to calculate velocities and positions of each vertex in each time step. This has two effects: It makes the simulation unconditionally stable even for higher time step sizes and the required simulation time in each time step is constant which is beneficial in real time applications where a certain frame rate must be ensured.
@@ -158,27 +171,68 @@ Deformables are simulated with the so called **Corotational Finite Element Metho
 Deformables and rigids interact with each other in a Co-Simulation environment. This means that the two solvers (impulse based for rigids and FEM for deformables) that usually operate independently are communicating with each other via forces. In consequence the simulation of collisions between rigids and deformables is possible.
 
 ### Mesh-Converter
-To be able to deform any given 2D mesh, a Mesh-Converter is provided which creates a 3D mesh (consisting of tetrahedron) by discretizing the volume that is surrounded by the mesh. By defining different parameters the outcome of this process can be controlled. The converter uses an algorithm from the CGAL library, see https://doc.cgal.org/latest/Mesh_3/index.html#title10 for more on how the criterias work. It is recommended to set every value first to zero (results in the algorithm ignoring them) and then trying different values for "facet_distance". The other values can then be set for fine tuning.
-The following low resolution grey mesh was converted from the high resolution red mesh by using a facet_distance of 0.02 and all other values zero. The grey mesh consists of tetrahedrons but only the outer triangles are visualized here.
+To be able to deform any given triangle mesh, a Mesh-Converter is provided which creates a tetrahedron mesh by discretizing the by the triangle mesh surrounded volume.
+The converter uses an [algorithm](https://doc.cgal.org/latest/Mesh_3/index.html#title10) from the CGAL library.
+It's possible to influence quality and resolution of the generated mesh by setting various parameters.
+It's recommended to first try different values for "facet_distance" and then set the other parameters to fine tune.
 
-<img src="https://user-images.githubusercontent.com/34305776/65803792-fa6c2b80-e17f-11e9-945e-8e51d1b1f258.jpg" width="500"/>
+<img src="https://user-images.githubusercontent.com/34305776/65803792-fa6c2b80-e17f-11e9-945e-8e51d1b1f258.jpg" width="300"/>
+
+<em>Low resolution grey mesh converted from the high resolution red mesh by using a facet_distance of 0.02 and all other values zero. The grey mesh consists of tetrahedrons but only the outer triangles are visualized here.</em>
 
 ### Interpolators
-The simulation of deformables is considerably more expensive than of rigids, especially if the discretized tetrahedron mesh has a high resolution. On the other hand, low resolved meshes can be very unplesant to look at. To solve this problem, it is possible to attach a highly detailed mesh on the simulated low resolution discretized mesh. Two of such mesh interpolation methods are implemented:
+The simulation of deformables is considerably more expensive than of rigids, especially for more detailed tetrahedron meshes. On the other hand, low resolved meshes can be very unplesant to look at. To solve this problem, it is possible to attach a highly detailed mesh on the simulated low resolution discretized mesh. Two of such mesh interpolation methods are implemented:
 - The **MeshMeshInterpolator** [4] maps each point of the high resolved mesh w.r.t. the triangles of the outer simulated mesh. This method is best used if there are many vertices of the high resolved mesh that lie outside the simlated mesh.
 - The **FEMInterpolator** maps the points of the high resolved mesh w.r.t. the finite elements. This method is better suited for vertices that lie inside the simulated mesh (each vertex is inside a finite element/ tetrahedron).
 
-See FallingObjectsDemo.cpp to see how to use them. For the previous Armadillo a mesh-mesh interpolation would be ideal. The following example shows how each vertex of the high resolved sphere is mapped on the triangles of a low resolved cube. The second picture shows how each vertex of the sphere is interpolated when the cube deforms. Even in such an extrem scenario where both meshes have nothing in common, the interpolation still looks plausible.
+See FallingObjectsDemo.cpp to see how to use them. For the previous Armadillo a mesh-mesh interpolation would be ideal.
+
+The following example shows how each vertex of the high resolved sphere is mapped on the triangles of a low resolved cube. The second picture shows how each vertex of the sphere is interpolated when the cube deforms. Even in such an extrem scenario where both meshes have nothing in common, the interpolation still looks plausible.
 
 <img src="https://user-images.githubusercontent.com/34305776/65803872-43bc7b00-e180-11e9-9c8b-775df654d6c8.png" width="500"/>
 
 ### Collisions
-Collision handling works by resolving collisions between spheres that are distributed on the surface of each object. Impulses are applied to fulfill collision constraints according to Benders approach [1]. To reduce the number of collision checks, a sphere based bounding volume hierarchy is used. The visualization of that hierarchy is possible by pressing _Render Collision Spheres_ in the model _Simulation_ under the tab _Visualize_.
+Collision handling works by resolving vertex-face and edge-edge collisions. Impulses are applied to fulfill collision constraints according to Benders approach [1]. To reduce the number of collision checks, an AABB bounding volume hierarchy is used.
 
-<img src="https://user-images.githubusercontent.com/34305776/65803826-18d22700-e180-11e9-9a3d-28d445323795.jpg" width="500"/>
+Deformable boxes colliding with each other:
+
+<img src="https://user-images.githubusercontent.com/34305776/89667413-63fab180-d8dc-11ea-82c6-830168f8ac2d.png" width="500"/>
+
+Different layers of the AABB bounding volume hierarchy:
+
+<img src="https://user-images.githubusercontent.com/34305776/89669335-9063fd00-d8df-11ea-9766-53e94f308948.png" width="500"/>
 
 ### I/O
-Importers for the 2D mesh file formats .obj and .off as well as 3D file format .tet are implemented. Currently, no exporters are provided.
+Importers for the 2D mesh file formats .obj and .off as well as 3D file format .tet are implemented. It's possible to export in .obj format.
+
+<table class="tg">
+  <tr>
+    <th class="tg-031e"></th>
+    <th class="tg-s6z2" colspan="2">2D Mesh<br></th>
+    <th class="tg-s6z2" colspan="2">3D Mesh<br></th>
+  </tr>
+  <tr>
+    <td class="tg-031e"></td>
+    <td class="tg-s6z2">.obj</td>
+    <td class="tg-s6z2">.off</td>
+    <td class="tg-s6z2">TetGen (.node .face .ele)<br></td>
+    <td class="tg-s6z2">.tet</td>
+  </tr>
+  <tr>
+    <td class="tg-031e">Importer</td>
+    <td class="tg-s6z2">x</td>
+    <td class="tg-s6z2">x</td>
+    <td class="tg-s6z2">x</td>
+    <td class="tg-s6z2">x</td>
+  </tr>
+  <tr>
+    <td class="tg-031e">Exporter</td>
+    <td class="tg-s6z2">x</td>
+    <td class="tg-s6z2"></td>
+    <td class="tg-s6z2"></td>
+    <td class="tg-s6z2"></td>
+  </tr>
+</table>
 
 ### Renderer
 CAE uses its own OpenGL based renderer. It supports simple lighting and texturing. Its designed to run in its own thread and, therefore, offers a completely threadsafe access to its rendering components. In CAE the separation between logic and renderer is clear defined. The communicaiton between them is mostly done in so called RenderModels. This would allow to easily change the underlying rendering engine if necessary.
@@ -201,9 +255,3 @@ A **templated tree data structure** is used to define the scene graph and boundi
 [3] Müller, Matthias, and Markus Gross. "Interactive virtual materials." Proceedings of Graphics Interface 2004. Canadian Human-Computer Communications Society, 2004.
 
 [4] Kobbelt, Leif, Jens Vorsatz, and Hans-Peter Seidel. "Multiresolution hierarchies on unstructured triangle meshes." Computational Geometry 14.1-3 (1999): 5-24.
-
-## How to use CAE
-To simulate a rigid body, import the geometry data from the  **.off** file and create a rigid body by selecting the node (while having Selection Type set to "Nodes") than click the right menu: Simulation -> Simulate -> Rigid Body.
-
-To create a deformable that is simulated with the [corotated FEM](https://www.google.com/search?q=corotated+FEM&ie=utf-8&oe=utf-8) , the geometry first needs to be converted to a tree dimensional polygon. To do so by clicking on "Convert" (in the "Mesh Converter" tab). The deformable is then created by clicking Simulation -> Simulate -> Deformable. To make either collidable, click the corresponding Simulation -> Simulate -> Collidable.
-
