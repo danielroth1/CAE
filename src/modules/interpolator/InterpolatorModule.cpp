@@ -149,14 +149,19 @@ void InterpolatorModule::removeInterpolator(SGNode* source, SGNode* target)
 
 void InterpolatorModule::removeInterpolator(SGNode* node)
 {
+    std::vector<std::pair<SGNode*, SGNode*>> toRemoveKeys;
     for (auto it : mInterpolatorMap)
     {
         SGNode* source = std::get<0>(it.first);
         SGNode* target = std::get<1>(it.first);
         if (node == source || node == target)
         {
-            removeInterpolator(source, target);
+            toRemoveKeys.push_back(std::make_pair(source, target));
         }
+    }
+    for (const auto& it : toRemoveKeys)
+    {
+        removeInterpolator(std::get<0>(it), std::get<1>(it));
     }
 }
 
