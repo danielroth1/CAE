@@ -570,7 +570,7 @@ void SimulationControl::addCollisionObject(
     }
 }
 
-bool SimulationControl::addCollisionObject(const std::shared_ptr<Polygon>& poly)
+void SimulationControl::addCollisionObject(const std::shared_ptr<Polygon>& poly)
 {
     // Check if the polygon is owned by a SimulationObject and if yes, set
     // that as collidable.
@@ -591,7 +591,6 @@ bool SimulationControl::addCollisionObject(const std::shared_ptr<Polygon>& poly)
     if (it != mSimulationObjects.end())
     {
         addCollisionObject(*it, nullptr);
-        return true;
     }
     else
     {
@@ -620,11 +619,10 @@ bool SimulationControl::addCollisionObject(const std::shared_ptr<Polygon>& poly)
             if (it != mSimulationObjects.end())
             {
                 addCollisionObject(*it, std::static_pointer_cast<MeshInterpolatorFEM>(interpolator));
-                return true;
+                return;
             }
         }
     }
-    return false;
 }
 
 void SimulationControl::removeCollisionObject(const std::shared_ptr<SimulationObject>& so)

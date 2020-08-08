@@ -422,7 +422,7 @@ std::shared_ptr<FEMObject> SGControl::createFEMObject(
             sgc.mAc->getSimulationControl()->addSimulationObject(femObj);
             if (colliding)
             {
-                sgc.mAc->getSimulationControl()->setCollidable(femObj, true);
+                sgc.mAc->getSimulationControl()->getProxy()->setCollidable(femObj, true);
             }
 
             // TODO: simplify simulation object handling
@@ -491,7 +491,7 @@ std::shared_ptr<RigidBody> SGControl::createRigidBody(
 
             if (colliding)
             {
-                sgc.mAc->getSimulationControl()->setCollidable(rb, true);
+                sgc.mAc->getSimulationControl()->getProxy()->setCollidable(rb, true);
             }
 
             // TODO:
@@ -533,7 +533,7 @@ void SGControl::createCollidable(const std::shared_ptr<SceneLeafData>& ld,
     std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
     if (so)
     {
-        mAc->getSimulationControl()->addCollisionObject(
+        mAc->getSimulationControl()->getProxy()->addCollisionObject(
                     so, nullptr, collisionSphereRadiusFactor);
     }
     else
@@ -549,7 +549,7 @@ void SGControl::createCollidable(
     std::shared_ptr<SimulationObject> so = ld->getSimulationObject();
     if (so)
     {
-        mAc->getSimulationControl()->setCollidable(interpolation->getTarget(), true);
+        mAc->getSimulationControl()->getProxy()->setCollidable(interpolation->getTarget(), true);
     }
     else
     {

@@ -71,6 +71,11 @@ RigidBody::RigidBody(
     update();
 }
 
+RigidBody::~RigidBody()
+{
+
+}
+
 void RigidBody::update()
 {
     if (mStatic)

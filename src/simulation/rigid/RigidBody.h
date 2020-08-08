@@ -23,6 +23,8 @@ public:
               Vectors& positions,
               double mass);
 
+    virtual ~RigidBody();
+
     // Calculates all relevant data w.r.t. to body space coordinates.
     // Call this method each time position x or rotation q changes.
     void update();

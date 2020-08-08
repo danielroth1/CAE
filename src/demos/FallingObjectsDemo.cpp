@@ -169,7 +169,7 @@ SGLeafNode* FallingObjectsDemo::importAndScale(
 
         // Interpolator
         mAc->getInterpolatorModule()->addInterpolator(
-                    source, leaf, MeshInterpolator::Type::FEM);
+                    source, leaf, MeshInterpolator::Type::MESH_MESH);
 
         return leaf;
     }
