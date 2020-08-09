@@ -7,6 +7,8 @@ For deformables where a complex mesh discretization is needed, a powerfull but e
 The simulation of deformables is to a certain degree realistic thanks to the use of the Corotated Finite Element Method.
 Visual pleasing deformations are achieved with mesh interpolators that connect low resolution simulation meshes to high resolution visual ones.
 
+Video of CAEs Car Crash demo: https://youtu.be/xlMe7Q1j4Lc
+
 <img src="https://user-images.githubusercontent.com/34305776/89671867-04a09f80-d8e4-11ea-878d-de071784d1a1.png" width="1000"/>
 
 ## Features
@@ -16,10 +18,12 @@ Visual pleasing deformations are achieved with mesh interpolators that connect l
 - Collisions between rigids and deformables
 - Mesh-Converter (CGAL)
 - Mesh-Interpolators
-- Importers: obj, off, tet
+- Separate deformation, collision, and visualization mesh for highly performant simulation
+- Importers: obj, off, tet, TetGen
+- Exporters: obj
 - Renderer (OpenGL based)
 - Templated tree data structure
-- Qt member widgets
+- Easily extend the UI with Qt member widgets
 - Multithreading concepts (Monitors and Domains)
 
 ## Build Instructions
@@ -162,7 +166,7 @@ Rigid bodies can be simulated extremely efficiently because each rigid is intern
 The impulse based approach by Bender et al. is implemented to handle **collisions** [1] and variouse type of **joints** [2].
 The following shows a box with four rotating tires that are connected with springs. Line-joints fixate each tire along its y-axis while double-axis-rotational-joints make sure that the tires only rotate forwards.
 
-<img src="https://user-images.githubusercontent.com/34305776/89443293-616b5100-d750-11ea-93ae-b31cd564ffcb.png" width="500"/>
+<img src="https://user-images.githubusercontent.com/34305776/89443293-616b5100-d750-11ea-93ae-b31cd564ffcb.png" width="300"/>
 
 ### Deformables
 Deformables are simulated with the so called **Corotational Finite Element Method** [3]. Implicit time integration is used to calculate velocities and positions of each vertex in each time step. This has two effects: It makes the simulation unconditionally stable even for higher time step sizes and the required simulation time in each time step is constant which is beneficial in real time applications where a certain frame rate must be ensured.
@@ -180,6 +184,10 @@ It's recommended to first try different values for "facet_distance" and then set
 
 <em>Low resolution grey mesh converted from the high resolution red mesh by using a facet_distance of 0.02 and all other values zero. The grey mesh consists of tetrahedrons but only the outer triangles are visualized here.</em>
 
+<img src="https://user-images.githubusercontent.com/34305776/89728930-4559ff00-da31-11ea-8235-31f411cfbd04.png" width="300"/>
+
+<em>Demo: InterpolationMeshMesh (Astronaut) [[source](https://nasa3d.arc.nasa.gov/detail/aces)]</em>
+
 ### Interpolators
 The simulation of deformables is considerably more expensive than of rigids, especially for more detailed tetrahedron meshes. On the other hand, low resolved meshes can be very unplesant to look at. To solve this problem, it is possible to attach a highly detailed mesh on the simulated low resolution discretized mesh. Two of such mesh interpolation methods are implemented:
 - The **MeshMeshInterpolator** [4] maps each point of the high resolved mesh w.r.t. the triangles of the outer simulated mesh. This method is best used if there are many vertices of the high resolved mesh that lie outside the simlated mesh.
@@ -196,11 +204,20 @@ Collision handling works by resolving vertex-face and edge-edge collisions. Impu
 
 Deformable boxes colliding with each other:
 
-<img src="https://user-images.githubusercontent.com/34305776/89667413-63fab180-d8dc-11ea-82c6-830168f8ac2d.png" width="500"/>
+<img src="https://user-images.githubusercontent.com/34305776/89667413-63fab180-d8dc-11ea-82c6-830168f8ac2d.png" width="300"/>
 
 Different layers of the AABB bounding volume hierarchy:
 
 <img src="https://user-images.githubusercontent.com/34305776/89669335-9063fd00-d8df-11ea-9766-53e94f308948.png" width="500"/>
+
+CAE offers the possiblity to separate deformation, collision, and visualization meshes.
+Collision and visualization mesh are interpolated from the tetrahedron mesh and moved accordingly.
+Low resolution deformation meshes are usually sufficient for a reasonable deformation behavior and are a lot faster to simulate.
+Collision detection can be based on a low resolution triangle mesh, like the convex hull of the visualized mesh.
+
+<img src="https://user-images.githubusercontent.com/34305776/89727922-4f77ff80-da29-11ea-887a-7b31f0a931ae.png" width="500"/>
+
+<em>A car (from the [FEMFX demo](https://github.com/GPUOpen-Effects/FEMFX/tree/master/samples/FEMFXViewer/models)) that drives into a wall and deforms. 30 of those can be simulated in real time by using different meshes for deformation (green), collision detection (white), and visualization (red).</em>
 
 ### I/O
 Importers for the 2D mesh file formats .obj and .off as well as 3D file format .tet are implemented. It's possible to export in .obj format.
@@ -235,7 +252,7 @@ Importers for the 2D mesh file formats .obj and .off as well as 3D file format .
 </table>
 
 ### Renderer
-CAE uses its own OpenGL based renderer. It supports simple lighting and texturing. Its designed to run in its own thread and, therefore, offers a completely threadsafe access to its rendering components. In CAE the separation between logic and renderer is clear defined. The communicaiton between them is mostly done in so called RenderModels. This would allow to easily change the underlying rendering engine if necessary.
+CAE uses its own OpenGL based renderer. It supports simple lighting and texturing. Its designed to run in its own thread and, therefore, offers a completely threadsafe access to its rendering components. In CAE the separation between logic and renderer is clearly defined. The communicaiton between them is mostly done in so called RenderModels. This would allow to easily change the underlying rendering engine if necessary.
 
 ### Miscellaneous
 A **templated tree data structure** is used to define the scene graph and bounding volume hierarchy, see SGCore.h and BVHCore. It is generic enough that it can be used in various other scenarios.
@@ -255,3 +272,4 @@ A **templated tree data structure** is used to define the scene graph and boundi
 [3] Müller, Matthias, and Markus Gross. "Interactive virtual materials." Proceedings of Graphics Interface 2004. Canadian Human-Computer Communications Society, 2004.
 
 [4] Kobbelt, Leif, Jens Vorsatz, and Hans-Peter Seidel. "Multiresolution hierarchies on unstructured triangle meshes." Computational Geometry 14.1-3 (1999): 5-24.
+
