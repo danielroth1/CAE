@@ -184,10 +184,6 @@ It's recommended to first try different values for "facet_distance" and then set
 
 <em>Low resolution grey mesh converted from the high resolution red mesh by using a facet_distance of 0.02 and all other values zero. The grey mesh consists of tetrahedrons but only the outer triangles are visualized here.</em>
 
-<img src="https://user-images.githubusercontent.com/34305776/89728930-4559ff00-da31-11ea-8235-31f411cfbd04.png" width="300"/>
-
-<em>Demo: InterpolationMeshMesh (Astronaut) [[source](https://nasa3d.arc.nasa.gov/detail/aces)]</em>
-
 ### Interpolators
 The simulation of deformables is considerably more expensive than of rigids, especially for more detailed tetrahedron meshes. On the other hand, low resolved meshes can be very unplesant to look at. To solve this problem, it is possible to attach a highly detailed mesh on the simulated low resolution discretized mesh. Two of such mesh interpolation methods are implemented:
 - The **MeshMeshInterpolator** [4] maps each point of the high resolved mesh w.r.t. the triangles of the outer simulated mesh. This method is best used if there are many vertices of the high resolved mesh that lie outside the simlated mesh.
@@ -198,6 +194,10 @@ See FallingObjectsDemo.cpp to see how to use them. For the previous Armadillo a 
 The following example shows how each vertex of the high resolved sphere is mapped on the triangles of a low resolved cube. The second picture shows how each vertex of the sphere is interpolated when the cube deforms. Even in such an extrem scenario where both meshes have nothing in common, the interpolation still looks plausible.
 
 <img src="https://user-images.githubusercontent.com/34305776/65803872-43bc7b00-e180-11e9-9c8b-775df654d6c8.png" width="500"/>
+
+<img src="https://user-images.githubusercontent.com/34305776/89728930-4559ff00-da31-11ea-8235-31f411cfbd04.png" width="300"/>
+
+<em>Demo: InterpolationMeshMesh (Astronaut) [[source](https://nasa3d.arc.nasa.gov/detail/aces)]</em>
 
 ### Collisions
 Collision handling works by resolving vertex-face and edge-edge collisions. Impulses are applied to fulfill collision constraints according to Benders approach [1]. To reduce the number of collision checks, an AABB bounding volume hierarchy is used.
