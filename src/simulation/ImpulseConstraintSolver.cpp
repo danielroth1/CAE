@@ -151,9 +151,8 @@ void ImpulseConstraintSolver::revalidateCollisionConstraints(
                                 Eigen::Vector2d::Zero());
                 }
 
-                ++count;
                 mCollisionConstraints[count].setReuseCount(reuseCount);
-
+                ++count;
                 ++colIndex;
             }
         }
