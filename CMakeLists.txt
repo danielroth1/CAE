@@ -5,20 +5,28 @@ project(CAE)
 
 cmake_policy(SET CMP0054 OLD)
 
-# Download all external libraries (cgal and eigen) and puts them in
-# <CAE-source-dir>/extern/*. Checks if they are already there so this call only
-# takes time the first time it's called. Currently only works with header only
-# libraries.
-execute_process(
-    COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/linux/download_external_libs.sh
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+if (UNIX)
+    # Download all external libraries (cgal and eigen) and puts them in
+    # <CAE-source-dir>/extern/*. Checks if they are already there so this call only
+    # takes time the first time it's called. Currently only works with header only
+    # libraries.
+    execute_process(
+        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/linux/download_external_libs.sh
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Automatically downloads all assets that aren't there yet and puts them in
-# <build-dir>/assets/*. This call only takes some time the first time it's
-# called. The check if a file is already there is very cheap. It's executed
-# each time qmake is run.
-execute_process(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/linux/download_assets.sh) 
+    # Automatically downloads all assets that aren't there yet and puts them in
+    # <build-dir>/assets/*. This call only takes some time the first time it's
+    # called. The check if a file is already there is very cheap. It's executed
+    # each time qmake is run.
+    execute_process(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/linux/download_assets.sh) 
 
+else (UNIX)
+    # Same scripts as above but in python.
+    execute_process(
+        COMMAND python3 -B ${CMAKE_CURRENT_SOURCE_DIR}/scripts/python/download_external_libs.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    execute_process(COMMAND python3 -B ${CMAKE_CURRENT_SOURCE_DIR}/scripts/python/download_assets.py) 
+endif (UNIX)
 
 ## Global settings
 set(CMAKE_CXX_STANDARD 14)

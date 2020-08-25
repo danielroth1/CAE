@@ -13,17 +13,26 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets opengl
 
-# Download all external libraries (cgal and eigen) and puts them in
-# <CAE-source-dir>/extern/*. Checks if they are already there so this call only
-# takes time the first time it's called. Currently only works with header only
-# libraries.
-system(bash scripts/linux/download_external_libs.sh)
+unix {
+    # Download all external libraries (cgal and eigen) and puts them in
+    # <CAE-source-dir>/extern/*. Checks if they are already there so this call only
+    # takes time the first time it's called. Currently only works with header only
+    # libraries.
+    system(bash scripts/linux/download_external_libs.sh)
 
-# Automatically downloads all assets that aren't there yet and puts them in
-# <build-dir>/assets/*. This call only takes some time the first time it's
-# called. The check if a file is already there is very cheap. It's executed
-# each time qmake is run.
-system(cd $$OUT_PWD && bash $$PWD/scripts/linux/download_assets.sh)
+
+    # Automatically downloads all assets that aren't there yet and puts them in
+    # <build-dir>/assets/*. This call only takes some time the first time it's
+    # called. The check if a file is already there is very cheap. It's executed
+    # each time qmake is run.
+    system(cd $$OUT_PWD && bash $$PWD/scripts/linux/download_assets.sh)
+}
+
+# Same scripts as above but in python.
+#win32 {
+    system(python3 -B scripts/python/download_external_libs.py)
+    system(cd $$OUT_PWD && python3 -B $$PWD/scripts/python/download_assets.py)
+#}
 
 TARGET = CAE
 TEMPLATE = app
