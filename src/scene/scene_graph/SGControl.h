@@ -29,6 +29,18 @@ public:
     // Removes all simulation objects from the simnulation.
     void clearScene();
 
+    // Casts a ray from origin along the given normal and checks with which
+    // triangles it collides. Returns the closest triangle.
+    // \param ignoreInvisible - if true, invisble objects are ignored
+    bool castRay(
+            const Eigen::Vector3d& origin,
+            const Eigen::Vector3d& normal,
+            SGLeafNode** leafNodeOut,
+            std::shared_ptr<Polygon>& polyOut,
+            size_t& triangleIdOut,
+            Eigen::Vector3d& intersectionPointOut,
+            bool ignoreInvisible = true);
+
     // SG Insertion Methods
         // Imports the file at the specified path and stores a new
         // node to the provided children node.

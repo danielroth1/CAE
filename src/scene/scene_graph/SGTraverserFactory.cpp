@@ -33,6 +33,34 @@ SGTraverser SGTraverserFactory::createDefaultSGTraverser(SGNode* root)
     return SGTraverser(root, nullptr);
 }
 
+SGFilter* SGTraverserFactory::createVisibilityFilter(bool filterInvisible)
+{
+    class VisibilityFilter : public SGFilter
+    {
+    public:
+        VisibilityFilter(bool _filterInvisible)
+            : filterInvisible(_filterInvisible)
+        {
+
+        }
+
+        bool filter(SGNode* sceneNode)
+        {
+            if (sceneNode->isLeaf())
+            {
+                bool visible = static_cast<SGLeafNode*>(sceneNode)->getData()->isVisible();
+                if (filterInvisible)
+                    return !visible;
+                else
+                    return visible;
+            }
+            return false;
+        }
+        bool filterInvisible;
+    };
+    return new VisibilityFilter(filterInvisible);
+}
+
 SGTraverserFactory::SGTraverserFactory()
 {
 

@@ -2,13 +2,13 @@
 #define GLWIDGET_H
 
 // Includes
+#include <Eigen/Core>
 #include <SimulationControl.h>
 
 //#include <QOpenGLFunctions>
 #include <QOpenGLWidget>
 #include <QMouseEvent>
 #include <QPointF>
-#include <QVector3D>
 #include <QTime>
 
 // Forward Declarations
@@ -30,9 +30,9 @@ public:
 
     void setRenderer(Renderer* renderer);
 
-    QVector3D getCameraPos() const;
+    Eigen::Vector3f getCameraPos() const;
 
-    QVector3D getCameraDir() const;
+    Eigen::Vector3f getCameraDir() const;
 
     void updateCameraSpeedAfterKeyPress();
 
@@ -56,9 +56,9 @@ private:
 
     void updateCameraPos(float stepSize);
 
-    QVector3D mCameraPos;
-    QVector3D mCameraVel;
-    QVector3D mCameraDir;
+    Eigen::Vector3f mCameraPos;
+    Eigen::Vector3f mCameraVel;
+    Eigen::Vector3f mCameraDir;
     QPointF mMousePos;
     QPointF mAngle; // (x, y) camera angle in degree
     float mMouseSensitivy;

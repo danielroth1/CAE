@@ -62,6 +62,30 @@ public:
     // normals.
     virtual void removeVertices(std::vector<ID>& indices);
 
+    // Checks if the ray that starts at origin in normal direction intersects
+    // any of the triangles of this polyon. If it does, returns true and the
+    // output parameters triangleIdOut, baryOut, and distanceOut are set.
+    // \param origin - ray starting point
+    // \param normal - ray direction
+    // \param triangleIdOut - intersection triangle
+    // \param baryOut - barycentric coordinates of intersection point w.r.t.
+    //      intersected triangle
+    // \param distanceOut - distance between origin and target point
+    virtual bool castRay(
+            const Eigen::Vector3d& origin,
+            const Eigen::Vector3d& normal,
+            size_t& triangleIdOut,
+            Eigen::Vector2d& baryOut,
+            double& distanceOut);
+
+    // Checks if the given ray intersects the triangle with the given id.
+    virtual bool castRay(
+            size_t triangleId,
+            const Eigen::Vector3d& origin,
+            const Eigen::Vector3d& normal,
+            Eigen::Vector2d& baryOut,
+            double& distanceOut);
+
     // Checks if the given point is inside the topology. Only tests the
     // faces that are part of the given feature.
     // Retruns false, if there are no faces.

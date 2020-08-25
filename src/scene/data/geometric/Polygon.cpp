@@ -57,6 +57,75 @@ void Polygon::removeVertices(std::vector<ID>& indices)
         VectorOperations::removeVectors(mNormals, indices.begin(), indices.end());
 }
 
+bool Polygon::castRay(
+        const Vector3d& origin,
+        const Vector3d& normal,
+        size_t& triangleIdOut,
+        Vector2d& baryOut,
+        double& distanceOut)
+{
+    PolygonTopology& topology = getTopology();
+    distanceOut = std::numeric_limits<double>::max();
+
+    double intersects = false;
+    Eigen::Vector2d baryTemp;
+    double distanceTemp;
+    for (size_t i = 0; i < topology.getFacesIndices().size(); ++i)
+    {
+        if (castRay(i, origin, normal, baryTemp, distanceTemp))
+        {
+            if (distanceTemp < distanceOut)
+            {
+                distanceOut = distanceTemp;
+                baryOut = baryTemp;
+                triangleIdOut = i;
+            }
+
+            intersects = true;
+        }
+    }
+
+    return intersects;
+}
+
+bool Polygon::castRay(
+        size_t triangleId,
+        const Vector3d& origin,
+        const Vector3d& normal,
+        Vector2d& baryOut,
+        double& distanceOut)
+{
+    const Face& face = getTopology().getFacesIndices()[triangleId];
+    const Eigen::Vector3d& p0 = getPosition(face[0]);
+    const Eigen::Vector3d& p1 = getPosition(face[1]);
+    const Eigen::Vector3d& p2 = getPosition(face[2]);
+
+    Eigen::Vector3d e1(p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]);
+    Eigen::Vector3d e2(p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]);
+    Eigen::Vector3d t(origin[0] - p0[0], origin[1] - p0[1], origin[2] - p0[2]);
+
+    Eigen::Vector3d p = normal.cross(e2);
+    Eigen::Vector3d q = t.cross(e1);
+
+    double d1 = p.dot(e1);
+    if (fabs(d1) < 10e-7)
+        return false;
+
+    double f = 1.0f / d1;
+    baryOut(0) = f * (p.dot(t));
+
+    if (baryOut(0) < 0 || baryOut(0) > 1.0)
+        return false;
+
+    baryOut(1) = f * (q.dot(normal));
+    if (baryOut(1) < 0.0 || baryOut(1) > 1.0 || (baryOut(0) + baryOut(1)) > 1.0)
+        return false;
+
+    distanceOut = f * (q.dot(e2));
+
+    return true;
+}
+
 GeometricData::Type Polygon::getType() const
 {
     return Type::POLYGON;

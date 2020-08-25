@@ -23,7 +23,8 @@ void RenderControl::handlePreRenderingStep()
     // head light
     // Just use the light direction and global parallel light.
 
-    QVector3D dir = mGlWidget->getCameraDir();
+    Eigen::Vector3f dir = mGlWidget->getCameraDir();
+
     mRenderer->setLightDirection(
                 Eigen::Vector3f(dir.x(), dir.y(), dir.z()));
 

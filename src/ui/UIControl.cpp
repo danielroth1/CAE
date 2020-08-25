@@ -48,6 +48,7 @@
 #include <map>
 #include <math.h>
 #include <memory>
+#include <QVector3D>
 #include <times/timing.h>
 
 using namespace Eigen;
@@ -171,6 +172,37 @@ void UIControl::mousePressEvent(QMouseEvent *event)
             int x = event->pos().x();
             int y = mMainWindow->getGlWidget()->height() - event->pos().y();
             mSelectionControl->initiateNewSelection(x, y);
+
+            // Cast ray and print information about the hit triangle.
+            SGLeafNode* leafNode;
+            std::shared_ptr<Polygon> poly;
+            size_t triangleId;
+            Eigen::Vector3d intersectionPoint;
+
+            Eigen::Vector3f pos = mGlWidget->getCameraPos();
+
+            Eigen::Vector3d screenPoint;
+            gluUnProject(x, y, 0,
+                         mViewFrustum->getModelView(),
+                         mViewFrustum->getProjection(),
+                         mViewFrustum->getViewPort(),
+                         &screenPoint(0), &screenPoint(1), &screenPoint(2));
+
+            bool hit = mAc->getSGControl()->castRay(
+                        pos.cast<double>(), (screenPoint - pos.cast<double>()).normalized(), &leafNode, poly, triangleId, intersectionPoint);
+
+            if (hit)
+            {
+                std::cout << "Ray: \n"
+                          << "  node: " << leafNode->getName() << "\n"
+                          << "  triangle id: " << triangleId << "\n"
+                          << "  intersectionPoint: " << intersectionPoint.transpose() << "\n"
+                          << "  distance: " << (pos.cast<double>() - intersectionPoint).norm() << "\n";
+            }
+            else
+            {
+                std::cout << "No Ray Hit\n";
+            }
         }
         break;
     }
@@ -222,20 +254,20 @@ void UIControl::mouseReleaseEvent(QMouseEvent *event)
             mSelectionControl->finalizeSelection(*mViewFrustum);
 
 //            mSelectionControl->updateSelectionRectanlge(x, y);
-            std::cout << "("
-                      << mSelectionControl->getSelectionRectangle()->getXStart()<< ", "
-                      << mSelectionControl->getSelectionRectangle()->getYStart() << ") ("
-                      << mSelectionControl->getSelectionRectangle()->getXEnd() << ", "
-                      << mSelectionControl->getSelectionRectangle()->getYEnd() << ")\n";
+//            std::cout << "("
+//                      << mSelectionControl->getSelectionRectangle()->getXStart()<< ", "
+//                      << mSelectionControl->getSelectionRectangle()->getYStart() << ") ("
+//                      << mSelectionControl->getSelectionRectangle()->getXEnd() << ", "
+//                      << mSelectionControl->getSelectionRectangle()->getYEnd() << ")\n";
 //            mSelectionControl->getSelection()->clear();
             // TODO: update selection for all scene leaf data
 
 
-            SGTraverser traverser = SGTraverserFactory::createDefaultSGTraverser(
-                        mAc->getSGControl()->getSceneGraph()->getRoot());
-            SGNodeVisitor* printerVisitor = SGNodeVisitorFactory::createPrinterVisitor(std::cout);
-            traverser.traverse(*printerVisitor);
-            delete printerVisitor;
+//            SGTraverser traverser = SGTraverserFactory::createDefaultSGTraverser(
+//                        mAc->getSGControl()->getSceneGraph()->getRoot());
+//            SGNodeVisitor* printerVisitor = SGNodeVisitorFactory::createPrinterVisitor(std::cout);
+//            traverser.traverse(*printerVisitor);
+//            delete printerVisitor;
 
         }
         break;
@@ -321,7 +353,7 @@ void UIControl::mouseReleaseEvent(QMouseEvent *event)
                            mViewFrustum->getViewPort(),
                            &xWin, &yWin, &zWin);
 
-                double xProj, yProj, zProj; // TODO: some probleme here?
+                double xProj, yProj, zProj;
                 gluUnProject(x,y,zWin,
                              mViewFrustum->getModelView(),
                              mViewFrustum->getProjection(),
@@ -395,7 +427,7 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
 
             double xWin;
             double yWin;
-            double zWin;
+            double zWin; // [0, 1], 0 = near plane, 1 = far plane
 
             gluProject(avg(0), avg(1), avg(2),
                        mViewFrustum->getModelView(),
@@ -410,8 +442,6 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
             double yProj;
             double zProj;
 
-            // projects to far plane I think. What is actually desired is the
-            // plane on which the vertex is
             gluUnProject(x,y,zWin,
                          mViewFrustum->getModelView(),
                          mViewFrustum->getProjection(),

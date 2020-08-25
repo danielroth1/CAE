@@ -34,21 +34,21 @@ GLWidget::~GLWidget()
 
 void GLWidget::setDefaults()
 {
-    mMouseSensitivy = 1.0f;
+    mMouseSensitivy = 0.2f;
     mMovementSpeed = 25.0f;
     mMousePos = QPointF(0.0, 0.0);
     mAngle = QPointF(0.0, -15.0);
-    mCameraPos = QVector3D(0.0, 1.5f, 5.5f);
+    mCameraPos = Eigen::Vector3f(0.0, 1.5f, 5.5f);
     angleToDir();
     mRenderer = nullptr;
 }
 
-QVector3D GLWidget::getCameraPos() const
+Eigen::Vector3f GLWidget::getCameraPos() const
 {
     return mCameraPos;
 }
 
-QVector3D GLWidget::getCameraDir() const
+Eigen::Vector3f GLWidget::getCameraDir() const
 {
     return mCameraDir;
 }
@@ -57,10 +57,8 @@ void GLWidget::updateCameraSpeedAfterKeyPress()
 {
     KeyManager* km = KeyManager::instance();
 
-    QVector3D cameraVel;
-    cameraVel.setX(0);
-    cameraVel.setY(0);
-    cameraVel.setZ(0);
+    Eigen::Vector3f cameraVel;
+    cameraVel.setZero();
 
     if (km->isKeyDown(Qt::Key::Key_W))
     {
@@ -74,14 +72,14 @@ void GLWidget::updateCameraSpeedAfterKeyPress()
 
     if (km->isKeyDown(Qt::Key::Key_A))
     {
-        QVector3D ortho(-mCameraDir.z(), 0.0, mCameraDir.x());
+        Eigen::Vector3f ortho(-mCameraDir.z(), 0.0, mCameraDir.x());
         ortho.normalize();
         cameraVel -= mMovementSpeed * ortho;
     }
 
     if (km->isKeyDown(Qt::Key::Key_D))
     {
-        QVector3D ortho(-mCameraDir.z(), 0.0, mCameraDir.x());
+        Eigen::Vector3f ortho(-mCameraDir.z(), 0.0, mCameraDir.x());
         ortho.normalize();
         cameraVel += mMovementSpeed * ortho;
     }
@@ -179,8 +177,8 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
     qreal y = event->localPos().y();
     if (event->buttons() == Qt::LeftButton)
     {
-        mAngle.rx() = fmod(mAngle.x() + (x - mMousePos.x() * static_cast<double>(mMouseSensitivy)), 360.0);
-        mAngle.ry() -= (y - mMousePos.y()) * static_cast<double>(mMouseSensitivy);
+        mAngle.rx() = fmod(mAngle.x() + (x - mMousePos.x()) * static_cast<double>(mMouseSensitivy), 360.0);
+        mAngle.ry() += (y - mMousePos.y()) * static_cast<double>(mMouseSensitivy);
         mAngle.ry() = max(-70.0, min(70.0, mAngle.y()));
 
         angleToDir();
@@ -210,11 +208,11 @@ void GLWidget::paintGL()
     if (mRenderer)
     {
         // clear and set camera
-        START_TIMING_RENDERING("GLWidget::clear(), gluLookAt() usw.")
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();
-        QVector3D cameraLookAt = mCameraPos + mCameraDir;
+
+        Eigen::Vector3f cameraLookAt = mCameraPos + mCameraDir;
         gluLookAt(static_cast<double>(mCameraPos.x()),
                   static_cast<double>(mCameraPos.y()),
                   static_cast<double>(mCameraPos.z()),
@@ -223,15 +221,15 @@ void GLWidget::paintGL()
                   static_cast<double>(cameraLookAt.z()),
                   0.0, 1.0, 0.0);
         mUiControl->handleProjectionUpdated();
-        STOP_TIMING_RENDERING;
+
 //        const double w = width();
 //        const double h = height();
     //    std::cout << w << ", " << h << "\n";
     //    // translate to centerPos
-    //    glTranslatef(cameraPos.x(), cameraPos.y(), cameraPos.z());
-    //    // rotate scene
-    //    glRotatef(angle.x(),0.0f,1.0f,0.0f);
-    //    glRotatef(angle.y(),1.0f,0.0f,0.0f);
+//        glTranslatef(mCameraPos.x(), mCameraPos.y(), mCameraPos.z());
+//        // rotate scene
+//        glRotatef(mAngle.x(),0.0f,1.0f,0.0f);
+//        glRotatef(mAngle.y(),1.0f,0.0f,0.0f);
 
     //    glutWireTeapot(0.6f);
 

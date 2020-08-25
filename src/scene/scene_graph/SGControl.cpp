@@ -58,7 +58,90 @@ void SGControl::clearScene()
         removeNode(node);
     }
 //    mAc->getSimulationControl()->clearSimulationObjects();
-//    mSceneGraph->getRoot()->clear();
+    //    mSceneGraph->getRoot()->clear();
+}
+
+bool SGControl::castRay(
+        const Vector3d& origin,
+        const Vector3d& normal,
+        SGLeafNode** leafNodeOut,
+        std::shared_ptr<Polygon>& polyOut,
+        size_t& triangleIdOut,
+        Vector3d& intersectionPointOut,
+        bool ignoreInvisible)
+{
+    // Iterate over the whole graph and check if the ray connects with any
+    // polygon.
+
+    SGTraverser castRayTraverser(mSceneGraph->getRoot());
+    class CastRayVisitor : public SGNodeVisitorImpl
+    {
+    public:
+        CastRayVisitor(
+                    const Eigen::Vector3d& _origin,
+                    const Eigen::Vector3d& _normal,
+                    SGLeafNode** _leafNodeOut,
+                    std::shared_ptr<Polygon>& _polyOut,
+                    size_t& _triangleIdOut,
+                    Eigen::Vector3d& _intersectionPointOut)
+            : origin(_origin)
+            , normal(_normal)
+            , leafNodeOut(_leafNodeOut)
+            , polyOut(_polyOut)
+            , triangleIdOut(_triangleIdOut)
+            , intersectionPointOut(_intersectionPointOut)
+        {
+            intersects = false;
+            distance = std::numeric_limits<double>::max();
+        }
+
+        virtual void visit(SGLeafNode* leafNode)
+        {
+            if (leafNode->getData()->getGeometricData()->getType() ==
+                    GeometricData::Type::POLYGON)
+            {
+                std::shared_ptr<Polygon> poly =
+                        std::static_pointer_cast<Polygon>(leafNode->getData()->getGeometricData());
+
+                size_t triangleIdTemp;
+                Eigen::Vector2d baryTemp;
+                double distanceTemp;
+                if (poly->castRay(origin, normal, triangleIdTemp, baryTemp, distanceTemp))
+                {
+                    intersects = true;
+                    if (distance > 0 && distanceTemp < distance)
+                    {
+                        distance = distanceTemp;
+                        polyOut = poly;
+                        triangleIdOut = triangleIdTemp;
+                        *leafNodeOut = leafNode;
+                        Face f = poly->getTopology().getFacesIndices()[triangleIdOut];
+                        intersectionPointOut =
+                                Eigen::Vector3d(
+                                    (1 - baryTemp(0) - baryTemp(1)) * poly->getPosition(f[0]) +
+                                    baryTemp(0) * poly->getPosition(f[1]) +
+                                    baryTemp(1) * poly->getPosition(f[2]));
+                    }
+                }
+            }
+        }
+
+        bool intersects;
+        double distance;
+
+    private:
+        const Eigen::Vector3d& origin;
+        const Eigen::Vector3d& normal;
+        SGLeafNode** leafNodeOut;
+        std::shared_ptr<Polygon>& polyOut;
+        size_t& triangleIdOut;
+        Eigen::Vector3d& intersectionPointOut;
+
+    } visitor(origin, normal, leafNodeOut, polyOut, triangleIdOut, intersectionPointOut);
+    castRayTraverser.setFilter(SGTraverserFactory::createVisibilityFilter(ignoreInvisible));
+    castRayTraverser.traverse(visitor);
+
+    return visitor.intersects;
 }
 
 SGNode* SGControl::importFileAsChild(
