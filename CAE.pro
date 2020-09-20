@@ -85,8 +85,7 @@ CONFIG += force_debug_info
 }
 
 SOURCES = $$files(src/*.cpp, true)
-HEADERS = $$files(src/*.h, true) \
-    src/data_structures/OrientedAABB.h
+HEADERS = $$files(src/*.h, true)
 
 FORMS += \
     src/mainwindow.ui \
