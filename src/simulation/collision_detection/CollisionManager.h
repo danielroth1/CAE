@@ -16,7 +16,7 @@
 class BoundingVolumeHierarchy;
 class CollisionManagerListener;
 class MeshInterpolatorFEM;
-class Polygon;
+class AbstractPolygon;
 class SimulationObject;
 
 enum class CollisionObjectType
@@ -43,7 +43,7 @@ public:
     // \return false if the simulation object is already colliding
     bool addSimulationObjectTriangles(
             const std::shared_ptr<SimulationObject>& so,
-            const std::shared_ptr<Polygon>& polygon,
+            const std::shared_ptr<AbstractPolygon>& polygon,
             const std::shared_ptr<MeshInterpolatorFEM>& interpolator = nullptr);
 
     // Adds a deformable object that has two different geometries:
@@ -59,14 +59,14 @@ public:
     // \return false if the simulation object is already colliding
     bool addSimulationObject(
             std::shared_ptr<SimulationObject> so,
-            std::shared_ptr<Polygon> polygon,
+            std::shared_ptr<AbstractPolygon> polygon,
             double sphereDiameter = 0.1);
 
     bool removeSimulationObject(const std::shared_ptr<SimulationObject>& so);
 
     // Removes the given polygon from the collision detection. It's either
     // directly a simulation object or the target of an interpolator.
-    bool removePolygon(const std::shared_ptr<Polygon>& poly);
+    bool removePolygon(const std::shared_ptr<AbstractPolygon>& poly);
 
     // Adds a collision group id to the given simulation object. If this
     // simulation object isn't collidable, nothing happens.
@@ -110,14 +110,14 @@ public:
     // If it's is the source of an interpolation, then this method will also return
     // true.
     //
-    // For interpolators the isCollidable(const std::shared_ptr<Polygon>&)
+    // For interpolators the isCollidable(const std::shared_ptr<AbstractPolygon>&)
     // method can be used by passing the inteprolators target polygon.
     bool isCollidable(const std::shared_ptr<SimulationObject>& so);
 
     // Checks if the given polygon is collidable which is the case if
     // - it's part of a collidable simulation object
     // - it's target of a interpolator whose source polygon is part of simulation object
-    bool isCollidable(const std::shared_ptr<Polygon>& poly);
+    bool isCollidable(const std::shared_ptr<AbstractPolygon>& poly);
 
     void setInvertNormalsIfNecessary(bool invertNormalsIfNecessary);
     bool getInvertNormalsIfNecessary() const;
@@ -146,7 +146,7 @@ private:
         Eigen::Quaterniond mQ;
 
         std::shared_ptr<SimulationObject> mSo; // Source SimulationObject
-        std::shared_ptr<Polygon> mPolygon; // Target Polygon
+        std::shared_ptr<AbstractPolygon> mPolygon; // Target AbstractPolygon
         std::shared_ptr<BoundingVolumeHierarchy> mBvh;
 
         std::vector<int> mCollisionGroups;
@@ -155,7 +155,7 @@ private:
     // \return false if the simulation object is already colliding
     bool addSimulationObject(
             const std::shared_ptr<SimulationObject>& so,
-            const std::shared_ptr<Polygon>& polygon,
+            const std::shared_ptr<AbstractPolygon>& polygon,
             const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
             const std::shared_ptr<MeshInterpolatorFEM>& interpolator);
 
@@ -221,7 +221,7 @@ private:
 PROXY_CLASS(CollisionManagerProxy, CollisionManager, mCm,
             PROXY_FUNCTION(CollisionManager, mCm, addSimulationObjectTriangles,
                            PL(std::shared_ptr<SimulationObject> so,
-                              std::shared_ptr<Polygon> polygon),
+                              std::shared_ptr<AbstractPolygon> polygon),
                            PL(so, polygon))
             PROXY_FUNCTION(CollisionManager, mCm, addSimulationObjectTriangles,
                            PL(std::shared_ptr<SimulationObject> so,
@@ -229,7 +229,7 @@ PROXY_CLASS(CollisionManagerProxy, CollisionManager, mCm,
                            PL(so, interpolation))
             PROXY_FUNCTION(CollisionManager, mCm, addSimulationObject,
                            PL(std::shared_ptr<SimulationObject> so,
-                              std::shared_ptr<Polygon> polygon,
+                              std::shared_ptr<AbstractPolygon> polygon,
                               double sphereDiameter),
                            PL(so, polygon, sphereDiameter))
             PROXY_FUNCTION(CollisionManager, mCm, removeSimulationObject,

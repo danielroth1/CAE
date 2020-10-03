@@ -3,13 +3,13 @@
 
 #include <memory>
 #include <scene/data/geometric/MeshInterpolatorFEM.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <simulation/collision_detection/narrow/Collider.h>
 
 
 BoundingVolumeHierarchy::BoundingVolumeHierarchy(
         SimulationObject* simulationObject,
-        Polygon* polygon,
+        AbstractPolygon* polygon,
         const std::shared_ptr<MeshInterpolatorFEM>& interpolator,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
         BoundingVolume::Type bvType,
@@ -309,7 +309,7 @@ double BoundingVolumeHierarchy::getCollisionMargin() const
     return mCollisionMargin;
 }
 
-Polygon* BoundingVolumeHierarchy::getPolygon() const
+AbstractPolygon* BoundingVolumeHierarchy::getPolygon() const
 {
     return mPolygon;
 }

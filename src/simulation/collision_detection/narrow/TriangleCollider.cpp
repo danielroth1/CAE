@@ -8,7 +8,7 @@
 #include <math/MathUtils.h>
 #include <math/MathUtils.h>
 #include <scene/data/GeometricData.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <scene/data/geometric/Polygon2DTopology.h>
 #include <scene/data/geometric/Polygon3DTopology.h>
 #include <scene/data/geometric/TopologyFeatureIterator.h>
@@ -52,7 +52,7 @@ void TriangleCollider::addTriangleSpherePair(
     GeometricData* gd = cs.getPointRef().getSimulationObject()->getGeometricData();
     if (gd->getType() == GeometricData::Type::POLYGON)
     {
-        Polygon* poly =static_cast<Polygon*>(gd);
+        AbstractPolygon* poly =static_cast<AbstractPolygon*>(gd);
         Polygon2DTopology& topoTarget = poly->getAccessor2D()->getTopology2D();
         TopologyFeature& feature = *cs.getTopologyFeature().get();
 
@@ -190,11 +190,11 @@ void TriangleCollider::addSphereSpherePair(CollisionSphere& cs1, CollisionSphere
     if (gd1->getType() == GeometricData::Type::POLYGON &&
         gd2->getType() == GeometricData::Type::POLYGON)
     {
-        Polygon* poly1 =static_cast<Polygon*>(gd1);
+        AbstractPolygon* poly1 =static_cast<AbstractPolygon*>(gd1);
         Polygon2DTopology& topoSource = poly1->getAccessor2D()->getTopology2D();
         TopologyFeature& feature1 = *cs1.getTopologyFeature().get();
 
-        Polygon* poly2 =static_cast<Polygon*>(gd1);
+        AbstractPolygon* poly2 =static_cast<AbstractPolygon*>(gd1);
         Polygon2DTopology& topoTarget = poly2->getAccessor2D()->getTopology2D();
         TopologyFeature& feature2 = *cs2.getTopologyFeature().get();
 
@@ -282,7 +282,7 @@ void TriangleCollider::addPair(
 }
 
 void TriangleCollider::prepare(
-        Polygon* poly1, Polygon* poly2,
+        AbstractPolygon* poly1, AbstractPolygon* poly2,
         SimulationObject* so1, SimulationObject* so2,
         MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
         int runId)
@@ -473,7 +473,7 @@ bool TriangleCollider::collide(
         TopologyVertex& v, TopologyFace& f,
         SimulationObject* so1, SimulationObject* so2,
         MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
-        Polygon* poly1, Polygon* poly2,
+        AbstractPolygon* poly1, AbstractPolygon* poly2,
         bool revertedFeaturePair,
         Collision& collision)
 {
@@ -538,14 +538,14 @@ bool TriangleCollider::collide(
         }
 
         ID v1Index = 0;
-        if (poly1->getDimensionType() == Polygon::DimensionType::THREE_D)
+        if (poly1->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
         {
             Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly1->getTopology());
             v1Index = t3->getOuterVertexIds()[v.getID()];
         }
 
         ID v2Index = 0;
-        if (poly2->getDimensionType() == Polygon::DimensionType::THREE_D)
+        if (poly2->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
         {
             Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly2->getTopology());
 
@@ -615,7 +615,7 @@ bool TriangleCollider::collide(
         TopologyEdge& e1, TopologyEdge& e2,
         SimulationObject* so1, SimulationObject* so2,
         MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
-        Polygon* poly1, Polygon* poly2,
+        AbstractPolygon* poly1, AbstractPolygon* poly2,
         Collision& collision)
 {
     // Collisions between non-polygons aren't supported
@@ -665,7 +665,7 @@ bool TriangleCollider::collide(
         // TODO: probably not needed anymore because collisions are described
         // by either a vector from center to collision point (rigids) or
         // by barycentric coordinates (deformable)
-//        if (poly1->getDimensionType() == Polygon::DimensionType::THREE_D)
+//        if (poly1->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
 //        {
 //            Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly1->getTopology());
 
@@ -676,7 +676,7 @@ bool TriangleCollider::collide(
 
 //        }
 
-//        if (poly2->getDimensionType() == Polygon::DimensionType::THREE_D)
+//        if (poly2->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
 //        {
 //            Polygon3DTopology* t3 = static_cast<Polygon3DTopology*>(&poly2->getTopology());
 //            if (bary(1) < 0.5)
@@ -824,7 +824,7 @@ TopologyFeatureIterator* TriangleCollider::getFeatures(
 }
 
 bool TriangleCollider::fillBarycentricCoordinates(
-        Polygon* poly,
+        AbstractPolygon* poly,
         TopologyFace& f,
         const Vector& bary,
         MeshInterpolatorFEM* interpolator,
@@ -832,7 +832,7 @@ bool TriangleCollider::fillBarycentricCoordinates(
         Eigen::Vector4d& baryOut)
 {
     baryOut = Eigen::Vector4d::Zero();
-    if (poly->getDimensionType() == Polygon::DimensionType::THREE_D)
+    if (poly->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
     {
         Polygon3DTopology* topo = static_cast<Polygon3DTopology*>(&poly->getTopology());
         // obtain cell id
@@ -864,7 +864,7 @@ bool TriangleCollider::fillBarycentricCoordinates(
 
         std::cout << "cell ids empty\n";
     }
-    else if (poly->getDimensionType() == Polygon::DimensionType::TWO_D)
+    else if (poly->getDimensionType() == AbstractPolygon::DimensionType::TWO_D)
     {
         if (interpolator)
         {
@@ -882,7 +882,7 @@ bool TriangleCollider::fillBarycentricCoordinates(
 }
 
 bool TriangleCollider::fillBarycentricCoordinates(
-        Polygon* poly,
+        AbstractPolygon* poly,
         TopologyEdge& e,
         double bary,
         MeshInterpolatorFEM* interpolator,
@@ -890,7 +890,7 @@ bool TriangleCollider::fillBarycentricCoordinates(
         Eigen::Vector4d& baryOut)
 {
     baryOut = Eigen::Vector4d::Zero();
-    if (poly->getDimensionType() == Polygon::DimensionType::THREE_D)
+    if (poly->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
     {
         Polygon3DTopology* topo = static_cast<Polygon3DTopology*>(&poly->getTopology());
 
@@ -931,7 +931,7 @@ bool TriangleCollider::fillBarycentricCoordinates(
 
         std::cout << "cell ids empty\n";
     }
-    else if (poly->getDimensionType() == Polygon::DimensionType::TWO_D)
+    else if (poly->getDimensionType() == AbstractPolygon::DimensionType::TWO_D)
     {
         if (interpolator)
         {
@@ -972,14 +972,14 @@ bool TriangleCollider::fillBarycentricCoordinates(
 }
 
 bool TriangleCollider::fillBarycentricCoordinates(
-        Polygon* poly,
+        AbstractPolygon* poly,
         TopologyVertex& v,
         MeshInterpolatorFEM* interpolator,
         ID& elementIdOut,
         Eigen::Vector4d& baryOut)
 {
     baryOut = Eigen::Vector4d::Zero();
-    if (poly->getDimensionType() == Polygon::DimensionType::THREE_D)
+    if (poly->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
     {
         Polygon3DTopology* topo = static_cast<Polygon3DTopology*>(&poly->getTopology());
 
@@ -1008,7 +1008,7 @@ bool TriangleCollider::fillBarycentricCoordinates(
         }
         std::cout << "cell ids empty\n";
     }
-    else if (poly->getDimensionType() == Polygon::DimensionType::TWO_D)
+    else if (poly->getDimensionType() == AbstractPolygon::DimensionType::TWO_D)
     {
         if (interpolator)
         {

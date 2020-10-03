@@ -9,7 +9,7 @@
 #include <memory>
 
 class InterpolatorUIControl;
-class Polygon;
+class AbstractPolygon;
 
 class InterpolatorModule : public Module, SGNodeListener
 {
@@ -37,7 +37,7 @@ public:
     void clearInterpolators();
 
     // Set the interpolator that references the given polygon as target visible.
-    void setInterpolatorVisible(const std::shared_ptr<Polygon>& poly, bool visible);
+    void setInterpolatorVisible(const std::shared_ptr<AbstractPolygon>& poly, bool visible);
 
     // Module interface
 public:

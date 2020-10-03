@@ -27,7 +27,7 @@
 #include <ui/qt/FileDialog.h>
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/GeometricPoint.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <simulation/models/LinearForceRenderModel.h>
 #include <ui/selection/Selection.h>
 #include <ui/selection/SelectionControl.h>
@@ -175,7 +175,7 @@ void UIControl::mousePressEvent(QMouseEvent *event)
 
             // Cast ray and print information about the hit triangle.
             SGLeafNode* leafNode;
-            std::shared_ptr<Polygon> poly;
+            std::shared_ptr<AbstractPolygon> poly;
             size_t triangleId;
             Eigen::Vector3d intersectionPoint;
 
@@ -486,7 +486,7 @@ void UIControl::mouseMoveEvent(QMouseEvent *event)
                     std::shared_ptr<GeometricData> gd = it.first->getGeometricData();
                     if (gd->getType() == GeometricData::Type::POLYGON)
                     {
-                        std::shared_ptr<Polygon> poly = std::static_pointer_cast<Polygon>(gd);
+                        std::shared_ptr<AbstractPolygon> poly = std::static_pointer_cast<AbstractPolygon>(gd);
                         poly->translate(avgDir);
                         poly->update();
                     }

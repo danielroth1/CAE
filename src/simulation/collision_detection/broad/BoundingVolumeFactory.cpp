@@ -7,7 +7,7 @@
 
 #include <simulation/references/SimulationPointRef.h>
 
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 
 BoundingVolumeFactory::BoundingVolumeFactory()
 {
@@ -16,7 +16,7 @@ BoundingVolumeFactory::BoundingVolumeFactory()
 
 std::shared_ptr<BoundingVolume> BoundingVolumeFactory::createBoundingVolume(
         CollisionObject& co,
-        Polygon& polygon,
+        AbstractPolygon& polygon,
         BoundingVolume::Type bvType)
 {
     switch (bvType)
@@ -37,7 +37,7 @@ std::shared_ptr<BoundingVolume> BoundingVolumeFactory::createBoundingVolume(
 std::shared_ptr<BoundingVolume> BoundingVolumeFactory::createBoundingVolume(
         BoundingVolume* bv1,
         BoundingVolume* bv2,
-        Polygon& polygon,
+        AbstractPolygon& polygon,
         BoundingVolume::Type bvType)
 {
     switch (bvType)
@@ -61,12 +61,12 @@ std::shared_ptr<BoundingVolume> BoundingVolumeFactory::createBoundingVolume(
 
 std::shared_ptr<BVSphere> BoundingVolumeFactory::createBVSphere(
         CollisionObject& co,
-        Polygon& polygon)
+        AbstractPolygon& polygon)
 {
     class BVSphereCreator : public CollisionObjectVisitor
     {
     public:
-        BVSphereCreator(Polygon& _p)
+        BVSphereCreator(AbstractPolygon& _p)
             : p(_p)
         {
 
@@ -98,7 +98,7 @@ std::shared_ptr<BVSphere> BoundingVolumeFactory::createBVSphere(
         }
 
         std::shared_ptr<BVSphere> returnValue;
-        Polygon& p;
+        AbstractPolygon& p;
     } creator(polygon);
 
     co.accept(creator);
@@ -108,7 +108,7 @@ std::shared_ptr<BVSphere> BoundingVolumeFactory::createBVSphere(
 std::shared_ptr<BVSphere> BoundingVolumeFactory::createBVSphere(
         BVSphere* sphere1,
         BVSphere* sphere2,
-        Polygon& polygon)
+        AbstractPolygon& polygon)
 {
     std::shared_ptr<BVSphere> sphere = std::make_shared<BVSphere>(sphere1, sphere2);
 
@@ -123,7 +123,7 @@ std::shared_ptr<BVSphere> BoundingVolumeFactory::createBVSphere(
 
 std::shared_ptr<BVAABB> BoundingVolumeFactory::createBVAABB(
         CollisionObject& co,
-        Polygon& /*polygon*/)
+        AbstractPolygon& /*polygon*/)
 {
     std::shared_ptr<BVAABB> bv = std::make_shared<BVAABB>();
     bv->update(co, 0);
@@ -135,7 +135,7 @@ std::shared_ptr<BVAABB> BoundingVolumeFactory::createBVAABB(
 std::shared_ptr<BVAABB> BoundingVolumeFactory::createBVAABB(
         BVAABB* bv1,
         BVAABB* bv2,
-        Polygon& /*polygon*/)
+        AbstractPolygon& /*polygon*/)
 {
     std::shared_ptr<BVAABB> aabb = std::make_shared<BVAABB>();
     aabb->update(bv1, bv2);

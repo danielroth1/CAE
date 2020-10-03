@@ -2,7 +2,7 @@
 #define POLYGON3D_H
 
 #include "data_structures/DataStructures.h"
-#include "Polygon.h"
+#include "AbstractPolygon.h"
 #include "Polygon2DAccessor.h"
 
 #include <map>
@@ -13,7 +13,7 @@ class Polygon3DTopology;
 class PositionData;
 class TopologyFeature;
 
-class Polygon3D : public Polygon
+class Polygon3D : public AbstractPolygon
 {
 public:
 
@@ -91,7 +91,7 @@ public:
     void updateBoundingBox() override;
     void accept(GeometricDataVisitor& visitor) override;
 
-    // Polygon interface
+    // AbstractPolygon interface
 public:
     virtual void update(bool updateFaceNormals = true,
                         bool updateVertexNormals = true,
@@ -156,7 +156,7 @@ public:
     // the outer triangle (x_0, x_1, x_2).
     //
     // x_inner is vertex of the tetrahedron that is not part of this outer
-    // triangle. It can be part of another one, e.g. a Polygon that is only
+    // triangle. It can be part of another one, e.g. a AbstractPolygon that is only
     // a single tetrahedron. Then every vertex is part of the outer hull.
     //
     // This equation guarantees that the vertices of an outer triangle are

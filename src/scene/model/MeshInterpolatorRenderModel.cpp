@@ -7,7 +7,7 @@
 #include <rendering/Renderer.h>
 
 #include <scene/data/geometric/MeshInterpolator.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <scene/data/geometric/Polygon2DAccessor.h>
 
 

@@ -3,7 +3,7 @@
 #include "MeshInterpolator.h"
 #include "MeshInterpolatorFEM.h"
 #include "MeshInterpolatorMeshMesh.h"
-#include "Polygon.h"
+#include "AbstractPolygon.h"
 
 #include <scene/model/MeshInterpolatorRenderModel.h>
 
@@ -17,12 +17,12 @@ MeshInterpolationManager::MeshInterpolationManager(Renderer* renderer)
 
 std::shared_ptr<MeshInterpolatorFEM> MeshInterpolationManager::addInterpolatorFEM(
         const std::shared_ptr<Polygon3D>& source,
-        const std::shared_ptr<Polygon>& target)
+        const std::shared_ptr<AbstractPolygon>& target)
 {
     std::shared_ptr<MeshInterpolationData> data = getData(target);
     if (data != nullptr)
     {
-        std::cout << "Cannot add interpolation for target Polygon because there"
+        std::cout << "Cannot add interpolation for target AbstractPolygon because there"
                      " is already one.\n";
         return nullptr;
     }
@@ -36,13 +36,13 @@ std::shared_ptr<MeshInterpolatorFEM> MeshInterpolationManager::addInterpolatorFE
 }
 
 std::shared_ptr<MeshInterpolatorMeshMesh> MeshInterpolationManager::addInterpolatorMeshMesh(
-        const std::shared_ptr<Polygon>& source,
-        const std::shared_ptr<Polygon>& target)
+        const std::shared_ptr<AbstractPolygon>& source,
+        const std::shared_ptr<AbstractPolygon>& target)
 {
     std::shared_ptr<MeshInterpolationData> data = getData(target);
     if (data != nullptr)
     {
-        std::cout << "Cannot add interpolation for target Polygon because there"
+        std::cout << "Cannot add interpolation for target AbstractPolygon because there"
                      " is already one.\n";
         return nullptr;
     }
@@ -57,7 +57,7 @@ std::shared_ptr<MeshInterpolatorMeshMesh> MeshInterpolationManager::addInterpola
 }
 
 bool MeshInterpolationManager::removeInterpolator(
-        const std::shared_ptr<Polygon>& poly)
+        const std::shared_ptr<AbstractPolygon>& poly)
 {
     std::vector<std::shared_ptr<MeshInterpolationData>> datas = getDatas(poly);
     bool success = true;
@@ -85,7 +85,7 @@ bool MeshInterpolationManager::removeInterpolator(
 }
 
 bool MeshInterpolationManager::removeInterpolatorByTarget(
-        const std::shared_ptr<Polygon>& polyTarget)
+        const std::shared_ptr<AbstractPolygon>& polyTarget)
 {
     std::shared_ptr<MeshInterpolationData> data = getData(polyTarget);
     if (data)
@@ -115,7 +115,7 @@ void MeshInterpolationManager::clearInterpolators()
     mData.clear();
 }
 
-void MeshInterpolationManager::setInterpolatorVisible(const std::shared_ptr<Polygon>& target,
+void MeshInterpolationManager::setInterpolatorVisible(const std::shared_ptr<AbstractPolygon>& target,
                                                        bool visible)
 {
     std::shared_ptr<MeshInterpolatorRenderModel> rm = getRenderModel(target);
@@ -145,7 +145,7 @@ bool MeshInterpolationManager::isInterpolatorsVisible() const
 }
 
 std::shared_ptr<MeshInterpolatorRenderModel> MeshInterpolationManager::getRenderModel(
-        const std::shared_ptr<Polygon>& target)
+        const std::shared_ptr<AbstractPolygon>& target)
 {
     std::shared_ptr<MeshInterpolationData> data = getData(target);
     if (data != nullptr)
@@ -156,7 +156,7 @@ std::shared_ptr<MeshInterpolatorRenderModel> MeshInterpolationManager::getRender
 }
 
 std::shared_ptr<MeshInterpolator> MeshInterpolationManager::getInterpolator(
-        const std::shared_ptr<Polygon>& target)
+        const std::shared_ptr<AbstractPolygon>& target)
 {
     std::shared_ptr<MeshInterpolationData> data = getData(target);
     if (data != nullptr)
@@ -226,7 +226,7 @@ MeshInterpolationManager::createGeometricDataListener(
 
 std::shared_ptr<MeshInterpolationManager::MeshInterpolationData>
 MeshInterpolationManager::getData(
-        const std::shared_ptr<Polygon>& target)
+        const std::shared_ptr<AbstractPolygon>& target)
 {
     for (const std::shared_ptr<MeshInterpolationData>& data : mData)
     {
@@ -239,7 +239,7 @@ MeshInterpolationManager::getData(
 }
 
 std::vector<std::shared_ptr<MeshInterpolationManager::MeshInterpolationData>>
-MeshInterpolationManager::getDatas(const std::shared_ptr<Polygon>& polygon)
+MeshInterpolationManager::getDatas(const std::shared_ptr<AbstractPolygon>& polygon)
 {
     std::vector<std::shared_ptr<MeshInterpolationData>> datas;
     for (const std::shared_ptr<MeshInterpolationData>& data : mData)

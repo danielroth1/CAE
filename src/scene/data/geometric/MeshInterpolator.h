@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-class Polygon;
+class AbstractPolygon;
 class Polygon2DAccessor;
 
 // Interpolates source to target
@@ -22,8 +22,8 @@ public:
         MESH_MESH, FEM
     };
 
-    MeshInterpolator(const std::shared_ptr<Polygon>& source,
-                     const std::shared_ptr<Polygon>& target);
+    MeshInterpolator(const std::shared_ptr<AbstractPolygon>& source,
+                     const std::shared_ptr<AbstractPolygon>& target);
 
     // Solves initial system. Must be called before the first update() call.
     virtual void solve() = 0;
@@ -35,9 +35,9 @@ public:
     // Returns the interpolated position of the target vertex with the given id.
     virtual Eigen::Vector3d getInterpolatedPosition(size_t targetId) const = 0;
 
-    std::shared_ptr<Polygon> getSource() const;
+    std::shared_ptr<AbstractPolygon> getSource() const;
 
-    std::shared_ptr<Polygon> getTarget() const;
+    std::shared_ptr<AbstractPolygon> getTarget() const;
 
     std::shared_ptr<Polygon2DAccessor> getSource2DAccessor() const;
 
@@ -51,8 +51,8 @@ protected:
     // method at the beginning of the update() method.
     void fixRepresentationType();
 
-    std::shared_ptr<Polygon> mSource;
-    std::shared_ptr<Polygon> mTarget;
+    std::shared_ptr<AbstractPolygon> mSource;
+    std::shared_ptr<AbstractPolygon> mTarget;
 
     std::shared_ptr<Polygon2DAccessor> mSourceAccessor;
     std::shared_ptr<Polygon2DAccessor> mTargetAccessor;

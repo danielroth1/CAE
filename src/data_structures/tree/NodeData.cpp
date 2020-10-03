@@ -17,15 +17,6 @@ Node<T, L>* NodeData<T, L>::getNode()
 }
 
 template<class T, class L>
-T* NodeData<T, L>::getChildData(unsigned int i) const
-{
-    mGetChildVisitor.childIndex = i;
-    Node<T, L>* node = mGetChildVisitor->visit(mNode);
-    mGetDataVisitor->visit(node);
-    return mGetDataVisitor.returnValue;
-}
-
-template<class T, class L>
 std::size_t NodeData<T, L>::getNumberOfChildren() const
 {
     mGetNumberOfChildrenVisitor->visit(mNode);

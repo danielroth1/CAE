@@ -9,7 +9,7 @@
 
 #include <scene/data/geometric/GeometricDataFactory.h>
 #include <scene/data/geometric/GeometricSphere.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <scene/data/geometric/Polygon2D.h>
 
 #include <scene/model/PolygonRenderModel.h>

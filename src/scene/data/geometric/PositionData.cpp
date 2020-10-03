@@ -116,7 +116,7 @@ void PositionData::moveCenterTo(const Vector& center)
     moveCenter(center);
 }
 
-// this operation should not be possible in Polygon
+// this operation should not be possible in AbstractPolygon
 // only in shared data and should only be done on initialization
 // because it affects all Polygons that point on this data.
 void PositionData::moveCenter(const Vector& deltaCenter)

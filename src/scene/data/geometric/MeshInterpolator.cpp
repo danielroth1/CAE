@@ -1,5 +1,5 @@
 #include "MeshInterpolator.h"
-#include "Polygon.h"
+#include "AbstractPolygon.h"
 #include "Polygon2DAccessor.h"
 
 #include <algorithm>
@@ -7,8 +7,8 @@
 
 
 MeshInterpolator::MeshInterpolator(
-        const std::shared_ptr<Polygon>& source,
-        const std::shared_ptr<Polygon>& target)
+        const std::shared_ptr<AbstractPolygon>& source,
+        const std::shared_ptr<AbstractPolygon>& target)
     : mSource(source)
     , mTarget(target)
 {
@@ -18,12 +18,12 @@ MeshInterpolator::MeshInterpolator(
     mTargetAccessor = target->createAccessor();
 }
 
-std::shared_ptr<Polygon> MeshInterpolator::getSource() const
+std::shared_ptr<AbstractPolygon> MeshInterpolator::getSource() const
 {
     return mSource;
 }
 
-std::shared_ptr<Polygon> MeshInterpolator::getTarget() const
+std::shared_ptr<AbstractPolygon> MeshInterpolator::getTarget() const
 {
     return mTarget;
 }

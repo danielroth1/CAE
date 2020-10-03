@@ -12,7 +12,7 @@ Eigen::Vector3d MathUtils::rotate(
         const Eigen::Quaterniond& q)
 {
     // \vec{p} = \frac{1}{2}\unQuat(\vec{q} \otimes \quat(\vec{x}) \otimes \vec{q}^{-1})
-
+    return Eigen::Vector3d::Zero();
 }
 
 void MathUtils::rotate(
@@ -27,7 +27,7 @@ Eigen::Matrix3d MathUtils::rotate(
         const Eigen::Matrix3d& m,
         const Eigen::Quaterniond& q)
 {
-
+    return Eigen::Matrix3d::Zero();
 }
 
 Eigen::Matrix3d MathUtils::rotate(
@@ -35,7 +35,7 @@ Eigen::Matrix3d MathUtils::rotate(
         const Eigen::Quaterniond& q,
         Eigen::Matrix3d& result)
 {
-
+    return Eigen::Matrix3d::Zero();
 }
 
 Eigen::Vector3d MathUtils::perp(const Eigen::Vector3d& v)

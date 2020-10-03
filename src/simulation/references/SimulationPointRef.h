@@ -10,7 +10,7 @@
 
 class GeometricData;
 class GeometricPointRefVisitor;
-class Polygon;
+class AbstractPolygon;
 class Polygon3D;
 class SimulationObject;
 
@@ -49,7 +49,7 @@ public:
 
     // Constructor for referencign a vector w.r.t. to center of simulation object.
     // Used for deformable simulation objects.
-    SimulationPointRef(SimulationObject* simObj, Polygon* polygon, Eigen::Vector r);
+    SimulationPointRef(SimulationObject* simObj, AbstractPolygon* polygon, Eigen::Vector r);
 
     // Constructor for referencing a vertex of simulation object.
     // Use for rigid bodies.

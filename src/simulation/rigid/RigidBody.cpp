@@ -6,7 +6,7 @@
 
 #include <scene/data/GeometricData.h>
 
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 
 #include <iostream>
 
@@ -21,7 +21,7 @@ using namespace Eigen;
 
 RigidBody::RigidBody(
         Domain* domain,
-        std::shared_ptr<Polygon> polygon,
+        std::shared_ptr<AbstractPolygon> polygon,
         Vectors& positions,
         double mass)
     : SimulationObject(domain, SimulationObject::Type::RIGID_BODY)

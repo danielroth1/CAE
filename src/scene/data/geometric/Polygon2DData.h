@@ -21,7 +21,7 @@ public:
 
     // PolygonData interface
 public:
-    virtual Polygon::DimensionType getDimensionType() const override;
+    virtual AbstractPolygon::DimensionType getDimensionType() const override;
 
     // Removes a vector at the given index.
     virtual void removeVector(ID index) override;

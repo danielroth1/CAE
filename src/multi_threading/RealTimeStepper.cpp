@@ -1,8 +1,8 @@
 #include "RealTimeStepper.h"
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
-
 
 RealTimeStepper::RealTimeStepper(double timeStepSize)
     : TimeStepper(1e+4) // 10 ms but isn't used anyways

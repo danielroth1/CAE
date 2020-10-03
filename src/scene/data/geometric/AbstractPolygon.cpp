@@ -1,4 +1,4 @@
-#include "Polygon.h"
+#include "AbstractPolygon.h"
 #include "PolygonTopology.h"
 
 #include <iostream>
@@ -8,56 +8,56 @@
 
 #include <data_structures/VectorOperations.h>
 
-Polygon::Polygon()
+AbstractPolygon::AbstractPolygon()
 {
 
 }
 
-Polygon::Polygon(
+AbstractPolygon::AbstractPolygon(
         const Vectors& positionsWS)
     : mPositionData(positionsWS)
 {
 }
 
-Polygon::Polygon(
+AbstractPolygon::AbstractPolygon(
         Vectors* positionsBS,
         const Affine3d& transform)
     : mPositionData(positionsBS, transform)
 {
 }
 
-void Polygon::initWorldSpace(const Vectors& positionsWS)
+void AbstractPolygon::initWorldSpace(const Vectors& positionsWS)
 {
     mPositionData.initializeFromWorldSpace(positionsWS);
 }
 
-void Polygon::initBodySpace(Vectors* positionsBS, const Affine3d& transform)
+void AbstractPolygon::initBodySpace(Vectors* positionsBS, const Affine3d& transform)
 {
     mPositionData.initializeFromBodySpace(positionsBS, transform);
 }
 
-void Polygon::update(bool updateFaceNormals, bool updateVertexNormals, bool notifyListeners)
+void AbstractPolygon::update(bool updateFaceNormals, bool updateVertexNormals, bool notifyListeners)
 {
     mPositionData.update();
 
     GeometricData::update(updateFaceNormals, updateVertexNormals, notifyListeners);
 }
 
-void Polygon::removeVertex(ID index)
+void AbstractPolygon::removeVertex(ID index)
 {
     mPositionData.removePosition(index);
     if (!mNormals.empty())
         VectorOperations::removeVector(mNormals, index);
 }
 
-void Polygon::removeVertices(std::vector<ID>& indices)
+void AbstractPolygon::removeVertices(std::vector<ID>& indices)
 {
     mPositionData.removePositions(indices);
     if (!mNormals.empty())
         VectorOperations::removeVectors(mNormals, indices.begin(), indices.end());
 }
 
-bool Polygon::castRay(
+bool AbstractPolygon::castRay(
         const Vector3d& origin,
         const Vector3d& normal,
         size_t& triangleIdOut,
@@ -88,7 +88,7 @@ bool Polygon::castRay(
     return intersects;
 }
 
-bool Polygon::castRay(
+bool AbstractPolygon::castRay(
         size_t triangleId,
         const Vector3d& origin,
         const Vector3d& normal,
@@ -126,82 +126,82 @@ bool Polygon::castRay(
     return true;
 }
 
-GeometricData::Type Polygon::getType() const
+GeometricData::Type AbstractPolygon::getType() const
 {
     return Type::POLYGON;
 }
 
-Vectors& Polygon::getPositions()
+Vectors& AbstractPolygon::getPositions()
 {
     return mPositionData.getPositions();
 }
 
-Affine3d& Polygon::getTransform()
+Affine3d& AbstractPolygon::getTransform()
 {
     return mPositionData.getTransform();
 }
 
-Vectors& Polygon::getPositionsBS()
+Vectors& AbstractPolygon::getPositionsBS()
 {
     return mPositionData.getPositionsBS();
 }
 
-Vector& Polygon::getPositionBS(ID index)
+Vector& AbstractPolygon::getPositionBS(ID index)
 {
     return mPositionData.getPositionBS(index);
 }
 
-Vector Polygon::getCenter() const
+Vector AbstractPolygon::getCenter() const
 {
     return mPositionData.getCenter();
 }
 
-void Polygon::setTransform(const Affine3d& transform)
+void AbstractPolygon::setTransform(const Affine3d& transform)
 {
     mPositionData.setTransform(transform);
 }
 
-Vector Polygon::calculateCenterVertex()
+Vector AbstractPolygon::calculateCenterVertex()
 {
     return mPositionData.calculateCenterVertex();
 }
 
-Vector Polygon::calculateCenterOfMass(const std::vector<double>& masses)
+Vector AbstractPolygon::calculateCenterOfMass(const std::vector<double>& masses)
 {
     return mPositionData.calculateCenterOfMass(masses);
 }
 
-Vector& Polygon::getPosition(size_t index)
+Vector& AbstractPolygon::getPosition(size_t index)
 {
     return mPositionData.getPosition(index);
 }
 
-void Polygon::setPosition(size_t index, const Vector& position)
+void AbstractPolygon::setPosition(size_t index, const Vector& position)
 {
     mPositionData.setPosition(index, position);
 }
 
-size_t Polygon::getSize()
+size_t AbstractPolygon::getSize()
 {
     return mPositionData.getSize();
 }
 
-void Polygon::translate(const Vector& position)
+void AbstractPolygon::translate(const Vector& position)
 {
     mPositionData.translate(position);
 }
 
-void Polygon::transform(const Affine3d& transform)
+void AbstractPolygon::transform(const Affine3d& transform)
 {
     mPositionData.transform(transform);
 }
 
-BSWSVectors::Type Polygon::getPositionType()
+BSWSVectors::Type AbstractPolygon::getPositionType()
 {
     return mPositionData.getType();
 }
 
-const ID* Polygon::getRelevantFaces(const TopologyFeature& feature, size_t& count)
+const ID* AbstractPolygon::getRelevantFaces(const TopologyFeature& feature, size_t& count)
 {
     switch(feature.getType())
     {
@@ -234,12 +234,12 @@ const ID* Polygon::getRelevantFaces(const TopologyFeature& feature, size_t& coun
     return nullptr;
 }
 
-Polygon::~Polygon()
+AbstractPolygon::~AbstractPolygon()
 {
 
 }
 
-bool Polygon::isInside(
+bool AbstractPolygon::isInside(
         const TopologyFeature& feature,
         Vector point,
         PolygonTopology& topology,
@@ -260,7 +260,7 @@ bool Polygon::isInside(
     return true;
 }
 
-bool Polygon::isInside(
+bool AbstractPolygon::isInside(
         const TopologyFeature& feature,
         Vector source,
         double distance,
@@ -311,7 +311,7 @@ bool Polygon::isInside(
     return true;
 }
 
-bool Polygon::isInside(
+bool AbstractPolygon::isInside(
         ID faceId,
         const Vector& point,
         PolygonTopology& topology,
@@ -324,7 +324,7 @@ bool Polygon::isInside(
             .dot(point - mPositionData.getPosition(vertexId)) < 0;
 }
 
-bool Polygon::isWithinDistance(
+bool AbstractPolygon::isWithinDistance(
         TopologyFace& face,
         const Eigen::Vector& point,
         double distance)

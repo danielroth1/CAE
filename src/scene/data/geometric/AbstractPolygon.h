@@ -1,5 +1,5 @@
-#ifndef POLYGON_H
-#define POLYGON_H
+#ifndef ABSTRACTPOLYGON_H
+#define ABSTRACTPOLYGON_H
 
 #include "BSWSVectors.h"
 #include "PositionData.h"
@@ -12,7 +12,7 @@ class PolygonTopology;
 class TopologyFace;
 class TopologyFeature;
 
-class Polygon : public GeometricData
+class AbstractPolygon : public GeometricData
 {
 public:
 
@@ -21,13 +21,13 @@ public:
         TWO_D, THREE_D
     };
 
-    Polygon();
+    AbstractPolygon();
 
     // Creates polygon from world space positions.
-    Polygon(const Vectors& positionsWS);
+    AbstractPolygon(const Vectors& positionsWS);
 
     // Creates polygon in body space representation.
-    Polygon(Vectors* positionsBS, const Affine3d& transform);
+    AbstractPolygon(Vectors* positionsBS, const Affine3d& transform);
 
     // Creates polygon from body space positions
     // and affine transformation.
@@ -206,7 +206,7 @@ public:
 protected:
 
     // Destructor
-    virtual ~Polygon() override;
+    virtual ~AbstractPolygon() override;
 
     // Checks if the given point is inside the topology. Only tests the
     // faces that are part of the given feature.
@@ -252,4 +252,4 @@ protected:
 
 };
 
-#endif // POLYGON_H
+#endif // ABSTRACTPOLYGON_H

@@ -20,7 +20,7 @@ ModelFactory::ModelFactory()
 
 std::shared_ptr<PolygonRenderModel> ModelFactory::createPolygonRenderModelImproved(
         RenderModelManager* rmm,
-        std::shared_ptr<Polygon> poly,
+        std::shared_ptr<AbstractPolygon> poly,
         bool renderOnlyOuterFaces)
 {
     class PolygonVisior : public GeometricDataVisitor

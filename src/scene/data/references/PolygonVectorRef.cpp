@@ -1,10 +1,10 @@
 #include "GeometricPointRefVisitor.h"
 #include "PolygonVectorRef.h"
 
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 
 PolygonVectorRef::PolygonVectorRef(
-        Polygon* polygon,
+        AbstractPolygon* polygon,
         Vector r,
         BSWSVectors::Type type)
     : GeometricPointRef(polygon, Type::POLYGON_VECTOR)

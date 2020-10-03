@@ -18,10 +18,10 @@ using namespace Eigen;
 Polygon2D::Polygon2D(
         const Vectors& positionsWS,
         const Faces& faces)
-    : Polygon(positionsWS)
+    : AbstractPolygon(positionsWS)
 {
     // World space construtor
-    Polygon::initWorldSpace(positionsWS);
+    AbstractPolygon::initWorldSpace(positionsWS);
     mData = std::make_shared<Polygon2DDataWS>(
                 Polygon2DTopology(faces, positionsWS.size()));
 
@@ -41,10 +41,10 @@ Polygon2D::Polygon2D(
         const Vectors& positionsWS,
         const Vectors& vertexNormalsWS,
         const Faces& faces)
-    : Polygon(positionsWS)
+    : AbstractPolygon(positionsWS)
 {
     // World space constructor
-    Polygon::initWorldSpace(positionsWS);
+    AbstractPolygon::initWorldSpace(positionsWS);
     mData = std::make_shared<Polygon2DDataWS>(
                 Polygon2DTopology(faces, positionsWS.size()));
     mVertexNormals.initializeFromWorldSpace(vertexNormalsWS);
@@ -61,7 +61,7 @@ Polygon2D::Polygon2D(
         const Vectors& positionsBS,
         const Affine3d& transform,
         const Faces& faces)
-    : Polygon()
+    : AbstractPolygon()
 {
     // Body space construtor
 
@@ -80,7 +80,7 @@ Polygon2D::Polygon2D(
                 faceNormals);
 
     mData = dataBS;
-    Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
+    AbstractPolygon::initBodySpace(&dataBS->getPositionsBS(), transform);
     mVertexNormals.initializeFromBodySpace(&dataBS->getVertexNormalsBS(),
                                            Eigen::Affine3d(transform.linear()));
     mFaceNormals.initializeFromBodySpace(&dataBS->getFaceNormalsBS(),
@@ -94,7 +94,7 @@ Polygon2D::Polygon2D(
         const Eigen::Affine3d& transform,
         const Vectors& vertexNormalsBS,
         const Faces& faces)
-    : Polygon()
+    : AbstractPolygon()
     , mFaceNormals(faces.size())
 {
     Vectors faceNormals;
@@ -110,7 +110,7 @@ Polygon2D::Polygon2D(
                 faceNormals);
 
     mData = dataBS;
-    Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
+    AbstractPolygon::initBodySpace(&dataBS->getPositionsBS(), transform);
     mVertexNormals.initializeFromBodySpace(&dataBS->getVertexNormalsBS(),
                                            Eigen::Affine3d(transform.linear()));
     mFaceNormals.initializeFromBodySpace(&dataBS->getFaceNormalsBS(),
@@ -161,7 +161,7 @@ void Polygon2D::update(bool updateFaceNormals,
                        bool updateVertexNormals,
                        bool notifyListeners)
 {
-    Polygon::update(updateFaceNormals, updateVertexNormals, notifyListeners);
+    AbstractPolygon::update(updateFaceNormals, updateVertexNormals, notifyListeners);
 
     if (mVertexNormals.getType() == BSWSVectors::Type::BODY_SPACE)
     {
@@ -232,7 +232,7 @@ void Polygon2D::fixTopology()
 
 void Polygon2D::removeVertex(ID index)
 {
-    Polygon::removeVertex(index);
+    AbstractPolygon::removeVertex(index);
     mData->removeVector(index);
     mVertexNormals.removeVector(index);
     mFaceNormals.removeVector(index);
@@ -243,7 +243,7 @@ void Polygon2D::removeVertices(std::vector<ID>& indices)
     if (indices.empty())
         return;
 
-    Polygon::removeVertices(indices);
+    AbstractPolygon::removeVertices(indices);
     mData->removeVectors(indices);
     mFaceNormals.removeVectors(indices.begin(), indices.end());
     mVertexNormals.removeVectors(indices.begin(), indices.end());
@@ -251,7 +251,7 @@ void Polygon2D::removeVertices(std::vector<ID>& indices)
 
 bool Polygon2D::isInside(const TopologyFeature& feature, Vector point)
 {
-    return Polygon::isInside(feature, point, mData->getTopology(), mFaceNormals);
+    return AbstractPolygon::isInside(feature, point, mData->getTopology(), mFaceNormals);
 }
 
 bool Polygon2D::isInside(
@@ -260,11 +260,11 @@ bool Polygon2D::isInside(
         double distance,
         Vector target)
 {
-    return Polygon::isInside(feature, source, distance, target,
+    return AbstractPolygon::isInside(feature, source, distance, target,
                              mData->getTopology(), mFaceNormals);
 }
 
-Polygon::DimensionType Polygon2D::getDimensionType() const
+AbstractPolygon::DimensionType Polygon2D::getDimensionType() const
 {
     return DimensionType::TWO_D;
 }
@@ -309,7 +309,7 @@ std::shared_ptr<Polygon2DAccessor> Polygon2D::createAccessor()
             return poly2->isInside(feature, source, distance, target);
         }
 
-        virtual Polygon* getPolygon() const override
+        virtual AbstractPolygon* getPolygon() const override
         {
             return poly2;
         }
@@ -360,7 +360,7 @@ std::shared_ptr<Polygon2DAccessor> Polygon2D::createAccessor()
 //        Vectors* vectorsBS,
 //        const Affine3d& transform)
 //{
-//    Polygon::changeRepresentationToBS(vectorsBS, transform);
+//    AbstractPolygon::changeRepresentationToBS(vectorsBS, transform);
 //    mVertexNormals.changeRepresentationToBS();
 //    mFaceNormals.changeRepresentationToBS();
 //}
@@ -407,7 +407,7 @@ void Polygon2D::changeRepresentationToWS()
 
 void Polygon2D::setTransform(const Affine3d& transform)
 {
-    Polygon::setTransform(transform);
+    AbstractPolygon::setTransform(transform);
 
     Affine3d linear(transform.linear());
     mVertexNormals.setTransform(linear);

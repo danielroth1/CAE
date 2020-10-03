@@ -181,7 +181,7 @@ public:
         // - the polygon is the target of an FEMInterpolator and the source
         //   polygon of that interpolator is part of a simulation object that
         //   was added to the simulation.
-        void addCollisionObject(const std::shared_ptr<Polygon>& poly);
+        void addCollisionObject(const std::shared_ptr<AbstractPolygon>& poly);
 
         // Makes the given simulation object non-collidable. If it's already
         // nothing happens. Also works if the target polygon of an interpolator
@@ -190,7 +190,7 @@ public:
 
         // Removes the given polygon from the collision detection. It's either
         // directly a simulation object or the target of an interpolator.
-        void removeCollisionObject(const std::shared_ptr<Polygon>& poly);
+        void removeCollisionObject(const std::shared_ptr<AbstractPolygon>& poly);
 
         void addCollisionGroup(
                 const std::shared_ptr<SimulationObject>& so, int groupId);
@@ -199,7 +199,7 @@ public:
                 const std::shared_ptr<SimulationObject>& so,
                 const std::vector<int>& collisionGroupIds);
 
-        bool isCollidable(const std::shared_ptr<Polygon>& poly);
+        bool isCollidable(const std::shared_ptr<AbstractPolygon>& poly);
         bool isCollidable(const std::shared_ptr<SimulationObject>& so);
 
         // Convenience method that either calls addCollisionObject() or
@@ -212,7 +212,7 @@ public:
 
         // Convenience method that either calls addCollisionObject() or
         // removeCollisionObject().
-        void setCollidable(const std::shared_ptr<Polygon>& poly, bool collidable);
+        void setCollidable(const std::shared_ptr<AbstractPolygon>& poly, bool collidable);
 
 
     // Is called by SimulationThread once after the thread is started.
@@ -366,13 +366,13 @@ PROXY_CLASS(SimulationControlProxy, SimulationControl, mSc,
                            PL(const std::shared_ptr<MeshInterpolatorFEM>& interpolation),
                            PL(interpolation))
             PROXY_FUNCTION(SimulationControl, mSc, addCollisionObject,
-                           PL(const std::shared_ptr<Polygon>& poly),
+                           PL(const std::shared_ptr<AbstractPolygon>& poly),
                            PL(poly))
             PROXY_FUNCTION(SimulationControl, mSc, removeCollisionObject,
                            PL(const std::shared_ptr<SimulationObject>& so),
                            PL(so))
             PROXY_FUNCTION(SimulationControl, mSc, removeCollisionObject,
-                           PL(const std::shared_ptr<Polygon>& poly),
+                           PL(const std::shared_ptr<AbstractPolygon>& poly),
                            PL(poly))
             PROXY_FUNCTION(SimulationControl, mSc, addCollisionGroup,
                            PL(const std::shared_ptr<SimulationObject>& so, int groupId),
@@ -388,7 +388,7 @@ PROXY_CLASS(SimulationControlProxy, SimulationControl, mSc,
                            PL(const std::shared_ptr<MeshInterpolatorFEM>& interpolator, bool collidable),
                            PL(interpolator, collidable))
             PROXY_FUNCTION(SimulationControl, mSc, setCollidable,
-                           PL(const std::shared_ptr<Polygon>& poly, bool collidable),
+                           PL(const std::shared_ptr<AbstractPolygon>& poly, bool collidable),
                            PL(poly, collidable))
             )
 

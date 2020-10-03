@@ -61,8 +61,8 @@ void TexturingDemo::load()
 
     renderModel->setAppearances(appearances);
 
-    std::shared_ptr<Polygon> poly =
-            std::dynamic_pointer_cast<Polygon>(
+    std::shared_ptr<AbstractPolygon> poly =
+            std::dynamic_pointer_cast<AbstractPolygon>(
                 node1->getData()->getGeometricData());
 
     std::vector<Eigen::Vector2f> textureCoordinates =

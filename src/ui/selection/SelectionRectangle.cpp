@@ -1,5 +1,8 @@
 #include "SelectionRectangle.h"
 
+#ifdef WIN32
+#include <windows.h>
+#endif
 #include <GL/glu.h>
 #include <rendering/ViewFrustum.h>
 
@@ -83,10 +86,10 @@ bool SelectionRectangle::testVertex(
     double* MV = viewFrustum->getModelView();
     int* VP = viewFrustum->getViewPort();
 
-    double x_min = std::min(getXStart(), getXEnd());
-    double x_max = std::max(getXStart(), getXEnd());
-    double y_min = std::min(getYStart(), getYEnd());
-    double y_max = std::max(getYStart(), getYEnd());
+    double x_min = min(getXStart(), getXEnd());
+    double x_max = max(getXStart(), getXEnd());
+    double y_min = min(getYStart(), getYEnd());
+    double y_max = max(getYStart(), getYEnd());
 
 //    // convert qt to gl coordinates
 //    x_min = x_min - VP[0];

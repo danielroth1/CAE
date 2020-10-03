@@ -7,7 +7,7 @@
 
 #include <scene/data/geometric/BSWSVectors.h>
 
-class Polygon;
+class AbstractPolygon;
 
 // We want a type for Simulation objects and GeometricPointRef?
 // Maybe just reuse the mType of GoemetricPointRef
@@ -22,7 +22,7 @@ public:
     //          WORLD_SPACE and BODY_SPACE.
     //          if polygon is stored in WORLD_SPACE, type can only be
     //          WORLD_SPACE.
-    PolygonVectorRef(Polygon* polygon,
+    PolygonVectorRef(AbstractPolygon* polygon,
                      Eigen::Vector r,
                      BSWSVectors::Type type = BSWSVectors::Type::BODY_SPACE);
 
@@ -46,7 +46,7 @@ public:
 
 private:
 
-    Polygon* mPolygon;
+    AbstractPolygon* mPolygon;
 
     Eigen::Vector mR;
 

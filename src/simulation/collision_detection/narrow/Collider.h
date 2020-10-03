@@ -42,7 +42,7 @@ public:
         void clear();
 
         void prepare(
-                Polygon* poly1, Polygon* poly2,
+                AbstractPolygon* poly1, AbstractPolygon* poly2,
                 SimulationObject* so1, SimulationObject* so2,
                 MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
                 int runId);
@@ -80,8 +80,8 @@ public:
                 SimulationObject* so2,
                 MeshInterpolatorFEM* interpolator1,
                 MeshInterpolatorFEM* interpolator2,
-                Polygon* poly1,
-                Polygon* poly2,
+                AbstractPolygon* poly1,
+                AbstractPolygon* poly2,
                 bool revertedFeaturePair,
                 Collision& collision);
 
@@ -94,8 +94,8 @@ public:
                      SimulationObject* so2,
                      MeshInterpolatorFEM* interpolator1,
                      MeshInterpolatorFEM* interpolator2,
-                     Polygon* poly1,
-                     Polygon* poly2,
+                     AbstractPolygon* poly1,
+                     AbstractPolygon* poly2,
                      Collision& collision);
 
 private:

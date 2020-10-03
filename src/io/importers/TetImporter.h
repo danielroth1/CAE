@@ -4,7 +4,7 @@
 #include "SceneImporter.h"
 
 
-// Importer for .tet files. These files are used to store volumeric 3D Polygon
+// Importer for .tet files. These files are used to store volumeric 3D AbstractPolygon
 // data. This is a relatively unknown format but at least it is very simple.
 //
 // Other info:

@@ -21,7 +21,7 @@
 #include <rendering/Appearances.h>
 
 #include <scene/data/geometric/MeshInterpolationManager.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <scene/data/geometric/Polygon3D.h>
 
 #include <modules/interpolator/InterpolatorModule.h>

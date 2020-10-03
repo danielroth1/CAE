@@ -9,7 +9,7 @@
 #include <scene/data/geometric/MeshInterpolationManager.h>
 #include <scene/data/geometric/MeshInterpolatorFEM.h>
 #include <scene/data/geometric/MeshInterpolatorMeshMesh.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <scene/data/geometric/Polygon3D.h>
 
 InterpolatorModule::InterpolatorModule()
@@ -50,8 +50,8 @@ std::shared_ptr<MeshInterpolator> InterpolatorModule::addInterpolator(
         return nullptr;
     }
 
-    std::shared_ptr<Polygon> sourcePoly = std::static_pointer_cast<Polygon>(sourceGeometry);
-    std::shared_ptr<Polygon> targetPoly = std::static_pointer_cast<Polygon>(targetGeometry);
+    std::shared_ptr<AbstractPolygon> sourcePoly = std::static_pointer_cast<AbstractPolygon>(sourceGeometry);
+    std::shared_ptr<AbstractPolygon> targetPoly = std::static_pointer_cast<AbstractPolygon>(targetGeometry);
 
     // Create the interpolator
     std::shared_ptr<MeshInterpolator> interpolator = nullptr;
@@ -59,7 +59,7 @@ std::shared_ptr<MeshInterpolator> InterpolatorModule::addInterpolator(
     switch (type)
     {
     case MeshInterpolator::Type::FEM:
-        if (sourcePoly->getDimensionType() == Polygon::DimensionType::THREE_D)
+        if (sourcePoly->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
         {
             interpolator = mAc->getMeshInterpolationManager()->addInterpolatorFEM(
                         std::static_pointer_cast<Polygon3D>(sourcePoly), targetPoly);
@@ -102,7 +102,7 @@ void InterpolatorModule::removeInterpolator(SGNode* source, SGNode* target)
                 mInterpolatorMap[std::make_pair(source, target)];
 
         mAc->getMeshInterpolationManager()->removeInterpolatorByTarget(
-                    std::static_pointer_cast<Polygon>(
+                    std::static_pointer_cast<AbstractPolygon>(
                         static_cast<SGLeafNode*>(target)->getData()->getGeometricData()));
 
         // Remove the listener if there is no more referenec left:
@@ -175,7 +175,7 @@ void InterpolatorModule::clearInterpolators()
     }
 }
 
-void InterpolatorModule::setInterpolatorVisible(const std::shared_ptr<Polygon>& poly, bool visible)
+void InterpolatorModule::setInterpolatorVisible(const std::shared_ptr<AbstractPolygon>& poly, bool visible)
 {
     mAc->getMeshInterpolationManager()->setInterpolatorVisible(poly, visible);
 }

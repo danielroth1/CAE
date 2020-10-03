@@ -11,7 +11,7 @@ class BVHRenderModel;
 class ColliderRenderModel;
 class CollisionManager;
 class Domain;
-class Polygon;
+class AbstractPolygon;
 class RenderModelManager;
 class SimulationObject;
 class UIControl;

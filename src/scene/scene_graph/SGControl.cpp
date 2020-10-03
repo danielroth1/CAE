@@ -65,7 +65,7 @@ bool SGControl::castRay(
         const Vector3d& origin,
         const Vector3d& normal,
         SGLeafNode** leafNodeOut,
-        std::shared_ptr<Polygon>& polyOut,
+        std::shared_ptr<AbstractPolygon>& polyOut,
         size_t& triangleIdOut,
         Vector3d& intersectionPointOut,
         bool ignoreInvisible)
@@ -81,7 +81,7 @@ bool SGControl::castRay(
                     const Eigen::Vector3d& _origin,
                     const Eigen::Vector3d& _normal,
                     SGLeafNode** _leafNodeOut,
-                    std::shared_ptr<Polygon>& _polyOut,
+                    std::shared_ptr<AbstractPolygon>& _polyOut,
                     size_t& _triangleIdOut,
                     Eigen::Vector3d& _intersectionPointOut)
             : origin(_origin)
@@ -100,8 +100,8 @@ bool SGControl::castRay(
             if (leafNode->getData()->getGeometricData()->getType() ==
                     GeometricData::Type::POLYGON)
             {
-                std::shared_ptr<Polygon> poly =
-                        std::static_pointer_cast<Polygon>(leafNode->getData()->getGeometricData());
+                std::shared_ptr<AbstractPolygon> poly =
+                        std::static_pointer_cast<AbstractPolygon>(leafNode->getData()->getGeometricData());
 
                 size_t triangleIdTemp;
                 Eigen::Vector2d baryTemp;
@@ -133,7 +133,7 @@ bool SGControl::castRay(
         const Eigen::Vector3d& origin;
         const Eigen::Vector3d& normal;
         SGLeafNode** leafNodeOut;
-        std::shared_ptr<Polygon>& polyOut;
+        std::shared_ptr<AbstractPolygon>& polyOut;
         size_t& triangleIdOut;
         Eigen::Vector3d& intersectionPointOut;
 
@@ -421,7 +421,7 @@ SGLeafNode* SGControl::create3DGeometryFrom2D(
     {
         if (gd->getType() == GeometricData::Type::POLYGON)
         {
-            std::shared_ptr<Polygon> poly = std::static_pointer_cast<Polygon>(gd);
+            std::shared_ptr<AbstractPolygon> poly = std::static_pointer_cast<AbstractPolygon>(gd);
             newNode = mAc->getSGControl()->createLeafNode(name, parent, poly);
             create3DGeometryFrom2D(newNode, meshCriteria, renderOnlyOuterFaces);
         }
@@ -544,7 +544,7 @@ std::shared_ptr<RigidBody> SGControl::createRigidBody(
 
         }
 
-        void visitPoly(Polygon& poly)
+        void visitPoly(AbstractPolygon& poly)
         {
             Vector center = poly.calculateCenterVertex();
             poly.changeRepresentationToBS(center);
@@ -841,8 +841,8 @@ void SGControl::removeNode(SGNode* node)
                     leafNode->getData()->getGeometricData();
             if (gd->getType() == GeometricData::Type::POLYGON)
             {
-                std::shared_ptr<Polygon> poly =
-                        std::static_pointer_cast<Polygon>(gd);
+                std::shared_ptr<AbstractPolygon> poly =
+                        std::static_pointer_cast<AbstractPolygon>(gd);
                 control.mAc->getInterpolatorModule()->removeInterpolator(leafNode);
             }
         }
@@ -860,7 +860,7 @@ void SGControl::removeNode(SGNode* node)
 SGLeafNode* SGControl::createLeafNode(
         std::string name,
         SGChildrenNode* parent,
-        std::shared_ptr<Polygon> polygon,
+        std::shared_ptr<AbstractPolygon> polygon,
         Eigen::Vector position,
         bool renderOnlyOuterFaces)
 {
@@ -873,7 +873,7 @@ SGLeafNode* SGControl::createLeafNode(
 SGLeafNode* SGControl::createLeafNode(
         std::string name,
         SGChildrenNode* parent,
-        std::shared_ptr<Polygon> polygon,
+        std::shared_ptr<AbstractPolygon> polygon,
         Affine3d transform,
         bool renderOnlyOuterFaces)
 {

@@ -121,8 +121,8 @@ void InterpolationFEMDemo::load()
                     Vector(0.0, 0.0, 0.0), true);
 
         // scale down a bit
-        std::shared_ptr<Polygon> poly1 =
-                std::static_pointer_cast<Polygon>(sourceNode->getData()->getGeometricData());
+        std::shared_ptr<AbstractPolygon> poly1 =
+                std::static_pointer_cast<AbstractPolygon>(sourceNode->getData()->getGeometricData());
 
         Eigen::Vector mid = Eigen::Vector::Zero();
         for (size_t i = 0; i < poly1->getPositions().size(); ++i)
@@ -167,7 +167,7 @@ void InterpolationFEMDemo::load()
 
             // Only set visible for simple mesh.
             mAc->getInterpolatorModule()->setInterpolatorVisible(
-                        std::dynamic_pointer_cast<Polygon>(
+                        std::dynamic_pointer_cast<AbstractPolygon>(
                             target->getData()->getGeometricData()), true);
         }
     }

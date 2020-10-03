@@ -37,7 +37,7 @@ public:
     // Creates a 2d mesh of a sphere.
     // Create the vertices by projecting those of a
     // icosahedron on a sphere (see wikipedia: Geodesic polyhedron).
-    // The Polygon is in world space coordinates.
+    // The AbstractPolygon is in world space coordinates.
     // The resolution is equal to the resolution of each side of the
     // icosahedron. With a resolution of n each side consists of
     // n*2-1 triangles.

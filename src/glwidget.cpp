@@ -2,7 +2,9 @@
 
 #include <times/timing.h>
 
-
+#ifdef WIN32
+#include <windows.h>
+#endif
 #include <GL/glut.h>
 #include <GL/glu.h>
 #include <math.h>

@@ -6,13 +6,13 @@
 #include <simulation/collision_detection/narrow/Collider.h>
 #include <simulation/collision_detection/narrow/CollisionObject.h>
 
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 
 #include <limits>
 
 BVHDeformable::BVHDeformable(
         SimulationObject* so,
-        Polygon* polygon,
+        AbstractPolygon* polygon,
         const std::shared_ptr<MeshInterpolatorFEM>& interpolator,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
         BoundingVolume::Type bvType,

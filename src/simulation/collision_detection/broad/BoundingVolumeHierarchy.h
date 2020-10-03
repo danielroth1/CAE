@@ -17,7 +17,7 @@
 class Collider;
 class CollisionObject;
 class MeshInterpolatorFEM;
-class Polygon;
+class AbstractPolygon;
 class Polygon2DAccessor;
 class SimulationObject;
 
@@ -29,7 +29,7 @@ public:
     typedef std::unordered_set<CollisionTuple, boost::hash<CollisionTuple>> CollisionTupleSet;
 
     BoundingVolumeHierarchy(SimulationObject* so,
-                            Polygon* mPolygon,
+                            AbstractPolygon* mPolygon,
                             const std::shared_ptr<MeshInterpolatorFEM>& interpolator,
                             const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
                             BoundingVolume::Type bvType,
@@ -112,13 +112,13 @@ public:
     void setCollisionMargin(double collisionMargin);
     double getCollisionMargin() const;
 
-    Polygon* getPolygon() const;
+    AbstractPolygon* getPolygon() const;
     SimulationObject* getSimulationObject() const;
     MeshInterpolatorFEM* getInterpolator() const;
 
 protected:
 
-    Polygon* mPolygon;
+    AbstractPolygon* mPolygon;
     SimulationObject* mSimulationObject;
     std::shared_ptr<MeshInterpolatorFEM> mInterpolator;
 

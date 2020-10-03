@@ -13,7 +13,7 @@ class Appearances;
 class GeometricDataListener;
 class MeshInterpolator;
 class MeshInterpolatorFEM;
-class Polygon;
+class AbstractPolygon;
 class PolygonIndexMapping;
 class RenderLines;
 class RenderObjectFactory;
@@ -35,7 +35,7 @@ public:
     // A PolygonRenderModel is a render model that can be used for both
     // Polygon2D and Polygon3D.
     // \param renderOnlyOuterFaces - if true, only the outer faces of a Polygon3D are renderd
-    //          if the given Polygon is of type Polygon2D, this variable has no effect.
+    //          if the given AbstractPolygon is of type Polygon2D, this variable has no effect.
     // \param renderVertexNormals - render the vertex normals. This can be a costly
     //          operation if there are a lot of faces because for each face a line
     //          is rendered and rendering lines currently is rather slow.
@@ -52,7 +52,7 @@ public:
     //
     PolygonRenderModel(
             RenderModelManager* renderModelManager,
-            std::shared_ptr<Polygon> polygon,
+            std::shared_ptr<AbstractPolygon> polygon,
             bool renderOnlyOuterFaces = true,
             bool renderVertexNormals = false,
             bool renderFaceNormals = false);
@@ -141,9 +141,9 @@ private:
 
     std::shared_ptr<GeometricDataListener> mGeometricListener;
 
-    std::shared_ptr<Polygon> mPolygon;
+    std::shared_ptr<AbstractPolygon> mPolygon;
 
-    // Rendering the Polygon
+    // Rendering the AbstractPolygon
     std::shared_ptr<RenderPolygons> mRenderPolygons;
     std::shared_ptr<RenderPolygonsData> mRenderPolygonsData;
     std::shared_ptr<PolygonIndexMapping> mPolygonIndexMapping;

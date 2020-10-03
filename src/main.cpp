@@ -6,6 +6,9 @@
 #include "main_window.h"
 
 #include <QApplication>
+#ifdef WIN32
+#include <windows.h>
+#endif
 #include <GL/glut.h>
 #include <glwidget.h>
 #include <iostream>

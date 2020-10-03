@@ -17,7 +17,7 @@ class BVHDeformable : public BoundingVolumeHierarchy
 {
 public:
     BVHDeformable(SimulationObject* so,
-                  Polygon* polygon,
+                  AbstractPolygon* polygon,
                   const std::shared_ptr<MeshInterpolatorFEM>& interpolator,
                   const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
                   BoundingVolume::Type bvType,

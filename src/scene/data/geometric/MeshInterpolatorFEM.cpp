@@ -1,5 +1,5 @@
 #include "MeshInterpolatorFEM.h"
-#include "Polygon.h"
+#include "AbstractPolygon.h"
 #include "Polygon2D.h"
 #include "Polygon3D.h"
 #include "Polygon3DTopology.h"
@@ -9,7 +9,7 @@
 
 MeshInterpolatorFEM::MeshInterpolatorFEM(
         const std::shared_ptr<Polygon3D>& source,
-        const std::shared_ptr<Polygon>& target)
+        const std::shared_ptr<AbstractPolygon>& target)
     : MeshInterpolator (source, target)
     , mSource3(source)
     , mSolved(false)

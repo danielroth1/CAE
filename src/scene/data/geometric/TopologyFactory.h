@@ -27,7 +27,7 @@ public:
             ID nVertices);
 
     // Creates a Polygon3DTopology wihtout outer faces. Use this if an outer
-    // Polygon is for some reason not required. If unsure, use
+    // AbstractPolygon is for some reason not required. If unsure, use
     // createPolygon3DTopologyWithOuter instead.
     static std::shared_ptr<Polygon3DTopology> createPolygon3DTopologyWithoutOuter(
             const Faces& faces,

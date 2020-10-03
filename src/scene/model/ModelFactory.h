@@ -3,7 +3,7 @@
 
 #include <memory>
 
-class Polygon;
+class AbstractPolygon;
 class Polygon2D;
 class Polygon3D;
 class PolygonRenderModel;
@@ -19,7 +19,7 @@ public:
     // are only rendered or all of them.
     static std::shared_ptr<PolygonRenderModel> createPolygonRenderModelImproved(
             RenderModelManager* rmm,
-            std::shared_ptr<Polygon> poly,
+            std::shared_ptr<AbstractPolygon> poly,
             bool renderOnlyOuterFaces);
 
     // Creates a PolygonRenderModel for a Polygon2D:

@@ -17,9 +17,9 @@ Polygon2DTopology& Polygon2DData::getTopology()
     return *mTopology.get();
 }
 
-Polygon::DimensionType Polygon2DData::getDimensionType() const
+AbstractPolygon::DimensionType Polygon2DData::getDimensionType() const
 {
-    return Polygon::DimensionType::TWO_D;
+    return AbstractPolygon::DimensionType::TWO_D;
 }
 
 void Polygon2DData::removeVector(ID index)

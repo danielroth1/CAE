@@ -9,7 +9,7 @@
 #include <scene/data/geometric/GeometricDataListener.h>
 #include <scene/data/geometric/GeometricPoint.h>
 #include <scene/data/geometric/MeshInterpolatorFEM.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon2DData.h>
 #include <scene/data/geometric/Polygon3D.h>
@@ -39,7 +39,7 @@
 
 PolygonRenderModel::PolygonRenderModel(
         RenderModelManager* renderModelManager,
-        std::shared_ptr<Polygon> polygon,
+        std::shared_ptr<AbstractPolygon> polygon,
         bool renderOnlyOuterFaces,
         bool renderVertexNormals,
         bool renderFaceNormals)
@@ -158,7 +158,7 @@ void PolygonRenderModel::setMeshInterpolator(
         normalVerticesPositions.push_back(v);
     }
 
-    // create Polygon and MeshInterpolatorFEM
+    // create AbstractPolygon and MeshInterpolatorFEM
     std::shared_ptr<Polygon2D> poly =
             std::make_shared<Polygon2D>(normalVerticesPositions, faces);
     mNormalVertexInterpolator =
@@ -229,7 +229,7 @@ void PolygonRenderModel::reset()
 
     // initialize mRenderPolygonsData and mRenderPolygons
 
-    // RenderPolygonsData is Polygon specific and, therefore, must be created
+    // RenderPolygonsData is AbstractPolygon specific and, therefore, must be created
     // for body and world space configuration.
     // RenderPolygons can be shared by multiple Polygons but only if the Polygons
     // share certain data.
@@ -251,7 +251,7 @@ void PolygonRenderModel::reset()
 
         // World space uses its own vertex positions and ignored transformation
         // matrix.
-        if (mRenderPolygons->getType() == BSWSVectors::Type::WORLD_SPACE)
+        if (mRenderPolygons->getType() == BSWSVectors::Type::BODY_SPACE)
         {
             std::static_pointer_cast<RenderPolygonsDataBS>(mRenderPolygonsData)
                     ->getTransform()->setIdentity();
@@ -302,9 +302,9 @@ void PolygonRenderModel::reset()
     {
     case BSWSVectors::Type::BODY_SPACE:
     {
+        std::shared_ptr<RenderPolygonsData> renderPolygonsData = mRenderPolygonsData;
         if (mRenderPolygonsData)
-            mRenderPolygonsData = std::make_shared<RenderPolygonsDataBS>(
-                        *mRenderPolygonsData.get());
+            mRenderPolygonsData = std::make_shared<RenderPolygonsDataBS>(*renderPolygonsData.get());
         else
             mRenderPolygonsData = std::make_shared<RenderPolygonsDataBS>();
         break;
@@ -339,14 +339,14 @@ void PolygonRenderModel::reset()
     {
         switch(mPolygon->getDimensionType())
         {
-        case Polygon::DimensionType::TWO_D:
+        case AbstractPolygon::DimensionType::TWO_D:
         {
             Polygon2D* p2 = static_cast<Polygon2D*>(mPolygon.get());
             size = p2->getPositions().size();
 
             break;
         }
-        case Polygon::DimensionType::THREE_D:
+        case AbstractPolygon::DimensionType::THREE_D:
         {
             Polygon3D* p3 = static_cast<Polygon3D*>(mPolygon.get());
 
@@ -645,7 +645,7 @@ void PolygonRenderModel::updatePositions()
                     mPolygonIndexMapping->getVectorIndexMapping();
 
             if (mRenderOnlyOuterFaces &&
-                    mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+                    mPolygon->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
             {
 #pragma omp parallel for if (positionsLock->size() > 5000)
                 for (size_t i = 0; i < vim->getExtendedSize(); ++i)
@@ -669,7 +669,7 @@ void PolygonRenderModel::updatePositions()
         else
         {
             if (mRenderOnlyOuterFaces &&
-                    mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+                    mPolygon->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
             {
 #pragma omp parallel for if (positionsLock->size() > 5000)
                 for (size_t i = 0; i < positionsLock->size(); ++i)
@@ -788,7 +788,7 @@ void PolygonRenderModel::updateNormalLines()
         // face normals
         Vectorfs faceNormals;
 
-        if (mPolygon->getDimensionType() == Polygon::DimensionType::THREE_D)
+        if (mPolygon->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
         {
             Polygon3D* p3 = static_cast<Polygon3D*>(mPolygon.get());
             faceNormals.resize(p3->getOuterFaceNormals().size()); // returns the outer face normals in world space
@@ -797,7 +797,7 @@ void PolygonRenderModel::updateNormalLines()
                 faceNormals[i] = p3->getOuterFaceNormals()[i].cast<float>();
             }
         }
-        else if (mPolygon->getDimensionType() == Polygon::DimensionType::TWO_D)
+        else if (mPolygon->getDimensionType() == AbstractPolygon::DimensionType::TWO_D)
         {
             Polygon2D* p2 = static_cast<Polygon2D*>(mPolygon.get());
             faceNormals.resize(p2->getFaceNormals().size());

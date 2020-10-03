@@ -143,8 +143,8 @@ public:
     // Projects source to target.
 
     // \param source - the source mesh
-    MeshInterpolatorMeshMesh(const std::shared_ptr<Polygon>& source,
-                             const std::shared_ptr<Polygon>& target);
+    MeshInterpolatorMeshMesh(const std::shared_ptr<AbstractPolygon>& source,
+                             const std::shared_ptr<AbstractPolygon>& target);
 
     virtual ~MeshInterpolatorMeshMesh() override;
 

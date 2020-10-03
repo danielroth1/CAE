@@ -2,6 +2,7 @@
 #define IMAGELOADER_H
 
 #include <memory>
+#include <string>
 
 class Image;
 

@@ -74,8 +74,8 @@ void InterpolationFEMCollisionDemo::load()
         sourceNode->getData()->getGeometricData()->transform(Eigen::Affine3d(Eigen::Translation3d(spherePos)));
 
         // scale down a bit
-        std::shared_ptr<Polygon> poly1 =
-                std::static_pointer_cast<Polygon>(sourceNode->getData()->getGeometricData());
+        std::shared_ptr<AbstractPolygon> poly1 =
+                std::static_pointer_cast<AbstractPolygon>(sourceNode->getData()->getGeometricData());
 
         Eigen::Vector mid = Eigen::Vector::Zero();
         for (size_t i = 0; i < poly1->getPositions().size(); ++i)
@@ -138,8 +138,8 @@ void InterpolationFEMCollisionDemo::load()
                     spherePos, true);
 
         // scale down a bit
-        std::shared_ptr<Polygon> poly1 =
-                std::static_pointer_cast<Polygon>(sourceNode->getData()->getGeometricData());
+        std::shared_ptr<AbstractPolygon> poly1 =
+                std::static_pointer_cast<AbstractPolygon>(sourceNode->getData()->getGeometricData());
 
         Eigen::Vector mid = Eigen::Vector::Zero();
         for (size_t i = 0; i < poly1->getPositions().size(); ++i)

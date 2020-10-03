@@ -14,7 +14,7 @@ class Collision;
 class CollisionSphere;
 class CollisionTriangle;
 class MeshInterpolatorFEM;
-class Polygon;
+class AbstractPolygon;
 class Polygon2DTopology;
 class SimulationObject;
 class TopologyFace;
@@ -71,7 +71,7 @@ public:
 
     // Prepare new search operation between the two given polygons.
     void prepare(
-            Polygon* poly1, Polygon* poly2,
+            AbstractPolygon* poly1, AbstractPolygon* poly2,
             SimulationObject* so1, SimulationObject* so2,
             MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
             int runId);
@@ -105,8 +105,8 @@ public:
                  SimulationObject* so2,
                  MeshInterpolatorFEM* interpolator1,
                  MeshInterpolatorFEM* interpolator2,
-                 Polygon* poly1,
-                 Polygon* poly2,
+                 AbstractPolygon* poly1,
+                 AbstractPolygon* poly2,
                  bool revertedFeaturePair,
                  Collision& collision);
 
@@ -119,8 +119,8 @@ public:
                  SimulationObject* so2,
                  MeshInterpolatorFEM* interpolator1,
                  MeshInterpolatorFEM* interpolator2,
-                 Polygon* poly1,
-                 Polygon* poly2,
+                 AbstractPolygon* poly1,
+                 AbstractPolygon* poly2,
                  Collision& collision);
 
 private:
@@ -173,7 +173,7 @@ private:
     // 4 barycentric coordinates of the element that the face is part of.
     // In baryOut at least 1 value will be zero.
     bool fillBarycentricCoordinates(
-            Polygon* poly,
+            AbstractPolygon* poly,
             TopologyFace& f,
             const Eigen::Vector& bary,
             MeshInterpolatorFEM* interpolator,
@@ -184,7 +184,7 @@ private:
     // 4 barycentric coordinates of the element that the edge is part of.
     // In baryOut at least 2 values will be zero.
     bool fillBarycentricCoordinates(
-            Polygon* poly,
+            AbstractPolygon* poly,
             TopologyEdge& e,
             double bary,
             MeshInterpolatorFEM* interpolator,
@@ -195,7 +195,7 @@ private:
     // 4 barycentric coordinates of the element that the vertex is part of.
     // In baryOut 3 values are zero and 1 is one.
     bool fillBarycentricCoordinates(
-            Polygon* poly,
+            AbstractPolygon* poly,
             TopologyVertex& v,
             MeshInterpolatorFEM* interpolator,
             ID& elementIdOut,
@@ -224,8 +224,8 @@ private:
     // Simulation and geometric data of the two colliding objects.
     SimulationObject* mSo1;
     SimulationObject* mSo2;
-    Polygon* mPoly1;
-    Polygon* mPoly2;
+    AbstractPolygon* mPoly1;
+    AbstractPolygon* mPoly2;
     MeshInterpolatorFEM* mInterpolator1;
     MeshInterpolatorFEM* mInterpolator2;
 

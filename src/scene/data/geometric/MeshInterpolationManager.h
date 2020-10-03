@@ -10,7 +10,7 @@ class MeshInterpolator;
 class MeshInterpolatorFEM;
 class MeshInterpolatorMeshMesh;
 class MeshInterpolatorRenderModel;
-class Polygon;
+class AbstractPolygon;
 class Polygon3D;
 class Renderer;
 
@@ -26,27 +26,27 @@ public:
     //      Does nothing in that case.
     std::shared_ptr<MeshInterpolatorFEM> addInterpolatorFEM(
             const std::shared_ptr<Polygon3D>& source,
-            const std::shared_ptr<Polygon>& target);
+            const std::shared_ptr<AbstractPolygon>& target);
 
     // Adds a MeshMesh based interpolation.
     //\return false if there is already an interpolation for the given target.
     //      Does nothing in that case.
     std::shared_ptr<MeshInterpolatorMeshMesh> addInterpolatorMeshMesh(
-            const std::shared_ptr<Polygon>& source,
-            const std::shared_ptr<Polygon>& target);
+            const std::shared_ptr<AbstractPolygon>& source,
+            const std::shared_ptr<AbstractPolygon>& target);
 
     // Removes the interpolator that references the given polygon (either
     // source or target).
     //\return true if there was such an interpolation that could be removed.
-    bool removeInterpolator(const std::shared_ptr<Polygon>& poly);
+    bool removeInterpolator(const std::shared_ptr<AbstractPolygon>& poly);
 
     // Removes the interpolator that has the given polygon as target.
     //\return true if there was such an interpolation that could be removed.
-    bool removeInterpolatorByTarget(const std::shared_ptr<Polygon>& polyTarget);
+    bool removeInterpolatorByTarget(const std::shared_ptr<AbstractPolygon>& polyTarget);
 
     void clearInterpolators();
 
-    void setInterpolatorVisible(const std::shared_ptr<Polygon>& target,
+    void setInterpolatorVisible(const std::shared_ptr<AbstractPolygon>& target,
                                  bool visible);
 
     // Sets all interpolators visible.
@@ -57,12 +57,12 @@ public:
     // Returns the render model of the interpolator that has the given target.
     // If there is no such interpolator, nullptr is returned.
     std::shared_ptr<MeshInterpolatorRenderModel> getRenderModel(
-            const std::shared_ptr<Polygon>& target);
+            const std::shared_ptr<AbstractPolygon>& target);
 
     // Returns the interpolator that has the given polygon as target. If there
     // is none, returns nullptr.
     std::shared_ptr<MeshInterpolator> getInterpolator(
-            const std::shared_ptr<Polygon>& target);
+            const std::shared_ptr<AbstractPolygon>& target);
 
 private:
 
@@ -92,12 +92,12 @@ private:
 
     // Returns the interpolation data that has the given polygon as target.
     std::shared_ptr<MeshInterpolationData> getData(
-            const std::shared_ptr<Polygon>& target);
+            const std::shared_ptr<AbstractPolygon>& target);
 
     // Returns all interpolation datas that have the given polygon either as
     // source or as target.
     std::vector<std::shared_ptr<MeshInterpolationData>> getDatas(
-            const std::shared_ptr<Polygon>& polygon);
+            const std::shared_ptr<AbstractPolygon>& polygon);
 
     // Creates the MeshInterpolationData for the given interpolator, initializes
     // all necessary data, and adds it to mData.

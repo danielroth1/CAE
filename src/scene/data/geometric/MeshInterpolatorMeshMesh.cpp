@@ -1,5 +1,5 @@
 #include "MeshInterpolatorMeshMesh.h"
-#include "Polygon.h"
+#include "AbstractPolygon.h"
 #include "Polygon2D.h"
 #include "Polygon2DTopology.h"
 #include "PolygonData.h"
@@ -15,8 +15,8 @@
 #include <math/MathUtils.h>
 
 MeshInterpolatorMeshMesh::MeshInterpolatorMeshMesh(
-        const std::shared_ptr<Polygon>& source,
-        const std::shared_ptr<Polygon>& target)
+        const std::shared_ptr<AbstractPolygon>& source,
+        const std::shared_ptr<AbstractPolygon>& target)
     : MeshInterpolator (source, target)
     , mSolved(false)
 {
@@ -231,7 +231,7 @@ void MeshInterpolatorMeshMesh::update()
     }
     STOP_TIMING_INTERPOLATION;
 
-    START_TIMING_INTERPOLATION("MeshInterpolatorMeshMesh::Polygon::update()");
+    START_TIMING_INTERPOLATION("MeshInterpolatorMeshMesh::AbstractPolygon::update()");
     mTarget->update(false, false);
 
     STOP_TIMING_INTERPOLATION;

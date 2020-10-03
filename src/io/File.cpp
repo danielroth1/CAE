@@ -92,7 +92,7 @@ void File::update(std::string path)
         if (part == "/")
             mPathParts.push_back("");
         else
-            mPathParts.push_back(part.c_str());
+            mPathParts.push_back(part.string());
     }
 
     // relative path

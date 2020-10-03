@@ -17,12 +17,12 @@
 Polygon3D::Polygon3D(
         const Vectors& positionsWS,
         const std::shared_ptr<Polygon3DTopology>& topology)
-    : Polygon(positionsWS)
+    : AbstractPolygon(positionsWS)
 {
     mAccessor2D = nullptr;
 
     // World space construtor
-    Polygon::initWorldSpace(positionsWS);
+    AbstractPolygon::initWorldSpace(positionsWS);
     mData = std::make_shared<Polygon3DDataWS>(topology);
 
     mOuterVertexNormals.initializeFromWorldSpace(
@@ -49,12 +49,12 @@ Polygon3D::Polygon3D(
         const Vectors& positionsWS,
         const Vectors& vertexNormalsWS,
         const std::shared_ptr<Polygon3DTopology>& topology)
-    : Polygon(positionsWS)
+    : AbstractPolygon(positionsWS)
 {
     mAccessor2D = nullptr;
 
     // World space construtor
-    Polygon::initWorldSpace(positionsWS);
+    AbstractPolygon::initWorldSpace(positionsWS);
     mData = std::make_shared<Polygon3DDataWS>(topology);
 
     // intiialize outerVertexNormals correctly?
@@ -81,7 +81,7 @@ Polygon3D::Polygon3D(
         Vectors* positionsBS,
         const Affine3d& transform,
         const std::shared_ptr<Polygon3DTopology>& topology)
-    : Polygon(positionsBS, transform)
+    : AbstractPolygon(positionsBS, transform)
 {
     mAccessor2D = nullptr;
 
@@ -98,7 +98,7 @@ Polygon3D::Polygon3D(
                     faceNormals));
     mData = dataBS;
 
-    Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
+    AbstractPolygon::initBodySpace(&dataBS->getPositionsBS(), transform);
     mOuterVertexNormals.initializeFromBodySpace(&dataBS->getOuterVertexNormalsBS(),
                                                 Eigen::Affine3d(transform.linear()));
     mOuterFaceNormals.initializeFromBodySpace(&dataBS->getOuterFaceNormalsBS(),
@@ -115,7 +115,7 @@ Polygon3D::Polygon3D(
         const Affine3d& transform,
         const Vectors& vertexNormalsBS,
         const std::shared_ptr<Polygon3DTopology>& topology)
-    : Polygon (positionsBS, transform)
+    : AbstractPolygon (positionsBS, transform)
 {
     mAccessor2D = nullptr;
 
@@ -132,7 +132,7 @@ Polygon3D::Polygon3D(
 
     mData = dataBS;
 
-    Polygon::initBodySpace(&dataBS->getPositionsBS(), transform);
+    AbstractPolygon::initBodySpace(&dataBS->getPositionsBS(), transform);
     mOuterVertexNormals.initializeFromBodySpace(&dataBS->getOuterVertexNormalsBS(),
                                                 Eigen::Affine3d(transform.linear()));
     mOuterFaceNormals.initializeFromBodySpace(&dataBS->getOuterFaceNormalsBS(),
@@ -395,7 +395,7 @@ void Polygon3D::update(bool updateFaceNormals,
                        bool updateVertexNormals,
                        bool notifyListeners)
 {
-    Polygon::update(updateFaceNormals, updateVertexNormals, notifyListeners);
+    AbstractPolygon::update(updateFaceNormals, updateVertexNormals, notifyListeners);
 
     if (mOuterVertexNormals.getType() == BSWSVectors::Type::BODY_SPACE)
     {
@@ -501,7 +501,7 @@ void Polygon3D::fixTopology()
 
 void Polygon3D::removeVertex(ID index)
 {
-    Polygon::removeVertex(index);
+    AbstractPolygon::removeVertex(index);
     mData->removeVector(index);
     mOuterFaceNormals.removeVector(index);
     mOuterVertexNormals.removeVector(index);
@@ -512,7 +512,7 @@ void Polygon3D::removeVertices(std::vector<ID>& indices)
     if (indices.empty())
         return;
 
-    Polygon::removeVertices(indices);
+    AbstractPolygon::removeVertices(indices);
     mData->removeVectors(indices);
 
     // TODO: this doesn't work because outer elements have different
@@ -523,7 +523,7 @@ void Polygon3D::removeVertices(std::vector<ID>& indices)
 
 bool Polygon3D::isInside(const TopologyFeature& feature, Vector point)
 {
-    return Polygon::isInside(
+    return AbstractPolygon::isInside(
                 feature,
                 point,
                 mData->getTopology()->getOuterTopology(),
@@ -536,12 +536,12 @@ bool Polygon3D::isInside(
         double distance,
         Vector target)
 {
-    return Polygon::isInside(
+    return AbstractPolygon::isInside(
                 feature, source, distance, target,
                 mData->getTopology()->getOuterTopology(), mOuterFaceNormals);
 }
 
-Polygon::DimensionType Polygon3D::getDimensionType() const
+AbstractPolygon::DimensionType Polygon3D::getDimensionType() const
 {
     return DimensionType::THREE_D;
 }
@@ -586,7 +586,7 @@ std::shared_ptr<Polygon2DAccessor> Polygon3D::createAccessor()
             return poly3->isInside(feature, source, distance, target);
         }
 
-        virtual Polygon* getPolygon() const override
+        virtual AbstractPolygon* getPolygon() const override
         {
             return poly3;
         }
@@ -676,7 +676,7 @@ void Polygon3D::changeRepresentationToWS()
 
 void Polygon3D::setTransform(const Affine3d& transform)
 {
-    Polygon::setTransform(transform);
+    AbstractPolygon::setTransform(transform);
 
     Affine3d linear(transform.linear());
     mOuterVertexNormals.setTransform(linear);

@@ -21,49 +21,11 @@ public:
 
     // Delegated ChildrenNode Methods
 
-        // \return T* - Data of the child at the given index.
-        //      NULL if the node is a leaf node. Use getNumberOfChildren()
-        //      to obtain the range of legal indices of children.
-        T* getChildData(unsigned int i) const;
-
         // \return - number of children. 0 if the node is a leaf node.
         std::size_t getNumberOfChildren() const;
 
 private:
     // Private NodeVisitorClass
-
-        class NodeGetChildVisitor : public NodeVisitor<T, L>
-        {
-        public:
-            virtual void visit(ChildrenNode<T, L>* childrenNode)
-            {
-                returnValue = childrenNode->getChild(childIndex);
-            }
-
-            virtual void visit(LeafNode<T, L>* /*leafNode*/)
-            {
-                returnValue = NULL;
-            }
-
-            unsigned int childIndex;
-            Node<T, L>* returnValue;
-        };
-
-        class NodeGetDataVisitor : public NodeVisitor<T, L>
-        {
-        public:
-            virtual void visit(ChildrenNode<T, L>* childrenNode)
-            {
-                returnValue = childrenNode->getData();
-            }
-
-            virtual void visit(LeafNode<T, L>* leafNode)
-            {
-                returnValue = leafNode->getData();
-            }
-
-            T returnValue;
-        };
 
         class NodeGetNumberOfChildrenVisitor : public NodeVisitor<T, L>
         {
@@ -84,8 +46,6 @@ private:
 
     // Private Members
         Node<T, L>* mNode;
-        NodeGetChildVisitor mGetChildVisitor;
-        NodeGetDataVisitor mGetDataVisitor;
         NodeGetNumberOfChildrenVisitor mGetNumberOfChildrenVisitor;
 };
 

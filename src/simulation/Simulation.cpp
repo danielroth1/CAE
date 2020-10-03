@@ -12,7 +12,7 @@
 
 #include <simulation/rigid/RigidBody.h>
 
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 
 using namespace Eigen;
 

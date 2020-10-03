@@ -2,7 +2,7 @@
 
 #include <simulation/SimulationObject.h>
 
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 
 #include <scene/data/references/PolygonVectorRef.h>
 #include <scene/data/references/GeometricVertexRef.h>
@@ -16,7 +16,7 @@
 
 SimulationPointRef::SimulationPointRef(
         SimulationObject* simObj,
-        Polygon* polygon,
+        AbstractPolygon* polygon,
         Eigen::Vector r)
     : mGeometricPointRef(std::make_unique<PolygonVectorRef>(polygon, r))
     , mUpdatePolicy(UpdatePolicy::ON_DEMAND)

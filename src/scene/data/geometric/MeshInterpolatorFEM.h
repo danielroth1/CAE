@@ -10,7 +10,7 @@ class Polygon3D;
 class TopologyFace;
 class VertexInterpolation;
 
-// Maps each point of the target Polygon to a point in the source Polygon3D.
+// Maps each point of the target AbstractPolygon to a point in the source Polygon3D.
 // Does so by calculating for each target vertex the barycentric coordinates
 // within the source mesh.
 // - If a vertex of the target mesh does not lie inside the source mesh, it will
@@ -23,7 +23,7 @@ class MeshInterpolatorFEM : public MeshInterpolator
 {
 public:
     MeshInterpolatorFEM(const std::shared_ptr<Polygon3D>& source,
-                        const std::shared_ptr<Polygon>& target);
+                        const std::shared_ptr<AbstractPolygon>& target);
 
     virtual ~MeshInterpolatorFEM() override;
 

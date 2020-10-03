@@ -114,7 +114,7 @@ void GeometryInfoUIForm::on_mSelectedVertexComboBox_currentIndexChanged(int inde
 
         }
 
-        void visitPolygon(Polygon& polygon)
+        void visitPolygon(AbstractPolygon& polygon)
         {
             for (ID id : polygon.getTopology().getVertex(mVertexId).getEdgeIds())
             {
@@ -175,8 +175,8 @@ void GeometryInfoUIForm::on_mSelectVertexButton_clicked()
     VertexCollection vc;
 
     int vertexId = ui->mSelectVertexSpinBox->value();
-    std::shared_ptr<Polygon> poly =
-            std::dynamic_pointer_cast<Polygon>(selectedLeafData->getGeometricData());
+    std::shared_ptr<AbstractPolygon> poly =
+            std::dynamic_pointer_cast<AbstractPolygon>(selectedLeafData->getGeometricData());
     if (poly)
     {
         vc.addVertex(selectedLeafData,

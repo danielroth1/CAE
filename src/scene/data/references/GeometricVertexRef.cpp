@@ -1,7 +1,7 @@
 #include "GeometricPointRefVisitor.h"
 #include "GeometricVertexRef.h"
 
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 
 GeometricVertexRef::GeometricVertexRef(GeometricData* geometricData, ID index)
     : GeometricPointRef(geometricData, Type::GEOMETRIC_VERTEX)

@@ -17,9 +17,9 @@ const std::shared_ptr<Polygon3DTopology>& Polygon3DData::getTopology() const
     return mTopology;
 }
 
-Polygon::DimensionType Polygon3DData::getDimensionType() const
+AbstractPolygon::DimensionType Polygon3DData::getDimensionType() const
 {
-    return Polygon::DimensionType::THREE_D;
+    return AbstractPolygon::DimensionType::THREE_D;
 }
 
 void Polygon3DData::removeVector(ID index)

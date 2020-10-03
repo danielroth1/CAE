@@ -1,8 +1,10 @@
 #ifndef SPARSEMATRIX33_H
 #define SPARSEMATRIX33_H
 
+#include <array>
 #include <map>
 #include <Eigen/Sparse>
+#include <vector>
 
 // Makes the code compatible to older eigen version 3.2.10
 namespace Eigen {

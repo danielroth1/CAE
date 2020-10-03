@@ -57,8 +57,8 @@ void InterpolatorCreationDemo::load()
                     Vector(0.0, 0.0, 0.0), true);
 
         // Scale down a bit and transform to mid.
-        std::shared_ptr<Polygon> poly1 =
-                std::static_pointer_cast<Polygon>(sourceNode->getData()->getGeometricData());
+        std::shared_ptr<AbstractPolygon> poly1 =
+                std::static_pointer_cast<AbstractPolygon>(sourceNode->getData()->getGeometricData());
 
         Eigen::Vector mid = Eigen::Vector::Zero();
         for (size_t i = 0; i < poly1->getPositions().size(); ++i)

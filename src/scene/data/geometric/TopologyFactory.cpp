@@ -74,11 +74,11 @@ std::shared_ptr<Polygon3DTopology> TopologyFactory::createPolygon3DTopology(
     Faces outerFacesTemp = outerFaces;
     Cells cellsTemp = cells;
 
-    // The topology is fixed after creation by calling Polygon::fixTopology().
+    // The topology is fixed after creation by calling AbstractPolygon::fixTopology().
     // This can be inefficient, so it would make sense to fix the data before
-    // creating the Polygon. The part that fixes the topology can be done
+    // creating the AbstractPolygon. The part that fixes the topology can be done
     // here. It is still necessary to actually remove the vertices in the
-    // Polygon. Uncommenting this method call would result in an inconsistent
+    // AbstractPolygon. Uncommenting this method call would result in an inconsistent
     // state and would likely result in a crash.
 //    fixTopology(nVertices, facesTemp, outerFacesTemp, cellsTemp);
 

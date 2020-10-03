@@ -7,7 +7,7 @@
 #include <iostream>
 #include <new>
 
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon2DData.h>
 #include <scene/data/geometric/Polygon2DTopology.h>
@@ -103,7 +103,7 @@ void Collider::clear()
 }
 
 void Collider::prepare(
-        Polygon* poly1, Polygon* poly2,
+        AbstractPolygon* poly1, AbstractPolygon* poly2,
         SimulationObject* so1, SimulationObject* so2,
         MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
         int runId)
@@ -165,7 +165,7 @@ bool Collider::collides(
         TopologyVertex& v, TopologyFace& f,
         SimulationObject* so1, SimulationObject* so2,
         MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
-        Polygon* poly1, Polygon* poly2,
+        AbstractPolygon* poly1, AbstractPolygon* poly2,
         bool revertedFeaturePair,
         Collision& collision)
 {
@@ -178,7 +178,7 @@ bool Collider::collides(
         TopologyEdge& e1, TopologyEdge& e2,
         SimulationObject* so1, SimulationObject* so2,
         MeshInterpolatorFEM* interpolator1, MeshInterpolatorFEM* interpolator2,
-        Polygon* poly1, Polygon* poly2,
+        AbstractPolygon* poly1, AbstractPolygon* poly2,
         Collision& collision)
 {
     return mTriangleCollider->collide(
@@ -537,7 +537,7 @@ bool Collider::isInside(CollisionSphere& cs1, CollisionSphere& cs2)
         GeometricData* g1 = cs1.getPointRef().getGeometricData();
         if (g1->getType() == GeometricData::Type::POLYGON)
         {
-            Polygon* p1 = static_cast<Polygon*>(g1);
+            AbstractPolygon* p1 = static_cast<AbstractPolygon*>(g1);
 //            isInside = p1->isInside(
 //                        *cs1.getTopologyFeature().get(),
 //                        cs1.getPosition(),
@@ -562,9 +562,9 @@ bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
         GeometricData* g1 = cs1.getPointRef().getGeometricData();
         if (g1->getType() == GeometricData::Type::POLYGON)
         {
-            Polygon* p1 = static_cast<Polygon*>(g1);
+            AbstractPolygon* p1 = static_cast<AbstractPolygon*>(g1);
 
-            if (p1->getDimensionType() == Polygon::DimensionType::TWO_D)
+            if (p1->getDimensionType() == AbstractPolygon::DimensionType::TWO_D)
             {
                 Polygon2D* p2d = static_cast<Polygon2D*>(p1);
 
@@ -585,7 +585,7 @@ bool Collider::passesFaceNormalTest(CollisionSphere& cs1, Eigen::Vector normal)
                     }
                 }
             }
-            else if (p1->getDimensionType() == Polygon::DimensionType::THREE_D)
+            else if (p1->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
             {
                 Polygon3D* p3d = static_cast<Polygon3D*>(g1);
 

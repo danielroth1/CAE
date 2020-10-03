@@ -6,6 +6,9 @@
 #include <scene/data/GeometricDataVisitor.h>
 #include <scene/scene_graph/SceneDataVisitor.h>
 #include <scene/scene_graph/SceneLeafData.h>
+#ifdef WIN32
+#include <windows.h>
+#endif
 #include <GL/glu.h>
 #include <cmath>
 #include <iostream>

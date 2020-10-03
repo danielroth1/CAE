@@ -3,6 +3,7 @@
 
 
 #include <chrono>
+#include <ctime>
 #include <iostream>
 #include <map>
 #include <mutex>
@@ -80,7 +81,7 @@ namespace times
     {
     public:
 
-        typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimePoint;
+        typedef std::chrono::time_point<std::chrono::system_clock> TimePoint;
         typedef std::chrono::duration<double> Duration; // duration in seconds
         typedef std::time_t Time;
 

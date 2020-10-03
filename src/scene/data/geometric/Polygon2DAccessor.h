@@ -4,7 +4,7 @@
 
 #include <data_structures/DataStructures.h>
 
-class Polygon;
+class AbstractPolygon;
 class Polygon2DTopology;
 class TopologyFeature;
 
@@ -31,7 +31,7 @@ public:
             const TopologyFeature& feature, const Eigen::Vector& source,
             double distance, const Eigen::Vector& target) = 0;
 
-    virtual Polygon* getPolygon() const = 0;
+    virtual AbstractPolygon* getPolygon() const = 0;
 
     virtual size_t getSize() = 0;
 

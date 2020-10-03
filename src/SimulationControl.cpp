@@ -28,7 +28,7 @@
 #include <simulation/rigid/RigidSimulation.h>
 #include <scene/data/geometric/MeshInterpolationManager.h>
 #include <scene/data/geometric/MeshInterpolatorFEM.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <scene/data/geometric/Polygon3D.h>
 #include <times/timing.h>
 #include "glwidget.h"
@@ -570,7 +570,7 @@ void SimulationControl::addCollisionObject(
     }
 }
 
-void SimulationControl::addCollisionObject(const std::shared_ptr<Polygon>& poly)
+void SimulationControl::addCollisionObject(const std::shared_ptr<AbstractPolygon>& poly)
 {
     // Check if the polygon is owned by a SimulationObject and if yes, set
     // that as collidable.
@@ -630,7 +630,7 @@ void SimulationControl::removeCollisionObject(const std::shared_ptr<SimulationOb
     mCollisionManagerProxy->removeSimulationObject(so);
 }
 
-void SimulationControl::removeCollisionObject(const std::shared_ptr<Polygon>& poly)
+void SimulationControl::removeCollisionObject(const std::shared_ptr<AbstractPolygon>& poly)
 {
     mCollisionManager->removePolygon(poly);
 }
@@ -648,7 +648,7 @@ void SimulationControl::setCollisionGroups(
     mCollisionManagerProxy->setCollisionGroupIds(so, collisionGroupIds);
 }
 
-bool SimulationControl::isCollidable(const std::shared_ptr<Polygon>& poly)
+bool SimulationControl::isCollidable(const std::shared_ptr<AbstractPolygon>& poly)
 {
     if (poly != nullptr)
     {
@@ -663,8 +663,8 @@ bool SimulationControl::isCollidable(
     if (so != nullptr)
     {
         return mCollisionManager->isCollidable(
-                    std::dynamic_pointer_cast<Polygon>(
-                        dynamic_cast<Polygon*>(
+                    std::dynamic_pointer_cast<AbstractPolygon>(
+                        dynamic_cast<AbstractPolygon*>(
                             so->getGeometricData())->shared_from_this()));
     }
     return false;
@@ -688,7 +688,7 @@ void SimulationControl::setCollidable(
         removeCollisionObject(interpolator->getTarget());
 }
 
-void SimulationControl::setCollidable(const std::shared_ptr<Polygon>& poly, bool collidable)
+void SimulationControl::setCollidable(const std::shared_ptr<AbstractPolygon>& poly, bool collidable)
 {
     if (collidable)
         addCollisionObject(poly);

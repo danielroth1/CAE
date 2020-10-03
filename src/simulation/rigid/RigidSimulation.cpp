@@ -5,7 +5,7 @@
 #include <simulation/forces/LinearForce.h>
 #include <simulation/SimulationObjectVisitor.h>
 #include <scene/data/GeometricData.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 
 #include <iostream>
 

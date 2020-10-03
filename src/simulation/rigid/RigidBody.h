@@ -5,7 +5,7 @@
 #include <simulation/SimulationObject.h>
 
 class Domain;
-class Polygon;
+class AbstractPolygon;
 class SimulationPointRef;
 
 // Rigid body does not depend on Geometric Data because
@@ -19,7 +19,7 @@ public:
     // \param positions - of the to be approximated polygon
     // \param mass - the mass of each vertex
     RigidBody(Domain* domain,
-              std::shared_ptr<Polygon> polygon,
+              std::shared_ptr<AbstractPolygon> polygon,
               Vectors& positions,
               double mass);
 
@@ -128,7 +128,7 @@ public:
 
         const Eigen::Vector& getPositionPrevious() const;
 
-        std::shared_ptr<Polygon> getPolygon();
+        std::shared_ptr<AbstractPolygon> getPolygon();
 
         double getTranslationalDamping() const;
         double getRotationalDamping() const;
@@ -153,7 +153,7 @@ public:
 private:
 
     // Geometric Data
-    std::shared_ptr<Polygon> mPolygon;
+    std::shared_ptr<AbstractPolygon> mPolygon;
     Vectors& mPositions;
 
     // Center of mass
@@ -266,7 +266,7 @@ inline const Eigen::Vector& RigidBody::getPositionPrevious() const
     return mXOld;
 }
 
-inline std::shared_ptr<Polygon> RigidBody::getPolygon()
+inline std::shared_ptr<AbstractPolygon> RigidBody::getPolygon()
 {
     return mPolygon;
 }

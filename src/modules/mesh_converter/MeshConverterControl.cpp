@@ -62,19 +62,19 @@ void MeshConverterControl::convert(
 
         virtual void visit(Polygon2D& polygon2D)
         {
-            polygon = std::static_pointer_cast<Polygon>(
+            polygon = std::static_pointer_cast<AbstractPolygon>(
                         polygon2D.shared_from_this());
         }
 
         virtual void visit(Polygon3D& polygon3D)
         {
-            polygon = std::static_pointer_cast<Polygon>(
+            polygon = std::static_pointer_cast<AbstractPolygon>(
                         polygon3D.shared_from_this());
         }
 
         virtual void visit(GeometricPoint& /*point*/) {}
 
-        std::shared_ptr<Polygon> polygon;
+        std::shared_ptr<AbstractPolygon> polygon;
     } extractPolygonVisitor;
 
     for (const std::shared_ptr<SceneLeafData>& leafData : sceneLeafData)
@@ -84,7 +84,7 @@ void MeshConverterControl::convert(
 
         Eigen::Vector3d position;
 
-        std::shared_ptr<Polygon> poly = extractPolygonVisitor.polygon;
+        std::shared_ptr<AbstractPolygon> poly = extractPolygonVisitor.polygon;
         if (poly)
         {
             // create new node
@@ -100,7 +100,7 @@ void MeshConverterControl::convert(
                         renderOnlyOuterFaces);
         }
 
-        //TODO: save the newly created SGLeafNode* and the old Polygon
+        //TODO: save the newly created SGLeafNode* and the old AbstractPolygon
 //        if (extractPolygonVisitor.polygon &&
 //            extractPolygonVisitor.polygon != newNode->getData()->getGeometricData())
 //        {
@@ -124,10 +124,10 @@ void MeshConverterControl::revert()
 
     for (std::tuple<
          std::shared_ptr<SceneLeafData>,
-         std::shared_ptr<Polygon>>& p : mSavedPolygons)
+         std::shared_ptr<AbstractPolygon>>& p : mSavedPolygons)
     {
         std::shared_ptr<SceneLeafData> sceneData = std::get<0>(p);
-        std::shared_ptr<Polygon> poly = std::get<1>(p);
+        std::shared_ptr<AbstractPolygon> poly = std::get<1>(p);
 
         // when setting goemetric data, the corresponing render model must be
         // set as well.

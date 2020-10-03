@@ -5,7 +5,7 @@
 
 
 class BVAABB;
-class Polygon;
+class AbstractPolygon;
 class Polygon2D;
 class RenderModelManager;
 
@@ -34,7 +34,7 @@ public:
 private:
     BVAABB* mAabb;
 
-    std::shared_ptr<Polygon> mBox;
+    std::shared_ptr<AbstractPolygon> mBox;
 
     std::shared_ptr<PolygonRenderModel> mRenderModel;
 

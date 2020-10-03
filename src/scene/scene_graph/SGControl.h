@@ -36,7 +36,7 @@ public:
             const Eigen::Vector3d& origin,
             const Eigen::Vector3d& normal,
             SGLeafNode** leafNodeOut,
-            std::shared_ptr<Polygon>& polyOut,
+            std::shared_ptr<AbstractPolygon>& polyOut,
             size_t& triangleIdOut,
             Eigen::Vector3d& intersectionPointOut,
             bool ignoreInvisible = true);
@@ -132,14 +132,14 @@ public:
                 double strength);
 
     // Simulation Methods
-        // Creates a FEMObject from the Polygon stored in the given leaf data.
+        // Creates a FEMObject from the AbstractPolygon stored in the given leaf data.
         // If there is already a simulation object, it is removed beforehand.
         // In that case collision state and masses are reused.
         std::shared_ptr<FEMObject> createFEMObject(
                 const std::shared_ptr<SceneLeafData>& ld,
                 double mass = 1.0);
 
-        // Creates a RigidBody from the Polygon stored in the given leaf data.
+        // Creates a RigidBody from the AbstractPolygon stored in the given leaf data.
         // If there is already a simulation object, it is removed beforehand.
         // In that case collision state and masses are reused.
         std::shared_ptr<RigidBody> createRigidBody(
@@ -220,14 +220,14 @@ public:
         SGLeafNode* createLeafNode(
                 std::string name,
                 SGChildrenNode* parent,
-                std::shared_ptr<Polygon> polygon,
+                std::shared_ptr<AbstractPolygon> polygon,
                 Eigen::Vector position,
                 bool renderOnlyOuterFaces = true);
 
         SGLeafNode* createLeafNode(
                 std::string name,
                 SGChildrenNode* parent,
-                std::shared_ptr<Polygon> polygon,
+                std::shared_ptr<AbstractPolygon> polygon,
                 Eigen::Affine3d transform = Eigen::Affine3d::Identity(),
                 bool renderOnlyOuterFaces = true);
 

@@ -4,7 +4,7 @@
 #include <simulation/collision_detection/broad/BVHDeformable.h>
 #include <simulation/collision_detection/broad/BoundingVolumeHierarchy.h>
 #include <scene/data/geometric/MeshInterpolatorFEM.h>
-#include <scene/data/geometric/Polygon.h>
+#include <scene/data/geometric/AbstractPolygon.h>
 #include <scene/data/geometric/Polygon2D.h>
 #include <scene/data/geometric/Polygon2DTopology.h>
 #include <scene/data/geometric/Polygon3D.h>
@@ -32,7 +32,7 @@ Domain* CollisionManager::getDomain()
 
 bool CollisionManager::addSimulationObjectTriangles(
         const std::shared_ptr<SimulationObject>& so,
-        const std::shared_ptr<Polygon>& polygon,
+        const std::shared_ptr<AbstractPolygon>& polygon,
         const std::shared_ptr<MeshInterpolatorFEM>& interpolator)
 {
     if (isCollidable(so))
@@ -61,7 +61,7 @@ bool CollisionManager::addSimulationObjectTriangles(
 
 bool CollisionManager::addSimulationObject(
         std::shared_ptr<SimulationObject> so,
-        std::shared_ptr<Polygon> polygon,
+        std::shared_ptr<AbstractPolygon> polygon,
         double sphereDiameter)
 {
     // check if SimulationObject was already added, if so do nothing
@@ -72,7 +72,7 @@ bool CollisionManager::addSimulationObject(
     std::vector<std::shared_ptr<CollisionObject>> collisionObjects;
     switch (polygon->getDimensionType())
     {
-    case Polygon::DimensionType::TWO_D:
+    case AbstractPolygon::DimensionType::TWO_D:
     {
         std::shared_ptr<Polygon2D> p2 = std::static_pointer_cast<Polygon2D>(polygon);
 
@@ -234,7 +234,7 @@ bool CollisionManager::addSimulationObject(
 
         break;
     }
-    case Polygon::DimensionType::THREE_D:
+    case AbstractPolygon::DimensionType::THREE_D:
     {
         std::shared_ptr<Polygon3D> p3 = std::static_pointer_cast<Polygon3D>(polygon);
 
@@ -284,16 +284,17 @@ bool CollisionManager::removeSimulationObject(const std::shared_ptr<SimulationOb
     });
     if (it != mCollisionData.end())
     {
+        std::shared_ptr<SimulationObject> so = it->mSo;
         mCollisionData.erase(it);
         for (CollisionManagerListener* listener : mListeners)
-            listener->notifySimulationObjectRemoved(it->mSo);
+            listener->notifySimulationObjectRemoved(so);
         return true;
     }
 
     return false;
 }
 
-bool CollisionManager::removePolygon(const std::shared_ptr<Polygon>& poly)
+bool CollisionManager::removePolygon(const std::shared_ptr<AbstractPolygon>& poly)
 {
     removeGeometricDataFromSimulationCollisions(poly.get());
 
@@ -439,12 +440,12 @@ void CollisionManager::revalidateCollisions()
         const Collision& col = c.getCollision();
         bool collides = false;
 
-        Polygon* polyA = col.getInterpolatorA() ?
+        AbstractPolygon* polyA = col.getInterpolatorA() ?
                     col.getInterpolatorA()->getTarget().get() :
-                    static_cast<Polygon*>(col.getSimulationObjectA()->getGeometricData());
-        Polygon* polyB = col.getInterpolatorB() ?
+                    static_cast<AbstractPolygon*>(col.getSimulationObjectA()->getGeometricData());
+        AbstractPolygon* polyB = col.getInterpolatorB() ?
                     col.getInterpolatorB()->getTarget().get() :
-                    static_cast<Polygon*>(col.getSimulationObjectB()->getGeometricData());
+                    static_cast<AbstractPolygon*>(col.getSimulationObjectB()->getGeometricData());
 
         if (col.getTopologyFeatureA()->getType() == TopologyFeature::Type::VERTEX &&
                 col.getTopologyFeatureB()->getType() == TopologyFeature::Type::FACE)
@@ -536,7 +537,7 @@ bool CollisionManager::isCollidable(const std::shared_ptr<SimulationObject>& so)
     return it != mCollisionData.end();
 }
 
-bool CollisionManager::isCollidable(const std::shared_ptr<Polygon>& poly)
+bool CollisionManager::isCollidable(const std::shared_ptr<AbstractPolygon>& poly)
 {
     auto it = std::find_if(mCollisionData.begin(), mCollisionData.end(),
                         [poly](const CollisionData& cd)
@@ -632,7 +633,7 @@ size_t CollisionManager::getNumContacts() const
 
 bool CollisionManager::addSimulationObject(
         const std::shared_ptr<SimulationObject>& so,
-        const std::shared_ptr<Polygon>& polygon,
+        const std::shared_ptr<AbstractPolygon>& polygon,
         const std::vector<std::shared_ptr<CollisionObject>>& collisionObjects,
         const std::shared_ptr<MeshInterpolatorFEM>& interpolator)
 {

@@ -9,7 +9,7 @@ class GeometricData;
 class MeshConverter;
 class MeshConverterModule;
 class MeshCriteria;
-class Polygon;
+class AbstractPolygon;
 class Polygon2D;
 
 // Provides functionality to convert existing meshes
@@ -49,7 +49,7 @@ private:
     std::vector<
         std::tuple<
             std::shared_ptr<SceneLeafData>,
-            std::shared_ptr<Polygon>>> mSavedPolygons;
+            std::shared_ptr<AbstractPolygon>>> mSavedPolygons;
 
     ApplicationControl* mAc;
     MeshConverterModule* mModule;

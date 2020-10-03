@@ -79,7 +79,7 @@ void ConstrainedDeformableDemo::load()
     for (size_t i = 0; i < leftMostVertexIds.size(); ++i)
     {
         ID vertexId = leftMostVertexIds[i];
-        Polygon* wallPoly = static_cast<Polygon*>(wallNode->getData()->getGeometricDataRaw());
+        AbstractPolygon* wallPoly = static_cast<AbstractPolygon*>(wallNode->getData()->getGeometricDataRaw());
         Eigen::Vector wallCOM = wallPoly->getTransform().translation();
         Eigen::Vector wallR = poly->getPosition(vertexId) - wallCOM;
 
@@ -87,7 +87,7 @@ void ConstrainedDeformableDemo::load()
                     SimulationPointRef(beamNode->getData()->getSimulationObjectRaw(),
                                        vertexId),
                     SimulationPointRef(wallNode->getData()->getSimulationObjectRaw(),
-                                       static_cast<Polygon*>(wallNode->getData()->getGeometricDataRaw()),
+                                       static_cast<AbstractPolygon*>(wallNode->getData()->getGeometricDataRaw()),
                                        wallR));
 
         sc->addConstraint(joint);

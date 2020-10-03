@@ -78,8 +78,10 @@ bool BidirectionalMap<A, B>::remove(B b)
     auto it = mBToAMap.find(b);
     if (it != mBToAMap.end())
     {
-        mBToAMap.erase(it);
         mAToBMap.erase(mAToBMap.find(it->second));
+
+        mBToAMap.erase(it);
+        
         return true;
     }
     return false;

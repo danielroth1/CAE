@@ -1,7 +1,7 @@
 #ifndef POLYGON2D_H
 #define POLYGON2D_H
 
-#include "Polygon.h"
+#include "AbstractPolygon.h"
 #include "Polygon2DAccessor.h"
 #include "data_structures/DataStructures.h"
 
@@ -14,7 +14,7 @@ class TopologyFeature;
 //      constructor is called.
 // WORLD_SPACE: shared data is lightweight. Is also created and reused
 //      but there is basically no overhead.
-class Polygon2D : public Polygon
+class Polygon2D : public AbstractPolygon
 {
 public:
 
@@ -57,7 +57,7 @@ public:
     void accept(GeometricDataVisitor& visitor) override;
     void updateBoundingBox() override;
 
-    // Polygon interface
+    // AbstractPolygon interface
 public:
 
     virtual void update(bool updateFaceNormals = true,

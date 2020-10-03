@@ -7,7 +7,7 @@
 
 class InterpolatorModule;
 class InterpolatorUIForm;
-class Polygon;
+class AbstractPolygon;
 class QWidget;
 class SelectionControl;
 

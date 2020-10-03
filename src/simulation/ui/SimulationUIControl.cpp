@@ -251,7 +251,7 @@ void SimulationUIControl::init(QWidget* parent)
                     leafData->getGeometricData()->getType() == GeometricData::Type::POLYGON)
             {
                 return mAc->getSimulationControl()->isCollidable(
-                            std::static_pointer_cast<Polygon>(leafData->getGeometricData()));
+                            std::static_pointer_cast<AbstractPolygon>(leafData->getGeometricData()));
             }
         }
         return false;
@@ -267,7 +267,7 @@ void SimulationUIControl::init(QWidget* parent)
                     leafData->getGeometricData()->getType() == GeometricData::Type::POLYGON)
             {
                 mAc->getSimulationControl()->setCollidable(
-                            std::static_pointer_cast<Polygon>(leafData->getGeometricData()), collidable);
+                            std::static_pointer_cast<AbstractPolygon>(leafData->getGeometricData()), collidable);
                 updateMemberWidgets(mSceneDatasInUI);
             }
         }
