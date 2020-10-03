@@ -18,26 +18,22 @@ extern_folder="extern"
 
 debug_output = False
 
-class HeaderOnlyDescription:
-    
+class BinaryLibDescription:
     '''
-    \param target_folder, e.g. "cgal"
-    \param include_folder, e.g. "CGAL-5.0.2/include"
-    \param zip_file, e.g. "CGAL-5.0.2-library.zip"
-    \param download_link, e.g. "https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-5.0.2/CGAL-5.0.2-library.zip"
+    \param target_folder, e.g. "freeglut"
+    \param zip_file, e.g. "freeglut.zip"
+    \param download_link, e.g. "https://meshes.mailbase.info/libs/freeglut.zip"
     '''
-    def __init__(self, target_folder, include_folder, zip_file, download_link):
+    def __init__(self, target_folder, zip_file, download_link):
         self.target_folder = target_folder
-        self.include_folder = include_folder
         self.zip_file = zip_file
         self.download_link = download_link
 
-def download_header_only(target_folder, include_folder, zip_file, download_link, tmp_folder, extern_folder = "extern", verbose = True):    
+def download_binary_lib(target_folder, zip_file, download_link, tmp_folder, extern_folder = "extern", verbose = True):    
     '''
-    \param target_folder, e.g. "cgal"
-    \param include_folder, e.g. "CGAL-5.0.2/include"
-    \param zip_file, e.g. "CGAL-5.0.2-library.zip"
-    \param download_link, e.g. "https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-5.0.2/CGAL-5.0.2-library.zip"
+    \param target_folder, e.g. "freeglut"
+    \param zip_file, e.g. "freeglut.zip"
+    \param download_link, e.g. "https://meshes.mailbase.info/libs/freeglut.zip"
     \param tmp_folder - a termporary folder that can be used to store intermediate products of the downloading process. Should be either non existent or empty.
     \param extern_folder - folder in which the libraries are stored in, e.g. "extern"
     \param verbose - additional information are printed in output
@@ -53,6 +49,7 @@ def download_header_only(target_folder, include_folder, zip_file, download_link,
         with system_helper.cd(tmp_folder):
             if verbose:
                 print (target_folder + " not found, downloading...")
+            print ("Download link = " + download_link)
 
             # download the file and put it in the current folder            
             try:
@@ -72,15 +69,15 @@ def download_header_only(target_folder, include_folder, zip_file, download_link,
             os.remove(zip_file)
             
             os.makedirs("../extern/" + target_folder, exist_ok=True)
-            system_helper.copytree(include_folder, "../extern/" + target_folder)
+            system_helper.copytree(target_folder, "../extern/" + target_folder)
             if debug_output:
                 print("Successfully downloaded and installed " + target_folder)
 
-def download_headers_only(header_only_descriptions, extern_folder = "extern", verbose = True):
+def download_binary_libs(binary_lib_descriptions, extern_folder = "extern", verbose = True):
     '''
-    Downloads a header only library as zip file and extracts the relevant include folder in the extern/ folder.
-    \param header_only_descriptions - list of HeaderOnlyDescriptions that 
-        are used to download the header only libraries.
+    Downloads a binary library as zip file and extracts the folder to the extern_folder.
+    \param binary_lib_descriptions - list of BinaryLibDescriptions that 
+        are used to download the binary libraries.
     \param extern_folder - folder in which the libraries are stored in, e.g. "extern"
     \param verbose - additional information are printed in output
     '''
@@ -93,8 +90,8 @@ def download_headers_only(header_only_descriptions, extern_folder = "extern", ve
     if not os.path.exists(extern_folder):
         os.mkdir(extern_folder)
         
-    for d in header_only_descriptions:
-        download_header_only(d.target_folder, d.include_folder, d.zip_file, d.download_link, tmp_folder, extern_folder, verbose)
+    for d in binary_lib_descriptions:
+        download_binary_lib(d.target_folder, d.zip_file, d.download_link, tmp_folder, extern_folder, verbose)
 
     if os.path.isdir(tmp_folder):
         shutil.rmtree(tmp_folder)

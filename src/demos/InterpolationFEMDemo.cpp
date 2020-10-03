@@ -168,7 +168,7 @@ void InterpolationFEMDemo::load()
             // Only set visible for simple mesh.
             mAc->getInterpolatorModule()->setInterpolatorVisible(
                         std::dynamic_pointer_cast<AbstractPolygon>(
-                            target->getData()->getGeometricData()), true);
+                            target->getData()->getGeometricData()), !useImportSource);
         }
     }
 

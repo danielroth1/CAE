@@ -88,7 +88,7 @@ void FEMSimulation::initializeStep()
     }
     START_TIMING_SIMULATION("SimulationControl::updateFEM()");
 #pragma omp parallel for
-    for (size_t i = 0; i < mFEMObjects.size(); ++i)
+    for (int i = 0; i < mFEMObjects.size(); ++i)
     {
         const std::shared_ptr<FEMObject>& fo = mFEMObjects[i];
         fo->updateFEM(true);
@@ -99,7 +99,7 @@ void FEMSimulation::initializeStep()
 void FEMSimulation::solve(double stepSize, bool firstStep)
 {
 #pragma omp parallel for
-    for (size_t i = 0; i < mFEMObjects.size(); ++i)
+    for (int i = 0; i < mFEMObjects.size(); ++i)
     {
         const std::shared_ptr<FEMObject>& fo = mFEMObjects[i];
         fo->solveFEM(stepSize, true, firstStep);
@@ -110,7 +110,7 @@ void FEMSimulation::solveVelocity(double stepSize, bool firstStep)
 {
 //    START_TIMING_SIMULATION("SimulationControl::solveVelocityFEM()");
 #pragma omp parallel for
-    for (size_t i = 0; i < mFEMObjects.size(); ++i)
+    for (int i = 0; i < mFEMObjects.size(); ++i)
     {
         const std::shared_ptr<FEMObject>& fo = mFEMObjects[i];
         fo->solveVelocityFEM(stepSize, true, firstStep);

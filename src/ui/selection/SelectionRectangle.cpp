@@ -6,6 +6,8 @@
 #include <GL/glu.h>
 #include <rendering/ViewFrustum.h>
 
+using namespace std;
+
 SelectionRectangle::SelectionRectangle()
     : mXStart(0)
     , mYStart(0)

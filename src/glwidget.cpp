@@ -36,7 +36,7 @@ GLWidget::~GLWidget()
 
 void GLWidget::setDefaults()
 {
-    mMouseSensitivy = 0.2f;
+    mMouseSensitivy = 1.0f;
     mMovementSpeed = 25.0f;
     mMousePos = QPointF(0.0, 0.0);
     mAngle = QPointF(0.0, -15.0);
@@ -180,7 +180,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
     if (event->buttons() == Qt::LeftButton)
     {
         mAngle.rx() = fmod(mAngle.x() + (x - mMousePos.x()) * static_cast<double>(mMouseSensitivy), 360.0);
-        mAngle.ry() += (y - mMousePos.y()) * static_cast<double>(mMouseSensitivy);
+        mAngle.ry() -= (y - mMousePos.y()) * static_cast<double>(mMouseSensitivy);
         mAngle.ry() = max(-70.0, min(70.0, mAngle.y()));
 
         angleToDir();

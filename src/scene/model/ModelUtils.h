@@ -29,14 +29,14 @@ public:
             std::vector<Eigen::Matrix<Type, 3, 1>>& normals)
     {
         normals.resize(positions.size());
-        for (size_t i = 0; i < positions.size(); ++i)
+        for (int i = 0; i < positions.size(); ++i)
         {
             normals[i] = Eigen::Matrix<Type, 3, 1>::Zero();
         }
 
         // calculate normals for each vertex
 #pragma omp parallel for if (faces.size() > 5000)
-        for (size_t i = 0; i < faces.size(); ++i)
+        for (int i = 0; i < faces.size(); ++i)
         {
             const Face& t = faces[i];
 
@@ -69,7 +69,7 @@ public:
         }
 
 #pragma omp parallel for if (normals.size() > 5000)
-        for (size_t i = 0; i < normals.size(); ++i)
+        for (int i = 0; i < normals.size(); ++i)
         {
             normals[i].normalize();
         }
@@ -97,7 +97,7 @@ public:
 
         // calculate normals for each vertex
 #pragma omp parallel for if (faces.size() > 5000)
-        for (size_t i = 0; i < faces.size(); ++i)
+        for (int i = 0; i < faces.size(); ++i)
         {
             const Face& t = faces[i];
 
@@ -107,7 +107,7 @@ public:
         }
 
 #pragma omp parallel for if (positions.size() > 5000)
-        for (size_t i = 0; i < positions.size(); ++i)
+        for (int i = 0; i < positions.size(); ++i)
         {
             normals[i].normalize();
         }
@@ -124,7 +124,7 @@ public:
         // calculate normals for each face
         normals.resize(faces.size());
 #pragma omp parallel for if (faces.size() > 5000)
-        for (size_t i = 0; i < faces.size(); ++i)
+        for (int i = 0; i < faces.size(); ++i)
         {
             const Face& t = faces[i];
 

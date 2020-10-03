@@ -66,12 +66,12 @@ def download_file_if_not_exists(file_path, tmp_folder, folder = "assets", server
 
     if existing_file != "":
         if debug_output:
-            print("File " + existing_file + "is already there. Done.")
+            print("File " + existing_file + " is already there. Done.")
         return
     
     # file_to_download = https://meshes.mailbase.info/FEMFX/car-body-tets.zip
     file_to_download = file_path + ".zip"
-    print ("File " + file_path + " does not exist. Downloading file " + file_to_download + " from $server...")
+    print ("File " + file_path + " does not exist. Downloading file from " + file_to_download)
 
     # zip_file = car-body-tets.zip
     zip_file=file_name + ".zip"
@@ -112,7 +112,7 @@ def download_file_if_not_exists(file_path, tmp_folder, folder = "assets", server
             Path(path).mkdir(parents=True, exist_ok=True)
             
         system_helper.copytree("./", "../" + folder + "/" + path_to_file + "/")
-        
+        system_helper.removeFilesInFolder("./") # In the end, clear the tmp folder
         print ("Installation of " + file_path + " is done.")
 
 '''

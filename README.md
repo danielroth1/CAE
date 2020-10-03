@@ -27,8 +27,6 @@ Video of CAEs Car Crash demo: https://youtu.be/xlMe7Q1j4Lc
 - Multithreading concepts (Monitors and Domains)
 
 ## Build Instructions
-Currently, only Linux is supported.
-
 To build with CMake, see "Building with CMake" below. I am using qmake because of its better integration with QtCreator. If you want to use it as well, see "Building with qmake".
 
 ### Required Libraries
@@ -50,7 +48,10 @@ sudo apt-get install build-essential qt5-default libglew-dev freeglut3-dev libbo
 Eigen and CGAL don't need to be installed because they are header-only. Instead, they are automatically downloaded when running qmake oder cmake.
 
 ### Building with CMake
-Install/ build the required libraries. If qt was manually installed, set Qt5_DIR to \<path-to-QT\>/\<version\>/gcc_64/lib/cmake/Qt5
+#### Linux
+Install/ build the required libraries.
+If qt was manually installed, set *Qt5_DIR* to *\<path-to-QT\>/\<version\>/gcc_64/lib/cmake/Qt5*
+
 Then run:
 ```
 mkdir CAE && cd CAE
@@ -60,14 +61,47 @@ cmake -DCMAKE_BUILD_TYPE=Release ../CAE
 make -j 8
 ```
 To build in Debug mode: replace "Release" with "Debug"
+#### Windows
+Requirements: Python3 (everything else is automatically downloaded and deployed)
+
+The only tested compiler is vs16 (Visual Studio 2019).
+vs15 (Visual Studio 2017) might also work.
+Qt binaries are provided and automatically downloaded by CMake.
+To use your custom Qt installation (instead of the provided one), pass the path to the Qt root folder in the CMake call as \<path-to-qt5\> (see below).
+```
+mkdir CAE && cd CAE
+git clone https://github.com/danielroth1/CAE.git
+mkdir build-CAE-vs16 && cd build-CAE-vs16
+```
+Run CMake (this can take a while since it needs to download external libraries first.
+If this was canceled, remove the *\_tmp* and *extern* folder and try again.
+
+With provided Qt (contains only needed libs):
+```
+cmake ../CAE
+```
+With custom Qt:
+```
+cmake ../CAE -DQt5_DIR="<path-to-qt5>/msvc2017_64/lib/cmake/Qt5"
+```
+If you prefer your own boost installation instead of the minimal provided one, pass *-DUSE_CUSTOM_BOOST* to the cmake command.
+
+- Start CAE.sln and preferrably switch the build type to RelWithDebInfo.
+- Build Solution (creates CAE.exe and builds INSTALL which downloads the assets and copies all required .dlls in the executable folder)
+- Run (Ctrl + F5).
+
+Other windows system should be able to run CAE without installing anything else.
+Just distribute the content of the folder *build-vs16/Release*.
 
 ### Building with qmake
+*Not supported for Windows.*
+#### Linux
 With QtCreator:
 ```
 mkdir CAE && cd CAE
 git clone git@github.com:danielroth1/CAE.git
 ```
-open project in QtCreator and select the CAE.pro
+Open project in QtCreator and select the CAE.pro
 
 Without QtCreator:
 ```
@@ -79,7 +113,7 @@ make -j 8
 ```
 To build in Debug mode: replace "release" with "debug"
 
-### Deployment
+### Deployment (Linux)
 It's possible to create an AppImage which can be executed on other linux based distros that don't have any of the above libraries installed (uses [linuxdeployqt](https://github.com/probonopd/linuxdeployqt)). To do so, first, install the required qt lib:
 ```
 sudo apt-get install qttools5-dev-tools

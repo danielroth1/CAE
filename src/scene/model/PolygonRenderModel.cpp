@@ -648,7 +648,7 @@ void PolygonRenderModel::updatePositions()
                     mPolygon->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
             {
 #pragma omp parallel for if (positionsLock->size() > 5000)
-                for (size_t i = 0; i < vim->getExtendedSize(); ++i)
+                for (int i = 0; i < vim->getExtendedSize(); ++i)
                 {
                     size_t index = vim->getOriginalIndex(i);
                     positionsLock->at(i) = positions[
@@ -659,7 +659,7 @@ void PolygonRenderModel::updatePositions()
             else
             {
 #pragma omp parallel for if (positionsLock->size() > 5000)
-                for (size_t i = 0; i < vim->getExtendedSize(); ++i)
+                for (int i = 0; i < vim->getExtendedSize(); ++i)
                 {
                     size_t index = vim->getOriginalIndex(i);
                     positionsLock->at(i) = positions[index].cast<float>();
@@ -672,7 +672,7 @@ void PolygonRenderModel::updatePositions()
                     mPolygon->getDimensionType() == AbstractPolygon::DimensionType::THREE_D)
             {
 #pragma omp parallel for if (positionsLock->size() > 5000)
-                for (size_t i = 0; i < positionsLock->size(); ++i)
+                for (int i = 0; i < positionsLock->size(); ++i)
                 {
                     positionsLock->at(i) = positions[
                             static_cast<Polygon3D*>(
@@ -682,7 +682,7 @@ void PolygonRenderModel::updatePositions()
             else
             {
 #pragma omp parallel for if (positionsLock->size() > 5000)
-                for (size_t i = 0; i < positionsLock->size(); ++i)
+                for (int i = 0; i < positionsLock->size(); ++i)
                 {
                     positionsLock->at(i) = positions[i].cast<float>();
                 }
@@ -697,7 +697,7 @@ void PolygonRenderModel::updatePositions()
         {
             // calculate vertex normals efficiently with mesh interpolator
 #pragma omp parallel for
-            for (size_t i = 0; i < positions.size(); ++i)
+            for (int i = 0; i < positions.size(); ++i)
             {
                 mFaceNormals[i] =
                         (mNormalVertexInterpolator->getInterpolatedPosition(i) -
