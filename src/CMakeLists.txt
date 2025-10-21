@@ -152,13 +152,15 @@ find_package(OpenGL REQUIRED)
 target_link_libraries(CAE 
     Qt5::OpenGL
     Qt5::Widgets
-	${Boost_LIBRARIES}
+    Boost::filesystem
+    Boost::thread
+    Boost::system
     ${sdl_LIBRARIES}
     ${OPENGL_gl_LIBRARY}
     ${OPENGL_glu_LIBRARY}
     ${OPENGL_LIBRARIES}
-    ${GLUT_LIBRARY}
-    ${GLEW_SHARED_LIBRARY_RELEASE}
+    GLUT::GLUT
+    GLEW::GLEW
 )
 
 if (WIN32 AND NOT USE_SYSTEM_BOOST)
