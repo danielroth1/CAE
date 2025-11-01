@@ -29,11 +29,11 @@ bash $DIR/../scripts/linux/download_file_if_not_exists.sh "logo"
 cp $DIR/assets/logo.png $appimage_folder/
 
 # download linuxdeployqt to extern/
-if [ ! -f "extern/linuxdeployqt-6-x86_64.AppImage" ]; then
+if [ ! -f "extern/linuxdeployqt-continuous-x86_64.AppImage" ]; then
     mkdir -p extern
     cd extern
-    wget https://github.com/probonopd/linuxdeployqt/releases/download/6/linuxdeployqt-6-x86_64.AppImage
-    chmod a+x linuxdeployqt-6-x86_64.AppImage
+    wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+    chmod a+x linuxdeployqt-continuous-x86_64.AppImage
     cd ..
 fi
 
@@ -49,6 +49,6 @@ cp -r $assets_path $appimage_folder
 # create app image
 cd $appimage_folder
 
-../extern/linuxdeployqt-6-x86_64.AppImage ./CAE -appimage -unsupported-allow-new-glibc -extra-plugins=iconengines
+../extern/linuxdeployqt-continuous-x86_64.AppImage ./CAE -appimage -unsupported-allow-new-glibc -extra-plugins=iconengines
 
 

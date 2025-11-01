@@ -3,6 +3,7 @@
 
 #include "MemberAccessorInterface.h"
 
+#include <cstddef>
 #include <functional>
 #include <vector>
 

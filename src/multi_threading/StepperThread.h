@@ -2,6 +2,7 @@
 #define STEPPERTHREAD_H
 
 #include <atomic>
+#include <memory>
 #include <thread>
 #include <vector>
 

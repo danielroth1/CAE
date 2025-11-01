@@ -1,7 +1,7 @@
 #include "SimulationModule.h"
 
 #include <ApplicationControl.h>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 #include <simulation/ui/SimulationUIControl.h>
 
